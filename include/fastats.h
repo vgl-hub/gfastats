@@ -102,7 +102,7 @@ public:
     
     void TraverseFastaSequence(string s) {
         
-        int pos = 1;
+        unsigned int pos = 1;
         bool wasN = false;
         std::vector<int> fastaGaps;
         
