@@ -266,11 +266,6 @@ int main(int argc, char **argv) {
         
     }
     
-    if (argc == 2) {
-        stats_flag = 1; // default mode 'stats'
-        
-    }
-    
     while (1) {
         
         int option_index = 0;
@@ -335,6 +330,13 @@ int main(int argc, char **argv) {
                 printf("-v verbose output.\n");
                 exit(0);
         }
+        
+        if (argc == 2 || (argc == 3 && pos_op ==2)) {
+        
+        	stats_flag = 1; // default mode 'stats'
+        
+    	}
+        
     }
     
     auto start = std::chrono::high_resolution_clock::now();
