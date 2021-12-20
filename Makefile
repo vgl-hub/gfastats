@@ -1,6 +1,6 @@
 CC = g++
 
-CFLAGS  = -g -Wall -std=c++11 -O3 -I.
+CFLAGS  = -g -Wall -std=c++11 -O3 -I. -I./include
 
 # The build target 
 TARGET = fastats
