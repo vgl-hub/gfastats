@@ -152,7 +152,8 @@ int main(int argc, char **argv) {
     
     if (stats_flag) {
         
-        int totScaffLen = 0, scaffN50 = 0, scaffNG50 = 0, totGapLen = 0, gapN = 0;
+        long long int64 totScaffLen = 0; 
+        int scaffN50 = 0, scaffNG50 = 0, totGapLen = 0, gapN = 0;
         
         std::vector<int> scaffLens;
         
