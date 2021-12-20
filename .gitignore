@@ -29,3 +29,15 @@ relative/path/to/dir/filename.extension
 
 # Ignore a file without extension
 relative/path/to/dir/anotherfile
+
+# Mac OS X
+*.DS_Store
+
+# Xcode
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
