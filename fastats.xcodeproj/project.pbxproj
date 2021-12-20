@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0D755B55276D561B00E5BAD7 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0D755B54276D561B00E5BAD7 /* main.cpp */; };
+		0D755B55276D561B00E5BAD7 /* fastats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0D755B54276D561B00E5BAD7 /* fastats.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +24,7 @@
 
 /* Begin PBXFileReference section */
 		0D755B51276D561B00E5BAD7 /* xcode */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = xcode; sourceTree = BUILT_PRODUCTS_DIR; };
-		0D755B54276D561B00E5BAD7 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		0D755B54276D561B00E5BAD7 /* fastats.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = fastats.cpp; path = source/fastats.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,7 +41,7 @@
 		0D755B48276D561B00E5BAD7 = {
 			isa = PBXGroup;
 			children = (
-				0D755B53276D561B00E5BAD7 /* xcode */,
+				0D755B53276D561B00E5BAD7 /* fastats */,
 				0D755B52276D561B00E5BAD7 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -54,12 +54,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0D755B53276D561B00E5BAD7 /* xcode */ = {
+		0D755B53276D561B00E5BAD7 /* fastats */ = {
 			isa = PBXGroup;
 			children = (
-				0D755B54276D561B00E5BAD7 /* main.cpp */,
+				0D755B54276D561B00E5BAD7 /* fastats.cpp */,
 			);
-			path = xcode;
+			path = fastats;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -119,7 +119,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0D755B55276D561B00E5BAD7 /* main.cpp in Sources */,
+				0D755B55276D561B00E5BAD7 /* fastats.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
