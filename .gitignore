@@ -41,4 +41,5 @@ relative/path/to/dir/anotherfile
 *.xcuserstate
 project.xcworkspace/
 xcuserdata/
-fastats.xcodeproj/
+*.xcodeproj/
+DerivedData/
