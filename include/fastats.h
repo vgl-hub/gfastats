@@ -14,6 +14,7 @@
 
 using namespace std;
 
+//functions
 bool isN(char base){
     return (base == 'N' || base == 'n' || base == 'X');
 }
@@ -51,6 +52,13 @@ int interval(std::vector<int> intervalVec, char op){
     
 }
 
+string convertToString(char* a, int size)
+{
+    string s(a);
+  
+    return s;
+}
+
 static int tabular_flag;
 string output(string output){
     
@@ -67,16 +75,22 @@ string output(string output){
     return output;
 }
 
+//classes
 class FastaSequence {
 private:
     string fastaHeader;
     string fastaSequence;
+    string fastaComment;
     std::vector<int> fastaGaps;
     
 public:
     
     void setFastaHeader(string h) {
         fastaHeader = h;
+    }
+
+    void setFastaComment(string c) {
+        fastaComment = c;
     }
     
     void setFastaSequence(string s) {
@@ -87,13 +101,16 @@ public:
         fastaGaps = g;
     }
     
-    string getFastaSequence() {
-        return fastaSequence;
-    }
-    
-    
     string getFastaHeader() {
         return fastaHeader;
+    }
+
+    string getFastaComment() {
+        return fastaComment;
+    }
+
+    string getFastaSequence() {
+        return fastaSequence;
     }
     
     int getFastaSeqLen() {
@@ -153,10 +170,21 @@ private:
     
     FastaSequence fastaSeq;
     
+    string h, g;
+  	char *pch;
+    
 public:
-    void appendFasta(string h, string s) {
+    void appendFasta(string hg, string s) {
+
+		pch = strtok(strdup(hg.c_str())," ");
+        
+        
+        h = convertToString(pch, 1);
         h.erase(0, 1);
+        g = convertToString(strtok(NULL,""), 1);
+        
         fastaSeq.setFastaHeader(h);
+        fastaSeq.setFastaComment(g);
         fastaSeq.setFastaSequence(s);
         fastaSeq.TraverseFastaSequence(s);
         

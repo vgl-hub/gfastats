@@ -87,10 +87,14 @@ int main(int argc, char **argv) {
             case 'h':
                 printf("fastats in.fasta [genome size]\n");
                 printf("Options:\n");
-                printf("-f <file> fasta input. Also as first positional argument.\n");
-                printf("-s report summary statistics.\n");
-                printf("-t output in tabular format.\n");
-                printf("-v verbose output.\n");
+                printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
+                printf("-s --stats report summary statistics.\n");
+                printf("-t --tabular output in tabular format.\n");
+                printf("-v --verbose verbose output.\n");
+                printf("-h --help print help and exit.\n");
+                printf("--seq-report report statistics for each sequence.\n");
+                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");                
+                printf("--cmd print $0 to stdout.\n");
                 exit(0);
         }
         
@@ -131,6 +135,7 @@ int main(int argc, char **argv) {
             
             cout<<"Seq "<<counter+1<<endl;
             cout<<"Header: "<<fastaSequence.getFastaHeader()<<endl;
+            cout<<"Comment: "<<fastaSequence.getFastaComment()<<endl;
             cout<<"Sequence length: "<<fastaSequence.getFastaSeqLen()<<endl;
             cout<<"Total gap length: "<<fastaSequence.gapSum()<<endl;
             cout<<"Number of Gaps: "<<fastaSequence.gapN()<<endl;
