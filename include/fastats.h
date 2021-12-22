@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 #include <unistd.h>
 #include <getopt.h>
@@ -11,6 +12,8 @@
 #include <algorithm>
 
 #include <chrono>
+
+#include "zlib.h"
 
 using namespace std;
 
@@ -52,12 +55,23 @@ int interval(std::vector<int> intervalVec, char op){
     
 }
 
-string convertToString(char* a, int size)
-{
-    string s(a);
-  
-    return s;
-}
+// string convertToString(char* a, char type)
+// {
+//     
+//     if (type){
+//     
+//     	s = "ss";
+//     	
+//     } else {
+//     
+//     	strig(a);
+// 
+//     }
+//     
+//     cout<<s;
+//   
+//     return s;
+// }
 
 static int tabular_flag;
 string output(string output){
@@ -74,6 +88,90 @@ string output(string output){
     
     return output;
 }
+
+//zlib
+bool gzipInflate( const std::string& compressedBytes, std::string& uncompressedBytes ) {  
+  if ( compressedBytes.size() == 0 ) {  
+    uncompressedBytes = compressedBytes ;  
+    return true ;  
+  }  
+  
+  uncompressedBytes.clear() ;  
+  
+  unsigned full_length = compressedBytes.size() ;  
+  unsigned half_length = compressedBytes.size() / 2;  
+  
+  unsigned uncompLength = full_length ;  
+  char* uncomp = (char*) calloc( sizeof(char), uncompLength );  
+  
+  z_stream strm;  
+  strm.next_in = (Bytef *) compressedBytes.c_str();  
+  strm.avail_in = compressedBytes.size() ;  
+  strm.total_out = 0;  
+  strm.zalloc = Z_NULL;  
+  strm.zfree = Z_NULL;  
+  
+  bool done = false ;  
+  
+  if (inflateInit2(&strm, (16+MAX_WBITS)) != Z_OK) {  
+    free( uncomp );  
+    return false;  
+  }  
+  
+  while (!done) {  
+    // If our output buffer is too small  
+    if (strm.total_out >= uncompLength ) {  
+      // Increase size of output buffer  
+      char* uncomp2 = (char*) calloc( sizeof(char), uncompLength + half_length );  
+      memcpy( uncomp2, uncomp, uncompLength );  
+      uncompLength += half_length ;  
+      free( uncomp );  
+      uncomp = uncomp2 ;  
+    }  
+  
+    strm.next_out = (Bytef *) (uncomp + strm.total_out);  
+    strm.avail_out = uncompLength - strm.total_out;  
+  
+    // Inflate another chunk.  
+    int err = inflate (&strm, Z_SYNC_FLUSH);  
+    if (err == Z_STREAM_END) done = true;  
+    else if (err != Z_OK)  {  
+      break;  
+    }  
+  }  
+  
+  if (inflateEnd (&strm) != Z_OK) {  
+    free( uncomp );  
+    return false;  
+  }  
+  
+  for ( size_t i=0; i<strm.total_out; ++i ) {  
+    uncompressedBytes += uncomp[ i ];  
+  }  
+  free( uncomp );  
+  return true ;  
+}  
+  
+/* Reads a file into memory. */  
+bool loadBinaryFile( const std::string& filename, std::string& contents ) {  
+  // Open the gzip file in binary mode  
+  FILE* f = fopen( filename.c_str(), "rb" );  
+  if ( f == NULL )  
+    return false ;  
+  
+  // Clear existing bytes in output vector  
+  contents.clear();  
+  
+  // Read all the bytes in the file  
+  int c = fgetc( f );  
+  while ( c != EOF ) {  
+    contents +=  (char) c ;  
+    c = fgetc( f );  
+  }  
+  fclose (f);  
+  
+  return true ;  
+}  
 
 //classes
 class FastaSequence {
@@ -170,21 +268,25 @@ private:
     
     FastaSequence fastaSeq;
     
-    string h, g;
-  	char *pch;
+    string h;
+    char *c;
     
 public:
     void appendFasta(string hg, string s) {
-
-		pch = strtok(strdup(hg.c_str())," ");
-        
-        
-        h = convertToString(pch, 1);
+	
+		h = string(strtok(strdup(hg.c_str())," ")); //process header line
+//         h = convertToString(pch);
         h.erase(0, 1);
-        g = convertToString(strtok(NULL,""), 1);
-        
         fastaSeq.setFastaHeader(h);
-        fastaSeq.setFastaComment(g);
+        
+       c = strtok(NULL,""); //process comment line
+      	
+      	if (c != NULL) {
+      	
+        	fastaSeq.setFastaComment(string(c));
+        
+        }
+        
         fastaSeq.setFastaSequence(s);
         fastaSeq.TraverseFastaSequence(s);
         
@@ -214,48 +316,119 @@ public:
         int idx = 0;
         
         FastaSequences Fasta;
-        
-        ifstream thisFile(iFileArg);
-        
-        
-        while (getline (thisFile, newLine)) {
+
+        ifstream stream(iFileArg);
+
+        unsigned char buffer[2];
+        stream.read( (char*)(&buffer[0]), 2 ) ;            
+
+
+        stream.clear();
+        stream.seekg(0, stream.beg);
+
+  		if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) {
+
+			stream.close();
+
+			string fileData;  
+			if (!loadBinaryFile(iFileArg, fileData)) {  
+    			printf( "Error loading input file." );  
+  			}  
+			
+			string data;
+  			if (!gzipInflate(fileData, data)) {  
+    			printf( "Error decompressing input file." );   
+    			
+    		}  		
+  			
+			istringstream my_stream(data);
+ 
+			while (getline (my_stream, newLine)) {
+ 
+				// If my_stream is not empty
+				if (my_stream) {
+			
+					 switch (newLine[0]) {
+					
+						case '>': {
+					
+							if (idx> 0 ) {
+						
+								Fasta.appendFasta(fastaHeader,fastaSequence);
+								fastaSequence = "";
+						
+							}
+					
+							fastaHeader = newLine;
+							idx++;
+					
+							break;
+						}
+						case '\n':{
+					
+							break;
+						}
+						case ' ':{
+					
+							break;
+						}
+						default: {
+					
+							fastaSequence.append(newLine);
+					
+						}
+					}       
+				}
+ 
+				// Else print not successful
+				else {
+					cout << "Gzip stream not successful.";
+				}
+    		}
+    		
+    	} else {
+    	
+    		while (getline (stream, newLine)) {
             
-            switch (newLine[0]) {
-                    
-                case '>': {
-                    
-                    if (idx> 0 ) {
-                        
-                        Fasta.appendFasta(fastaHeader,fastaSequence);
-                        fastaSequence = "";
-                        
-                    }
-                    
-                    fastaHeader = newLine;
-                    idx++;
-                    
-                    break;
-                }
-                case '\n':{
-                    
-                    break;
-                }
-                case ' ':{
-                    
-                    break;
-                }
-                default: {
-                    
-                    fastaSequence.append(newLine);
-                    
-                }
-            }
+				switch (newLine[0]) {
+					
+					case '>': {
+					
+						if (idx> 0 ) {
+						
+							Fasta.appendFasta(fastaHeader,fastaSequence);
+							fastaSequence = "";
+						
+						}
+					
+						fastaHeader = newLine;
+						idx++;
+					
+						break;
+					}
+					case '\n':{
+					
+						break;
+					}
+					case ' ':{
+					
+						break;
+					}
+					default: {
+					
+						fastaSequence.append(newLine);
+					
+					}
+					
+				}
             
-        }
+        	}
+    	
+    	}	
         
         Fasta.appendFasta(fastaHeader,fastaSequence);
         
-        thisFile.close();
+        stream.close();
         
         return Fasta;
         
