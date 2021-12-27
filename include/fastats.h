@@ -358,10 +358,12 @@ public:
         
         sort(scaffLens.begin(), scaffLens.end(), greater<int>());
         
-        int scaffSum = 0;
+        long long int scaffSum = 0;
         
         for(int i = 0; i < fastaSequences.getScaffN(); i++) {
+            
             scaffSum += scaffLens[i];
+            
             if (scaffSum >= fastaSequences.getTotScaffLen() / 2 && scaffN50 < scaffLens[i]) {
                 
                 scaffN50 = scaffLens[i];
