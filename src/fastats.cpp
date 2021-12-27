@@ -106,7 +106,7 @@ int main(int argc, char **argv) {
         
     }
     
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = chrono::high_resolution_clock::now();
     
     if (cmd_flag) {
         
@@ -122,14 +122,13 @@ int main(int argc, char **argv) {
     FastaSequences fastaSequences;
     
     fastaSequences = iFile.Read(iFileArg);
-    int fastaSequencesN = fastaSequences.getScaffN();
     
     int counter = 0;
     FastaSequence fastaSequence;
     
     if (seqReport_flag) {
         
-        while (counter < fastaSequencesN) {
+        while (counter < fastaSequences.getScaffN()) {
             
             fastaSequence = fastaSequences.getFastaSequences(counter);
             
@@ -157,64 +156,34 @@ int main(int argc, char **argv) {
     
     if (stats_flag) {
         
-        long long int totScaffLen = 0; 
-        int scaffN50 = 0, scaffNG50 = 0, totGapLen = 0, gapN = 0;
-        
-        std::vector<int> scaffLens;
-        
-        while (counter < fastaSequencesN) {
+        while (counter < fastaSequences.getScaffN()) {
             
             fastaSequence = fastaSequences.getFastaSequences(counter);
-            scaffLens.push_back(fastaSequence.getFastaSeqLen());
             
-            totScaffLen += scaffLens[counter];
-            totGapLen += fastaSequence.gapSum();
-            gapN += fastaSequence.gapN();
+            fastaSequences.increaseTotScaffLen(fastaSequence.getFastaSeqLen());
+            fastaSequences.increaseTotGapLen(fastaSequence.gapSum());
+            fastaSequences.increaseGapN(fastaSequence.gapN());
+            fastaSequences.recordScaffLen(fastaSequence.getFastaSeqLen());
             
             counter++;
             
         }
         
-        counter = 0;
+        fastaSequences.computeScaffN50(gSize, fastaSequences);
         
-        sort(scaffLens.begin(), scaffLens.end(), greater<int>());
-        
-        int scaffSum = 0;
-        
-        for(int i = 0; i < fastaSequencesN; i++) {
-            scaffSum += scaffLens[i];
-            if (scaffSum >= totScaffLen / 2 && scaffN50 < scaffLens[i]) {
-                
-                scaffN50 = scaffLens[i];
-                
-            }
-            
-            if (gSize > 0 && scaffSum >= gSize / 2 && scaffNG50 < scaffLens[i]) {
-                
-                scaffNG50 = scaffLens[i];
-            }
-            
-            if (scaffN50 >= scaffLens[i] && scaffNG50 >= scaffLens[i]) {
-                
-                break;
-                
-            }
-            
-        }
-        
-        cout<<output("N scaffold")<<fastaSequencesN<<endl;
-        cout<<output("Total length")<<totScaffLen<<endl;
-        cout<<output("Scaffold N50")<<scaffN50<<endl;
+        cout<<output("N scaffold")<<fastaSequences.getScaffN()<<endl;
+        cout<<output("Total length")<<fastaSequences.getTotScaffLen()<<endl;
+        cout<<output("Scaffold N50")<<fastaSequences.getScaffN50()<<endl;
         
         if (gSize > 0) {
             
-            cout<<output("Scaffold NG50")<<scaffNG50<<endl;
+            cout<<output("Scaffold NG50")<<fastaSequences.getScaffNG50()<<endl;
             
         }
         
-        cout<<output("Largest scaffold")<<scaffLens[0]<<endl;
-        cout<<output("Total gap length")<<totGapLen<<endl;
-        cout<<output("Number of Gaps")<<gapN<<endl;
+        cout<<output("Largest scaffold")<<fastaSequences.getLargestScaffold()<<endl;
+        cout<<output("Total gap length")<<fastaSequences.getTotGapLen()<<endl;
+        cout<<output("Number of Gaps")<<fastaSequences.getTotGapN()<<endl;
         
         counter = 0;
         
@@ -222,9 +191,9 @@ int main(int argc, char **argv) {
     
     if (verbose_flag) {
         
-        auto finish = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = finish - start;
-        std::cout << "\nElapsed time: " << elapsed.count() << " s\n";
+        auto finish = chrono::high_resolution_clock::now();
+        chrono::duration<double> elapsed = finish - start;
+        cout << "\nElapsed time: " << elapsed.count() << " s\n";
         
         
     }
