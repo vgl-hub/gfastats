@@ -17,9 +17,33 @@
 
 using namespace std;
 
+//global
+static auto start = chrono::high_resolution_clock::now();
+
 //functions
 bool isN(char base){
     return (base == 'N' || base == 'n' || base == 'X');
+}
+
+double elapsedTime(){
+    
+    auto finish = chrono::high_resolution_clock::now();
+    chrono::duration<double> elapsed = finish - start;
+    start = chrono::high_resolution_clock::now();
+    
+    return elapsed.count();
+    
+}
+
+void verbose(int verbose_flag, string msg) {
+    
+    if(verbose_flag) {
+        
+        cout << msg<< " (done in " << elapsedTime() << " s).\n";
+        
+        elapsedTime();
+    
+    }
 }
 
 int interval(std::vector<int> intervalVec, char op){
@@ -54,24 +78,6 @@ int interval(std::vector<int> intervalVec, char op){
     return value;
     
 }
-
-// string convertToString(char* a, char type)
-// {
-//
-//     if (type){
-//
-//         s = "ss";
-//
-//     } else {
-//
-//         strig(a);
-//
-//     }
-//
-//     cout<<s;
-//
-//     return s;
-// }
 
 static int tabular_flag;
 string output(string output){
@@ -179,7 +185,7 @@ private:
     string fastaHeader;
     string fastaSequence;
     string fastaComment;
-    std::vector<int> fastaGaps;
+    vector<int> fastaGaps;
     
 public:
     
@@ -195,7 +201,7 @@ public:
         fastaSequence = s;
     }
     
-    void setFastaGaps(std::vector<int> g) {
+    void setFastaGaps(vector<int> g) {
         fastaGaps = g;
     }
     
@@ -219,7 +225,7 @@ public:
         
         unsigned int pos = 1;
         bool wasN = false;
-        std::vector<int> fastaGaps;
+        vector<int> fastaGaps;
         
         for (char base : s) {
             
@@ -292,10 +298,35 @@ public:
             
         }
         
+        verbose(verbose_flag, "Header, comment, and fasta sequence read");
+        
         fastaSeq.setFastaSequence(s);
+        
+        verbose(verbose_flag, "Fasta sequence set");
+        
         fastaSeq.TraverseFastaSequence(s);
         
+        verbose(verbose_flag, "Traversed fasta sequence");
+        
         newFasta.push_back(fastaSeq);
+        
+        verbose(verbose_flag, "Fasta sequence added to fasta sequence vector");
+        
+        increaseTotScaffLen(fastaSeq.getFastaSeqLen());
+        
+        verbose(verbose_flag, "Increased total scaffold length");
+        
+        increaseTotGapLen(fastaSeq.gapSum());
+        
+        verbose(verbose_flag, "Increased total gap length");
+        
+        increaseGapN(fastaSeq.gapN());
+        
+        verbose(verbose_flag, "Increased total number of gaps");
+        
+        recordScaffLen(fastaSeq.getFastaSeqLen());
+        
+        verbose(verbose_flag, "Recorded length of fasta sequence");
         
     }
     
@@ -311,45 +342,45 @@ public:
         return newFasta.size();
         
     }
-
+    
     void increaseTotScaffLen(int ScaffLen) {
-
+        
         totScaffLen += ScaffLen;
         
     }
     
     long long int getTotScaffLen() {
-
+        
         return totScaffLen;
         
     }
     
     void increaseTotGapLen(int GapLen) {
-
+        
         totGapLen += GapLen;
         
     }
     
     int getTotGapLen() {
-
+        
         return totGapLen;
         
     }
     
     void increaseGapN(int GapN) {
-
+        
         gapN += GapN;
         
     }
     
     int getTotGapN() {
-
+        
         return gapN;
         
     }
     
     void recordScaffLen(int seqLen) {
-    
+        
         scaffLens.push_back(seqLen);
         
     }
@@ -386,19 +417,19 @@ public:
     }
     
     int getScaffN50() {
-
+        
         return scaffN50;
         
     }
     
     int getScaffNG50() {
-
+        
         return scaffNG50;
         
     }
     
     int getLargestScaffold() {
-
+        
         return scaffLens[0];
         
     }

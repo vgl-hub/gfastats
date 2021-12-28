@@ -5,6 +5,10 @@
 //Created by Giulio Formenti on 12/17/21.
 //
 
+//global
+static int verbose_flag;
+static int seqReport_flag;
+
 #include <fastats.h>
 
 int main(int argc, char **argv) {
@@ -18,9 +22,7 @@ int main(int argc, char **argv) {
     static int outSequence_flag;
     
     static int stats_flag;
-    static int seqReport_flag;
-    
-    static int verbose_flag;
+
     static int cmd_flag;
     
     if (argc == 1) {
@@ -106,8 +108,6 @@ int main(int argc, char **argv) {
         
     }
     
-    auto start = chrono::high_resolution_clock::now();
-    
     if (cmd_flag) {
         
         arg_counter = -1;
@@ -119,9 +119,16 @@ int main(int argc, char **argv) {
     }
     
     FastaFile iFile;
+    
+    verbose(verbose_flag, "File object generated");
+    
     FastaSequences fastaSequences;
+
+    verbose(verbose_flag, "Fasta sequence object generated");
     
     fastaSequences = iFile.Read(iFileArg);
+    
+    verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     
     int counter = 0;
     FastaSequence fastaSequence;
@@ -156,20 +163,9 @@ int main(int argc, char **argv) {
     
     if (stats_flag) {
         
-        while (counter < fastaSequences.getScaffN()) {
-            
-            fastaSequence = fastaSequences.getFastaSequences(counter);
-            
-            fastaSequences.increaseTotScaffLen(fastaSequence.getFastaSeqLen());
-            fastaSequences.increaseTotGapLen(fastaSequence.gapSum());
-            fastaSequences.increaseGapN(fastaSequence.gapN());
-            fastaSequences.recordScaffLen(fastaSequence.getFastaSeqLen());
-            
-            counter++;
-            
-        }
-        
         fastaSequences.computeScaffN50(gSize, fastaSequences);
+        
+        verbose(verbose_flag, "Computed scaffN50");
         
         cout<<output("N scaffold")<<fastaSequences.getScaffN()<<endl;
         cout<<output("Total length")<<fastaSequences.getTotScaffLen()<<endl;
@@ -189,14 +185,7 @@ int main(int argc, char **argv) {
         
     }
     
-    if (verbose_flag) {
-        
-        auto finish = chrono::high_resolution_clock::now();
-        chrono::duration<double> elapsed = finish - start;
-        cout << "\nElapsed time: " << elapsed.count() << " s\n";
-        
-        
-    }
+    verbose(verbose_flag, "Generated output");
     
     exit(EXIT_SUCCESS);
     
