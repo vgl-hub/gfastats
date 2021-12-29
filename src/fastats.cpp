@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
             
             {"stats", no_argument, 0, 's'},
             {"seq-report", no_argument, &seqReport_flag, 1},
-            {"tabular", no_argument, 0, 'v'},
+            {"tabular", no_argument, 0, 't'},
             
             {"verbose", no_argument, 0, 'v'},
             {"cmd", no_argument, &cmd_flag, 1},

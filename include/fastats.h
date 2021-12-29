@@ -202,19 +202,16 @@ public:
                 
             }
             
-            if(pos == (s.length()-1) && wasN && isN(base)) { // end of scaffold
-                
-                pushbackGap = true;
-                pos++;
-                
-            }
-            
             if (pushbackGap) {
-                
-                cout<<"g: "<<pos<<"\n";
                 
                 fastaGapBoundaries.push_back(pos);
                 pushbackGap = false;
+                
+            }
+            
+            if(pos == (s.length()-1) && isN(base)) { // end of scaffold
+                
+                fastaGapBoundaries.push_back(pos+1);
                 
             }
             
@@ -259,7 +256,7 @@ public:
                 
             }
             
-            if (newFastaContigBoundaries[fastaGapBoundaries.size()] != fastaSequence.size()) {
+            if (newFastaContigBoundaries[newFastaContigBoundaries.size()-1] != fastaSequence.size()) {
                 
                 newFastaContigBoundaries.insert(newFastaContigBoundaries.end(), fastaSequence.size());
                 
@@ -269,21 +266,13 @@ public:
                 
             }
             
-        }
-        
-        else {
+        }else{
             
             newFastaContigBoundaries = {0, (unsigned int) fastaSequence.size()};
             
         }
         
         fastaContigBoundaries = newFastaContigBoundaries;
-        
-        for (unsigned int bound : newFastaContigBoundaries) {
-            
-            cout<<bound<<endl;
-            
-        }
         
     }
     
