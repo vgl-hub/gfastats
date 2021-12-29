@@ -1,6 +1,5 @@
 //
 //fastats.cpp
-//xcode
 //
 //Created by Giulio Formenti on 12/17/21.
 //
@@ -12,10 +11,10 @@ static int seqReport_flag;
 #include <fastats.h>
 
 int main(int argc, char **argv) {
-    int c;
-    int arg_counter;
-    int pos_op = 1;
-    int gSize = 0;
+    short int c;
+    short unsigned int arg_counter;
+    short unsigned int pos_op = 1;
+    unsigned long long int gSize = 0;
     
     string iFileArg;
     
@@ -65,7 +64,6 @@ int main(int argc, char **argv) {
                 if (pos_op == 1) {iFileArg = optarg; pos_op++;}
                 else if (pos_op == 2) {gSize = atoi(optarg); pos_op++;}
                 else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
-                break;
                 
             case 0:
                 break;
@@ -130,7 +128,7 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     
-    int counter = 0;
+    unsigned int counter = 0;
     FastaSequence fastaSequence;
     
     if (seqReport_flag) {
@@ -143,8 +141,8 @@ int main(int argc, char **argv) {
             cout<<"Header: "<<fastaSequence.getFastaHeader()<<endl;
             cout<<"Comment: "<<fastaSequence.getFastaComment()<<endl;
             cout<<"Sequence length: "<<fastaSequence.getFastaSeqLen()<<endl;
-            cout<<"Total gap length: "<<fastaSequence.gapSum()<<endl;
-            cout<<"Number of Gaps: "<<fastaSequence.gapN()<<endl;
+//            cout<<"Total gap length: "<<fastaSequence.gapSum()<<endl;
+//            cout<<"Number of Gaps: "<<fastaSequence.gapN()<<endl;
             
             if (outSequence_flag) {
                 
@@ -163,20 +161,27 @@ int main(int argc, char **argv) {
     
     if (stats_flag) {
         
-        fastaSequences.computeScaffN50(gSize, fastaSequences);
-        
         verbose(verbose_flag, "Computed scaffN50");
         
-        cout<<output("N scaffold")<<fastaSequences.getScaffN()<<endl;
+        cout<<output("N scaffolds")<<fastaSequences.getScaffN()<<endl;
         cout<<output("Total length")<<fastaSequences.getTotScaffLen()<<endl;
-        cout<<output("Scaffold N50")<<fastaSequences.getScaffN50()<<endl;
+        fastaSequences.setAverageScaffLen();
+        printf("%s%.2f\n",output("Average scaffold length").c_str(), fastaSequences.getAverageScaffLen());
+        cout<<output("Scaffold N50")<<fastaSequences.getScaffN50(gSize)<<endl;
         
         if (gSize > 0) {
             
             cout<<output("Scaffold NG50")<<fastaSequences.getScaffNG50()<<endl;
             
         }
+        cout<<output("N contigs")<<fastaSequences.getContigN()<<endl;
+        cout<<output("Contig N50")<<fastaSequences.getContigN50(gSize)<<endl;
         
+        if (gSize > 0) {
+            
+            cout<<output("Contig NG50")<<fastaSequences.getContigNG50()<<endl;
+            
+        }
         cout<<output("Largest scaffold")<<fastaSequences.getLargestScaffold()<<endl;
         cout<<output("Total gap length")<<fastaSequences.getTotGapLen()<<endl;
         cout<<output("Number of Gaps")<<fastaSequences.getTotGapN()<<endl;

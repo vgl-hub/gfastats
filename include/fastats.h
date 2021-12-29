@@ -35,51 +35,40 @@ double elapsedTime(){
     
 }
 
-void verbose(int verbose_flag, string msg) {
+void verbose(short int verbose_flag, string msg) {
     
     if(verbose_flag) {
         
         cout << msg<< " (done in " << elapsedTime() << " s).\n";
         
         elapsedTime();
-    
+        
     }
 }
 
-int interval(std::vector<int> intervalVec, char op){
+vector<unsigned int> bedIntervalSizes(vector<unsigned int> intervalVec){
     
-    int value = 0;
+    vector<unsigned int> intervalVecLens;
+    intervalVecLens.reserve(200);
     
     if (!intervalVec.empty()){
-        vector<int>::const_iterator end = intervalVec.cend();
+        vector<unsigned int>::const_iterator end = intervalVec.cend();
         
-        for (vector<int>::const_iterator it = intervalVec.cbegin(); it != end;) {
+        for (vector<unsigned int>::const_iterator it = intervalVec.cbegin(); it != end;) {
             
-            switch (op) {
-                    
-                case 's': { // sum
-                    
-                    value += *(it+1) - *it;
-                    break;
-                }
-                    
-                case 'c': { // count
-                    
-                    value ++;
-                    break;
-                }
-                    
-            }
+            intervalVecLens.push_back(*(it+1) - *it);
             
             it = it + 2;
+            
         }
+        
     }
     
-    return value;
+    return intervalVecLens;
     
 }
 
-static int tabular_flag;
+static short int tabular_flag;
 string output(string output){
     
     if (tabular_flag) {
@@ -96,8 +85,8 @@ string output(string output){
 }
 
 //zlib
-bool gzipInflate( const std::string& compressedBytes, std::string& uncompressedBytes ) {
-    if ( compressedBytes.size() == 0 ) {
+bool gzipInflate(const std::string& compressedBytes, std::string& uncompressedBytes) {
+    if (compressedBytes.size() == 0) {
         uncompressedBytes = compressedBytes ;
         return true ;
     }
@@ -108,7 +97,7 @@ bool gzipInflate( const std::string& compressedBytes, std::string& uncompressedB
     unsigned half_length = compressedBytes.size() / 2;
     
     unsigned uncompLength = full_length ;
-    char* uncomp = (char*) calloc( sizeof(char), uncompLength );
+    char* uncomp = (char*) calloc(sizeof(char), uncompLength);
     
     z_stream strm;
     strm.next_in = (Bytef *) compressedBytes.c_str();
@@ -120,18 +109,18 @@ bool gzipInflate( const std::string& compressedBytes, std::string& uncompressedB
     bool done = false ;
     
     if (inflateInit2(&strm, (16+MAX_WBITS)) != Z_OK) {
-        free( uncomp );
+        free(uncomp);
         return false;
     }
     
     while (!done) {
         // If our output buffer is too small
-        if (strm.total_out >= uncompLength ) {
+        if (strm.total_out >= uncompLength) {
             // Increase size of output buffer
-            char* uncomp2 = (char*) calloc( sizeof(char), uncompLength + half_length );
-            memcpy( uncomp2, uncomp, uncompLength );
+            char* uncomp2 = (char*) calloc(sizeof(char), uncompLength + half_length);
+            memcpy(uncomp2, uncomp, uncompLength);
             uncompLength += half_length ;
-            free( uncomp );
+            free(uncomp);
             uncomp = uncomp2 ;
         }
         
@@ -147,32 +136,32 @@ bool gzipInflate( const std::string& compressedBytes, std::string& uncompressedB
     }
     
     if (inflateEnd (&strm) != Z_OK) {
-        free( uncomp );
+        free(uncomp);
         return false;
     }
     
-    for ( size_t i=0; i<strm.total_out; ++i ) {
-        uncompressedBytes += uncomp[ i ];
+    for (size_t i=0; i<strm.total_out; ++i) {
+        uncompressedBytes += uncomp[i];
     }
-    free( uncomp );
+    free(uncomp);
     return true ;
 }
 
 /* Reads a file into memory. */
-bool loadBinaryFile( const std::string& filename, std::string& contents ) {
+bool loadBinaryFile(const std::string& filename, std::string& contents) {
     // Open the gzip file in binary mode
-    FILE* f = fopen( filename.c_str(), "rb" );
-    if ( f == NULL )
+    FILE* f = fopen(filename.c_str(), "rb");
+    if (f == NULL)
         return false ;
     
     // Clear existing bytes in output vector
     contents.clear();
     
     // Read all the bytes in the file
-    int c = fgetc( f );
-    while ( c != EOF ) {
+    int c = fgetc(f);
+    while (c != EOF) {
         contents +=  (char) c ;
-        c = fgetc( f );
+        c = fgetc(f);
     }
     fclose (f);
     
@@ -185,9 +174,58 @@ private:
     string fastaHeader;
     string fastaSequence;
     string fastaComment;
-    vector<int> fastaGaps;
+    vector<unsigned int> fastaContigBoundaries;
+    vector<unsigned int> fastaGapBoundaries;
     
 public:
+    
+    void TraverseFastaSequence(string s) {
+        
+        unsigned int pos = 0;
+        bool wasN = false, pushbackGap = false;
+        vector<unsigned int> fastaGapBoundaries;
+        fastaGapBoundaries.reserve(200);
+        
+        for (char base : s) {
+            
+            if (isN(base) && !wasN) { // gap start
+                
+                pushbackGap = true;
+                
+                wasN = true;
+                
+            }else if (wasN && !isN(base)) { // internal gap end
+                
+                pushbackGap = true;
+                
+                wasN = false;
+                
+            }
+            
+            if(pos == (s.length()-1) && wasN && isN(base)) { // end of scaffold
+                
+                pushbackGap = true;
+                pos++;
+                
+            }
+            
+            if (pushbackGap) {
+                
+                cout<<"g: "<<pos<<"\n";
+                
+                fastaGapBoundaries.push_back(pos);
+                pushbackGap = false;
+                
+            }
+            
+            pos++;
+            
+        }
+        
+        setFastaGapBoundaries(fastaGapBoundaries);
+        setFastaContigBoundaries(fastaGapBoundaries);
+        
+    }
     
     void setFastaHeader(string h) {
         fastaHeader = h;
@@ -201,8 +239,56 @@ public:
         fastaSequence = s;
     }
     
-    void setFastaGaps(vector<int> g) {
-        fastaGaps = g;
+    void setFastaContigBoundaries(vector<unsigned int> fastaGapBoundaries) {
+        
+        vector<unsigned int> newFastaContigBoundaries;
+        
+        newFastaContigBoundaries.reserve(fastaGapBoundaries.size() + 2);
+        
+        if (fastaGapBoundaries.size() > 0) {
+            
+            newFastaContigBoundaries = fastaGapBoundaries;
+            
+            if (fastaGapBoundaries[0] != 0) {
+                
+                newFastaContigBoundaries.insert(newFastaContigBoundaries.begin(), 0);
+                
+            }else{
+                
+                newFastaContigBoundaries.erase(newFastaContigBoundaries.begin());
+                
+            }
+            
+            if (newFastaContigBoundaries[fastaGapBoundaries.size()] != fastaSequence.size()) {
+                
+                newFastaContigBoundaries.insert(newFastaContigBoundaries.end(), fastaSequence.size());
+                
+            }else{
+                
+                newFastaContigBoundaries.pop_back();
+                
+            }
+            
+        }
+        
+        else {
+            
+            newFastaContigBoundaries = {0, (unsigned int) fastaSequence.size()};
+            
+        }
+        
+        fastaContigBoundaries = newFastaContigBoundaries;
+        
+        for (unsigned int bound : newFastaContigBoundaries) {
+            
+            cout<<bound<<endl;
+            
+        }
+        
+    }
+    
+    void setFastaGapBoundaries(vector<unsigned int> g) {
+        fastaGapBoundaries = g;
     }
     
     string getFastaHeader() {
@@ -217,52 +303,36 @@ public:
         return fastaSequence;
     }
     
-    int getFastaSeqLen() {
+    unsigned int getFastaSeqLen() {
         return fastaSequence.size();
     }
     
-    void TraverseFastaSequence(string s) {
-        
-        unsigned int pos = 1;
-        bool wasN = false;
-        vector<int> fastaGaps;
-        
-        for (char base : s) {
-            
-            if (isN(base) && !wasN) { // gap start
-                
-                fastaGaps.push_back(pos);
-                
-                wasN = true;
-                
-            }else if(isN(base) && wasN && pos == s.length()) { // end of scaffold
-                
-                fastaGaps.push_back(pos+1);
-                
-            }
-            
-            if (!(isN(base)) && wasN) { // end of internal gap
-                
-                wasN = false;
-                
-                fastaGaps.push_back(pos);
-            }
-            
-            pos++;
-        }
-        
-        setFastaGaps(fastaGaps);
-        
+    vector<unsigned int> getFastaContigs() {
+        return fastaContigBoundaries;
     }
     
-    int gapSum() {
+    vector<unsigned int> getFastaContigLens() {
         
-        return interval(fastaGaps,'s');
+        return bedIntervalSizes(fastaContigBoundaries);
     }
     
-    int gapN() {
+    vector<unsigned int> getFastaGaps() {
+        return fastaGapBoundaries;
+    }
+    
+    unsigned int getGapSum() {
         
-        return interval(fastaGaps,'c');
+        unsigned int gapSum = 0;
+        
+        for (auto& g : bedIntervalSizes(fastaGapBoundaries))
+            gapSum += g;
+        
+        return gapSum;
+    }
+    
+    unsigned int getGapN() {
+        
+        return bedIntervalSizes(fastaGapBoundaries).size();
     }
     
 };
@@ -272,13 +342,17 @@ class FastaSequences {
 private:
     vector<FastaSequence> newFasta = vector<FastaSequence>();
     
-    vector<int> scaffLens;
+    vector<unsigned int> scaffLens;
+    
+    vector<unsigned int> contigLens;
     
     FastaSequence fastaSeq;
     
-    long long int totScaffLen = 0;
+    unsigned long long int totScaffLen = 0;
     
-    int totGapLen = 0, gapN = 0, scaffN50 = 0, scaffNG50 = 0;
+    unsigned int totGapLen = 0, gapN = 0, scaffN50 = 0, scaffNG50 = 0, contigN50 = 0, contigNG50 = 0;
+    
+    double AverageScaffLen = 0;
     
     string h;
     char *c;
@@ -300,6 +374,8 @@ public:
         
         verbose(verbose_flag, "Header, comment, and fasta sequence read");
         
+        verbose(verbose_flag, "Processing scaffold: "+h);
+        
         fastaSeq.setFastaSequence(s);
         
         verbose(verbose_flag, "Fasta sequence set");
@@ -316,86 +392,104 @@ public:
         
         verbose(verbose_flag, "Increased total scaffold length");
         
-        increaseTotGapLen(fastaSeq.gapSum());
-        
-        verbose(verbose_flag, "Increased total gap length");
-        
-        increaseGapN(fastaSeq.gapN());
-        
-        verbose(verbose_flag, "Increased total number of gaps");
-        
         recordScaffLen(fastaSeq.getFastaSeqLen());
         
         verbose(verbose_flag, "Recorded length of fasta sequence");
         
+        recordContigLens(fastaSeq.getFastaContigLens());
+        
+        verbose(verbose_flag, "Recorded length of contigs in fasta sequence");
+        
+        increaseTotGapLen(fastaSeq.getGapSum());
+        
+        verbose(verbose_flag, "Increased total gap length");
+        
+        increaseGapN(fastaSeq.getGapN());
+        
+        verbose(verbose_flag, "Increased total number of gaps");
+        
+        verbose(verbose_flag, "\n");
+        
     }
     
-    FastaSequence getFastaSequences(int idx) {
+    FastaSequence getFastaSequences(unsigned int idx) {
         
         FastaSequence fastaSequence = newFasta[idx];
         return fastaSequence;
         
     }
     
-    int getScaffN() {
+    unsigned int getScaffN() {
         
         return newFasta.size();
         
     }
     
-    void increaseTotScaffLen(int ScaffLen) {
+    void increaseTotScaffLen(unsigned int ScaffLen) {
         
         totScaffLen += ScaffLen;
         
     }
     
-    long long int getTotScaffLen() {
+    unsigned long long int getTotScaffLen() {
         
         return totScaffLen;
         
     }
     
-    void increaseTotGapLen(int GapLen) {
+    void increaseTotGapLen(unsigned int GapLen) {
         
         totGapLen += GapLen;
         
     }
     
-    int getTotGapLen() {
+    unsigned int getTotGapLen() {
         
         return totGapLen;
         
     }
     
-    void increaseGapN(int GapN) {
+    void increaseGapN(unsigned int GapN) {
         
         gapN += GapN;
         
     }
     
-    int getTotGapN() {
+    unsigned int getTotGapN() {
         
         return gapN;
         
     }
     
-    void recordScaffLen(int seqLen) {
+    void recordScaffLen(unsigned int seqLen) {
         
         scaffLens.push_back(seqLen);
         
     }
     
-    void computeScaffN50(int gSize, FastaSequences fastaSequences) {
+    void recordContigLens(vector <unsigned int> seqLens) {
         
-        sort(scaffLens.begin(), scaffLens.end(), greater<int>());
+        vector <unsigned int> newContigLens;
         
-        long long int scaffSum = 0;
+        newContigLens.reserve(contigLens.size() + seqLens.size());
+        newContigLens.insert(newContigLens.end(), contigLens.begin(), contigLens.end());
+        newContigLens.insert(newContigLens.end(), seqLens.begin(), seqLens.end());
         
-        for(int i = 0; i < fastaSequences.getScaffN(); i++) {
+        contigLens = newContigLens;
+        
+    }
+    
+    void computeScaffN50(unsigned int gSize) {
+        
+        sort(scaffLens.begin(), scaffLens.end(), greater<unsigned int>());
+        
+        unsigned long long int scaffSum = 0;
+        
+        for(unsigned int i = 0; i < getScaffN(); i++) {
             
             scaffSum += scaffLens[i];
             
-            if (scaffSum >= fastaSequences.getTotScaffLen() / 2 && scaffN50 < scaffLens[i]) {
+            if (scaffSum >= getTotScaffLen() / 2 && scaffN50 < scaffLens[i]) {
                 
                 scaffN50 = scaffLens[i];
                 
@@ -416,21 +510,86 @@ public:
         
     }
     
-    int getScaffN50() {
+    void computeContigN50(unsigned int gSize) {
+        
+        sort(contigLens.begin(), contigLens.end(), greater<unsigned int>());
+        
+        unsigned long long int contigSum = 0;
+        
+        for(unsigned int i = 0; i < contigLens.size(); i++) {
+            
+            contigSum += contigLens[i];
+            
+            if (contigSum >= getTotScaffLen() / 2 && contigN50 < contigLens[i]) {
+                
+                contigN50 = contigLens[i];
+                
+            }
+            
+            if (gSize > 0 && contigSum >= gSize / 2 && contigNG50 < contigLens[i]) {
+                
+                contigNG50 = contigLens[i];
+            }
+            
+            if (contigN50 >= contigLens[i] && contigNG50 >= contigLens[i]) {
+                
+                break;
+                
+            }
+            
+        }
+        
+    }
+    
+    unsigned int getScaffN50(unsigned long long int gSize) {
+        
+        computeScaffN50(gSize);
         
         return scaffN50;
         
     }
     
-    int getScaffNG50() {
+    unsigned int getScaffNG50() {
         
         return scaffNG50;
         
     }
     
-    int getLargestScaffold() {
+    unsigned int getContigN() {
+        
+        return contigLens.size();
+        
+    }
+    
+    unsigned int getContigN50(unsigned long long int gSize) {
+        
+        computeContigN50(gSize);
+        
+        return contigN50;
+        
+    }
+    
+    unsigned int getContigNG50() {
+        
+        return contigNG50;
+        
+    }
+    
+    unsigned int getLargestScaffold() {
         
         return scaffLens[0];
+        
+    }
+    
+    void setAverageScaffLen() {
+        
+        AverageScaffLen = (double) totScaffLen/scaffLens.size();
+        
+    }
+    
+    double getAverageScaffLen() {
+        
+        return AverageScaffLen;
         
     }
     
@@ -440,13 +599,13 @@ class FastaFile {
     
 public:
     
-    void ParseFasta(string newLine, FastaSequences &Fasta, string &fastaHeader, string &fastaSequence, int &idx) {
+    void ParseFasta(string newLine, FastaSequences &Fasta, string &fastaHeader, string &fastaSequence, unsigned int &idx) {
         
         switch (newLine[0]) {
                 
             case '>': {
                 
-                if (idx> 0 ) {
+                if (idx> 0) {
                     
                     Fasta.appendFasta(fastaHeader,fastaSequence);
                     fastaSequence = "";
@@ -479,14 +638,14 @@ public:
     FastaSequences Read(string iFileArg) {
         
         string newLine, fastaHeader, fastaSequence;
-        int idx = 0;
+        unsigned int idx = 0;
         
         FastaSequences Fasta;
         
         ifstream stream(iFileArg);
         
         unsigned char buffer[2];
-        stream.read( (char*)(&buffer[0]), 2 ) ;
+        stream.read((char*)(&buffer[0]), 2) ;
         
         
         stream.clear();
@@ -498,12 +657,12 @@ public:
             
             string fileData;
             if (!loadBinaryFile(iFileArg, fileData)) {
-                printf( "Error loading input file." );
+                printf("Error loading input file.");
             }
             
             string data;
             if (!gzipInflate(fileData, data)) {
-                printf( "Error decompressing input file." );
+                printf("Error decompressing input file.");
                 
             }
             
@@ -533,7 +692,6 @@ public:
             }
             
             stream.close();
-            
             
         }
         
