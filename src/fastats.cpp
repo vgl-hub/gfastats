@@ -176,10 +176,12 @@ int main(int argc, char **argv) {
         }
         cout<<output("N contigs")<<fastaSequences.getContigN()<<endl;
         cout<<output("Contig N50")<<fastaSequences.getContigN50(gSize)<<endl;
+        cout<<output("Contig N50")<<fastaSequences.getContigL50()<<endl;
         
         if (gSize > 0) {
             
             cout<<output("Contig NG50")<<fastaSequences.getContigNG50()<<endl;
+            cout<<output("Contig LG50")<<fastaSequences.getContigLG50()<<endl;
             
         }
         cout<<output("Largest scaffold")<<fastaSequences.getLargestScaffold()<<endl;

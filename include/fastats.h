@@ -339,7 +339,7 @@ private:
     
     unsigned long long int totScaffLen = 0;
     
-    unsigned int totGapLen = 0, gapN = 0, scaffN50 = 0, scaffNG50 = 0, contigN50 = 0, contigNG50 = 0;
+    unsigned int totGapLen = 0, gapN = 0, scaffN50 = 0, scaffNG50 = 0, contigN50 = 0, contigL50 = 0, contigNG50 = 0, contigLG50 = 0;
     
     double AverageScaffLen = 0;
     
@@ -512,12 +512,14 @@ public:
             if (contigSum >= getTotScaffLen() / 2 && contigN50 < contigLens[i]) {
                 
                 contigN50 = contigLens[i];
+                contigL50 = i;
                 
             }
             
             if (gSize > 0 && contigSum >= gSize / 2 && contigNG50 < contigLens[i]) {
                 
                 contigNG50 = contigLens[i];
+                contigLG50 = i;
             }
             
             if (contigN50 >= contigLens[i] && contigNG50 >= contigLens[i]) {
@@ -558,9 +560,21 @@ public:
         
     }
     
+    unsigned int getContigL50() {
+        
+        return contigL50;
+        
+    }
+    
     unsigned int getContigNG50() {
         
         return contigNG50;
+        
+    }
+
+    unsigned int getContigLG50() {
+        
+        return contigLG50;
         
     }
     
