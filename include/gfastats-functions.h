@@ -9,9 +9,6 @@
 #define gfastatsFunctions_h
 
 //functions
-bool isN(char base){
-    return (base == 'N' || base == 'n' || base == 'X');
-}
 
 double elapsedTime(){
     
@@ -65,7 +62,7 @@ std::string output(std::string output){
         
     }else{
         
-        output = output + ": ";
+        output = output + " ";
         
     }
     

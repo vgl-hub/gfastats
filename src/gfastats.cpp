@@ -138,16 +138,23 @@ int main(int argc, char **argv) {
             
             fastaSequence = fastaSequences.getFastaSequences(counter);
             
-            std::cout<<output("Seq ")<<counter+1<<std::endl;
-            std::cout<<output("Header: ")<<fastaSequence.getFastaHeader()<<std::endl;
-            std::cout<<output("Comment: ")<<fastaSequence.getFastaComment()<<std::endl;
+            std::cout<<output("Seq:")<<counter+1<<std::endl;
+            std::cout<<output("Header:")<<fastaSequence.getFastaHeader()<<std::endl;
+            std::cout<<output("Comment:")<<fastaSequence.getFastaComment()<<std::endl;
             std::cout<<output("Sequence length:")<<fastaSequence.getFastaSeqLen()<<std::endl;
-            std::cout<<output("Total gap length: ")<<fastaSequence.getGapSum()<<std::endl;
-            std::cout<<output("Number of Gaps: ")<<fastaSequence.getGapN()<<std::endl;
+            std::cout<<output("Total gap length:")<<fastaSequence.getGapSum()<<std::endl;
+            std::cout<<output("Number of Gaps:")<<fastaSequence.getGapN()<<std::endl;
+
+            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT):").c_str(), fastaSequence.getA(),
+                fastaSequence.getC(),
+                fastaSequence.getG(),
+                fastaSequence.getT());
+            printf("%s%.2f\n",output("GC content %:").c_str(), fastaSequence.computeGCcontent());
+
             
             if (outSequence_flag) {
                 
-                std::cout<<"Sequence: "<<fastaSequence.getFastaSequence()<<std::endl;
+                std::cout<<output("Sequence:")<<fastaSequence.getFastaSequence()<<std::endl;
                 
             }
             
@@ -158,36 +165,45 @@ int main(int argc, char **argv) {
         
         counter = 0;
         
+        std::cout<<output("+++Summary+++")<<std::endl;
+        
     }
     
     if (stats_flag) {
         
         verbose(verbose_flag, "Computed scaffN50");
         
-        std::cout<<output("N scaffolds")<<fastaSequences.getScaffN()<<std::endl;
-        std::cout<<output("Total length")<<fastaSequences.getTotScaffLen()<<std::endl;
-        fastaSequences.setAverageScaffLen();
-        printf("%s%.2f\n",output("Average scaffold length").c_str(), fastaSequences.getAverageScaffLen());
-        std::cout<<output("Scaffold N50")<<fastaSequences.getScaffN50(gSize)<<std::endl;
+        std::cout<<output("N scaffolds:")<<fastaSequences.getScaffN()<<std::endl;
+        std::cout<<output("Total length:")<<fastaSequences.getTotScaffLen()<<std::endl;
+        printf("%s%.2f\n",output("Average scaffold length:").c_str(), fastaSequences.computeAverageScaffLen());
+        std::cout<<output("Scaffold N50:")<<fastaSequences.getScaffN50(gSize)<<std::endl;
+        std::cout<<output("Scaffold L50:")<<fastaSequences.getScaffL50()<<std::endl;
         
         if (gSize > 0) {
             
-            std::cout<<output("Scaffold NG50")<<fastaSequences.getScaffNG50()<<std::endl;
+            std::cout<<output("Scaffold NG50:")<<fastaSequences.getScaffNG50()<<std::endl;
+            std::cout<<output("Scaffold LG50:")<<fastaSequences.getScaffLG50()<<std::endl;
             
         }
-        std::cout<<output("N contigs")<<fastaSequences.getContigN()<<std::endl;
-        std::cout<<output("Contig N50")<<fastaSequences.getContigN50(gSize)<<std::endl;
-        std::cout<<output("Contig N50")<<fastaSequences.getContigL50()<<std::endl;
+        std::cout<<output("N contigs:")<<fastaSequences.getContigN()<<std::endl;
+        std::cout<<output("Contig N50:")<<fastaSequences.getContigN50(gSize)<<std::endl;
+        std::cout<<output("Contig L50:")<<fastaSequences.getContigL50()<<std::endl;
         
         if (gSize > 0) {
             
-            std::cout<<output("Contig NG50")<<fastaSequences.getContigNG50()<<std::endl;
-            std::cout<<output("Contig LG50")<<fastaSequences.getContigLG50()<<std::endl;
+            std::cout<<output("Contig NG50:")<<fastaSequences.getContigNG50()<<std::endl;
+            std::cout<<output("Contig LG50:")<<fastaSequences.getContigLG50()<<std::endl;
             
         }
-        std::cout<<output("Largest scaffold")<<fastaSequences.getLargestScaffold()<<std::endl;
-        std::cout<<output("Total gap length")<<fastaSequences.getTotGapLen()<<std::endl;
-        std::cout<<output("Number of Gaps")<<fastaSequences.getTotGapN()<<std::endl;
+        std::cout<<output("Largest scaffold:")<<fastaSequences.getLargestScaffold()<<std::endl;
+        std::cout<<output("Total gap length:")<<fastaSequences.getTotGapLen()<<std::endl;
+        std::cout<<output("Number of Gaps:")<<fastaSequences.getTotGapN()<<std::endl;
+
+        printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT):").c_str(), fastaSequences.getTotA(),
+            fastaSequences.getTotC(),
+            fastaSequences.getTotG(),
+            fastaSequences.getTotT());
+        printf("%s%.2f\n",output("GC content %:").c_str(), fastaSequences.computeGCcontent());
         
         counter = 0;
         

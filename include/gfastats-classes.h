@@ -16,30 +16,92 @@ private:
     std::string fastaComment;
     std::vector<unsigned int> fastaContigBoundaries;
     std::vector<unsigned int> fastaGapBoundaries;
+    unsigned int A = 0, C = 0, G = 0, T = 0;
     
 public:
     
-    void TraverseFastaSequence(std::string s) {
+    void TraverseFastaSequence(std::string &s) {
         
-        unsigned int pos = 0;
+        unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0;
         bool wasN = false, pushbackGap = false;
         std::vector<unsigned int> fastaGapBoundaries;
         fastaGapBoundaries.reserve(200);
         
         for (char base : s) {
             
-            if (isN(base) && !wasN) { // gap start
-                
-                pushbackGap = true;
-                
-                wasN = true;
-                
-            }else if (wasN && !isN(base)) { // internal gap end
-                
-                pushbackGap = true;
-                
-                wasN = false;
-                
+            switch (base) {
+                    
+                case 'N':
+                case 'n':
+                case 'X': {
+                    
+                    if (!wasN) { // gap start
+                        
+                        pushbackGap = true;
+                        
+                    }
+                    
+                    if(pos == (s.length()-1)) { // end of scaffold
+                        
+                        if (!wasN){
+                            
+                            fastaGapBoundaries.push_back(pos);
+                            
+                        }
+                        
+                        pushbackGap = true;
+                        pos++;
+                        
+                    }
+                    
+                    wasN = true;
+                    
+                    break;
+                }
+                default: {
+                    
+                    if (wasN) { // internal gap end
+                        
+                        pushbackGap = true;
+                        
+                    }
+                    
+                    switch (base) {
+                        case 'A':
+                        case 'a':{
+                            
+                            A++;
+                            break;
+                            
+                        }
+                        case 'C':
+                        case 'c':{
+                         
+                            C++;
+                            break;
+                            
+                        }
+                        case 'G':
+                        case 'g': {
+                            
+                            G++;
+                            break;
+                            
+                        }
+                        case 'T':
+                        case 't': {
+                            
+                            T++;
+                            break;
+
+                        }
+                    
+                    }
+                    
+                    wasN = false;
+                    
+                }
+                    
             }
             
             if (pushbackGap) {
@@ -49,22 +111,17 @@ public:
                 
             }
             
-            if(pos == (s.length()-1) && isN(base)) { // end of scaffold
-                
-                fastaGapBoundaries.push_back(pos+1);
-                
-            }
-            
             pos++;
             
         }
         
         setFastaGapBoundaries(fastaGapBoundaries);
         setFastaContigBoundaries(fastaGapBoundaries);
+        setACGT(A, C, G, T);
         
     }
     
-    void setFastaHeader(std::string h) {
+    void setFastaHeader(std::string &h) {
         fastaHeader = h;
     }
     
@@ -72,11 +129,11 @@ public:
         fastaComment = c;
     }
     
-    void setFastaSequence(std::string s) {
+    void setFastaSequence(std::string &s) {
         fastaSequence = s;
     }
     
-    void setFastaContigBoundaries(std::vector<unsigned int> fastaGapBoundaries) {
+    void setFastaContigBoundaries(std::vector<unsigned int> &fastaGapBoundaries) {
         
         std::vector<unsigned int> newFastaContigBoundaries;
         
@@ -116,7 +173,7 @@ public:
         
     }
     
-    void setFastaGapBoundaries(std::vector<unsigned int> g) {
+    void setFastaGapBoundaries(std::vector<unsigned int> &g) {
         fastaGapBoundaries = g;
     }
     
@@ -164,6 +221,42 @@ public:
         return bedIntervalSizes(fastaGapBoundaries).size();
     }
     
+    void setACGT(unsigned int a, unsigned int c, unsigned int g, unsigned int t) {
+        
+        A = a;
+        C = c;
+        G = g;
+        T = t;
+        
+    }
+    
+    unsigned int getA() {
+        
+        return A;
+    }
+    
+    unsigned int getC() {
+        
+        return C;
+    }
+    
+    unsigned int getG() {
+        
+        return G;
+    }
+    
+    unsigned int getT() {
+        
+        return T;
+    }
+    
+    double computeGCcontent() {
+        
+        double GCcontent = (double) (G + C) / (G + C + A + T) * 100;
+    
+        return GCcontent;
+    }
+    
 };
 
 class FastaSequences {
@@ -175,13 +268,22 @@ private:
     
     std::vector<unsigned int> contigLens;
     
-    FastaSequence fastaSeq;
+    FastaSequence fastaSequence;
     
     unsigned long long int totScaffLen = 0;
     
-    unsigned int totGapLen = 0, gapN = 0, scaffN50 = 0, scaffNG50 = 0, contigN50 = 0, contigL50 = 0, contigNG50 = 0, contigLG50 = 0;
+    unsigned int
+    totGapLen = 0,
+    gapN = 0,
+    scaffN50 = 0, scaffNG50 = 0,
+    scaffL50 = 0, scaffLG50 = 0,
+    contigN50 = 0, contigNG50 = 0,
+    contigL50 = 0, contigLG50 = 0;
     
-    double AverageScaffLen = 0;
+    unsigned long int totA = 0;
+    unsigned long int totC = 0;
+    unsigned long int totG = 0;
+    unsigned long int totT = 0;
     
     std::string h;
     char *c;
@@ -191,13 +293,13 @@ public:
         
         h = std::string(strtok(strdup(hg.c_str())," ")); //process header line
         h.erase(0, 1);
-        fastaSeq.setFastaHeader(h);
+        fastaSequence.setFastaHeader(h);
         
         c = strtok(NULL,""); //process comment line
         
         if (c != NULL) {
             
-            fastaSeq.setFastaComment(std::string(c));
+            fastaSequence.setFastaComment(std::string(c));
             
         }
         
@@ -205,39 +307,43 @@ public:
         
         verbose(verbose_flag, "Processing scaffold: "+h);
         
-        fastaSeq.setFastaSequence(s);
+        fastaSequence.setFastaSequence(s);
         
         verbose(verbose_flag, "Fasta sequence set");
         
-        fastaSeq.TraverseFastaSequence(s);
+        fastaSequence.TraverseFastaSequence(s);
         
         verbose(verbose_flag, "Traversed fasta sequence");
         
-        newFasta.push_back(fastaSeq);
+        newFasta.push_back(fastaSequence);
         
         verbose(verbose_flag, "Fasta sequence added to fasta sequence std::vector");
         
-        increaseTotScaffLen(fastaSeq.getFastaSeqLen());
+        increaseTotScaffLen(fastaSequence.getFastaSeqLen());
         
         verbose(verbose_flag, "Increased total scaffold length");
         
-        recordScaffLen(fastaSeq.getFastaSeqLen());
+        recordScaffLen(fastaSequence.getFastaSeqLen());
         
         verbose(verbose_flag, "Recorded length of fasta sequence");
         
-        recordContigLens(fastaSeq.getFastaContigLens());
+        recordContigLens(fastaSequence.getFastaContigLens());
         
         verbose(verbose_flag, "Recorded length of contigs in fasta sequence");
         
-        increaseTotGapLen(fastaSeq.getGapSum());
+        increaseTotGapLen(fastaSequence.getGapSum());
         
         verbose(verbose_flag, "Increased total gap length");
         
-        increaseGapN(fastaSeq.getGapN());
+        increaseGapN(fastaSequence.getGapN());
         
         verbose(verbose_flag, "Increased total number of gaps");
+
+        increaseTotACGT(fastaSequence.getA(), fastaSequence.getC(), fastaSequence.getG(), fastaSequence.getT());
         
-        verbose(verbose_flag, "\n");
+        verbose(verbose_flag, "Increased ACGT counts");
+        
+        if(verbose_flag) {std::cout<<"\n";};
         
     }
     
@@ -245,12 +351,6 @@ public:
         
         FastaSequence fastaSequence = newFasta[idx];
         return fastaSequence;
-        
-    }
-    
-    unsigned int getScaffN() {
-        
-        return newFasta.size();
         
     }
     
@@ -321,12 +421,14 @@ public:
             if (scaffSum >= getTotScaffLen() / 2 && scaffN50 < scaffLens[i]) {
                 
                 scaffN50 = scaffLens[i];
+                scaffL50 = i;
                 
             }
             
             if (gSize > 0 && scaffSum >= gSize / 2 && scaffNG50 < scaffLens[i]) {
                 
                 scaffNG50 = scaffLens[i];
+                scaffLG50 = i;
             }
             
             if (scaffN50 >= scaffLens[i] && scaffNG50 >= scaffLens[i]) {
@@ -372,6 +474,12 @@ public:
         
     }
     
+    unsigned int getScaffN() {
+        
+        return newFasta.size();
+        
+    }
+    
     unsigned int getScaffN50(unsigned long long int gSize) {
         
         computeScaffN50(gSize);
@@ -383,6 +491,18 @@ public:
     unsigned int getScaffNG50() {
         
         return scaffNG50;
+        
+    }
+    
+    unsigned int getScaffL50() {
+        
+        return scaffL50;
+        
+    }
+    
+    unsigned int getScaffLG50() {
+        
+        return scaffLG50;
         
     }
     
@@ -399,19 +519,19 @@ public:
         return contigN50;
         
     }
-    
-    unsigned int getContigL50() {
-        
-        return contigL50;
-        
-    }
-    
+
     unsigned int getContigNG50() {
         
         return contigNG50;
         
     }
 
+    unsigned int getContigL50() {
+        
+        return contigL50;
+        
+    }
+    
     unsigned int getContigLG50() {
         
         return contigLG50;
@@ -424,16 +544,48 @@ public:
         
     }
     
-    void setAverageScaffLen() {
+    double computeAverageScaffLen() {
         
-        AverageScaffLen = (double) totScaffLen/scaffLens.size();
-        
-    }
-    
-    double getAverageScaffLen() {
+        double AverageScaffLen = (double) totScaffLen/scaffLens.size();
         
         return AverageScaffLen;
         
+    }
+    
+    void increaseTotACGT(unsigned int A, unsigned int C, unsigned int G, unsigned int T) {
+        
+        totA += A;
+        totC += C;
+        totG += G;
+        totT += T;
+        
+    }
+    
+    unsigned long int getTotA() {
+        
+        return totA;
+    }
+    
+    unsigned long int getTotC() {
+        
+        return totC;
+    }
+    
+    unsigned long int getTotG() {
+        
+        return totG;
+    }
+    
+    unsigned long int getTotT() {
+        
+        return totT;
+    }
+    
+    double computeGCcontent() {
+        
+        double GCcontent = (double) (totC + totG) / (totA + totC + totG + totT) * 100;
+    
+        return GCcontent;
     }
     
 };
