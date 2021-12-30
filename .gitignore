@@ -71,10 +71,10 @@ fastlane/test_output
 
 ### Xcode Patch ###
 *.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcodeproj/xcuserdata/
-!*.xcworkspace/contents.xcworkspacedata
+*.xcodeproj/project.pbxproj
+*.xcodeproj/xcshareddata/*
+*.xcodeproj/xcuserdata/*
+*.xcworkspace/contents.xcworkspacedata/*
 /*.gcno
 
 .DS_Store
