@@ -8,15 +8,16 @@
 static int verbose_flag;
 static int seqReport_flag;
 
-#include <fastats.h>
+#include <gfastats.h>
 
 int main(int argc, char **argv) {
+    
     short int c;
     short unsigned int arg_counter;
     short unsigned int pos_op = 1;
     unsigned long long int gSize = 0;
     
-    string iFileArg;
+    std::string iFileArg;
     
     static int outSequence_flag;
     
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
                         long_options, &option_index);
         
         if (c == -1) {
-            cout<<endl;
+            std::cout<<std::endl;
             break;
             
         }
@@ -137,20 +138,20 @@ int main(int argc, char **argv) {
             
             fastaSequence = fastaSequences.getFastaSequences(counter);
             
-            cout<<"Seq "<<counter+1<<endl;
-            cout<<"Header: "<<fastaSequence.getFastaHeader()<<endl;
-            cout<<"Comment: "<<fastaSequence.getFastaComment()<<endl;
-            cout<<"Sequence length: "<<fastaSequence.getFastaSeqLen()<<endl;
-//            cout<<"Total gap length: "<<fastaSequence.gapSum()<<endl;
-//            cout<<"Number of Gaps: "<<fastaSequence.gapN()<<endl;
+            std::cout<<output("Seq ")<<counter+1<<std::endl;
+            std::cout<<output("Header: ")<<fastaSequence.getFastaHeader()<<std::endl;
+            std::cout<<output("Comment: ")<<fastaSequence.getFastaComment()<<std::endl;
+            std::cout<<output("Sequence length:")<<fastaSequence.getFastaSeqLen()<<std::endl;
+            std::cout<<output("Total gap length: ")<<fastaSequence.getGapSum()<<std::endl;
+            std::cout<<output("Number of Gaps: ")<<fastaSequence.getGapN()<<std::endl;
             
             if (outSequence_flag) {
                 
-                cout<<"Sequence: "<<fastaSequence.getFastaSequence()<<endl;
+                std::cout<<"Sequence: "<<fastaSequence.getFastaSequence()<<std::endl;
                 
             }
             
-            cout<<endl;
+            std::cout<<std::endl;
             counter++;
             
         }
@@ -163,30 +164,30 @@ int main(int argc, char **argv) {
         
         verbose(verbose_flag, "Computed scaffN50");
         
-        cout<<output("N scaffolds")<<fastaSequences.getScaffN()<<endl;
-        cout<<output("Total length")<<fastaSequences.getTotScaffLen()<<endl;
+        std::cout<<output("N scaffolds")<<fastaSequences.getScaffN()<<std::endl;
+        std::cout<<output("Total length")<<fastaSequences.getTotScaffLen()<<std::endl;
         fastaSequences.setAverageScaffLen();
         printf("%s%.2f\n",output("Average scaffold length").c_str(), fastaSequences.getAverageScaffLen());
-        cout<<output("Scaffold N50")<<fastaSequences.getScaffN50(gSize)<<endl;
+        std::cout<<output("Scaffold N50")<<fastaSequences.getScaffN50(gSize)<<std::endl;
         
         if (gSize > 0) {
             
-            cout<<output("Scaffold NG50")<<fastaSequences.getScaffNG50()<<endl;
+            std::cout<<output("Scaffold NG50")<<fastaSequences.getScaffNG50()<<std::endl;
             
         }
-        cout<<output("N contigs")<<fastaSequences.getContigN()<<endl;
-        cout<<output("Contig N50")<<fastaSequences.getContigN50(gSize)<<endl;
-        cout<<output("Contig N50")<<fastaSequences.getContigL50()<<endl;
+        std::cout<<output("N contigs")<<fastaSequences.getContigN()<<std::endl;
+        std::cout<<output("Contig N50")<<fastaSequences.getContigN50(gSize)<<std::endl;
+        std::cout<<output("Contig N50")<<fastaSequences.getContigL50()<<std::endl;
         
         if (gSize > 0) {
             
-            cout<<output("Contig NG50")<<fastaSequences.getContigNG50()<<endl;
-            cout<<output("Contig LG50")<<fastaSequences.getContigLG50()<<endl;
+            std::cout<<output("Contig NG50")<<fastaSequences.getContigNG50()<<std::endl;
+            std::cout<<output("Contig LG50")<<fastaSequences.getContigLG50()<<std::endl;
             
         }
-        cout<<output("Largest scaffold")<<fastaSequences.getLargestScaffold()<<endl;
-        cout<<output("Total gap length")<<fastaSequences.getTotGapLen()<<endl;
-        cout<<output("Number of Gaps")<<fastaSequences.getTotGapN()<<endl;
+        std::cout<<output("Largest scaffold")<<fastaSequences.getLargestScaffold()<<std::endl;
+        std::cout<<output("Total gap length")<<fastaSequences.getTotGapLen()<<std::endl;
+        std::cout<<output("Number of Gaps")<<fastaSequences.getTotGapN()<<std::endl;
         
         counter = 0;
         

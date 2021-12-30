@@ -2,7 +2,7 @@ CC = g++
 
 CFLAGS  = -g -Wall -std=c++11 -O3 -I./include -I./zlib
 
-TARGET = fastats
+TARGET = gfastats
 BUILD_PATH = build
 SOURCE_PATH = src
 

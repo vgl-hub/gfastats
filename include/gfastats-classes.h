@@ -1,189 +1,29 @@
-#include <stdio.h>
-#include <stdlib.h>
+//
+//  gfastats-classes.h
+//  
+//
+//  Created by Giulio Formenti on 12/30/21.
+//
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-
-#include <unistd.h>
-#include <getopt.h>
-
-#include <vector>
-#include <algorithm>
-
-#include <chrono>
-
-#include "zlib.h"
-
-using namespace std;
-
-//global
-static auto start = chrono::high_resolution_clock::now();
-
-//functions
-bool isN(char base){
-    return (base == 'N' || base == 'n' || base == 'X');
-}
-
-double elapsedTime(){
-    
-    auto finish = chrono::high_resolution_clock::now();
-    chrono::duration<double> elapsed = finish - start;
-    start = chrono::high_resolution_clock::now();
-    
-    return elapsed.count();
-    
-}
-
-void verbose(short int verbose_flag, string msg) {
-    
-    if(verbose_flag) {
-        
-        cout << msg<< " (done in " << elapsedTime() << " s).\n";
-        
-        elapsedTime();
-        
-    }
-}
-
-vector<unsigned int> bedIntervalSizes(vector<unsigned int> intervalVec){
-    
-    vector<unsigned int> intervalVecLens;
-    intervalVecLens.reserve(200);
-    
-    if (!intervalVec.empty()){
-        vector<unsigned int>::const_iterator end = intervalVec.cend();
-        
-        for (vector<unsigned int>::const_iterator it = intervalVec.cbegin(); it != end;) {
-            
-            intervalVecLens.push_back(*(it+1) - *it);
-            
-            it = it + 2;
-            
-        }
-        
-    }
-    
-    return intervalVecLens;
-    
-}
-
-static short int tabular_flag;
-string output(string output){
-    
-    if (tabular_flag) {
-        
-        output = output + "\t";
-        
-    }else{
-        
-        output = output + ": ";
-        
-    }
-    
-    return output;
-}
-
-//zlib
-bool gzipInflate(const std::string& compressedBytes, std::string& uncompressedBytes) {
-    if (compressedBytes.size() == 0) {
-        uncompressedBytes = compressedBytes ;
-        return true ;
-    }
-    
-    uncompressedBytes.clear() ;
-    
-    unsigned full_length = compressedBytes.size() ;
-    unsigned half_length = compressedBytes.size() / 2;
-    
-    unsigned uncompLength = full_length ;
-    char* uncomp = (char*) calloc(sizeof(char), uncompLength);
-    
-    z_stream strm;
-    strm.next_in = (Bytef *) compressedBytes.c_str();
-    strm.avail_in = compressedBytes.size() ;
-    strm.total_out = 0;
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    
-    bool done = false ;
-    
-    if (inflateInit2(&strm, (16+MAX_WBITS)) != Z_OK) {
-        free(uncomp);
-        return false;
-    }
-    
-    while (!done) {
-        // If our output buffer is too small
-        if (strm.total_out >= uncompLength) {
-            // Increase size of output buffer
-            char* uncomp2 = (char*) calloc(sizeof(char), uncompLength + half_length);
-            memcpy(uncomp2, uncomp, uncompLength);
-            uncompLength += half_length ;
-            free(uncomp);
-            uncomp = uncomp2 ;
-        }
-        
-        strm.next_out = (Bytef *) (uncomp + strm.total_out);
-        strm.avail_out = uncompLength - strm.total_out;
-        
-        // Inflate another chunk.
-        int err = inflate (&strm, Z_SYNC_FLUSH);
-        if (err == Z_STREAM_END) done = true;
-        else if (err != Z_OK)  {
-            break;
-        }
-    }
-    
-    if (inflateEnd (&strm) != Z_OK) {
-        free(uncomp);
-        return false;
-    }
-    
-    for (size_t i=0; i<strm.total_out; ++i) {
-        uncompressedBytes += uncomp[i];
-    }
-    free(uncomp);
-    return true ;
-}
-
-/* Reads a file into memory. */
-bool loadBinaryFile(const std::string& filename, std::string& contents) {
-    // Open the gzip file in binary mode
-    FILE* f = fopen(filename.c_str(), "rb");
-    if (f == NULL)
-        return false ;
-    
-    // Clear existing bytes in output vector
-    contents.clear();
-    
-    // Read all the bytes in the file
-    int c = fgetc(f);
-    while (c != EOF) {
-        contents +=  (char) c ;
-        c = fgetc(f);
-    }
-    fclose (f);
-    
-    return true ;
-}
+#ifndef gfastatsClasses_h
+#define gfastatsClasses_h
 
 //classes
 class FastaSequence {
 private:
-    string fastaHeader;
-    string fastaSequence;
-    string fastaComment;
-    vector<unsigned int> fastaContigBoundaries;
-    vector<unsigned int> fastaGapBoundaries;
+    std::string fastaHeader;
+    std::string fastaSequence;
+    std::string fastaComment;
+    std::vector<unsigned int> fastaContigBoundaries;
+    std::vector<unsigned int> fastaGapBoundaries;
     
 public:
     
-    void TraverseFastaSequence(string s) {
+    void TraverseFastaSequence(std::string s) {
         
         unsigned int pos = 0;
         bool wasN = false, pushbackGap = false;
-        vector<unsigned int> fastaGapBoundaries;
+        std::vector<unsigned int> fastaGapBoundaries;
         fastaGapBoundaries.reserve(200);
         
         for (char base : s) {
@@ -224,21 +64,21 @@ public:
         
     }
     
-    void setFastaHeader(string h) {
+    void setFastaHeader(std::string h) {
         fastaHeader = h;
     }
     
-    void setFastaComment(string c) {
+    void setFastaComment(std::string c) {
         fastaComment = c;
     }
     
-    void setFastaSequence(string s) {
+    void setFastaSequence(std::string s) {
         fastaSequence = s;
     }
     
-    void setFastaContigBoundaries(vector<unsigned int> fastaGapBoundaries) {
+    void setFastaContigBoundaries(std::vector<unsigned int> fastaGapBoundaries) {
         
-        vector<unsigned int> newFastaContigBoundaries;
+        std::vector<unsigned int> newFastaContigBoundaries;
         
         newFastaContigBoundaries.reserve(fastaGapBoundaries.size() + 2);
         
@@ -276,19 +116,19 @@ public:
         
     }
     
-    void setFastaGapBoundaries(vector<unsigned int> g) {
+    void setFastaGapBoundaries(std::vector<unsigned int> g) {
         fastaGapBoundaries = g;
     }
     
-    string getFastaHeader() {
+    std::string getFastaHeader() {
         return fastaHeader;
     }
     
-    string getFastaComment() {
+    std::string getFastaComment() {
         return fastaComment;
     }
     
-    string getFastaSequence() {
+    std::string getFastaSequence() {
         return fastaSequence;
     }
     
@@ -296,16 +136,16 @@ public:
         return fastaSequence.size();
     }
     
-    vector<unsigned int> getFastaContigs() {
+    std::vector<unsigned int> getFastaContigs() {
         return fastaContigBoundaries;
     }
     
-    vector<unsigned int> getFastaContigLens() {
+    std::vector<unsigned int> getFastaContigLens() {
         
         return bedIntervalSizes(fastaContigBoundaries);
     }
     
-    vector<unsigned int> getFastaGaps() {
+    std::vector<unsigned int> getFastaGaps() {
         return fastaGapBoundaries;
     }
     
@@ -329,11 +169,11 @@ public:
 class FastaSequences {
     
 private:
-    vector<FastaSequence> newFasta = vector<FastaSequence>();
+    std::vector<FastaSequence> newFasta = std::vector<FastaSequence>();
     
-    vector<unsigned int> scaffLens;
+    std::vector<unsigned int> scaffLens;
     
-    vector<unsigned int> contigLens;
+    std::vector<unsigned int> contigLens;
     
     FastaSequence fastaSeq;
     
@@ -343,13 +183,13 @@ private:
     
     double AverageScaffLen = 0;
     
-    string h;
+    std::string h;
     char *c;
     
 public:
-    void appendFasta(string hg, string s) {
+    void appendFasta(std::string hg, std::string s) {
         
-        h = string(strtok(strdup(hg.c_str())," ")); //process header line
+        h = std::string(strtok(strdup(hg.c_str())," ")); //process header line
         h.erase(0, 1);
         fastaSeq.setFastaHeader(h);
         
@@ -357,7 +197,7 @@ public:
         
         if (c != NULL) {
             
-            fastaSeq.setFastaComment(string(c));
+            fastaSeq.setFastaComment(std::string(c));
             
         }
         
@@ -375,7 +215,7 @@ public:
         
         newFasta.push_back(fastaSeq);
         
-        verbose(verbose_flag, "Fasta sequence added to fasta sequence vector");
+        verbose(verbose_flag, "Fasta sequence added to fasta sequence std::vector");
         
         increaseTotScaffLen(fastaSeq.getFastaSeqLen());
         
@@ -456,9 +296,9 @@ public:
         
     }
     
-    void recordContigLens(vector <unsigned int> seqLens) {
+    void recordContigLens(std::vector <unsigned int> seqLens) {
         
-        vector <unsigned int> newContigLens;
+        std::vector <unsigned int> newContigLens;
         
         newContigLens.reserve(contigLens.size() + seqLens.size());
         newContigLens.insert(newContigLens.end(), contigLens.begin(), contigLens.end());
@@ -470,7 +310,7 @@ public:
     
     void computeScaffN50(unsigned int gSize) {
         
-        sort(scaffLens.begin(), scaffLens.end(), greater<unsigned int>());
+        sort(scaffLens.begin(), scaffLens.end(), std::greater<unsigned int>());
         
         unsigned long long int scaffSum = 0;
         
@@ -501,7 +341,7 @@ public:
     
     void computeContigN50(unsigned int gSize) {
         
-        sort(contigLens.begin(), contigLens.end(), greater<unsigned int>());
+        sort(contigLens.begin(), contigLens.end(), std::greater<unsigned int>());
         
         unsigned long long int contigSum = 0;
         
@@ -602,7 +442,7 @@ class FastaFile {
     
 public:
     
-    void ParseFasta(string newLine, FastaSequences &Fasta, string &fastaHeader, string &fastaSequence, unsigned int &idx) {
+    void ParseFasta(std::string newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaSequence, unsigned int &idx) {
         
         switch (newLine[0]) {
                 
@@ -638,14 +478,14 @@ public:
     }
     
     
-    FastaSequences Read(string iFileArg) {
+    FastaSequences Read(std::string iFileArg) {
         
-        string newLine, fastaHeader, fastaSequence;
+        std::string newLine, fastaHeader, fastaSequence;
         unsigned int idx = 0;
         
         FastaSequences Fasta;
         
-        ifstream stream(iFileArg);
+        std::ifstream stream(iFileArg);
         
         unsigned char buffer[2];
         stream.read((char*)(&buffer[0]), 2) ;
@@ -658,18 +498,18 @@ public:
             
             stream.close();
             
-            string fileData;
+            std::string fileData;
             if (!loadBinaryFile(iFileArg, fileData)) {
                 printf("Error loading input file.");
             }
             
-            string data;
+            std::string data;
             if (!gzipInflate(fileData, data)) {
                 printf("Error decompressing input file.");
                 
             }
             
-            istringstream gzstream(data);
+            std::stringstream gzstream(data);
             
             while (getline (gzstream, newLine)) {
                 
@@ -681,7 +521,7 @@ public:
                 
                 else {
                     
-                    cout << "Gzip stream not successful.";
+                    std::cout << "Gzip stream not successful.";
                     
                 }
             }
@@ -704,3 +544,6 @@ public:
         
     }
 };
+
+
+#endif /* gfastats-classes_h */
