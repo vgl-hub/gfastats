@@ -101,10 +101,10 @@ int main(int argc, char **argv) {
         }
         
         if (argc == 2 || (argc == 3 && pos_op ==2) || nstarReport_flag) {
-        
-        	stats_flag = 1; // default mode 'stats'
-        
-    	}
+            
+            stats_flag = 1; // default mode 'stats'
+            
+        }
         
     }
     
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     verbose(verbose_flag, "File object generated");
     
     FastaSequences fastaSequences;
-
+    
     verbose(verbose_flag, "Fasta sequence object generated");
     
     fastaSequences = iFile.Read(iFileArg);
@@ -146,13 +146,13 @@ int main(int argc, char **argv) {
             std::cout<<output("Total contig length:")<<fastaSequence.getContigSum()<<std::endl;
             std::cout<<output("Total gap length:")<<fastaSequence.getGapSum()<<std::endl;
             std::cout<<output("Number of Gaps:")<<fastaSequence.getGapN()<<std::endl;
-
+            
             printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT):").c_str(), fastaSequence.getA(),
-                fastaSequence.getC(),
-                fastaSequence.getG(),
-                fastaSequence.getT());
+                   fastaSequence.getC(),
+                   fastaSequence.getG(),
+                   fastaSequence.getT());
             printf("%s%.2f\n",output("GC content %:").c_str(), fastaSequence.computeGCcontent());
-
+            
             
             if (outSequence_flag) {
                 
@@ -204,11 +204,11 @@ int main(int argc, char **argv) {
         fastaSequences.computeGapNstars(gSize);
         std::cout<<output("Total gap length:")<<fastaSequences.getTotGapLen()<<std::endl;
         std::cout<<output("Number of Gaps:")<<fastaSequences.getTotGapN()<<std::endl;
-
+        
         printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT):").c_str(), fastaSequences.getTotA(),
-            fastaSequences.getTotC(),
-            fastaSequences.getTotG(),
-            fastaSequences.getTotT());
+               fastaSequences.getTotC(),
+               fastaSequences.getTotG(),
+               fastaSequences.getTotT());
         printf("%s%.2f\n",output("GC content %:").c_str(), fastaSequences.computeGCcontent());
         
         counter = 0;
@@ -231,18 +231,22 @@ int main(int argc, char **argv) {
             pos++;
         }
         
-        pos = 1;
-        std::vector <unsigned int> scaffNGstars = fastaSequences.getScaffNGstars();
-        for (unsigned int val : scaffNGstars) {
-            std::cout<<"Scaffold NG"<<pos*10<<": "<<val<<std::endl;
-            pos++;
-        }
-        
-        pos = 1;
-        std::vector <unsigned int> scaffLGstars = fastaSequences.getScaffLGstars();
-        for (unsigned int val : scaffLGstars) {
-            std::cout<<"Scaffold LG"<<pos*10<<": "<<val<<std::endl;
-            pos++;
+        if (gSize > 0) {
+            
+            pos = 1;
+            std::vector <unsigned int> scaffNGstars = fastaSequences.getScaffNGstars();
+            for (unsigned int val : scaffNGstars) {
+                std::cout<<"Scaffold NG"<<pos*10<<": "<<val<<std::endl;
+                pos++;
+            }
+            
+            pos = 1;
+            std::vector <unsigned int> scaffLGstars = fastaSequences.getScaffLGstars();
+            for (unsigned int val : scaffLGstars) {
+                std::cout<<"Scaffold LG"<<pos*10<<": "<<val<<std::endl;
+                pos++;
+            }
+            
         }
         
         pos = 1;
@@ -259,20 +263,24 @@ int main(int argc, char **argv) {
             pos++;
         }
         
-        pos = 1;
-        std::vector <unsigned int> contigNGstars = fastaSequences.getContigNGstars();
-        for (unsigned int val : contigNGstars) {
-            std::cout<<"Contig NG"<<pos*10<<": "<<val<<std::endl;
-            pos++;
-        }
+        if (gSize > 0) {
             
-        pos = 1;
-        std::vector <unsigned int> contigLGstars = fastaSequences.getContigLGstars();
-        for (unsigned int val : contigLGstars) {
-            std::cout<<"Contig LG"<<pos*10<<": "<<val<<std::endl;
-            pos++;
+            pos = 1;
+            std::vector <unsigned int> contigNGstars = fastaSequences.getContigNGstars();
+            for (unsigned int val : contigNGstars) {
+                std::cout<<"Contig NG"<<pos*10<<": "<<val<<std::endl;
+                pos++;
+            }
+            
+            pos = 1;
+            std::vector <unsigned int> contigLGstars = fastaSequences.getContigLGstars();
+            for (unsigned int val : contigLGstars) {
+                std::cout<<"Contig LG"<<pos*10<<": "<<val<<std::endl;
+                pos++;
+            }
+            
         }
-
+        
         pos = 1;
         std::vector <unsigned int> gapNstars = fastaSequences.getGapNstars();
         for (unsigned int val : gapNstars) {

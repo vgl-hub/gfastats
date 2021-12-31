@@ -76,7 +76,7 @@ public:
                         }
                         case 'C':
                         case 'c':{
-                         
+                            
                             C++;
                             break;
                             
@@ -93,9 +93,9 @@ public:
                             
                             T++;
                             break;
-
+                            
                         }
-                    
+                            
                     }
                     
                     wasN = false;
@@ -211,7 +211,7 @@ public:
         
         return contigSum;
     }
-
+    
     std::vector<unsigned int> getFastaGaps() {
         return fastaGapBoundaries;
     }
@@ -268,7 +268,7 @@ public:
     double computeGCcontent() {
         
         double GCcontent = (double) (G + C) / (G + C + A + T) * 100;
-    
+        
         return GCcontent;
     }
     
@@ -292,7 +292,7 @@ private:
     std::vector<unsigned int> contigLstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> contigNGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> contigLGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
+    
     std::vector<unsigned int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> gapLstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
@@ -371,7 +371,7 @@ public:
         increaseGapN(fastaSequence.getGapN());
         
         verbose(verbose_flag, "Increased total number of gaps");
-
+        
         increaseTotACGT(fastaSequence.getA(), fastaSequence.getC(), fastaSequence.getG(), fastaSequence.getT());
         
         verbose(verbose_flag, "Increased ACGT counts");
@@ -478,7 +478,7 @@ public:
         for(unsigned int i = 0; i < getScaffN(); i++) {
             
             scaffSum += scaffLens[i];
-
+            
             if (scaffSum >= ((double) getTotScaffLen() / 10 * N) && N<= 10) {
                 
                 scaffNstars[N-1] = scaffLens[i];
@@ -578,7 +578,7 @@ public:
         return scaffNGstars;
         
     }
-
+    
     std::vector <unsigned int> getScaffLstars() {
         
         return scaffLstars;
@@ -614,7 +614,7 @@ public:
         return contigLGstars;
         
     }
-
+    
     std::vector <unsigned int> getGapNstars() {
         
         return gapNstars;
@@ -662,13 +662,13 @@ public:
         return contigNstars[4];
         
     }
-
+    
     unsigned int getContigNG50() {
         
         return contigNGstars[4];
         
     }
-
+    
     unsigned int getContigL50() {
         
         return contigLstars[4];
@@ -727,7 +727,7 @@ public:
     double computeGCcontent() {
         
         double GCcontent = (double) (totC + totG) / (totA + totC + totG + totT) * 100;
-    
+        
         return GCcontent;
     }
     
