@@ -27,7 +27,7 @@ public:
         std::vector<unsigned int> fastaGapBoundaries;
         fastaGapBoundaries.reserve(200);
         
-        for (char base : s) {
+        for (char &base : s) {
             
             switch (base) {
                     
@@ -206,6 +206,11 @@ public:
         return fastaGapBoundaries;
     }
     
+    std::vector<unsigned int> getFastaGapLens() {
+        
+        return bedIntervalSizes(fastaGapBoundaries);
+    }
+    
     unsigned int getGapSum() {
         
         unsigned int gapSum = 0;
@@ -265,8 +270,21 @@ private:
     std::vector<FastaSequence> newFasta = std::vector<FastaSequence>();
     
     std::vector<unsigned int> scaffLens;
-    
     std::vector<unsigned int> contigLens;
+    std::vector<unsigned int> gapLens;
+    
+    std::vector<unsigned int> scaffNstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned int> scaffLstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned int> scaffNGstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned int> scaffLGstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    
+    std::vector<unsigned int> contigNstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned int> contigLstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned int> contigNGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned int> contigLGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+    std::vector<unsigned int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned int> gapLstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
     FastaSequence fastaSequence;
     
@@ -274,11 +292,7 @@ private:
     
     unsigned int
     totGapLen = 0,
-    gapN = 0,
-    scaffN50 = 0, scaffNG50 = 0,
-    scaffL50 = 0, scaffLG50 = 0,
-    contigN50 = 0, contigNG50 = 0,
-    contigL50 = 0, contigLG50 = 0;
+    gapN = 0;
     
     unsigned long int totA = 0;
     unsigned long int totC = 0;
@@ -330,6 +344,10 @@ public:
         recordContigLens(fastaSequence.getFastaContigLens());
         
         verbose(verbose_flag, "Recorded length of contigs in fasta sequence");
+        
+        recordGapLens(fastaSequence.getFastaGapLens());
+        
+        verbose(verbose_flag, "Recorded length of gaps in fasta sequence");
         
         increaseTotGapLen(fastaSequence.getGapSum());
         
@@ -408,30 +426,49 @@ public:
         
     }
     
-    void computeScaffN50(unsigned int gSize) {
+    void recordGapLens(std::vector <unsigned int> seqLens) {
+        
+        std::vector <unsigned int> newGapLens;
+        
+        newGapLens.reserve(gapLens.size() + seqLens.size());
+        newGapLens.insert(newGapLens.end(), gapLens.begin(), gapLens.end());
+        newGapLens.insert(newGapLens.end(), seqLens.begin(), seqLens.end());
+        
+        gapLens = newGapLens;
+        
+    }
+    
+    void computeScaffNstars(unsigned int gSize) {
         
         sort(scaffLens.begin(), scaffLens.end(), std::greater<unsigned int>());
         
         unsigned long long int scaffSum = 0;
         
+        double N = 1, NG = 1;
+        
         for(unsigned int i = 0; i < getScaffN(); i++) {
             
             scaffSum += scaffLens[i];
-            
-            if (scaffSum >= getTotScaffLen() / 2 && scaffN50 < scaffLens[i]) {
+
+            if (scaffSum >= ((double) getTotScaffLen() / 10 * N) && scaffNstars[N-1] < scaffLens[i] && N<= 10) {
                 
-                scaffN50 = scaffLens[i];
-                scaffL50 = i;
+                scaffNstars[N-1] = scaffLens[i];
+                scaffLstars[N-1] = i;
+                
+                N = N + 1;
                 
             }
             
-            if (gSize > 0 && scaffSum >= gSize / 2 && scaffNG50 < scaffLens[i]) {
+            if (gSize > 0 && (scaffSum >= ((double) gSize / 10 * NG)) && scaffNGstars[NG-1] < scaffLens[i] && NG<= 10) {
                 
-                scaffNG50 = scaffLens[i];
-                scaffLG50 = i;
+                scaffNGstars[NG-1] = scaffLens[i];
+                scaffLGstars[NG-1] = i;
+                
+                NG = NG + 1;
+                
             }
             
-            if (scaffN50 >= scaffLens[i] && scaffNG50 >= scaffLens[i]) {
+            if (N == 10 && NG == 10) {
                 
                 break;
                 
@@ -441,30 +478,68 @@ public:
         
     }
     
-    void computeContigN50(unsigned int gSize) {
+    void computeContigNstars(unsigned int gSize) {
         
         sort(contigLens.begin(), contigLens.end(), std::greater<unsigned int>());
         
         unsigned long long int contigSum = 0;
         
+        short int N = 1, NG = 1;
+        
         for(unsigned int i = 0; i < contigLens.size(); i++) {
             
             contigSum += contigLens[i];
             
-            if (contigSum >= getTotScaffLen() / 2 && contigN50 < contigLens[i]) {
+            if (contigSum >= ((double) getTotScaffLen() / 10 * N) && contigNstars[N-1] < contigLens[i] && N<= 10) {
                 
-                contigN50 = contigLens[i];
-                contigL50 = i;
+                contigNstars[N-1] = contigLens[i];
+                contigLstars[N-1] = i;
+                
+                N = N + 1;
                 
             }
             
-            if (gSize > 0 && contigSum >= gSize / 2 && contigNG50 < contigLens[i]) {
+            if (gSize > 0 && (contigSum >= ((double) gSize / 10 * NG)) && contigNGstars[NG-1] < contigLens[i] && NG<= 10) {
                 
-                contigNG50 = contigLens[i];
-                contigLG50 = i;
+                contigNGstars[NG-1] = contigLens[i];
+                contigLGstars[NG-1] = i;
+                
+                NG = NG + 1;
+                
             }
             
-            if (contigN50 >= contigLens[i] && contigNG50 >= contigLens[i]) {
+            if (N == 10 && NG == 10) {
+                
+                break;
+                
+            }
+            
+        }
+        
+    }
+    
+    void computeGapNstars(unsigned int gSize) {
+        
+        sort(gapLens.begin(), gapLens.end(), std::greater<unsigned int>());
+        
+        unsigned long long int gapSum = 0;
+        
+        short int N = 1;
+        
+        for(unsigned int i = 0; i < gapLens.size(); i++) {
+            
+            gapSum += gapLens[i];
+            
+            if (gapSum >= ((double) totGapLen / 10 * N) && gapNstars[N-1] < gapLens[i] && N<= 10) {
+                
+                gapNstars[N-1] = gapLens[i];
+                gapLstars[N-1] = i;
+                
+                N = N + 1;
+                
+            }
+            
+            if (N == 10) {
                 
                 break;
                 
@@ -480,29 +555,87 @@ public:
         
     }
     
-    unsigned int getScaffN50(unsigned long long int gSize) {
+    std::vector <unsigned int> getScaffNstars() {
         
-        computeScaffN50(gSize);
+        return scaffNstars;
         
-        return scaffN50;
+    }
+    
+    std::vector <unsigned int> getScaffNGstars() {
+        
+        return scaffNGstars;
+        
+    }
+
+    std::vector <unsigned int> getScaffLstars() {
+        
+        return scaffLstars;
+        
+    }
+    
+    std::vector <unsigned int> getScaffLGstars() {
+        
+        return scaffLGstars;
+        
+    }
+    
+    std::vector <unsigned int> getContigNstars() {
+        
+        return contigNstars;
+        
+    }
+    
+    std::vector <unsigned int> getContigNGstars() {
+        
+        return contigNGstars;
+        
+    }
+    
+    std::vector <unsigned int> getContigLstars() {
+        
+        return contigLstars;
+        
+    }
+    
+    std::vector <unsigned int> getContigLGstars() {
+        
+        return contigLGstars;
+        
+    }
+
+    std::vector <unsigned int> getGapNstars() {
+        
+        return gapNstars;
+        
+    }
+    
+    std::vector <unsigned int> getGapLstars() {
+        
+        return gapLstars;
+        
+    }
+    
+    unsigned int getScaffN50() {
+        
+        return scaffNstars[4];
         
     }
     
     unsigned int getScaffNG50() {
         
-        return scaffNG50;
+        return scaffNGstars[4];
         
     }
     
     unsigned int getScaffL50() {
         
-        return scaffL50;
+        return scaffLstars[4];
         
     }
     
     unsigned int getScaffLG50() {
         
-        return scaffLG50;
+        return scaffLGstars[4];
         
     }
     
@@ -512,29 +645,27 @@ public:
         
     }
     
-    unsigned int getContigN50(unsigned long long int gSize) {
+    unsigned int getContigN50() {
         
-        computeContigN50(gSize);
-        
-        return contigN50;
+        return contigNstars[4];
         
     }
 
     unsigned int getContigNG50() {
         
-        return contigNG50;
+        return contigNGstars[4];
         
     }
 
     unsigned int getContigL50() {
         
-        return contigL50;
+        return contigLstars[4];
         
     }
     
     unsigned int getContigLG50() {
         
-        return contigLG50;
+        return contigLGstars[4];
         
     }
     

@@ -7,6 +7,7 @@
 //global
 static int verbose_flag;
 static int seqReport_flag;
+static int nstarReport_flag;
 
 #include <gfastats.h>
 
@@ -20,9 +21,7 @@ int main(int argc, char **argv) {
     std::string iFileArg;
     
     static int outSequence_flag;
-    
     static int stats_flag;
-
     static int cmd_flag;
     
     if (argc == 1) {
@@ -42,6 +41,7 @@ int main(int argc, char **argv) {
             
             {"stats", no_argument, 0, 's'},
             {"seq-report", no_argument, &seqReport_flag, 1},
+            {"nstar-report", no_argument, &nstarReport_flag, 1},
             {"tabular", no_argument, 0, 't'},
             
             {"verbose", no_argument, 0, 'v'},
@@ -94,12 +94,13 @@ int main(int argc, char **argv) {
                 printf("-v --verbose verbose output.\n");
                 printf("-h --help print help and exit.\n");
                 printf("--seq-report report statistics for each sequence.\n");
-                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");                
+                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
+                printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--cmd print $0 to stdout.\n");
                 exit(0);
         }
         
-        if (argc == 2 || (argc == 3 && pos_op ==2)) {
+        if (argc == 2 || (argc == 3 && pos_op ==2) || nstarReport_flag) {
         
         	stats_flag = 1; // default mode 'stats'
         
@@ -176,7 +177,8 @@ int main(int argc, char **argv) {
         std::cout<<output("N scaffolds:")<<fastaSequences.getScaffN()<<std::endl;
         std::cout<<output("Total length:")<<fastaSequences.getTotScaffLen()<<std::endl;
         printf("%s%.2f\n",output("Average scaffold length:").c_str(), fastaSequences.computeAverageScaffLen());
-        std::cout<<output("Scaffold N50:")<<fastaSequences.getScaffN50(gSize)<<std::endl;
+        fastaSequences.computeScaffNstars(gSize);
+        std::cout<<output("Scaffold N50:")<<fastaSequences.getScaffN50()<<std::endl;
         std::cout<<output("Scaffold L50:")<<fastaSequences.getScaffL50()<<std::endl;
         
         if (gSize > 0) {
@@ -186,7 +188,8 @@ int main(int argc, char **argv) {
             
         }
         std::cout<<output("N contigs:")<<fastaSequences.getContigN()<<std::endl;
-        std::cout<<output("Contig N50:")<<fastaSequences.getContigN50(gSize)<<std::endl;
+        fastaSequences.computeContigNstars(gSize);
+        std::cout<<output("Contig N50:")<<fastaSequences.getContigN50()<<std::endl;
         std::cout<<output("Contig L50:")<<fastaSequences.getContigL50()<<std::endl;
         
         if (gSize > 0) {
@@ -196,6 +199,8 @@ int main(int argc, char **argv) {
             
         }
         std::cout<<output("Largest scaffold:")<<fastaSequences.getLargestScaffold()<<std::endl;
+        
+        fastaSequences.computeGapNstars(gSize);
         std::cout<<output("Total gap length:")<<fastaSequences.getTotGapLen()<<std::endl;
         std::cout<<output("Number of Gaps:")<<fastaSequences.getTotGapN()<<std::endl;
 
@@ -206,6 +211,80 @@ int main(int argc, char **argv) {
         printf("%s%.2f\n",output("GC content %:").c_str(), fastaSequences.computeGCcontent());
         
         counter = 0;
+        
+    }
+    
+    if (nstarReport_flag) {
+        
+        int pos = 1;
+        std::vector <unsigned int> scaffNstars = fastaSequences.getScaffNstars();
+        for (unsigned int val : scaffNstars) {
+            std::cout<<"Scaffold N"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+        
+        pos = 1;
+        std::vector <unsigned int> scaffLstars = fastaSequences.getScaffLstars();
+        for (unsigned int val : scaffLstars) {
+            std::cout<<"Scaffold L"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+        
+        pos = 1;
+        std::vector <unsigned int> scaffNGstars = fastaSequences.getScaffNGstars();
+        for (unsigned int val : scaffNGstars) {
+            std::cout<<"Scaffold NG"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+        
+        pos = 1;
+        std::vector <unsigned int> scaffLGstars = fastaSequences.getScaffLGstars();
+        for (unsigned int val : scaffLGstars) {
+            std::cout<<"Scaffold LG"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+        
+        pos = 1;
+        std::vector <unsigned int> contigNstars = fastaSequences.getContigNstars();
+        for (unsigned int val : contigNstars) {
+            std::cout<<"Contig N"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+        
+        pos = 1;
+        std::vector <unsigned int> contigLstars = fastaSequences.getContigLstars();
+        for (unsigned int val : contigLstars) {
+            std::cout<<"Contig L"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+        
+        pos = 1;
+        std::vector <unsigned int> contigNGstars = fastaSequences.getContigNGstars();
+        for (unsigned int val : contigNGstars) {
+            std::cout<<"Contig NG"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+            
+        pos = 1;
+        std::vector <unsigned int> contigLGstars = fastaSequences.getContigLGstars();
+        for (unsigned int val : contigLGstars) {
+            std::cout<<"Contig LG"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+
+        pos = 1;
+        std::vector <unsigned int> gapNstars = fastaSequences.getGapNstars();
+        for (unsigned int val : gapNstars) {
+            std::cout<<"Gap N"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
+        
+        pos = 1;
+        std::vector <unsigned int> gapLstars = fastaSequences.getGapLstars();
+        for (unsigned int val : gapLstars) {
+            std::cout<<"Gap L"<<pos*10<<": "<<val<<std::endl;
+            pos++;
+        }
         
     }
     
