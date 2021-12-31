@@ -142,7 +142,8 @@ int main(int argc, char **argv) {
             std::cout<<output("Seq:")<<counter+1<<std::endl;
             std::cout<<output("Header:")<<fastaSequence.getFastaHeader()<<std::endl;
             std::cout<<output("Comment:")<<fastaSequence.getFastaComment()<<std::endl;
-            std::cout<<output("Sequence length:")<<fastaSequence.getFastaSeqLen()<<std::endl;
+            std::cout<<output("Total sequence length:")<<fastaSequence.getFastaScaffLens()<<std::endl;
+            std::cout<<output("Total contig length:")<<fastaSequence.getContigSum()<<std::endl;
             std::cout<<output("Total gap length:")<<fastaSequence.getGapSum()<<std::endl;
             std::cout<<output("Number of Gaps:")<<fastaSequence.getGapN()<<std::endl;
 

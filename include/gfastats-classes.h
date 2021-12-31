@@ -189,7 +189,7 @@ public:
         return fastaSequence;
     }
     
-    unsigned int getFastaSeqLen() {
+    unsigned int getFastaScaffLens() {
         return fastaSequence.size();
     }
     
@@ -202,6 +202,16 @@ public:
         return bedIntervalSizes(fastaContigBoundaries);
     }
     
+    unsigned int getContigSum() {
+        
+        unsigned int contigSum = 0;
+        
+        for (auto& g : bedIntervalSizes(fastaContigBoundaries))
+            contigSum += g;
+        
+        return contigSum;
+    }
+
     std::vector<unsigned int> getFastaGaps() {
         return fastaGapBoundaries;
     }
@@ -289,6 +299,7 @@ private:
     FastaSequence fastaSequence;
     
     unsigned long long int totScaffLen = 0;
+    unsigned long long int totContigLen = 0;
     
     unsigned int
     totGapLen = 0,
@@ -319,7 +330,7 @@ public:
         
         verbose(verbose_flag, "Header, comment, and fasta sequence read");
         
-        verbose(verbose_flag, "Processing scaffold: "+h);
+        verbose(verbose_flag, "Processing scaffold: " + h);
         
         fastaSequence.setFastaSequence(s);
         
@@ -333,13 +344,17 @@ public:
         
         verbose(verbose_flag, "Fasta sequence added to fasta sequence std::vector");
         
-        increaseTotScaffLen(fastaSequence.getFastaSeqLen());
+        increaseTotScaffLen(fastaSequence.getFastaScaffLens());
         
         verbose(verbose_flag, "Increased total scaffold length");
         
-        recordScaffLen(fastaSequence.getFastaSeqLen());
+        recordScaffLen(fastaSequence.getFastaScaffLens());
         
         verbose(verbose_flag, "Recorded length of fasta sequence");
+        
+        increaseTotContigLen(fastaSequence.getContigSum());
+        
+        verbose(verbose_flag, "Increased total contig length");
         
         recordContigLens(fastaSequence.getFastaContigLens());
         
@@ -381,6 +396,18 @@ public:
     unsigned long long int getTotScaffLen() {
         
         return totScaffLen;
+        
+    }
+    
+    void increaseTotContigLen(unsigned int ContigLen) {
+        
+        totContigLen += ContigLen;
+        
+    }
+    
+    unsigned long long int getTotContigLen() {
+        
+        return totContigLen;
         
     }
     
@@ -446,31 +473,28 @@ public:
         
         double N = 1, NG = 1;
         
+        std::cout<<"scaffLens: "<<getScaffN()<<std::endl;
+        
         for(unsigned int i = 0; i < getScaffN(); i++) {
             
             scaffSum += scaffLens[i];
 
-            if (scaffSum >= ((double) getTotScaffLen() / 10 * N) && scaffNstars[N-1] < scaffLens[i] && N<= 10) {
+            if (scaffSum >= ((double) getTotScaffLen() / 10 * N) && N<= 10) {
                 
                 scaffNstars[N-1] = scaffLens[i];
-                scaffLstars[N-1] = i;
+                scaffLstars[N-1] = i + 1;
                 
                 N = N + 1;
                 
             }
             
-            if (gSize > 0 && (scaffSum >= ((double) gSize / 10 * NG)) && scaffNGstars[NG-1] < scaffLens[i] && NG<= 10) {
+            
+            if (gSize > 0 && (scaffSum >= ((double) gSize / 10 * NG)) && NG<= 10) {
                 
                 scaffNGstars[NG-1] = scaffLens[i];
-                scaffLGstars[NG-1] = i;
+                scaffLGstars[NG-1] = i + 1;
                 
                 NG = NG + 1;
-                
-            }
-            
-            if (N == 10 && NG == 10) {
-                
-                break;
                 
             }
             
@@ -490,27 +514,21 @@ public:
             
             contigSum += contigLens[i];
             
-            if (contigSum >= ((double) getTotScaffLen() / 10 * N) && contigNstars[N-1] < contigLens[i] && N<= 10) {
+            if (contigSum >= ((double) getTotContigLen() / 10 * N) && N<= 10) {
                 
                 contigNstars[N-1] = contigLens[i];
-                contigLstars[N-1] = i;
+                contigLstars[N-1] = i + 1;
                 
                 N = N + 1;
                 
             }
             
-            if (gSize > 0 && (contigSum >= ((double) gSize / 10 * NG)) && contigNGstars[NG-1] < contigLens[i] && NG<= 10) {
+            if (gSize > 0 && (contigSum >= ((double) gSize / 10 * NG)) && NG<= 10) {
                 
                 contigNGstars[NG-1] = contigLens[i];
-                contigLGstars[NG-1] = i;
+                contigLGstars[NG-1] = i + 1;
                 
                 NG = NG + 1;
-                
-            }
-            
-            if (N == 10 && NG == 10) {
-                
-                break;
                 
             }
             
@@ -530,18 +548,12 @@ public:
             
             gapSum += gapLens[i];
             
-            if (gapSum >= ((double) totGapLen / 10 * N) && gapNstars[N-1] < gapLens[i] && N<= 10) {
+            if (gapSum >= ((double) totGapLen / 10 * N) && N<= 10) {
                 
                 gapNstars[N-1] = gapLens[i];
-                gapLstars[N-1] = i;
+                gapLstars[N-1] = i + 1;
                 
                 N = N + 1;
-                
-            }
-            
-            if (N == 10) {
-                
-                break;
                 
             }
             
