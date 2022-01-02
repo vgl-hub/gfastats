@@ -317,7 +317,6 @@ public:
     void appendFasta(std::string hg, std::string s) {
         
         h = std::string(strtok(strdup(hg.c_str())," ")); //process header line
-        h.erase(0, 1);
         fastaSequence.setFastaHeader(h);
         
         c = strtok(NULL,""); //process comment line
@@ -472,8 +471,6 @@ public:
         unsigned long long int scaffSum = 0;
         
         double N = 1, NG = 1;
-        
-        std::cout<<"scaffLens: "<<getScaffN()<<std::endl;
         
         for(unsigned int i = 0; i < getScaffN(); i++) {
             
@@ -737,7 +734,7 @@ class FastaFile {
     
 public:
     
-    void ParseFasta(std::string newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaSequence, unsigned int &idx) {
+    void ParseFasta(std::string &newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaSequence, unsigned int &idx, std::vector <std::string> &headerList) {
         
         switch (newLine[0]) {
                 
@@ -745,11 +742,13 @@ public:
                 
                 if (idx> 0) {
                     
-                    Fasta.appendFasta(fastaHeader,fastaSequence);
+                    if (headerList.empty() || std::find(headerList.begin(), headerList.end(), fastaHeader) != headerList.end()) {Fasta.appendFasta(fastaHeader,fastaSequence);}
+                    
                     fastaSequence = "";
                     
                 }
                 
+                newLine.erase(0, 1);
                 fastaHeader = newLine;
                 idx++;
                 
@@ -773,18 +772,31 @@ public:
     }
     
     
-    FastaSequences Read(std::string iFileArg) {
+    FastaSequences Read(std::string &iFastaFileArg, std::string &iHeaderListFileArg) {
         
-        std::string newLine, fastaHeader, fastaSequence;
+        std::string newLine, fastaHeader, fastaSequence, header;
         unsigned int idx = 0;
+        
+        if (!iHeaderListFileArg.empty()) {
+            
+            std::ifstream stream(iHeaderListFileArg);
+            
+            while (getline(stream, header)) {
+            
+                headerList.push_back(header);
+                
+            }
+            
+            stream.close();
+            
+        }
         
         FastaSequences Fasta;
         
-        std::ifstream stream(iFileArg);
+        std::ifstream stream(iFastaFileArg);
         
         unsigned char buffer[2];
         stream.read((char*)(&buffer[0]), 2) ;
-        
         
         stream.clear();
         stream.seekg(0, stream.beg);
@@ -794,7 +806,7 @@ public:
             stream.close();
             
             std::string fileData;
-            if (!loadBinaryFile(iFileArg, fileData)) {
+            if (!loadBinaryFile(iFastaFileArg, fileData)) {
                 printf("Error loading input file.");
             }
             
@@ -810,7 +822,8 @@ public:
                 
                 if (gzstream) {
                     
-                    ParseFasta(newLine, Fasta, fastaHeader, fastaSequence, idx);
+                    ParseFasta(newLine, Fasta, fastaHeader, fastaSequence, idx, headerList);
+
                     
                 }
                 
@@ -825,7 +838,7 @@ public:
             
             while (getline (stream, newLine)) {
                 
-                ParseFasta(newLine, Fasta, fastaHeader, fastaSequence, idx);
+                ParseFasta(newLine, Fasta, fastaHeader, fastaSequence, idx, headerList);
                 
             }
             
@@ -833,7 +846,7 @@ public:
             
         }
         
-        Fasta.appendFasta(fastaHeader,fastaSequence);
+        if (headerList.empty() || std::find(headerList.begin(), headerList.end(), fastaHeader) != headerList.end()) {Fasta.appendFasta(fastaHeader,fastaSequence);}
         
         return Fasta;
         

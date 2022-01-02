@@ -18,7 +18,8 @@ int main(int argc, char **argv) {
     short unsigned int pos_op = 1;
     unsigned long long int gSize = 0;
     
-    std::string iFileArg;
+    std::string iFastaFileArg;
+    std::string iHeaderListFileArg;
     
     static int outSequence_flag;
     static int stats_flag;
@@ -36,8 +37,9 @@ int main(int argc, char **argv) {
         
         static struct option long_options[] = {
             {"fasta", required_argument, 0, 'f'},
+            {"list", required_argument, 0, 'l'},
             
-            {"out-sequence", no_argument, &outSequence_flag, 1},
+            {"output-sequence", no_argument, &outSequence_flag, 1},
             
             {"stats", no_argument, 0, 's'},
             {"seq-report", no_argument, &seqReport_flag, 1},
@@ -51,7 +53,7 @@ int main(int argc, char **argv) {
             {0, 0, 0, 0}
         };
         
-        c = getopt_long(argc, argv, "-f:stvh",
+        c = getopt_long(argc, argv, "-f:sl:tvh",
                         long_options, &option_index);
         
         if (c == -1) {
@@ -62,18 +64,34 @@ int main(int argc, char **argv) {
         
         switch (c) {
             default:
-                if (pos_op == 1) {iFileArg = optarg; pos_op++;}
-                else if (pos_op == 2) {gSize = atoi(optarg); pos_op++;}
-                else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
-                
+                    if (pos_op == 1) {iFastaFileArg = optarg; pos_op++;}
+                    else if (pos_op == 2 || pos_op == 3) {
+                        
+                        if (isInt(optarg)) {
+                        
+                            gSize = atoi(optarg); pos_op++;
+                        
+                        }else{
+                            
+                            headerList.push_back(optarg); pos_op++;
+                            
+                        }
+                        
+                    }
+                    else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
             case 0:
                 break;
                 
             case 'f':
-                iFileArg = optarg;
+                iFastaFileArg = optarg;
                 break;
                 
             case 's':
+                stats_flag = 1;
+                break;
+                
+            case 'l':
+                iHeaderListFileArg = optarg;
                 stats_flag = 1;
                 break;
                 
@@ -86,21 +104,25 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'h':
-                printf("fastats in.fasta [genome size]\n");
+                printf("fastats in.fasta [genome size] [target header]\n");
                 printf("Options:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
-                printf("-s --stats report summary statistics.\n");
+                printf("-s --stats report summary statistics (default).\n");
+                printf("-l --list <file> targets a list of headers.\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --verbose verbose output.\n");
                 printf("-h --help print help and exit.\n");
                 printf("--seq-report report statistics for each sequence.\n");
-                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
+                printf("--output-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--cmd print $0 to stdout.\n");
                 exit(0);
         }
         
-        if (argc == 2 || (argc == 3 && pos_op ==2) || nstarReport_flag) {
+        if ( argc == 2 ||
+             (argc == 3 && pos_op == 2) ||
+             (argc == 4 && pos_op == 3) ||
+             nstarReport_flag) {
             
             stats_flag = 1; // default mode 'stats'
             
@@ -126,7 +148,7 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Fasta sequence object generated");
     
-    fastaSequences = iFile.Read(iFileArg);
+    fastaSequences = iFile.Read(iFastaFileArg, iHeaderListFileArg);
     
     verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     

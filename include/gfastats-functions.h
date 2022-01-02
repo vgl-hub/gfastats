@@ -10,6 +10,10 @@
 
 //functions
 
+bool isInt(const std::string &str) {
+  return !str.empty() && str.find_first_not_of("0123456789") == std::string::npos;
+}
+
 double elapsedTime(){
     
     auto finish = std::chrono::high_resolution_clock::now();
