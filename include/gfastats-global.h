@@ -10,5 +10,7 @@
 
 //global
 static auto start = std::chrono::high_resolution_clock::now();
+std::vector <std::string> headerList;
+std::vector <std::string> headerExcludeList;
 
 #endif /* gfastats-global_h */

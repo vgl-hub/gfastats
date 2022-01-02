@@ -25,9 +25,6 @@
 
 #include "zlib.h"
 
-//global
-std::vector <std::string> headerList;
-
 #include "gfastats-global.h"
 #include "gfastats-functions.h"
 #include "gfastats-classes.h"

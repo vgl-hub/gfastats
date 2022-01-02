@@ -20,13 +20,14 @@ int main(int argc, char **argv) {
     
     std::string iFastaFileArg;
     std::string iHeaderListFileArg;
+    std::string iHeaderExcludeListFileArg;
     
     static int outSequence_flag;
     static int stats_flag;
     static int cmd_flag;
     
     if (argc == 1) {
-        printf("in.fasta\n-h for additional help.\n");
+        printf("in.fasta [genome size] [target header]\n-h for additional help.\n");
         exit(0);
         
     }
@@ -37,7 +38,8 @@ int main(int argc, char **argv) {
         
         static struct option long_options[] = {
             {"fasta", required_argument, 0, 'f'},
-            {"list", required_argument, 0, 'l'},
+            {"include-list", required_argument, 0, 'i'},
+            {"exclude-list", required_argument, 0, 'e'},
             
             {"output-sequence", no_argument, &outSequence_flag, 1},
             
@@ -53,11 +55,10 @@ int main(int argc, char **argv) {
             {0, 0, 0, 0}
         };
         
-        c = getopt_long(argc, argv, "-f:sl:tvh",
+        c = getopt_long(argc, argv, "-f:si:e:tvh",
                         long_options, &option_index);
         
         if (c == -1) {
-            std::cout<<std::endl;
             break;
             
         }
@@ -90,11 +91,16 @@ int main(int argc, char **argv) {
                 stats_flag = 1;
                 break;
                 
-            case 'l':
+            case 'i':
                 iHeaderListFileArg = optarg;
                 stats_flag = 1;
                 break;
                 
+            case 'e':
+                iHeaderExcludeListFileArg = optarg;
+                stats_flag = 1;
+                break;
+
             case 't':
                 tabular_flag = 1;
                 break;
@@ -105,10 +111,13 @@ int main(int argc, char **argv) {
                 
             case 'h':
                 printf("fastats in.fasta [genome size] [target header]\n");
+                printf("genome size: estimated genome size for NG* statistics (optional).\n");
+                printf("target header: compute statistics on a single header in the input (optional).\n\n");
                 printf("Options:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
                 printf("-s --stats report summary statistics (default).\n");
-                printf("-l --list <file> targets a list of headers.\n");
+                printf("-i --include-list <file> generates output on a subset list of headers.\n");
+                printf("-e --exclude-list <file> opposite of --include-list. They can be combined.\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --verbose verbose output.\n");
                 printf("-h --help print help and exit.\n");
@@ -148,7 +157,7 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Fasta sequence object generated");
     
-    fastaSequences = iFile.Read(iFastaFileArg, iHeaderListFileArg);
+    fastaSequences = iFile.Read(iFastaFileArg, iHeaderListFileArg, iHeaderExcludeListFileArg);
     
     verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     
