@@ -19,6 +19,7 @@
 #include <getopt.h>
 
 #include <vector>
+#include <string.h>
 #include <algorithm>
 
 #include <chrono>
