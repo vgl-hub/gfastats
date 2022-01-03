@@ -303,7 +303,7 @@ private:
     
     unsigned int
     totGapLen = 0,
-    gapN = 0;
+    totGapN = 0;
     
     unsigned long int totA = 0;
     unsigned long int totC = 0;
@@ -314,7 +314,7 @@ private:
     char *c;
     
 public:
-    void appendFasta(std::string hg, std::string s) {
+    void appendFasta(std::string &hg, std::string &s) {
         
         h = std::string(strtok(strdup(hg.c_str())," ")); //process header line
         fastaSequence.setFastaHeader(h);
@@ -379,7 +379,7 @@ public:
         
     }
     
-    FastaSequence getFastaSequences(unsigned int idx) {
+    FastaSequence getFastaSequences(unsigned int &idx) {
         
         FastaSequence fastaSequence = newFasta[idx];
         return fastaSequence;
@@ -398,9 +398,9 @@ public:
         
     }
     
-    void increaseTotContigLen(unsigned int ContigLen) {
+    void increaseTotContigLen(unsigned int contigLen) {
         
-        totContigLen += ContigLen;
+        totContigLen += contigLen;
         
     }
     
@@ -410,9 +410,9 @@ public:
         
     }
     
-    void increaseTotGapLen(unsigned int GapLen) {
+    void increaseTotGapLen(unsigned int gapLen) {
         
-        totGapLen += GapLen;
+        totGapLen += gapLen;
         
     }
     
@@ -422,15 +422,15 @@ public:
         
     }
     
-    void increaseGapN(unsigned int GapN) {
+    void increaseGapN(unsigned int gapN) {
         
-        gapN += GapN;
+        totGapN += gapN;
         
     }
     
     unsigned int getTotGapN() {
         
-        return gapN;
+        return totGapN;
         
     }
     

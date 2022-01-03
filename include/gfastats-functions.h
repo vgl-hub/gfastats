@@ -24,7 +24,7 @@ double elapsedTime(){
     
 }
 
-void verbose(short int verbose_flag, std::string msg) {
+void verbose(int &verbose_flag, std::string msg) {
     
     if(verbose_flag) {
         
@@ -35,7 +35,7 @@ void verbose(short int verbose_flag, std::string msg) {
     }
 }
 
-std::vector<unsigned int> bedIntervalSizes(std::vector<unsigned int> intervalVec){
+std::vector<unsigned int> bedIntervalSizes(std::vector<unsigned int> &intervalVec){
     
     std::vector<unsigned int> intervalVecLens;
     intervalVecLens.reserve(200);
@@ -57,7 +57,6 @@ std::vector<unsigned int> bedIntervalSizes(std::vector<unsigned int> intervalVec
     
 }
 
-static short int tabular_flag;
 std::string output(std::string output){
     
     if (tabular_flag) {
