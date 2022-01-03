@@ -476,7 +476,7 @@ public:
             
             scaffSum += scaffLens[i];
             
-            if (scaffSum >= ((double) getTotScaffLen() / 10 * N) && N<= 10) {
+            while (scaffSum >= ((double) getTotScaffLen() / 10 * N) && N<= 10) {
                 
                 scaffNstars[N-1] = scaffLens[i];
                 scaffLstars[N-1] = i + 1;
@@ -486,7 +486,7 @@ public:
             }
             
             
-            if (gSize > 0 && (scaffSum >= ((double) gSize / 10 * NG)) && NG<= 10) {
+            while (gSize > 0 && (scaffSum >= ((double) gSize / 10 * NG)) && NG<= 10) {
                 
                 scaffNGstars[NG-1] = scaffLens[i];
                 scaffLGstars[NG-1] = i + 1;
@@ -511,7 +511,7 @@ public:
             
             contigSum += contigLens[i];
             
-            if (contigSum >= ((double) getTotContigLen() / 10 * N) && N<= 10) {
+            while (contigSum >= ((double) getTotContigLen() / 10 * N) && N<= 10) {
                 
                 contigNstars[N-1] = contigLens[i];
                 contigLstars[N-1] = i + 1;
@@ -520,7 +520,7 @@ public:
                 
             }
             
-            if (gSize > 0 && (contigSum >= ((double) gSize / 10 * NG)) && NG<= 10) {
+            while (gSize > 0 && (contigSum >= ((double) gSize / 10 * NG)) && NG<= 10) {
                 
                 contigNGstars[NG-1] = contigLens[i];
                 contigLGstars[NG-1] = i + 1;
