@@ -316,7 +316,7 @@ private:
 public:
     void appendFasta(std::string &hg, std::string &s) {
         
-        h = std::string(strtok(strdup(hg.c_str())," ")); //process header line
+        h = std::string(std::strtok(std::strdup(hg.c_str())," ")); //process header line
         fastaSequence.setFastaHeader(h);
         
         c = strtok(NULL,""); //process comment line

@@ -106,7 +106,7 @@ bool gzipInflate(const std::string& compressedBytes, std::string& uncompressedBy
         if (strm.total_out >= uncompLength) {
             // Increase size of output buffer
             char* uncomp2 = (char*) calloc(sizeof(char), uncompLength + half_length);
-            memcpy(uncomp2, uncomp, uncompLength);
+            std::memcpy(uncomp2, uncomp, uncompLength);
             uncompLength += half_length ;
             free(uncomp);
             uncomp = uncomp2 ;
