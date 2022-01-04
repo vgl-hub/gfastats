@@ -156,4 +156,19 @@ bool loadBinaryFile(const std::string& filename, std::string& contents) {
     return true ;
 }
 
+bool ifFileExists(char * optarg) {
+
+    if (!access (optarg, F_OK)) {
+        
+        return optarg;
+        
+    }else{
+        
+        std::cout<<"Error - file does not exist: "<<optarg<<std::endl;
+        exit(1);
+        
+    }
+
+}
+
 #endif /* gfastats-Functions_h */

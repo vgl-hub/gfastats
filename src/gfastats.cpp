@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
         
         switch (c) {
             default:
-                    if (pos_op == 1) {iFastaFileArg = optarg; pos_op++;}
+                if (pos_op == 1) {ifFileExists(optarg); iFastaFileArg = optarg; pos_op++;}
                     else if (pos_op == 2 || pos_op == 3) {
                         
                         if (isInt(optarg)) {
@@ -95,6 +95,7 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'f':
+                ifFileExists(optarg);
                 iFastaFileArg = optarg;
                 break;
                 
@@ -103,11 +104,13 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'i':
+                ifFileExists(optarg);
                 iHeaderListFileArg = optarg;
                 stats_flag = 1;
                 break;
                 
             case 'e':
+                ifFileExists(optarg);
                 iHeaderExcludeListFileArg = optarg;
                 stats_flag = 1;
                 break;
