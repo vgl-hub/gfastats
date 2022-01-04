@@ -206,7 +206,7 @@ public:
         
         unsigned int contigSum = 0;
         
-        for (auto& g : bedIntervalSizes(fastaContigBoundaries))
+        for (unsigned int& g : bedIntervalSizes(fastaContigBoundaries))
             contigSum += g;
         
         return contigSum;

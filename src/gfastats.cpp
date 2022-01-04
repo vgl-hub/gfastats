@@ -13,18 +13,20 @@ static int nstarReport_flag;
 
 int main(int argc, char **argv) {
     
+    static int outputSequence_flag;
+    static int outputFasta_flag;
+    static int stats_flag;
+    static int cmd_flag;
+    
     short int c;
     short unsigned int arg_counter;
     short unsigned int pos_op = 1;
     unsigned long long int gSize = 0;
+    short int splitLength = 50;
     
     std::string iFastaFileArg;
     std::string iHeaderListFileArg;
     std::string iHeaderExcludeListFileArg;
-    
-    static int outSequence_flag;
-    static int stats_flag;
-    static int cmd_flag;
     
     if (argc == 1) {
         printf("in.fasta [genome size] [target header]\n-h for additional help.\n");
@@ -32,34 +34,43 @@ int main(int argc, char **argv) {
         
     }
     
+    static struct option long_options[] = {
+        {"fasta", required_argument, 0, 'f'},
+        {"include-list", required_argument, 0, 'i'},
+        {"exclude-list", required_argument, 0, 'e'},
+        
+        {"output-sequence", no_argument, &outputSequence_flag, 1},
+        {"output-fasta", optional_argument, &outputFasta_flag, 1},
+        
+        {"stats", no_argument, 0, 's'},
+        {"seq-report", no_argument, &seqReport_flag, 1},
+        {"nstar-report", no_argument, &nstarReport_flag, 1},
+        {"tabular", no_argument, 0, 't'},
+        
+        {"verbose", no_argument, 0, 'v'},
+        {"cmd", no_argument, &cmd_flag, 1},
+        {"help", no_argument, 0, 'h'},
+        
+        {0, 0, 0, 0}
+    };
+    
     while (1) {
         
         int option_index = 0;
         
-        static struct option long_options[] = {
-            {"fasta", required_argument, 0, 'f'},
-            {"include-list", required_argument, 0, 'i'},
-            {"exclude-list", required_argument, 0, 'e'},
-            
-            {"output-sequence", no_argument, &outSequence_flag, 1},
-            
-            {"stats", no_argument, 0, 's'},
-            {"seq-report", no_argument, &seqReport_flag, 1},
-            {"nstar-report", no_argument, &nstarReport_flag, 1},
-            {"tabular", no_argument, 0, 't'},
-            
-            {"verbose", no_argument, 0, 'v'},
-            {"cmd", no_argument, &cmd_flag, 1},
-            {"help", no_argument, 0, 'h'},
-            
-            {0, 0, 0, 0}
-        };
+
         
         c = getopt_long(argc, argv, "-f:si:e:tvh",
                         long_options, &option_index);
-        
+            
         if (c == -1) {
             break;
+            
+        }
+        
+        if (outputFasta_flag && optarg != nullptr) {
+            
+            splitLength = atoi(optarg);
             
         }
         
@@ -123,6 +134,7 @@ int main(int argc, char **argv) {
                 printf("-h --help print help and exit.\n");
                 printf("--seq-report report statistics for each sequence.\n");
                 printf("--output-sequence reports also the actual sequence (in combination with --seq-report).\n");
+                printf("--output-fasta [line length] generates a fasta output of the selected sequences. Default line length 50 bp. Set to 0 for no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--cmd print $0 to stdout.\n");
                 exit(0);
@@ -185,7 +197,7 @@ int main(int argc, char **argv) {
             printf("%s%.2f\n",output("GC content %:").c_str(), fastaSequence.computeGCcontent());
             
             
-            if (outSequence_flag) {
+            if (outputSequence_flag) {
                 
                 std::cout<<output("Sequence:")<<fastaSequence.getFastaSequence()<<std::endl;
                 
@@ -199,6 +211,40 @@ int main(int argc, char **argv) {
         counter = 0;
         
         std::cout<<output("+++Summary+++")<<std::endl;
+        
+    }
+    
+    if (outputFasta_flag) {
+        
+        stats_flag = false;
+        
+        while (counter < fastaSequences.getScaffN()) {
+            
+            fastaSequence = fastaSequences.getFastaSequences(counter);
+            
+            std::cout<<">"<<fastaSequence.getFastaHeader()<<" "<<fastaSequence.getFastaComment()<<std::endl;
+            
+            if (splitLength != 0) {
+ 
+                std::vector<std::string> splittedSequence;
+                splittedSequence = splitSequence(fastaSequence.getFastaSequence(), splitLength);
+                
+                for (auto& line : splittedSequence) {
+                    
+                    std::cout<<line<<std::endl;
+                
+                }
+                
+            }else{
+                
+                std::cout<<fastaSequence.getFastaSequence()<<std::endl;
+                
+            }
+            
+            counter++;
+            
+        }
+        
         
     }
     
