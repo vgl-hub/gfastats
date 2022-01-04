@@ -156,22 +156,4 @@ bool loadBinaryFile(const std::string& filename, std::string& contents) {
     return true ;
 }
 
-std::vector<std::string> splitSequence(const std::string& str, int splitLength)
-{
-   int NumSubstrings = str.length() / splitLength;
-   std::vector<std::string> ret;
-
-   for (auto i = 0; i < NumSubstrings; i++)
-   {
-        ret.push_back(str.substr(i * splitLength, splitLength));
-   }
-
-   if (str.length() % splitLength != 0)
-   {
-        ret.push_back(str.substr(splitLength * NumSubstrings));
-   }
-
-   return ret;
-}
-
 #endif /* gfastats-Functions_h */

@@ -225,14 +225,33 @@ int main(int argc, char **argv) {
             std::cout<<">"<<fastaSequence.getFastaHeader()<<" "<<fastaSequence.getFastaComment()<<std::endl;
             
             if (splitLength != 0) {
- 
-                std::vector<std::string> splittedSequence;
-                splittedSequence = splitSequence(fastaSequence.getFastaSequence(), splitLength);
                 
-                for (auto& line : splittedSequence) {
+                unsigned int pos = 0;
+                std::string line;
+                
+                for (char& base : fastaSequence.getFastaSequence())
+                {
                     
-                    std::cout<<line<<std::endl;
-                
+                    line += base;
+                    
+                    if (pos == splitLength) {
+                        
+                        std::cout<<line;
+                        std::cout<<std::endl;
+                        
+                        line = "";
+                        pos = 0;
+                        
+                    }
+                    
+                    pos++;
+                    
+                }
+
+                if (fastaSequence.getFastaSequence().length() % splitLength != 0) {
+                    
+                    std::cout<<std::endl;
+                    
                 }
                 
             }else{
