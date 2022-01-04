@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
     short unsigned int arg_counter;
     short unsigned int pos_op = 1;
     unsigned long long int gSize = 0;
-    short int splitLength = 50;
+    short int splitLength = 0;
     
     std::string iFastaFileArg;
     std::string iHeaderListFileArg;
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
                 printf("-h --help print help and exit.\n");
                 printf("--seq-report report statistics for each sequence.\n");
                 printf("--output-sequence reports also the actual sequence (in combination with --seq-report).\n");
-                printf("--output-fasta [line length] generates a fasta output of the selected sequences. Default line length 50 bp. Set to 0 for no line breaks.\n");
+                printf("--output-fasta [line length] generates a fasta output of the selected sequences. Default has no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--cmd print $0 to stdout.\n");
                 exit(0);
