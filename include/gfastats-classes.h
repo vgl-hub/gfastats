@@ -311,15 +311,11 @@ private:
     unsigned long int totT = 0;
     
     std::string h;
-    char *c;
     
 public:
-    void appendFasta(std::string &hg, std::string &s) {
+    void appendFasta(std::string &h, char* &c, std::string &s) {
         
-        h = std::string(strtok(strdup(hg.c_str())," ")); //process header line
         fastaSequence.setFastaHeader(h);
-        
-        c = strtok(NULL,""); //process comment line
         
         if (c != NULL) {
             
@@ -750,9 +746,12 @@ public:
 
 class FastaFile {
     
+    std::string h;
+    char *c;
+    
 public:
     
-    void ParseFasta(std::string &newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaSequence, unsigned int &idx, std::vector <std::string> &headerList, std::vector <std::string> &headerExcludeList) {
+    void ParseFasta(std::string &newLine, FastaSequences &Fasta, std::string &fastaHeader, char* &fastaComment, std::string &fastaSequence, unsigned int &idx, std::vector <std::string> &headerList, std::vector <std::string> &headerExcludeList) {
         
         switch (newLine[0]) {
                 
@@ -775,14 +774,20 @@ public:
                          !headerExcludeList.empty() &&
                          std::find(headerList.begin(), headerList.end(), fastaHeader) != headerList.end() &&
                          std::find(headerExcludeList.begin(), headerExcludeList.end(), fastaHeader) == headerExcludeList.end()))
-                        {Fasta.appendFasta(fastaHeader,fastaSequence);}
+                        {Fasta.appendFasta(fastaHeader, fastaComment, fastaSequence);}
                     
                     fastaSequence = "";
                     
                 }
                 
                 newLine.erase(0, 1);
-                fastaHeader = newLine;
+                
+                h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+                c = strtok(NULL,""); //process comment line
+                
+                fastaHeader = h;
+                fastaComment = c;
+                
                 idx++;
                 
                 break;
@@ -808,6 +813,8 @@ public:
     FastaSequences Read(std::string &iFastaFileArg, std::string &iHeaderListFileArg, std::string &iHeaderExcludeListFileArg) {
         
         std::string newLine, fastaHeader, fastaSequence, header;
+        char* fastaComment;
+        
         unsigned int idx = 0;
         
         if (!iHeaderListFileArg.empty()) {
@@ -869,7 +876,7 @@ public:
                 
                 if (gzstream) {
                     
-                    ParseFasta(newLine, Fasta, fastaHeader, fastaSequence, idx, headerList, headerExcludeList);
+                    ParseFasta(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerList, headerExcludeList);
 
                     
                 }
@@ -885,7 +892,7 @@ public:
             
             while (getline (stream, newLine)) {
                 
-                ParseFasta(newLine, Fasta, fastaHeader, fastaSequence, idx, headerList, headerExcludeList);
+                ParseFasta(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerList, headerExcludeList);
                 
             }
             
@@ -908,7 +915,7 @@ public:
              !headerExcludeList.empty() &&
              std::find(headerList.begin(), headerList.end(), fastaHeader) != headerList.end() &&
              std::find(headerExcludeList.begin(), headerExcludeList.end(), fastaHeader) == headerExcludeList.end()))
-            {Fasta.appendFasta(fastaHeader,fastaSequence);}
+            {Fasta.appendFasta(fastaHeader, fastaComment, fastaSequence);}
         
         return Fasta;
         
