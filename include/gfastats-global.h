@@ -13,7 +13,4 @@ static auto start = std::chrono::high_resolution_clock::now();
 
 static short int tabular_flag;
 
-std::vector <std::string> headerList;
-std::vector <std::string> headerExcludeList;
-
 #endif /* gfastats-global_h */

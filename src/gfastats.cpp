@@ -28,19 +28,24 @@ int main(int argc, char **argv) {
     std::string iHeaderListFileArg;
     std::string iHeaderExcludeListFileArg;
     
+    BedCoordinates headerIncludeList;
+    std::string header;
+    unsigned int cBegin = 0, cEnd = 0;
+    char* coord;
+    
     if (argc == 1) {
-        printf("in.fasta [genome size] [target header]\n-h for additional help.\n");
+        printf("gfastats input.fasta[.gz] [genome size] [target header]\n-h for additional help.\n");
         exit(0);
         
     }
     
     static struct option long_options[] = {
         {"fasta", required_argument, 0, 'f'},
-        {"include-list", required_argument, 0, 'i'},
-        {"exclude-list", required_argument, 0, 'e'},
+        {"include-bed", required_argument, 0, 'i'},
+        {"exclude-bed", required_argument, 0, 'e'},
         
-        {"output-sequence", no_argument, &outputSequence_flag, 1},
-        {"output-fasta", optional_argument, &outputFasta_flag, 1},
+        {"out-sequence", no_argument, &outputSequence_flag, 1},
+        {"out-fasta", optional_argument, &outputFasta_flag, 1},
         
         {"stats", no_argument, 0, 's'},
         {"seq-report", no_argument, &seqReport_flag, 1},
@@ -57,8 +62,6 @@ int main(int argc, char **argv) {
     while (1) {
         
         int option_index = 0;
-        
-
         
         c = getopt_long(argc, argv, "-f:si:e:tvh",
                         long_options, &option_index);
@@ -85,7 +88,25 @@ int main(int argc, char **argv) {
                         
                         }else{
                             
-                            headerList.push_back(optarg); pos_op++;
+                            header = std::string(strtok(strdup(optarg),":"));
+                            
+                            coord = strtok(NULL,"-");
+                            
+                            if (coord != NULL) {
+                            
+                                cBegin = atoi(coord);
+                                
+                                coord = strtok(NULL,"-");
+                                
+                                if (coord != NULL) {
+                                
+                                    cEnd = atoi(coord);
+                                    
+                                }else{printf("Error: missing end coordinate (%s).\n",header.c_str());exit(1);}
+                                
+                            }
+                            
+                            headerIncludeList.pushCoordinates(header, cBegin, cEnd); pos_op++;
                             
                         }
                         
@@ -124,20 +145,20 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'h':
-                printf("fastats in.fasta [genome size] [target header]\n");
+                printf("gfastats input.fasta[.gz] [genome size] [target header]\n");
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
                 printf("target header: compute statistics on a single header in the input (optional).\n\n");
                 printf("Options:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
                 printf("-s --stats report summary statistics (default).\n");
-                printf("-i --include-list <file> generates output on a subset list of headers.\n");
-                printf("-e --exclude-list <file> opposite of --include-list. They can be combined.\n");
+                printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in bed format.\n");
+                printf("-e --exclude-bed <file> opposite of --include-list. They can be combined.\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --verbose verbose output.\n");
                 printf("-h --help print help and exit.\n");
                 printf("--seq-report report statistics for each sequence.\n");
-                printf("--output-sequence reports also the actual sequence (in combination with --seq-report).\n");
-                printf("--output-fasta [line length] generates a fasta output of the selected sequences. Default has no line breaks.\n");
+                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
+                printf("--out-fasta [line length] generates a fasta output of the selected sequences. Default has no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--cmd print $0 to stdout.\n");
                 exit(0);
@@ -172,14 +193,14 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Fasta sequence object generated");
     
-    fastaSequences = iFile.Read(iFastaFileArg, iHeaderListFileArg, iHeaderExcludeListFileArg);
+    fastaSequences = iFile.Read(iFastaFileArg, iHeaderListFileArg, iHeaderExcludeListFileArg, headerIncludeList);
     
     verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     
     unsigned int counter = 0;
     FastaSequence fastaSequence;
     
-    if (seqReport_flag) {
+    if (seqReport_flag || outputSequence_flag) {
         
         while (counter < fastaSequences.getScaffN()) {
             
