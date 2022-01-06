@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     char* coord;
     
     if (argc == 1) {
-        printf("gfastats input.fasta[.gz] [genome size] [target header]\n-h for additional help.\n");
+        printf("gfastats input.fasta[.gz] [genome size] [header[:start-end]]\n-h for additional help.\n");
         exit(0);
         
     }
@@ -167,13 +167,13 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'h':
-                printf("gfastats input.fasta[.gz] [genome size] [target header]\n");
+                printf("gfastats input.fasta[.gz] [genome size] [header[:start-end]]\n");
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
-                printf("target header: compute statistics on a single header in the input (optional).\n\n");
+                printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("Options:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
                 printf("-s --stats report summary statistics (default).\n");
-                printf("-b c|g|a --out-bed generates bed coordinates of given feature (contigs|gaps|agp).\n");
+                printf("-b c|g|a --out-bed generates bed coordinates of given feature (contigs|gaps|agp default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined.\n");
                 printf("-t --tabular output in tabular format.\n");
@@ -232,7 +232,7 @@ int main(int argc, char **argv) {
             std::cout<<output("Seq:")<<counter+1<<std::endl;
             std::cout<<output("Header:")<<fastaSequence.getFastaHeader()<<std::endl;
             std::cout<<output("Comment:")<<fastaSequence.getFastaComment()<<std::endl;
-            std::cout<<output("Total sequence length:")<<fastaSequence.getFastaScaffLens()<<std::endl;
+            std::cout<<output("Total sequence length:")<<fastaSequence.getFastaScaffLen()<<std::endl;
             std::cout<<output("Total contig length:")<<fastaSequence.getContigSum()<<std::endl;
             std::cout<<output("Total gap length:")<<fastaSequence.getGapSum()<<std::endl;
             std::cout<<output("Number of Gaps:")<<fastaSequence.getGapN()<<std::endl;
@@ -321,7 +321,6 @@ int main(int argc, char **argv) {
     
         std::string fastaHeader;
         std::vector<unsigned int> fastaBoundaries;
-        bool agp;
         
         switch (bedOutType) {
             
@@ -383,8 +382,69 @@ int main(int argc, char **argv) {
                 
             default:
             case 'a': {
+                
+                unsigned int ctgN = 1, item = 1, len = 0;
 
-                agp = true;
+                while (counter < fastaSequences.getScaffN()) {
+                    
+                    fastaSequence = fastaSequences.getFastaSequences(counter);
+                    unsigned int fastaScaffLen = fastaSequence.getFastaScaffLen();
+                    
+                    fastaHeader = fastaSequence.getFastaHeader();
+                    
+                    fastaBoundaries = fastaSequence.getFastaContigBoundaries();
+                    
+                    std::vector<unsigned int>::const_iterator begin = fastaBoundaries.cbegin();
+                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    auto last = std::prev(end);
+                    
+                    if (*begin>0) {
+                        
+                        std::cout<<fastaHeader<<"\t"<<1<<"\t"<<*begin<<"\t"<<1<<"\t"<<"N"<<"\t"<<*begin<<"\tscaffold\tyes\t"<<std::endl;
+                        
+                        item++;
+                        
+                    }
+                    
+                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                        
+                        len = *(it+1) - *it;
+                        
+                        std::cout<<fastaHeader<<"\t"<<*it+1<<"\t"<<*(it+1)<<"\t"<<item<<"\t"<<"W"<<"\t"<<fastaHeader+"."<<ctgN<<"\t1\t"<<len<<"\t+"<<std::endl;
+                        
+                        item++;
+                        
+                        if (ctgN != fastaBoundaries.size()/2) {
+                        
+                            len = *(it+2) - *(it+1);
+                                
+                            std::cout<<fastaHeader<<"\t"<<*(it+1)+1<<"\t"<<*(it+2)<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
+                            
+                            item++;
+                            
+                        }
+                        
+                        if (ctgN == fastaBoundaries.size()/2 && fastaScaffLen > *last) {
+                        
+                            len = fastaScaffLen - *(it+1);
+                                
+                            std::cout<<fastaHeader<<"\t"<<*(it+1)+1<<"\t"<<fastaScaffLen<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
+                            
+                            item++;
+                            
+                        }
+                        
+                        ctgN++;
+                        it = it + 2;
+                        
+                    }
+                    
+                    ctgN = 1;
+                    item = 1;
+                    counter++;
+                    
+                }
+                
                 break;
             }
                 

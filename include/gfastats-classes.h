@@ -231,7 +231,7 @@ public:
         return fastaSequence;
     }
     
-    unsigned int getFastaScaffLens() {
+    unsigned int getFastaScaffLen() {
         return fastaSequence.size();
     }
     
@@ -380,11 +380,11 @@ public:
         
         verbose(verbose_flag, "Fasta sequence added to fasta sequence std::vector");
         
-        increaseTotScaffLen(fastaSequence.getFastaScaffLens());
+        increaseTotScaffLen(fastaSequence.getFastaScaffLen());
         
         verbose(verbose_flag, "Increased total scaffold length");
         
-        recordScaffLen(fastaSequence.getFastaScaffLens());
+        recordScaffLen(fastaSequence.getFastaScaffLen());
         
         verbose(verbose_flag, "Recorded length of fasta sequence");
         
