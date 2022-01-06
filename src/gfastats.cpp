@@ -13,8 +13,9 @@ static int nstarReport_flag;
 
 int main(int argc, char **argv) {
     
-    static int outputSequence_flag;
-    static int outputFasta_flag;
+    static int outBed_flag;
+    static int outSequence_flag;
+    static int outFasta_flag;
     static int stats_flag;
     static int cmd_flag;
     
@@ -25,10 +26,12 @@ int main(int argc, char **argv) {
     short int splitLength = 0;
     
     std::string iFastaFileArg;
-    std::string iHeaderListFileArg;
-    std::string iHeaderExcludeListFileArg;
+    std::string iBedIncludeFileArg;
+    std::string iBedExcludeFileArg;
     
-    BedCoordinates headerIncludeList;
+    char bedOutType;
+    
+    BedCoordinates bedInclude;
     std::string header;
     unsigned int cBegin = 0, cEnd = 0;
     char* coord;
@@ -44,8 +47,9 @@ int main(int argc, char **argv) {
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},
         
-        {"out-sequence", no_argument, &outputSequence_flag, 1},
-        {"out-fasta", optional_argument, &outputFasta_flag, 1},
+        {"out-sequence", no_argument, &outSequence_flag, 1},
+        {"out-bed", optional_argument, 0, 'b'},
+        {"out-fasta", optional_argument, &outFasta_flag, 1},
         
         {"stats", no_argument, 0, 's'},
         {"seq-report", no_argument, &seqReport_flag, 1},
@@ -63,7 +67,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-f:si:e:tvh",
+        c = getopt_long(argc, argv, "-:b:e:f:i:stvh",
                         long_options, &option_index);
             
         if (c == -1) {
@@ -71,13 +75,25 @@ int main(int argc, char **argv) {
             
         }
         
-        if (outputFasta_flag && optarg != nullptr) {
+        if (outFasta_flag && optarg != nullptr) {
             
             splitLength = atoi(optarg);
             
         }
         
         switch (c) {
+            case ':':
+                switch (optopt) {
+                case 'b':
+                    bedOutType = 'a';
+                    outBed_flag = 1;
+                    break;
+                        
+                default:
+                    fprintf(stderr, "option -%c is missing a required argument\n", optopt);
+                    return EXIT_FAILURE;
+                }
+                break;
             default:
                 if (pos_op == 1) {ifFileExists(optarg); iFastaFileArg = optarg; pos_op++;}
                     else if (pos_op == 2 || pos_op == 3) {
@@ -106,7 +122,7 @@ int main(int argc, char **argv) {
                                 
                             }
                             
-                            headerIncludeList.pushCoordinates(header, cBegin, cEnd); pos_op++;
+                            bedInclude.pushCoordinates(header, cBegin, cEnd); pos_op++;
                             
                         }
                         
@@ -114,25 +130,31 @@ int main(int argc, char **argv) {
                     else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
             case 0:
                 break;
+
+            case 'b':
+                    
+                bedOutType = *optarg;
+                outBed_flag = 1;
+                break;
+            
+            case 'e':
+                ifFileExists(optarg);
+                iBedExcludeFileArg = optarg;
+                stats_flag = 1;
+                break;
                 
             case 'f':
                 ifFileExists(optarg);
                 iFastaFileArg = optarg;
                 break;
                 
-            case 's':
-                stats_flag = 1;
-                break;
-                
             case 'i':
                 ifFileExists(optarg);
-                iHeaderListFileArg = optarg;
+                iBedIncludeFileArg = optarg;
                 stats_flag = 1;
                 break;
                 
-            case 'e':
-                ifFileExists(optarg);
-                iHeaderExcludeListFileArg = optarg;
+            case 's':
                 stats_flag = 1;
                 break;
 
@@ -151,8 +173,9 @@ int main(int argc, char **argv) {
                 printf("Options:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
                 printf("-s --stats report summary statistics (default).\n");
-                printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in bed format.\n");
-                printf("-e --exclude-bed <file> opposite of --include-list. They can be combined.\n");
+                printf("-b c|g|a --out-bed generates bed coordinates of given feature (contigs|gaps|agp).\n");
+                printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
+                printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined.\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --verbose verbose output.\n");
                 printf("-h --help print help and exit.\n");
@@ -164,7 +187,7 @@ int main(int argc, char **argv) {
                 exit(0);
         }
         
-        if ( argc == 2 ||
+        if   (argc == 2 ||
              (argc == 3 && pos_op == 2) ||
              (argc == 4 && pos_op == 3) ||
              nstarReport_flag) {
@@ -193,14 +216,14 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Fasta sequence object generated");
     
-    fastaSequences = iFile.Read(iFastaFileArg, iHeaderListFileArg, iHeaderExcludeListFileArg, headerIncludeList);
+    fastaSequences = iFile.Read(iFastaFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude);
     
     verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     
     unsigned int counter = 0;
     FastaSequence fastaSequence;
     
-    if (seqReport_flag || outputSequence_flag) {
+    if (seqReport_flag || outSequence_flag) {
         
         while (counter < fastaSequences.getScaffN()) {
             
@@ -221,7 +244,7 @@ int main(int argc, char **argv) {
             printf("%s%.2f\n",output("GC content %:").c_str(), fastaSequence.computeGCcontent());
             
             
-            if (outputSequence_flag) {
+            if (outSequence_flag) {
                 
                 std::cout<<output("Sequence:")<<fastaSequence.getFastaSequence()<<std::endl;
                 
@@ -238,7 +261,7 @@ int main(int argc, char **argv) {
         
     }
     
-    if (outputFasta_flag) {
+    if (outFasta_flag) {
         
         stats_flag = false;
         
@@ -289,6 +312,84 @@ int main(int argc, char **argv) {
         }
         
         
+    }
+    
+    if (outBed_flag) {
+        
+        stats_flag = false;
+        counter = 0;
+    
+        std::string fastaHeader;
+        std::vector<unsigned int> fastaBoundaries;
+        bool agp;
+        
+        switch (bedOutType) {
+            
+            case 'c': {
+
+                while (counter < fastaSequences.getScaffN()) {
+                    
+                    fastaSequence = fastaSequences.getFastaSequences(counter);
+                    
+                    fastaHeader = fastaSequence.getFastaHeader();
+                    
+                    fastaBoundaries = fastaSequence.getFastaContigBoundaries();
+                    
+                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    
+                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                        
+                        std::cout<<fastaHeader<<"\t"<<*it<<"\t"<<*(it+1)<<std::endl;
+                        
+                        it = it + 2;
+                        
+                    }
+                
+                    counter++;
+                    
+                }
+            
+                break;
+                
+            }
+                
+            case 'g': {
+                
+                while (counter < fastaSequences.getScaffN()) {
+                    
+                    fastaSequence = fastaSequences.getFastaSequences(counter);
+                    
+                    fastaHeader = fastaSequence.getFastaHeader();
+                    
+                    fastaBoundaries = fastaSequence.getFastaGapBoundaries();
+                    
+                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    
+                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                        
+                        std::cout<<fastaHeader<<"\t"<<*it<<"\t"<<*(it+1)<<std::endl;
+                        
+                        it = it + 2;
+                        
+                    }
+                
+                    counter++;
+                    
+                }
+            
+                break;
+                
+            }
+                
+            default:
+            case 'a': {
+
+                agp = true;
+                break;
+            }
+                
+        }
+                
     }
     
     if (stats_flag) {

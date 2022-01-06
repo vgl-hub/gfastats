@@ -235,12 +235,11 @@ public:
         return fastaSequence.size();
     }
     
-    std::vector<unsigned int> getFastaContigs() {
+    std::vector<unsigned int> getFastaContigBoundaries() {
         return fastaContigBoundaries;
     }
     
     std::vector<unsigned int> getFastaContigLens() {
-        
         return bedIntervalSizes(fastaContigBoundaries);
     }
     
@@ -254,7 +253,7 @@ public:
         return contigSum;
     }
     
-    std::vector<unsigned int> getFastaGaps() {
+    std::vector<unsigned int> getFastaGapBoundaries() {
         return fastaGapBoundaries;
     }
     
