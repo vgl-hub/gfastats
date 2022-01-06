@@ -13,7 +13,7 @@ static int nstarReport_flag;
 
 int main(int argc, char **argv) {
     
-    static int outBed_flag;
+    static int outCoord_flag;
     static int outSequence_flag;
     static int outFasta_flag;
     static int stats_flag;
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
         {"exclude-bed", required_argument, 0, 'e'},
         
         {"out-sequence", no_argument, &outSequence_flag, 1},
-        {"out-bed", optional_argument, 0, 'b'},
+        {"out-coord", optional_argument, 0, 'b'},
         {"out-fasta", optional_argument, &outFasta_flag, 1},
         
         {"stats", no_argument, 0, 's'},
@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
                 switch (optopt) {
                 case 'b':
                     bedOutType = 'a';
-                    outBed_flag = 1;
+                    outCoord_flag = 1;
                     break;
                         
                 default:
@@ -134,7 +134,7 @@ int main(int argc, char **argv) {
             case 'b':
                     
                 bedOutType = *optarg;
-                outBed_flag = 1;
+                outCoord_flag = 1;
                 break;
             
             case 'e':
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
                 printf("Options:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
                 printf("-s --stats report summary statistics (default).\n");
-                printf("-b c|g|a --out-bed generates bed coordinates of given feature (contigs|gaps|agp default:agp).\n");
+                printf("-b c|g|a --out-coord generates bed coordinates of given feature (contigs|gaps|agp default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined.\n");
                 printf("-t --tabular output in tabular format.\n");
@@ -314,7 +314,7 @@ int main(int argc, char **argv) {
         
     }
     
-    if (outBed_flag) {
+    if (outCoord_flag) {
         
         stats_flag = false;
         counter = 0;
