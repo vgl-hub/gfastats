@@ -1,0 +1,16 @@
+@Header1 5bp sequence with internal non-canonical gap
+CGAXT
++
+56789
+@Header2 10bp sequence with internal and 1bp terminal canonical gap
+TGANNNNCTN
++
+56789:;<=>
+@Header3 15bp sequence with start 3bp canonical gap
+NNNTTCCTCGCACTC
++
+56789:;<=>?5678
+@Header4 15bp sequence with terminal 3bp canonical gap
+AACTCGATCACGNNN
++
+56789:;<=>?5678

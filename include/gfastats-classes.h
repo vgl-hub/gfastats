@@ -315,7 +315,7 @@ public:
     
 };
 
-class FastaSequences {
+class iSequences {
     
 private:
     std::vector<FastaSequence> newFasta = std::vector<FastaSequence>();
@@ -416,7 +416,7 @@ public:
         
     }
     
-    FastaSequence getFastaSequences(unsigned int &idx) {
+    FastaSequence getISequence(unsigned int &idx) {
         
         FastaSequence fastaSequence = newFasta[idx];
         return fastaSequence;
@@ -785,7 +785,7 @@ public:
     
 };
 
-class FastaFile {
+class iFile {
     
     std::string h;
     char* c;
@@ -795,7 +795,181 @@ class FastaFile {
     
 public:
     
-    void includeExcludeAppend(FastaSequences* Fasta, std::string* fastaHeader, std::string* fastaComment, std::string* fastaSequence, BedCoordinates headerIncludeList, BedCoordinates headerExcludeList) {
+    iSequences readFiles(std::string &iFastaFileArg, std::string &iHeaderListFileArg, std::string &iHeaderExcludeListFileArg, BedCoordinates &headerIncludeList) {
+        
+        std::string newLine, fastaHeader, fastaComment, fastaSequence, line, h;
+        
+        unsigned int idx = 0, b = 0, e = 0;
+        
+        if (!iHeaderListFileArg.empty()) {
+            
+            std::ifstream stream(iHeaderListFileArg);
+            
+            while (getline(stream, line)) {
+                
+                std::istringstream iss(line);
+                iss >> h >> b >> e;
+            
+                headerIncludeList.pushCoordinates(h, b, e);
+                b = 0, e = 0;
+                
+            }
+            
+            stream.close();
+            
+        }
+        
+        BedCoordinates headerExcludeList;
+        
+        if (!iHeaderExcludeListFileArg.empty()) {
+            
+            std::ifstream stream(iHeaderExcludeListFileArg);
+            
+            while (getline(stream, line)) {
+            
+                headerExcludeList.pushCoordinates(h, b, e);
+                b = 0, e = 0;
+                
+            }
+            
+            stream.close();
+            
+        }
+        
+        iSequences Fasta;
+        
+        std::unique_ptr<std::istream> stream;
+        char firstChar;
+        
+        if (determineGzip(iFastaFileArg)) {
+            
+            std::string data;
+            
+            data = loadGzip(iFastaFileArg);
+            
+            stream = std::make_unique<std::istringstream>(std::istringstream(data));
+            
+        } else {
+            
+            stream = std::make_unique<std::ifstream>(std::ifstream(iFastaFileArg));
+
+        }
+        
+        if (stream) {
+            
+            getline(*stream, newLine);
+            firstChar = newLine[0];
+            
+            stream->clear();
+            stream->seekg(0, stream->beg);
+            
+            switch (firstChar) {
+            
+                case '>': {
+                    
+                    while (getline(*stream, newLine)) {
+                              
+                        parseFasta(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
+
+                    }
+                    
+                    includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &fastaSequence, headerIncludeList, headerExcludeList);
+                    
+                    break;
+                }
+                case '@': {
+
+                    while (getline(*stream, newLine)) {
+                        
+                        newLine.erase(0, 1);
+                
+                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+                        c = strtok(NULL,""); //process comment line
+                
+                        fastaHeader = h;
+                        
+                        if (c != NULL) {
+                        
+                            fastaComment = std::string(c);
+                            
+                        }
+                        
+                        getline(*stream, newLine);
+                        
+                        fastaSequence = newLine;
+                        
+                        getline(*stream, newLine);
+                        getline(*stream, newLine);
+                              
+                        includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &fastaSequence, headerIncludeList, headerExcludeList);
+
+                    }
+
+                    break;
+            
+                }
+            }
+            
+        }else{
+                
+            printf("Stream not successful: %s", iFastaFileArg.c_str());
+                
+        }
+        
+        return Fasta;
+        
+    }
+    
+    void parseFasta(std::string &newLine, iSequences &Fasta, std::string &fastaHeader, std::string &fastaComment, std::string &fastaSequence, unsigned int &idx, BedCoordinates headerIncludeList, BedCoordinates headerExcludeList) {
+        
+        switch (newLine[0]) {
+                
+            case '>': {
+                
+                if (idx> 0) {
+                    
+                    includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &fastaSequence, headerIncludeList, headerExcludeList);
+                    
+                    fastaSequence = "";
+                    
+                }
+                
+                newLine.erase(0, 1);
+                
+                h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+                c = strtok(NULL,""); //process comment line
+                
+                fastaHeader = h;
+                
+                if (c != NULL) {
+                
+                    fastaComment = std::string(c);
+                    
+                }
+                
+                idx++;
+                
+                break;
+            }
+            case '\n':{
+                
+                break;
+            }
+            case ' ':{
+                
+                break;
+            }
+            default: {
+                
+                fastaSequence.append(newLine);
+                
+            }
+        
+        }
+        
+    }
+    
+    void includeExcludeAppend(iSequences* Fasta, std::string* fastaHeader, std::string* fastaComment, std::string* fastaSequence, BedCoordinates headerIncludeList, BedCoordinates headerExcludeList) {
         
         headerIncludeListCpy = headerIncludeList.getFastaHeaders();
         headerExcludeListCpy = headerExcludeList.getFastaHeaders();
@@ -848,142 +1022,6 @@ public:
         
     }
     
-    void parseInput(std::string &newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaComment, std::string &fastaSequence, unsigned int &idx, BedCoordinates headerIncludeList, BedCoordinates headerExcludeList) {
-        
-        parseFasta(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
-        
-    }
-    
-    void parseFasta (std::string &newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaComment, std::string &fastaSequence, unsigned int &idx, BedCoordinates headerIncludeList, BedCoordinates headerExcludeList) {
-        
-        switch (newLine[0]) {
-                
-            case '>': {
-                
-                if (idx> 0) {
-                    
-                    includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &fastaSequence, headerIncludeList, headerExcludeList);
-                    
-                    fastaSequence = "";
-                    
-                }
-                
-                newLine.erase(0, 1);
-                
-                h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-                c = strtok(NULL,""); //process comment line
-                
-                fastaHeader = h;
-                
-                if (c != NULL) {
-                
-                    fastaComment = std::string(c);
-                    
-                }
-                
-                idx++;
-                
-                break;
-            }
-            case '\n':{
-                
-                break;
-            }
-            case ' ':{
-                
-                break;
-            }
-            default: {
-                
-                fastaSequence.append(newLine);
-                
-            }
-        }
-        
-    }
-    
-    
-    FastaSequences readFiles(std::string &iFastaFileArg, std::string &iHeaderListFileArg, std::string &iHeaderExcludeListFileArg, BedCoordinates &headerIncludeList) {
-        
-        std::string newLine, fastaHeader, fastaComment, fastaSequence, line, h;
-        
-        unsigned int idx = 0, b = 0, e = 0;
-        
-        if (!iHeaderListFileArg.empty()) {
-            
-            std::ifstream stream(iHeaderListFileArg);
-            
-            while (getline(stream, line)) {
-                
-                std::istringstream iss(line);
-                iss >> h >> b >> e;
-            
-                headerIncludeList.pushCoordinates(h, b, e);
-                b = 0, e = 0;
-                
-            }
-            
-            stream.close();
-            
-        }
-        
-        BedCoordinates headerExcludeList;
-        
-        if (!iHeaderExcludeListFileArg.empty()) {
-            
-            std::ifstream stream(iHeaderExcludeListFileArg);
-            
-            while (getline(stream, line)) {
-            
-                headerExcludeList.pushCoordinates(h, b, e);
-                b = 0, e = 0;
-                
-            }
-            
-            stream.close();
-            
-        }
-        
-        FastaSequences Fasta;
-        
-        std::unique_ptr<std::istream> stream;
-        
-        if (determineGzip(iFastaFileArg)) {
-            
-            std::string data;
-            
-            data = loadGzip(iFastaFileArg);
-            
-            stream = std::make_unique<std::istringstream>(std::istringstream(data));
-            
-        } else {
-            
-            stream = std::make_unique<std::ifstream>(std::ifstream(iFastaFileArg));
-
-        }
-        
-        while (getline (*stream, newLine)) {
-            
-            if (stream) {
-                
-                parseInput(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
-
-            }
-            
-            else {
-                
-                printf("Stream not successful: %s", iFastaFileArg.c_str());
-                
-            }
-        }
-        
-//        readStream->close();
-        
-        includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &fastaSequence, headerIncludeList, headerExcludeList);
-        
-        return Fasta;
-        
-    }
 };
 
 

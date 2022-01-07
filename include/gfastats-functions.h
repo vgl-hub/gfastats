@@ -72,6 +72,47 @@ std::string output(std::string output){
     return output;
 }
 
+bool loadBinaryFile(const std::string& filename, std::string& contents);
+bool gzipInflate(const std::string& compressedBytes, std::string& uncompressedBytes);
+
+std::string loadGzip(std::string iFastaFileArg) {
+
+    std::string fileData;
+    if (!loadBinaryFile(iFastaFileArg, fileData)) {
+        printf("Error loading input file: %s", iFastaFileArg.c_str());
+    }
+
+    std::string data;
+    if (!gzipInflate(fileData, data)) {
+        printf("Error decompressing input file: %s", iFastaFileArg.c_str());
+        
+    }
+    
+    return(data);
+    
+}
+
+/* Reads a file into memory. */
+bool loadBinaryFile(const std::string& filename, std::string& contents) {
+    // Open the gzip file in binary mode
+    FILE* f = fopen(filename.c_str(), "rb");
+    if (f == NULL)
+        return false ;
+    
+    // Clear existing bytes in output std::vector
+    contents.clear();
+    
+    // Read all the bytes in the file
+    int c = fgetc(f);
+    while (c != EOF) {
+        contents +=  (char) c ;
+        c = fgetc(f);
+    }
+    fclose (f);
+    
+    return true ;
+}
+
 //zlib
 bool gzipInflate(const std::string& compressedBytes, std::string& uncompressedBytes) {
     if (compressedBytes.size() == 0) {
@@ -135,27 +176,6 @@ bool gzipInflate(const std::string& compressedBytes, std::string& uncompressedBy
     return true ;
 }
 
-/* Reads a file into memory. */
-bool loadBinaryFile(const std::string& filename, std::string& contents) {
-    // Open the gzip file in binary mode
-    FILE* f = fopen(filename.c_str(), "rb");
-    if (f == NULL)
-        return false ;
-    
-    // Clear existing bytes in output std::vector
-    contents.clear();
-    
-    // Read all the bytes in the file
-    int c = fgetc(f);
-    while (c != EOF) {
-        contents +=  (char) c ;
-        c = fgetc(f);
-    }
-    fclose (f);
-    
-    return true ;
-}
-
 bool ifFileExists(char * optarg) {
 
     if (!access (optarg, F_OK)) {
@@ -192,23 +212,6 @@ bool determineGzip(std::string iFastaFileArg) {
         return false;
             
     }
-    
-}
-
-std::string loadGzip(std::string iFastaFileArg) {
-
-    std::string fileData;
-    if (!loadBinaryFile(iFastaFileArg, fileData)) {
-        printf("Error loading input file: %s", iFastaFileArg.c_str());
-    }
-
-    std::string data;
-    if (!gzipInflate(fileData, data)) {
-        printf("Error decompressing input file: %s", iFastaFileArg.c_str());
-        
-    }
-    
-    return(data);
     
 }
 
