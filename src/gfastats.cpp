@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     char* coord;
     
     if (argc == 1) {
-        printf("gfastats input.fasta[.gz] [genome size] [header[:start-end]]\n-h for additional help.\n");
+        printf("gfastats input.fasta[a|q][.gz] [genome size] [header[:start-end]]\n-h for additional help.\n");
         exit(0);
         
     }
@@ -167,7 +167,7 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'h':
-                printf("gfastats input.fasta[.gz] [genome size] [header[:start-end]]\n");
+                printf("gfastats input.fast[a|q][.gz] [genome size] [header[:start-end]]\n");
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("Options:\n");
@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Fasta sequence object generated");
     
-    fastaSequences = iFile.Read(iFastaFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude);
+    fastaSequences = iFile.readFiles(iFastaFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude);
     
     verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     

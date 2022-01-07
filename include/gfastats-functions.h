@@ -171,4 +171,45 @@ bool ifFileExists(char * optarg) {
 
 }
 
+bool determineGzip(std::string iFastaFileArg) {
+    
+    std::ifstream stream(iFastaFileArg);
+    
+    unsigned char buffer[2];
+    stream.read((char*)(&buffer[0]), 2) ;
+    
+    stream.clear();
+    stream.seekg(0, stream.beg);
+    
+    if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) {
+        
+        stream.close();
+        
+        return true;
+        
+    }else{
+        
+        return false;
+            
+    }
+    
+}
+
+std::string loadGzip(std::string iFastaFileArg) {
+
+    std::string fileData;
+    if (!loadBinaryFile(iFastaFileArg, fileData)) {
+        printf("Error loading input file: %s", iFastaFileArg.c_str());
+    }
+
+    std::string data;
+    if (!gzipInflate(fileData, data)) {
+        printf("Error decompressing input file: %s", iFastaFileArg.c_str());
+        
+    }
+    
+    return(data);
+    
+}
+
 #endif /* gfastats-Functions_h */

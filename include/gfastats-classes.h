@@ -848,7 +848,13 @@ public:
         
     }
     
-    void ParseFasta(std::string &newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaComment, std::string &fastaSequence, unsigned int &idx, BedCoordinates headerIncludeList, BedCoordinates headerExcludeList) {
+    void parseInput(std::string &newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaComment, std::string &fastaSequence, unsigned int &idx, BedCoordinates headerIncludeList, BedCoordinates headerExcludeList) {
+        
+        parseFasta(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
+        
+    }
+    
+    void parseFasta (std::string &newLine, FastaSequences &Fasta, std::string &fastaHeader, std::string &fastaComment, std::string &fastaSequence, unsigned int &idx, BedCoordinates headerIncludeList, BedCoordinates headerExcludeList) {
         
         switch (newLine[0]) {
                 
@@ -897,7 +903,7 @@ public:
     }
     
     
-    FastaSequences Read(std::string &iFastaFileArg, std::string &iHeaderListFileArg, std::string &iHeaderExcludeListFileArg, BedCoordinates &headerIncludeList) {
+    FastaSequences readFiles(std::string &iFastaFileArg, std::string &iHeaderListFileArg, std::string &iHeaderExcludeListFileArg, BedCoordinates &headerIncludeList) {
         
         std::string newLine, fastaHeader, fastaComment, fastaSequence, line, h;
         
@@ -940,57 +946,38 @@ public:
         
         FastaSequences Fasta;
         
-        std::ifstream stream(iFastaFileArg);
+        std::unique_ptr<std::istream> stream;
         
-        unsigned char buffer[2];
-        stream.read((char*)(&buffer[0]), 2) ;
-        
-        stream.clear();
-        stream.seekg(0, stream.beg);
-        
-        if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) {
-            
-            stream.close();
-            
-            std::string fileData;
-            if (!loadBinaryFile(iFastaFileArg, fileData)) {
-                printf("Error loading input file.");
-            }
+        if (determineGzip(iFastaFileArg)) {
             
             std::string data;
-            if (!gzipInflate(fileData, data)) {
-                printf("Error decompressing input file.");
-                
-            }
             
-            std::stringstream gzstream(data);
+            data = loadGzip(iFastaFileArg);
             
-            while (getline (gzstream, newLine)) {
-                
-                if (gzstream) {
-                    
-                    ParseFasta(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
-
-                }
-                
-                else {
-                    
-                    std::cout << "Gzip stream not successful.";
-                    
-                }
-            }
+            stream = std::make_unique<std::istringstream>(std::istringstream(data));
             
         } else {
             
-            while (getline (stream, newLine)) {
+            stream = std::make_unique<std::ifstream>(std::ifstream(iFastaFileArg));
+
+        }
+        
+        while (getline (*stream, newLine)) {
+            
+            if (stream) {
                 
-                ParseFasta(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
-                
+                parseInput(newLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
+
             }
             
-            stream.close();
-            
+            else {
+                
+                printf("Stream not successful: %s", iFastaFileArg.c_str());
+                
+            }
         }
+        
+//        readStream->close();
         
         includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &fastaSequence, headerIncludeList, headerExcludeList);
         
