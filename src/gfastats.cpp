@@ -214,7 +214,7 @@ int main(int argc, char **argv) {
     
     iSequences iSequences;
     
-    verbose(verbose_flag, "Fasta sequence object generated");
+    verbose(verbose_flag, "Sequence object generated");
     
     iSequences = iFile.readFiles(iFastaFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude);
     
