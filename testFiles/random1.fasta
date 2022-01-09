@@ -1,8 +1,10 @@
->Header1 5bp sequence with internal 1bp non-canonical gap
+>Header1 5bp sequence with no gaps
+CGACT
+>Header2 5bp sequence with internal 1bp non-canonical gap
 CGAXT
->Header2 10bp sequence with internal 4bp and 1bp terminal canonical gap
+>Header3 10bp sequence with internal 4bp and 1bp terminal canonical gap
 TGANNNNCTN
->Header3 15bp sequence with start 3bp canonical gap
-NNNTTCCTNNNNNNNNNNNCGCACTCNNNNNNNNNN
->Header4 15bp sequence with terminal 3bp canonical gap
+>Header4 15bp sequence with start 3bp canonical gap
+NNNTTCCTCGCACTC
+>Header5 15bp sequence with terminal 3bp canonical gap
 AACTCGATCACGNNN
