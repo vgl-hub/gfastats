@@ -176,6 +176,12 @@ bool gzipInflate(const std::string& compressedBytes, std::string& uncompressedBy
     return true ;
 }
 
+bool isDash(char * optarg) {
+    
+    return (strcmp(optarg, "-") == 0) ? true : false;
+
+}
+
 bool ifFileExists(char * optarg) {
 
     if (!access (optarg, F_OK)) {

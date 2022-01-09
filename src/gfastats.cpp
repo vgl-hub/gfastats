@@ -36,9 +36,13 @@ int main(int argc, char **argv) {
     unsigned int cBegin = 0, cEnd = 0;
     char* coord;
     
+    bool isPipe = false;
+    char pipeType;
+    
     if (argc == 1) {
-        printf("gfastats input.fasta[a|q][.gz] [genome size] [header[:start-end]]\n-h for additional help.\n");
-        exit(0);
+            
+            printf("gfastats input.fasta[a|q][.gz] [genome size] [header[:start-end]]\n-h for additional help.\n");
+            exit(0);
         
     }
     
@@ -69,7 +73,19 @@ int main(int argc, char **argv) {
         
         c = getopt_long(argc, argv, "-:b:e:f:i:stvh",
                         long_options, &option_index);
+
+        if (optind < argc) {
             
+            isPipe = isDash(argv[optind]) ? true : false;
+            
+        }
+        
+        if (optarg != nullptr) {
+        
+            isPipe = isDash(optarg) ? true : false;
+            
+        }
+
         if (c == -1) {
             break;
             
@@ -84,80 +100,113 @@ int main(int argc, char **argv) {
         switch (c) {
             case ':':
                 switch (optopt) {
-                case 'b':
-                    bedOutType = 'a';
-                    outCoord_flag = 1;
-                    break;
+                    case 'b':
+                        bedOutType = 'a';
+                        outCoord_flag = 1;
+                        break;
                         
-                default:
-                    fprintf(stderr, "option -%c is missing a required argument\n", optopt);
-                    return EXIT_FAILURE;
+                    default:
+                        fprintf(stderr, "option -%c is missing a required argument\n", optopt);
+                        return EXIT_FAILURE;
                 }
                 break;
             default:
-                if (pos_op == 1) {ifFileExists(optarg); iFastaFileArg = optarg; pos_op++;}
-                    else if (pos_op == 2 || pos_op == 3) {
+                if (pos_op == 1) {
+                    
+                    if (isPipe) {
+                    
+                        pipeType = 'f';
+                    
+                    }else{
                         
-                        if (isInt(optarg)) {
+                        ifFileExists(optarg);
+                        iFastaFileArg = optarg;
                         
-                            gSize = atoi(optarg); pos_op++;
+                    }
+                    
+                    pos_op++;
+                    
+                }else if (pos_op == 2 || pos_op == 3) {
+                    
+                    if (isInt(optarg)) {
                         
-                        }else{
+                        gSize = atoi(optarg); pos_op++;
+                        
+                    }else{
+                        
+                        header = std::string(strtok(strdup(optarg),":"));
+                        
+                        coord = strtok(NULL,"-");
+                        
+                        if (coord != NULL) {
                             
-                            header = std::string(strtok(strdup(optarg),":"));
+                            cBegin = atoi(coord);
                             
                             coord = strtok(NULL,"-");
                             
                             if (coord != NULL) {
-                            
-                                cBegin = atoi(coord);
                                 
-                                coord = strtok(NULL,"-");
+                                cEnd = atoi(coord);
                                 
-                                if (coord != NULL) {
-                                
-                                    cEnd = atoi(coord);
-                                    
-                                }else{printf("Error: missing end coordinate (%s).\n",header.c_str());exit(1);}
-                                
-                            }
-                            
-                            bedInclude.pushCoordinates(header, cBegin, cEnd); pos_op++;
+                            }else{printf("Error: missing end coordinate (%s).\n",header.c_str());exit(1);}
                             
                         }
                         
+                        bedInclude.pushCoordinates(header, cBegin, cEnd); pos_op++;
+                        
                     }
-                    else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
+                    
+                }
+                else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
             case 0:
                 break;
-
+                
             case 'b':
-                    
                 bedOutType = *optarg;
                 outCoord_flag = 1;
                 break;
-            
+                
             case 'e':
-                ifFileExists(optarg);
-                iBedExcludeFileArg = optarg;
+                
+                if (isPipe) {
+                
+                    pipeType = 'e';
+                
+                }else{
+                
+                    ifFileExists(optarg);
+                    iBedExcludeFileArg = optarg;
+                    
+                }
+                    
                 stats_flag = 1;
                 break;
                 
             case 'f':
-                ifFileExists(optarg);
-                iFastaFileArg = optarg;
+                    ifFileExists(optarg);
+                    iFastaFileArg = optarg;
                 break;
                 
             case 'i':
-                ifFileExists(optarg);
-                iBedIncludeFileArg = optarg;
+                
+                if (isPipe) {
+                
+                    pipeType = 'i';
+                
+                }else{
+                    
+                    ifFileExists(optarg);
+                    iBedIncludeFileArg = optarg;
+                    
+                }
+                    
                 stats_flag = 1;
                 break;
                 
             case 's':
                 stats_flag = 1;
                 break;
-
+                
             case 't':
                 tabular_flag = 1;
                 break;
@@ -170,7 +219,7 @@ int main(int argc, char **argv) {
                 printf("gfastats input.fast[a|q][.gz] [genome size] [header[:start-end]]\n");
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
-                printf("Options:\n");
+                printf("\nOptions:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
                 printf("-s --stats report summary statistics (default).\n");
                 printf("-b c|g|a --out-coord generates bed coordinates of given feature (contigs|gaps|agp default:agp).\n");
@@ -184,13 +233,14 @@ int main(int argc, char **argv) {
                 printf("--out-fasta [line length] generates a fasta output of the selected sequences. Default has no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--cmd print $0 to stdout.\n");
+                printf("\nAll input files can be piped from stdin.\n");
                 exit(0);
         }
         
         if   (argc == 2 ||
-             (argc == 3 && pos_op == 2) ||
-             (argc == 4 && pos_op == 3) ||
-             nstarReport_flag) {
+              (argc == 3 && pos_op == 2) ||
+              (argc == 4 && pos_op == 3) ||
+              nstarReport_flag) {
             
             stats_flag = 1; // default mode 'stats'
             
@@ -216,7 +266,7 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Sequence object generated");
     
-    iSequences = iFile.readFiles(iFastaFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude);
+    iSequences = iFile.readFiles(iFastaFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType);
     
     verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     
@@ -294,7 +344,7 @@ int main(int argc, char **argv) {
                     pos++;
                     
                 }
-
+                
                 if (fastaSequence.getFastaSequence().length() % splitLength != 0) {
                     
                     std::cout<<std::endl;
@@ -318,14 +368,14 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         counter = 0;
-    
+        
         std::string fastaHeader;
         std::vector<unsigned int> fastaBoundaries;
         
         switch (bedOutType) {
-            
+                
             case 'c': {
-
+                
                 while (counter < iSequences.getScaffN()) {
                     
                     fastaSequence = iSequences.getISequence(counter);
@@ -343,11 +393,11 @@ int main(int argc, char **argv) {
                         it = it + 2;
                         
                     }
-                
+                    
                     counter++;
                     
                 }
-            
+                
                 break;
                 
             }
@@ -371,11 +421,11 @@ int main(int argc, char **argv) {
                         it = it + 2;
                         
                     }
-                
+                    
                     counter++;
                     
                 }
-            
+                
                 break;
                 
             }
@@ -384,7 +434,7 @@ int main(int argc, char **argv) {
             case 'a': {
                 
                 unsigned int ctgN = 1, item = 1, len = 0;
-
+                
                 while (counter < iSequences.getScaffN()) {
                     
                     fastaSequence = iSequences.getISequence(counter);
@@ -415,9 +465,9 @@ int main(int argc, char **argv) {
                         item++;
                         
                         if (ctgN != fastaBoundaries.size()/2) {
-                        
+                            
                             len = *(it+2) - *(it+1);
-                                
+                            
                             std::cout<<fastaHeader<<"\t"<<*(it+1)+1<<"\t"<<*(it+2)<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
                             
                             item++;
@@ -425,9 +475,9 @@ int main(int argc, char **argv) {
                         }
                         
                         if (ctgN == fastaBoundaries.size()/2 && fastaScaffLen > *last) {
-                        
+                            
                             len = fastaScaffLen - *(it+1);
-                                
+                            
                             std::cout<<fastaHeader<<"\t"<<*(it+1)+1<<"\t"<<fastaScaffLen<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
                             
                             item++;
@@ -449,7 +499,7 @@ int main(int argc, char **argv) {
             }
                 
         }
-                
+        
     }
     
     if (stats_flag) {

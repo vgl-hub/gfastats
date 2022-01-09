@@ -795,17 +795,27 @@ class iFile {
     
 public:
     
-    iSequences readFiles(std::string &iFastaFileArg, std::string &iHeaderListFileArg, std::string &iHeaderExcludeListFileArg, BedCoordinates &headerIncludeList) {
+    iSequences readFiles(std::string &iFastaFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &headerIncludeList, bool &isPipe, char &pipeType) {
         
         std::string newLine, fastaHeader, fastaComment, fastaSequence, line, h;
+        std::unique_ptr<std::istream> stream;
         
         unsigned int idx = 0, b = 0, e = 0;
         
-        if (!iHeaderListFileArg.empty()) {
+        if (!iBedIncludeFileArg.empty() || (isPipe && pipeType == 'i')) {
             
-            std::ifstream stream(iHeaderListFileArg);
+            if (isPipe && pipeType == 'i') {
             
-            while (getline(stream, line)) {
+                std::istream &in = std::cin;
+                stream = std::make_unique<std::istream>(in.rdbuf());
+                
+            }else{
+            
+                stream = std::make_unique<std::ifstream>(std::ifstream(iBedIncludeFileArg));
+                
+            }
+            
+            while (getline(*stream, line)) {
                 
                 std::istringstream iss(line);
                 iss >> h >> b >> e;
@@ -815,30 +825,37 @@ public:
                 
             }
             
-            stream.close();
-            
         }
         
         BedCoordinates headerExcludeList;
         
-        if (!iHeaderExcludeListFileArg.empty()) {
+        if (!iBedExcludeFileArg.empty() || (isPipe && pipeType == 'e')) {
             
-            std::ifstream stream(iHeaderExcludeListFileArg);
+            if (isPipe && pipeType == 'e') {
             
-            while (getline(stream, line)) {
+                std::istream &in = std::cin;
+                stream = std::make_unique<std::istream>(in.rdbuf());
+                
+            }else{
+            
+                stream = std::make_unique<std::ifstream>(std::ifstream(iBedExcludeFileArg));
+                
+            }
+            
+            while (getline(*stream, line)) {
+                
+                std::istringstream iss(line);
+                iss >> h >> b >> e;
                 
                 headerExcludeList.pushCoordinates(h, b, e);
                 b = 0, e = 0;
                 
             }
             
-            stream.close();
-            
         }
         
         iSequences Fasta;
         
-        std::unique_ptr<std::istream> stream;
         std::string firstLine;
         char firstChar;
         
@@ -849,25 +866,40 @@ public:
             data = loadGzip(iFastaFileArg);
             
             stream = std::make_unique<std::istringstream>(std::istringstream(data));
+        
+        } else if (isPipe && pipeType == 'f') {
             
+            std::istream &in = std::cin;
+            stream = std::make_unique<std::istream>(in.rdbuf());
+        
         } else {
             
             stream = std::make_unique<std::ifstream>(std::ifstream(iFastaFileArg));
             
         }
         
-        if (stream) {
+        if (stream || isPipe) {
             
             getline(*stream, newLine);
             firstLine = newLine;
             firstChar = newLine[0];
             
-            stream->clear();
-            stream->seekg(0, stream->beg);
+            if (!isPipe) {
+                
+                stream->clear();
+                stream->seekg(0, stream->beg);
+                
+            }
             
             switch (firstChar) {
                     
                 case '>': {
+                    
+                    if (isPipe) {
+                        
+                        parseFasta(firstLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
+                        
+                    }
                     
                     while (getline(*stream, newLine)) {
                         
@@ -880,6 +912,32 @@ public:
                     break;
                 }
                 case '@': {
+                    
+                    if (isPipe) {
+                     
+                        firstLine.erase(0, 1);
+                        
+                        h = std::string(strtok(strdup(firstLine.c_str())," ")); //process header line
+                        c = strtok(NULL,""); //read comment
+                        
+                        fastaHeader = h;
+                        
+                        if (c != NULL) {
+                            
+                            fastaComment = std::string(c);
+                            
+                        }
+                        
+                        getline(*stream, newLine);
+                        
+                        fastaSequence = newLine;
+                        
+                        getline(*stream, newLine);
+                        getline(*stream, newLine);
+                        
+                        includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &fastaSequence, headerIncludeList, headerExcludeList);
+                        
+                    }
                     
                     while (getline(*stream, newLine)) {
                         
