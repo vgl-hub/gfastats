@@ -60,8 +60,8 @@ public:
 class FastaSequence {
 private:
     std::string fastaHeader;
-    std::string fastaSequence;
     std::string fastaComment;
+    std::string fastaSequence;
     std::vector<unsigned int> fastaContigBoundaries;
     std::vector<unsigned int> fastaGapBoundaries;
     unsigned int A = 0, C = 0, G = 0, T = 0;

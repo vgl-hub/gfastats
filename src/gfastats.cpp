@@ -296,7 +296,7 @@ int main(int argc, char **argv) {
             std::cout<<output("Total sequence length:")<<fastaSequence.getFastaScaffLen()<<std::endl;
             std::cout<<output("Total contig length:")<<fastaSequence.getContigSum()<<std::endl;
             std::cout<<output("Total gap length:")<<fastaSequence.getGapSum()<<std::endl;
-            std::cout<<output("Number of Gaps:")<<fastaSequence.getGapN()<<std::endl;
+            std::cout<<output("Number of gaps:")<<fastaSequence.getGapN()<<std::endl;
             
             printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT):").c_str(), fastaSequence.getA(),
                    fastaSequence.getC(),
@@ -530,6 +530,8 @@ int main(int argc, char **argv) {
             std::cout<<output("Scaffold LG50:")<<iSequences.getScaffLG50()<<std::endl;
             
         }
+        std::cout<<output("Largest scaffold:")<<iSequences.getLargestScaffold()<<std::endl;
+        
         std::cout<<output("N contigs:")<<iSequences.getContigN()<<std::endl;
         iSequences.computeContigNstars(gSize);
         std::cout<<output("Contig N50:")<<iSequences.getContigN50()<<std::endl;
@@ -541,7 +543,6 @@ int main(int argc, char **argv) {
             std::cout<<output("Contig LG50:")<<iSequences.getContigLG50()<<std::endl;
             
         }
-        std::cout<<output("Largest scaffold:")<<iSequences.getLargestScaffold()<<std::endl;
         
         iSequences.computeGapNstars(gSize);
         std::cout<<output("Total gap length:")<<iSequences.getTotGapLen()<<std::endl;

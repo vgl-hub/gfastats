@@ -3,15 +3,15 @@ CC = g++
 CFLAGS  = -g -Wall -std=c++11 -O3 -I./include -I./zlib
 
 TARGET = gfastats
-BUILD_PATH = build
+BUILD_PATH = build/bin
 SOURCE_PATH = src
 
 LIBS += -lz
 
 
 $(TARGET): $(SOURCE_PATH)/$(TARGET).cpp
-	mkdir -p $(BUILD_PATH)/bin
-	$(CC) $(CFLAGS) -o $(BUILD_PATH)/bin/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS)
+	mkdir -p $(BUILD_PATH)
+	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS)
 
 clean:
 	$(RM) -r build
