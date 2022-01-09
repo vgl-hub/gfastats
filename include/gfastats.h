@@ -24,6 +24,8 @@
 
 #include <chrono>
 
+#include <memory>
+
 #include "zlib.h"
 
 #include "gfastats-global.h"

@@ -807,11 +807,11 @@ public:
             if (isPipe && pipeType == 'i') {
             
                 std::istream &in = std::cin;
-                stream = std::make_unique<std::istream>(in.rdbuf());
+                stream = make_unique<std::istream>(in.rdbuf());
                 
             }else{
             
-                stream = std::make_unique<std::ifstream>(std::ifstream(iBedIncludeFileArg));
+                stream = make_unique<std::ifstream>(std::ifstream(iBedIncludeFileArg));
                 
             }
             
@@ -834,11 +834,11 @@ public:
             if (isPipe && pipeType == 'e') {
             
                 std::istream &in = std::cin;
-                stream = std::make_unique<std::istream>(in.rdbuf());
+                stream = make_unique<std::istream>(in.rdbuf());
                 
             }else{
             
-                stream = std::make_unique<std::ifstream>(std::ifstream(iBedExcludeFileArg));
+                stream = make_unique<std::ifstream>(std::ifstream(iBedExcludeFileArg));
                 
             }
             
@@ -865,16 +865,16 @@ public:
             
             data = loadGzip(iFastaFileArg);
             
-            stream = std::make_unique<std::istringstream>(std::istringstream(data));
+            stream = make_unique<std::istringstream>(std::istringstream(data));
         
         } else if (isPipe && pipeType == 'f') {
             
             std::istream &in = std::cin;
-            stream = std::make_unique<std::istream>(in.rdbuf());
+            stream = make_unique<std::istream>(in.rdbuf());
         
         } else {
             
-            stream = std::make_unique<std::ifstream>(std::ifstream(iFastaFileArg));
+            stream = make_unique<std::ifstream>(std::ifstream(iFastaFileArg));
             
         }
         
