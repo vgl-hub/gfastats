@@ -183,8 +183,19 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'f':
+                
+                if (isPipe) {
+                
+                    pipeType = 'f';
+                
+                }else{
+                    
                     ifFileExists(optarg);
                     iFastaFileArg = optarg;
+                    
+                }
+                    
+
                 break;
                 
             case 'i':
