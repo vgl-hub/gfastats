@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     std::string iBedIncludeFileArg;
     std::string iBedExcludeFileArg;
     
-    char bedOutType;
+    char bedOutType = 'a';
     
     BedCoordinates bedInclude;
     std::string header;
