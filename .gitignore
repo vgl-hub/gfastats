@@ -70,7 +70,7 @@ fastlane/test_output
 ## Other
 
 ### Xcode Patch ###
-*.xcodeproj
+gfastats.xcodeproj/xcuserdata/gformenti.xcuserdatad/xcdebugger/
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj
 *.xcodeproj/xcshareddata/
