@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     short unsigned int arg_counter;
     short unsigned int pos_op = 1;
     unsigned long long int gSize = 0;
-    short int splitLength = 0;
+    short unsigned int splitLength = 0;
     
     std::string iFastaFileArg;
     std::string iBedIncludeFileArg;
