@@ -1184,10 +1184,14 @@ public:
                 
             }
                 
-            if (outFasta) {
+            if (outFasta && fastaSequence->size()>0) {
             
                 Fasta->appendFasta(fastaHeader, fastaComment, fastaSequence);
             
+            }else {
+                
+                verbose(verbose_flag, "Scaffold entirely removed as a result of exclude: " + *fastaHeader);
+                
             }
                     
         }else if
