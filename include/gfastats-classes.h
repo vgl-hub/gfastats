@@ -1171,7 +1171,7 @@ public:
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
                     fastaSequence->erase(cBegin-offset, cEnd-cBegin);
-                    offset = cEnd-cBegin;
+                    offset += cEnd-cBegin;
                     
                 }else{
                     
