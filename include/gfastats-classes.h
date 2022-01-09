@@ -1099,6 +1099,7 @@ public:
  
         bedIncludeListHeaders = bedIncludeList.getFastaHeaders();
         bedExcludeListHeaders = bedExcludeList.getFastaHeaders();
+        bool outFasta;
         
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
@@ -1110,6 +1111,7 @@ public:
              bedExcludeList.empty()) {
             
             offset = 0;
+            outFasta = false;
             
             auto it = begin(bedIncludeListHeaders);
             
@@ -1131,6 +1133,10 @@ public:
                     fastaSequence->erase(cBegin-offset, cEnd-cBegin-offset);
                     offset += cEnd-cBegin;
                     
+                }else{
+                    
+                    outFasta = true;
+                    
                 }
               
                 ++it;
@@ -1145,7 +1151,7 @@ public:
              !bedExcludeList.empty()) {
                 
             offset = 0;
-            bool outFasta = true;
+            outFasta = true;
             
             auto it = begin(bedExcludeListHeaders);
             
@@ -1164,8 +1170,8 @@ public:
                 
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
-                    fastaSequence->erase(cBegin-offset, cEnd-cBegin-offset);
-                    offset += cEnd-cBegin;
+                    fastaSequence->erase(cBegin-offset, cEnd-cBegin);
+                    offset = cEnd-cBegin;
                     
                 }else{
                     
