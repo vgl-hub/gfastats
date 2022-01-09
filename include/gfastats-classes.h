@@ -797,7 +797,7 @@ class iFile {
     char* c;
     std::vector<std::string> bedIncludeListHeaders;
     std::vector<std::string> bedExcludeListHeaders;
-    unsigned int pos = 0, cBegin = 0, cEnd = 0, offset = 0;
+    unsigned int pos = 0, cBegin = 0, cEnd = 0, offset = 0, prevCEnd = 0;
     
 public:
     
@@ -1110,7 +1110,7 @@ public:
             (!bedIncludeList.empty() &&
              bedExcludeList.empty()) {
             
-            offset = 0;
+            offset = 0, prevCEnd = 0;
             outFasta = false;
             
             auto it = begin(bedIncludeListHeaders);
@@ -1124,18 +1124,17 @@ public:
                     break;
                     
                 }
+                
+                outFasta = true;
 
                 cBegin = bedIncludeList.getcBegin(pos);
                 cEnd = bedIncludeList.getcEnd(pos);
                 
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
-                    fastaSequence->erase(cBegin-offset, cEnd-cBegin-offset);
+                    fastaSequence->erase(offset, cBegin-prevCEnd);
                     offset += cEnd-cBegin;
-                    
-                }else{
-                    
-                    outFasta = true;
+                    prevCEnd = cEnd;
                     
                 }
               
@@ -1143,8 +1142,17 @@ public:
                 pos++;
                 
             }
+                
+            if (outFasta && fastaSequence->size()>0) {
+                
+                fastaSequence->erase(offset, fastaSequence->size()-offset);
+                Fasta->appendFasta(fastaHeader, fastaComment, fastaSequence);
             
-            Fasta->appendFasta(fastaHeader, fastaComment, fastaSequence);
+            }else {
+                
+                verbose(verbose_flag, "Scaffold entirely removed as a result of exclude: " + *fastaHeader);
+                
+            }
                 
         }else if
             (bedIncludeList.empty() &&
