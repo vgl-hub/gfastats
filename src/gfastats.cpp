@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
     
     bool isPipe = false;
     char pipeType;
+    pipeType = 'n';
     
     if (argc == 1) {
             
@@ -74,13 +75,13 @@ int main(int argc, char **argv) {
         c = getopt_long(argc, argv, "-:b:e:f:i:stvh",
                         long_options, &option_index);
 
-        if (optind < argc) {
+        if (optind < argc && !isPipe) {
             
             isPipe = isDash(argv[optind]) ? true : false;
             
         }
         
-        if (optarg != nullptr) {
+        if (optarg != nullptr && !isPipe) {
         
             isPipe = isDash(optarg) ? true : false;
             
@@ -113,7 +114,7 @@ int main(int argc, char **argv) {
             default:
                 if (pos_op == 1) {
                     
-                    if (isPipe) {
+                    if (isPipe && pipeType == 'n') {
                     
                         pipeType = 'f';
                     
@@ -148,7 +149,7 @@ int main(int argc, char **argv) {
                                 
                                 cEnd = atoi(coord);
                                 
-                            }else{printf("Error: missing end coordinate (%s).\n",header.c_str());exit(1);}
+                            }else{printf("Error: missing end coordinate (%s).\n", header.c_str()); exit(1);}
                             
                         }
                         
@@ -168,7 +169,7 @@ int main(int argc, char **argv) {
                 
             case 'e':
                 
-                if (isPipe) {
+                if (isPipe && pipeType == 'n') {
                 
                     pipeType = 'e';
                 
@@ -184,7 +185,7 @@ int main(int argc, char **argv) {
                 
             case 'f':
                 
-                if (isPipe) {
+                if (isPipe && pipeType == 'n') {
                 
                     pipeType = 'f';
                 
@@ -195,12 +196,11 @@ int main(int argc, char **argv) {
                     
                 }
                     
-
                 break;
                 
             case 'i':
                 
-                if (isPipe) {
+                if (isPipe && pipeType == 'n') {
                 
                     pipeType = 'i';
                 
@@ -244,7 +244,7 @@ int main(int argc, char **argv) {
                 printf("--out-fasta [line length] generates a fasta output of the selected sequences. Default has no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--cmd print $0 to stdout.\n");
-                printf("\nAll input files can be piped from stdin.\n");
+                printf("\nAll input files can be piped from stdin using '-'.\n");
                 exit(0);
         }
         

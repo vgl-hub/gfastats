@@ -795,16 +795,16 @@ class iFile {
     
 public:
     
-    iSequences readFiles(std::string &iFastaFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &headerIncludeList, bool &isPipe, char &pipeType) {
+    iSequences readFiles(std::string &iFastaFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &headerIncludeList, bool isPipe, char &pipeType) {
         
         std::string newLine, fastaHeader, fastaComment, fastaSequence, line, h;
         std::unique_ptr<std::istream> stream;
         
         unsigned int idx = 0, b = 0, e = 0;
         
-        if (!iBedIncludeFileArg.empty() || (isPipe && pipeType == 'i')) {
+        if (!iBedIncludeFileArg.empty() || (isPipe && (pipeType == 'i'))) {
             
-            if (isPipe && pipeType == 'i') {
+            if (isPipe && (pipeType == 'i')) {
             
                 std::istream &in = std::cin;
                 stream = make_unique<std::istream>(in.rdbuf());
@@ -829,9 +829,9 @@ public:
         
         BedCoordinates headerExcludeList;
         
-        if (!iBedExcludeFileArg.empty() || (isPipe && pipeType == 'e')) {
+        if (!iBedExcludeFileArg.empty() || (isPipe && (pipeType == 'e'))) {
             
-            if (isPipe && pipeType == 'e') {
+            if (isPipe && (pipeType == 'e')) {
             
                 std::istream &in = std::cin;
                 stream = make_unique<std::istream>(in.rdbuf());
@@ -867,18 +867,18 @@ public:
             
             stream = make_unique<std::istringstream>(std::istringstream(data));
         
-        } else if (isPipe && pipeType == 'f') {
+        } else if (isPipe && (pipeType == 'f')) {
             
             std::istream &in = std::cin;
             stream = make_unique<std::istream>(in.rdbuf());
         
         } else {
-            
+
             stream = make_unique<std::ifstream>(std::ifstream(iFastaFileArg));
             
         }
         
-        if (stream || isPipe) {
+        if (stream) {
             
             getline(*stream, newLine);
             firstLine = newLine;
@@ -895,7 +895,7 @@ public:
                     
                 case '>': {
                     
-                    if (isPipe) {
+                    if (isPipe && pipeType == 'f') {
                         
                         parseFasta(firstLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, headerIncludeList, headerExcludeList);
                         
@@ -913,7 +913,7 @@ public:
                 }
                 case '@': {
                     
-                    if (isPipe) {
+                    if (isPipe && pipeType == 'f') {
                      
                         firstLine.erase(0, 1);
                         
