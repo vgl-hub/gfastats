@@ -1145,12 +1145,17 @@ public:
                 
             if (outFasta && fastaSequence->size()>0) {
                 
-                fastaSequence->erase(offset, fastaSequence->size()-offset);
+                if (offset>0) {
+                
+                    fastaSequence->erase(offset, fastaSequence->size()-offset);
+                    
+                }
+                
                 Fasta->appendFasta(fastaHeader, fastaComment, fastaSequence);
             
             }else {
                 
-                verbose(verbose_flag, "Scaffold entirely removed as a result of exclude: " + *fastaHeader);
+                verbose(verbose_flag, "Scaffold entirely removed as a result of include: " + *fastaHeader);
                 
             }
                 
