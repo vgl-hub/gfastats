@@ -518,7 +518,7 @@ int main(int argc, char **argv) {
         verbose(verbose_flag, "Computed scaffN50");
         
         std::cout<<output("N scaffolds:")<<iSequences.getScaffN()<<std::endl;
-        std::cout<<output("Total length:")<<iSequences.getTotScaffLen()<<std::endl;
+        std::cout<<output("Total scaffold length:")<<iSequences.getTotScaffLen()<<std::endl;
         printf("%s%.2f\n",output("Average scaffold length:").c_str(), iSequences.computeAverageScaffLen());
         iSequences.computeScaffNstars(gSize);
         std::cout<<output("Scaffold N50:")<<iSequences.getScaffN50()<<std::endl;
@@ -533,6 +533,7 @@ int main(int argc, char **argv) {
         std::cout<<output("Largest scaffold:")<<iSequences.getLargestScaffold()<<std::endl;
         
         std::cout<<output("N contigs:")<<iSequences.getContigN()<<std::endl;
+        std::cout<<output("Total contig length:")<<iSequences.getTotContigLen()<<std::endl;
         iSequences.computeContigNstars(gSize);
         std::cout<<output("Contig N50:")<<iSequences.getContigN50()<<std::endl;
         std::cout<<output("Contig L50:")<<iSequences.getContigL50()<<std::endl;
@@ -545,8 +546,8 @@ int main(int argc, char **argv) {
         }
         
         iSequences.computeGapNstars(gSize);
+        std::cout<<output("N of Gaps:")<<iSequences.getTotGapN()<<std::endl;
         std::cout<<output("Total gap length:")<<iSequences.getTotGapLen()<<std::endl;
-        std::cout<<output("Number of Gaps:")<<iSequences.getTotGapN()<<std::endl;
         
         printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT):").c_str(), iSequences.getTotA(),
                iSequences.getTotC(),
