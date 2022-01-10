@@ -57,18 +57,18 @@ public:
     
 };
 
-class FastaSequence {
+class InSequence {
 private:
     std::string fastaHeader;
     std::string fastaComment;
-    std::string fastaSequence;
+    std::string inSequence;
     std::vector<unsigned int> fastaContigBoundaries;
     std::vector<unsigned int> fastaGapBoundaries;
     unsigned int A = 0, C = 0, G = 0, T = 0;
     
 public:
     
-    void TraverseFastaSequence(std::string* s) {
+    void traverseInSequence(std::string* s) {
         
         unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0;
         bool wasN = false, pushbackGap = false;
@@ -177,8 +177,8 @@ public:
         fastaComment = c;
     }
     
-    void setFastaSequence(std::string* s) {
-        fastaSequence = *s;
+    void setInSequence(std::string* s) {
+        inSequence = *s;
     }
     
     void setFastaContigBoundaries(std::vector<unsigned int> &fastaGapBoundaries) {
@@ -201,9 +201,9 @@ public:
                 
             }
             
-            if (newFastaContigBoundaries[newFastaContigBoundaries.size()-1] != fastaSequence.size()) {
+            if (newFastaContigBoundaries[newFastaContigBoundaries.size()-1] != inSequence.size()) {
                 
-                newFastaContigBoundaries.insert(newFastaContigBoundaries.end(), fastaSequence.size());
+                newFastaContigBoundaries.insert(newFastaContigBoundaries.end(), inSequence.size());
                 
             }else{
                 
@@ -213,7 +213,7 @@ public:
             
         }else{
             
-            newFastaContigBoundaries = {0, (unsigned int) fastaSequence.size()};
+            newFastaContigBoundaries = {0, (unsigned int) inSequence.size()};
             
         }
         
@@ -233,12 +233,12 @@ public:
         return fastaComment;
     }
     
-    std::string getFastaSequence() {
-        return fastaSequence;
+    std::string getInSequence() {
+        return inSequence;
     }
     
     unsigned int getFastaScaffLen() {
-        return fastaSequence.size();
+        return inSequence.size();
     }
     
     std::vector<unsigned int> getFastaContigBoundaries() {
@@ -321,10 +321,10 @@ public:
     
 };
 
-class iSequences {
+class InSequences {
     
 private:
-    std::vector<FastaSequence> newFasta = std::vector<FastaSequence>();
+    std::vector<InSequence> newFasta = std::vector<InSequence>();
     
     std::vector<unsigned int> scaffLens;
     std::vector<unsigned int> contigLens;
@@ -343,7 +343,7 @@ private:
     std::vector<unsigned int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> gapLstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
-    FastaSequence fastaSequence;
+    InSequence inSequence;
     
     unsigned long long int totScaffLen = 0;
     unsigned long long int totContigLen = 0;
@@ -362,11 +362,11 @@ private:
 public:
     void appendFasta(std::string* h, std::string* c, std::string* s) {
         
-        fastaSequence.setFastaHeader(h);
+        inSequence.setFastaHeader(h);
         
         if (c != NULL) {
             
-            fastaSequence.setFastaComment(*c);
+            inSequence.setFastaComment(*c);
             
         }
         
@@ -374,47 +374,47 @@ public:
         
         verbose(verbose_flag, "Processing scaffold: " + *h);
         
-        fastaSequence.setFastaSequence(s);
+        inSequence.setInSequence(s);
         
         verbose(verbose_flag, "Fasta sequence set");
         
-        fastaSequence.TraverseFastaSequence(s);
+        inSequence.traverseInSequence(s);
         
         verbose(verbose_flag, "Traversed fasta sequence");
         
-        newFasta.push_back(fastaSequence);
+        newFasta.push_back(inSequence);
         
         verbose(verbose_flag, "Fasta sequence added to fasta sequence std::vector");
         
-        increaseTotScaffLen(fastaSequence.getFastaScaffLen());
+        increaseTotScaffLen(inSequence.getFastaScaffLen());
         
         verbose(verbose_flag, "Increased total scaffold length");
         
-        recordScaffLen(fastaSequence.getFastaScaffLen());
+        recordScaffLen(inSequence.getFastaScaffLen());
         
         verbose(verbose_flag, "Recorded length of fasta sequence");
         
-        increaseTotContigLen(fastaSequence.getContigSum());
+        increaseTotContigLen(inSequence.getContigSum());
         
         verbose(verbose_flag, "Increased total contig length");
         
-        recordContigLens(fastaSequence.getFastaContigLens());
+        recordContigLens(inSequence.getFastaContigLens());
         
         verbose(verbose_flag, "Recorded length of contigs in fasta sequence");
         
-        recordGapLens(fastaSequence.getFastaGapLens());
+        recordGapLens(inSequence.getFastaGapLens());
         
         verbose(verbose_flag, "Recorded length of gaps in fasta sequence");
         
-        increaseTotGapLen(fastaSequence.getGapSum());
+        increaseTotGapLen(inSequence.getGapSum());
         
         verbose(verbose_flag, "Increased total gap length");
         
-        increaseGapN(fastaSequence.getGapN());
+        increaseGapN(inSequence.getGapN());
         
         verbose(verbose_flag, "Increased total number of gaps");
         
-        increaseTotACGT(fastaSequence.getA(), fastaSequence.getC(), fastaSequence.getG(), fastaSequence.getT());
+        increaseTotACGT(inSequence.getA(), inSequence.getC(), inSequence.getG(), inSequence.getT());
         
         verbose(verbose_flag, "Increased ACGT counts");
         
@@ -422,9 +422,9 @@ public:
         
     }
     
-    FastaSequence getISequence(unsigned int &idx) {
+    InSequence getInSequence(unsigned int &idx) {
         
-        FastaSequence fastaSequence = newFasta[idx];
+        InSequence fastaSequence = newFasta[idx];
         return fastaSequence;
         
     }
@@ -791,7 +791,7 @@ public:
     
 };
 
-class iFile {
+class InFile {
     
     std::string h;
     char* c;
@@ -801,7 +801,7 @@ class iFile {
     
 public:
     
-    iSequences readFiles(std::string &iFastaFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType) {
+    InSequences readFiles(std::string &iFastaFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType) {
         
         std::string newLine, fastaHeader, fastaComment, fastaSequence, line, h;
         std::unique_ptr<std::istream> stream;
@@ -860,7 +860,7 @@ public:
             
         }
         
-        iSequences Fasta;
+        InSequences Fasta;
         
         std::string firstLine;
         char firstChar;
@@ -1046,7 +1046,7 @@ public:
         
     }
     
-    void parseFasta(std::string &newLine, iSequences &Fasta, std::string &fastaHeader, std::string &fastaComment, std::string &fastaSequence, unsigned int &idx, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList) {
+    void parseFasta(std::string &newLine, InSequences &Fasta, std::string &fastaHeader, std::string &fastaComment, std::string &inSequence, unsigned int &idx, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList) {
         
         switch (newLine[0]) {
                 
@@ -1054,9 +1054,9 @@ public:
                 
                 if (idx> 0) {
                     
-                    includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &fastaSequence, bedIncludeList, bedExcludeList);
+                    includeExcludeAppend(&Fasta, &fastaHeader, &fastaComment, &inSequence, bedIncludeList, bedExcludeList);
                     
-                    fastaSequence = "";
+                    inSequence = "";
                     
                 }
                 
@@ -1087,7 +1087,7 @@ public:
             }
             default: {
                 
-                fastaSequence.append(newLine);
+                inSequence.append(newLine);
                 
             }
                 
@@ -1095,7 +1095,7 @@ public:
         
     }
     
-    void includeExcludeAppend(iSequences* Fasta, std::string* fastaHeader, std::string* fastaComment, std::string* fastaSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList) {
+    void includeExcludeAppend(InSequences* Fasta, std::string* fastaHeader, std::string* fastaComment, std::string* fastaSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList) {
  
         bedIncludeListHeaders = bedIncludeList.getFastaHeaders();
         bedExcludeListHeaders = bedExcludeList.getFastaHeaders();
