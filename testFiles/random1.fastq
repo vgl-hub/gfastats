@@ -1,3 +1,7 @@
+@Header1 5bp sequence with no gaps
+CGACT
++
+56789
 @Header1 5bp sequence with internal 1bp non-canonical gap
 CGAXT
 +
