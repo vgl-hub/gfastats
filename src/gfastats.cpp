@@ -286,6 +286,8 @@ int main(int argc, char **argv) {
     
     if (seqReport_flag || outSequence_flag) {
         
+        stats_flag = true;
+        
         while (counter < inSequences.getScaffN()) {
             
             fastaSequence = inSequences.getInSequence(counter);
