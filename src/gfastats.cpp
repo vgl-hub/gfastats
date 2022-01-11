@@ -297,8 +297,9 @@ int main(int argc, char **argv) {
             std::cout<<output("Comment")<<fastaSequence.getFastaComment()<<std::endl;
             std::cout<<output("Total sequence length")<<fastaSequence.getFastaScaffLen()<<std::endl;
             std::cout<<output("Total contig length")<<fastaSequence.getContigSum()<<std::endl;
+            std::cout<<output("# contig")<<fastaSequence.getContigN()<<std::endl;
             std::cout<<output("Total gap length")<<fastaSequence.getGapSum()<<std::endl;
-            std::cout<<output("Number of gaps")<<fastaSequence.getGapN()<<std::endl;
+            std::cout<<output("# gaps")<<fastaSequence.getGapN()<<std::endl;
             
             printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), fastaSequence.getA(),
                    fastaSequence.getC(),
@@ -519,7 +520,7 @@ int main(int argc, char **argv) {
         
         verbose(verbose_flag, "Computed scaffN50");
         
-        std::cout<<output("N scaffolds")<<inSequences.getScaffN()<<std::endl;
+        std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<std::endl;
         std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<std::endl;
         printf("%s%.2f\n",output("Average scaffold length").c_str(), inSequences.computeAverageScaffLen());
         inSequences.computeScaffNstars(gSize);
@@ -534,7 +535,7 @@ int main(int argc, char **argv) {
         }
         std::cout<<output("Largest scaffold")<<inSequences.getLargestScaffold()<<std::endl;
         
-        std::cout<<output("N contigs")<<inSequences.getContigN()<<std::endl;
+        std::cout<<output("# contigs")<<inSequences.getContigN()<<std::endl;
         std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<std::endl;
         inSequences.computeContigNstars(gSize);
         std::cout<<output("Contig N50")<<inSequences.getContigN50()<<std::endl;
@@ -548,7 +549,7 @@ int main(int argc, char **argv) {
         }
         
         inSequences.computeGapNstars(gSize);
-        std::cout<<output("N of Gaps")<<inSequences.getTotGapN()<<std::endl;
+        std::cout<<output("# gaps")<<inSequences.getTotGapN()<<std::endl;
         std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<std::endl;
         
         printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT)").c_str(), inSequences.getTotA(),

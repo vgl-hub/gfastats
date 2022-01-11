@@ -260,6 +260,11 @@ public:
         return contigSum;
     }
     
+    unsigned int getContigN() {
+        
+        return bedIntervalSizes(fastaContigBoundaries).size();
+    }
+    
     std::vector<unsigned int> getFastaGapBoundaries() {
         return fastaGapBoundaries;
     }
