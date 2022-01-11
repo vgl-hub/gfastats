@@ -81,7 +81,8 @@ public:
                     
                 case 'N':
                 case 'n':
-                case 'X': {
+                case 'X':
+                case 'x': {
                     
                     if (!wasN) { // gap start
                         

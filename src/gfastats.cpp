@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
                         
                     }else{
                         
-                        header = std::string(strtok(strdup(optarg),":"));
+                        header = std::string(strtok(strdup(optarg),""));
                         
                         coord = strtok(NULL,"-");
                         
@@ -290,24 +290,24 @@ int main(int argc, char **argv) {
             
             fastaSequence = inSequences.getInSequence(counter);
             
-            std::cout<<output("Seq:")<<counter+1<<std::endl;
-            std::cout<<output("Header:")<<fastaSequence.getFastaHeader()<<std::endl;
-            std::cout<<output("Comment:")<<fastaSequence.getFastaComment()<<std::endl;
-            std::cout<<output("Total sequence length:")<<fastaSequence.getFastaScaffLen()<<std::endl;
-            std::cout<<output("Total contig length:")<<fastaSequence.getContigSum()<<std::endl;
-            std::cout<<output("Total gap length:")<<fastaSequence.getGapSum()<<std::endl;
-            std::cout<<output("Number of gaps:")<<fastaSequence.getGapN()<<std::endl;
+            std::cout<<output("Seq")<<counter+1<<std::endl;
+            std::cout<<output("Header")<<fastaSequence.getFastaHeader()<<std::endl;
+            std::cout<<output("Comment")<<fastaSequence.getFastaComment()<<std::endl;
+            std::cout<<output("Total sequence length")<<fastaSequence.getFastaScaffLen()<<std::endl;
+            std::cout<<output("Total contig length")<<fastaSequence.getContigSum()<<std::endl;
+            std::cout<<output("Total gap length")<<fastaSequence.getGapSum()<<std::endl;
+            std::cout<<output("Number of gaps")<<fastaSequence.getGapN()<<std::endl;
             
-            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT):").c_str(), fastaSequence.getA(),
+            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), fastaSequence.getA(),
                    fastaSequence.getC(),
                    fastaSequence.getG(),
                    fastaSequence.getT());
-            printf("%s%.2f\n",output("GC content %:").c_str(), fastaSequence.computeGCcontent());
+            printf("%s%.2f\n",output("GC content %").c_str(), fastaSequence.computeGCcontent());
             
             
             if (outSequence_flag) {
                 
-                std::cout<<output("Sequence:")<<fastaSequence.getInSequence()<<std::endl;
+                std::cout<<output("Sequence")<<fastaSequence.getInSequence()<<std::endl;
                 
             }
             
@@ -517,43 +517,43 @@ int main(int argc, char **argv) {
         
         verbose(verbose_flag, "Computed scaffN50");
         
-        std::cout<<output("N scaffolds:")<<inSequences.getScaffN()<<std::endl;
-        std::cout<<output("Total scaffold length:")<<inSequences.getTotScaffLen()<<std::endl;
-        printf("%s%.2f\n",output("Average scaffold length:").c_str(), inSequences.computeAverageScaffLen());
+        std::cout<<output("N scaffolds")<<inSequences.getScaffN()<<std::endl;
+        std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<std::endl;
+        printf("%s%.2f\n",output("Average scaffold length").c_str(), inSequences.computeAverageScaffLen());
         inSequences.computeScaffNstars(gSize);
-        std::cout<<output("Scaffold N50:")<<inSequences.getScaffN50()<<std::endl;
-        std::cout<<output("Scaffold L50:")<<inSequences.getScaffL50()<<std::endl;
+        std::cout<<output("Scaffold N50")<<inSequences.getScaffN50()<<std::endl;
+        std::cout<<output("Scaffold L50")<<inSequences.getScaffL50()<<std::endl;
         
         if (gSize > 0) {
             
-            std::cout<<output("Scaffold NG50:")<<inSequences.getScaffNG50()<<std::endl;
-            std::cout<<output("Scaffold LG50:")<<inSequences.getScaffLG50()<<std::endl;
+            std::cout<<output("Scaffold NG50")<<inSequences.getScaffNG50()<<std::endl;
+            std::cout<<output("Scaffold LG50")<<inSequences.getScaffLG50()<<std::endl;
             
         }
-        std::cout<<output("Largest scaffold:")<<inSequences.getLargestScaffold()<<std::endl;
+        std::cout<<output("Largest scaffold")<<inSequences.getLargestScaffold()<<std::endl;
         
-        std::cout<<output("N contigs:")<<inSequences.getContigN()<<std::endl;
-        std::cout<<output("Total contig length:")<<inSequences.getTotContigLen()<<std::endl;
+        std::cout<<output("N contigs")<<inSequences.getContigN()<<std::endl;
+        std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<std::endl;
         inSequences.computeContigNstars(gSize);
-        std::cout<<output("Contig N50:")<<inSequences.getContigN50()<<std::endl;
-        std::cout<<output("Contig L50:")<<inSequences.getContigL50()<<std::endl;
+        std::cout<<output("Contig N50")<<inSequences.getContigN50()<<std::endl;
+        std::cout<<output("Contig L50")<<inSequences.getContigL50()<<std::endl;
         
         if (gSize > 0) {
             
-            std::cout<<output("Contig NG50:")<<inSequences.getContigNG50()<<std::endl;
-            std::cout<<output("Contig LG50:")<<inSequences.getContigLG50()<<std::endl;
+            std::cout<<output("Contig NG50")<<inSequences.getContigNG50()<<std::endl;
+            std::cout<<output("Contig LG50")<<inSequences.getContigLG50()<<std::endl;
             
         }
         
         inSequences.computeGapNstars(gSize);
-        std::cout<<output("N of Gaps:")<<inSequences.getTotGapN()<<std::endl;
-        std::cout<<output("Total gap length:")<<inSequences.getTotGapLen()<<std::endl;
+        std::cout<<output("N of Gaps")<<inSequences.getTotGapN()<<std::endl;
+        std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<std::endl;
         
-        printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT):").c_str(), inSequences.getTotA(),
+        printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT)").c_str(), inSequences.getTotA(),
                inSequences.getTotC(),
                inSequences.getTotG(),
                inSequences.getTotT());
-        printf("%s%.2f\n",output("GC content %:").c_str(), inSequences.computeGCcontent());
+        printf("%s%.2f\n",output("GC content %").c_str(), inSequences.computeGCcontent());
         
         counter = 0;
         
@@ -564,14 +564,14 @@ int main(int argc, char **argv) {
         int pos = 1;
         std::vector <unsigned int> scaffNstars = inSequences.getScaffNstars();
         for (unsigned int val : scaffNstars) {
-            std::cout<<"Scaffold N"<<pos*10<<": "<<val<<std::endl;
+            std::cout<<output("Scaffold N"+std::to_string(pos*10))<<val<<std::endl;
             pos++;
         }
         
         pos = 1;
         std::vector <unsigned int> scaffLstars = inSequences.getScaffLstars();
         for (unsigned int val : scaffLstars) {
-            std::cout<<"Scaffold L"<<pos*10<<": "<<val<<std::endl;
+            std::cout<<output("Scaffold L"+std::to_string(pos*10))<<val<<std::endl;
             pos++;
         }
         
@@ -580,14 +580,14 @@ int main(int argc, char **argv) {
             pos = 1;
             std::vector <unsigned int> scaffNGstars = inSequences.getScaffNGstars();
             for (unsigned int val : scaffNGstars) {
-                std::cout<<"Scaffold NG"<<pos*10<<": "<<val<<std::endl;
+                std::cout<<output("Scaffold NG"+std::to_string(pos*10))<<val<<std::endl;
                 pos++;
             }
             
             pos = 1;
             std::vector <unsigned int> scaffLGstars = inSequences.getScaffLGstars();
             for (unsigned int val : scaffLGstars) {
-                std::cout<<"Scaffold LG"<<pos*10<<": "<<val<<std::endl;
+                std::cout<<output("Scaffold LG"+std::to_string(pos*10))<<val<<std::endl;
                 pos++;
             }
             
@@ -596,14 +596,14 @@ int main(int argc, char **argv) {
         pos = 1;
         std::vector <unsigned int> contigNstars = inSequences.getContigNstars();
         for (unsigned int val : contigNstars) {
-            std::cout<<"Contig N"<<pos*10<<": "<<val<<std::endl;
+            std::cout<<output("Contig N"+std::to_string(pos*10))<<val<<std::endl;
             pos++;
         }
         
         pos = 1;
         std::vector <unsigned int> contigLstars = inSequences.getContigLstars();
         for (unsigned int val : contigLstars) {
-            std::cout<<"Contig L"<<pos*10<<": "<<val<<std::endl;
+            std::cout<<output("Contig L"+std::to_string(pos*10))<<val<<std::endl;
             pos++;
         }
         
@@ -612,14 +612,14 @@ int main(int argc, char **argv) {
             pos = 1;
             std::vector <unsigned int> contigNGstars = inSequences.getContigNGstars();
             for (unsigned int val : contigNGstars) {
-                std::cout<<"Contig NG"<<pos*10<<": "<<val<<std::endl;
+                std::cout<<output("Contig NG"+std::to_string(pos*10))<<val<<std::endl;
                 pos++;
             }
             
             pos = 1;
             std::vector <unsigned int> contigLGstars = inSequences.getContigLGstars();
             for (unsigned int val : contigLGstars) {
-                std::cout<<"Contig LG"<<pos*10<<": "<<val<<std::endl;
+                std::cout<<output("Contig LG"+std::to_string(pos*10))<<val<<std::endl;
                 pos++;
             }
             
@@ -628,14 +628,14 @@ int main(int argc, char **argv) {
         pos = 1;
         std::vector <unsigned int> gapNstars = inSequences.getGapNstars();
         for (unsigned int val : gapNstars) {
-            std::cout<<"Gap N"<<pos*10<<": "<<val<<std::endl;
+            std::cout<<output("Gap N"+std::to_string(pos*10))<<val<<std::endl;
             pos++;
         }
         
         pos = 1;
         std::vector <unsigned int> gapLstars = inSequences.getGapLstars();
         for (unsigned int val : gapLstars) {
-            std::cout<<"Gap L"<<pos*10<<": "<<val<<std::endl;
+            std::cout<<output("Gap L"+std::to_string(pos*10))<<val<<std::endl;
             pos++;
         }
         

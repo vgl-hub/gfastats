@@ -65,7 +65,7 @@ std::string output(std::string output){
         
     }else{
         
-        output = output + " ";
+        output = output + ": ";
         
     }
     
