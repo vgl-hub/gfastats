@@ -13,6 +13,7 @@ static int nstarReport_flag;
 
 int main(int argc, char **argv) {
     
+    static int outSize_flag;
     static int outCoord_flag;
     static int outSequence_flag;
     static int outFasta_flag;
@@ -29,6 +30,7 @@ int main(int argc, char **argv) {
     std::string iBedIncludeFileArg;
     std::string iBedExcludeFileArg;
     
+    char sizeOutType = 's';
     char bedOutType = 'a';
     
     BedCoordinates bedInclude;
@@ -53,10 +55,11 @@ int main(int argc, char **argv) {
         {"exclude-bed", required_argument, 0, 'e'},
         
         {"out-sequence", no_argument, &outSequence_flag, 1},
+        {"out-size", optional_argument, 0, 's'},
         {"out-coord", optional_argument, 0, 'b'},
         {"out-fasta", optional_argument, &outFasta_flag, 1},
         
-        {"stats", no_argument, 0, 's'},
+        {"stats", no_argument, &stats_flag, 1},
         {"seq-report", no_argument, &seqReport_flag, 1},
         {"nstar-report", no_argument, &nstarReport_flag, 1},
         {"tabular", no_argument, 0, 't'},
@@ -72,7 +75,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:b:e:f:i:stvh",
+        c = getopt_long(argc, argv, "-:b:e:f:i:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) {
@@ -104,6 +107,11 @@ int main(int argc, char **argv) {
                     case 'b':
                         bedOutType = 'a';
                         outCoord_flag = 1;
+                        break;
+                        
+                    case 's':
+                        sizeOutType = 's';
+                        outSize_flag = 1;
                         break;
                         
                     default:
@@ -215,7 +223,8 @@ int main(int argc, char **argv) {
                 break;
                 
             case 's':
-                stats_flag = 1;
+                sizeOutType = *optarg;
+                outSize_flag = 1;
                 break;
                 
             case 't':
@@ -232,13 +241,14 @@ int main(int argc, char **argv) {
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("\nOptions:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
-                printf("-s --stats report summary statistics (default).\n");
+                printf("-s s|c|g --out-size generates bed coordinates of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-b c|g|a --out-coord generates bed coordinates of given feature (contigs|gaps|agp default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined.\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --verbose verbose output.\n");
                 printf("-h --help print help and exit.\n");
+                printf("--stats report summary statistics (default).\n");
                 printf("--seq-report report statistics for each sequence.\n");
                 printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("--out-fasta [line length] generates a fasta output of the selected sequences. Default has no line breaks.\n");
@@ -375,6 +385,92 @@ int main(int argc, char **argv) {
             
         }
         
+        
+    }
+    
+    if (outSize_flag) {
+        
+        stats_flag = false;
+        counter = 0;
+        
+        std::string fastaHeader;
+        std::vector<unsigned int> fastaBoundaries;
+        
+        switch (sizeOutType) {
+ 
+            default:
+            case 's': {
+
+                while (counter < inSequences.getScaffN()) {
+                    
+                    fastaSequence = inSequences.getInSequence(counter);
+                        
+                    std::cout<<fastaSequence.getFastaHeader()<<"\t"<<fastaSequence.getFastaScaffLen()<<std::endl;
+                    
+                    counter++;
+                    
+                }
+                
+                break;
+            }
+                
+            case 'c': {
+                
+                while (counter < inSequences.getScaffN()) {
+                    
+                    fastaSequence = inSequences.getInSequence(counter);
+                    
+                    fastaHeader = fastaSequence.getFastaHeader();
+                    
+                    fastaBoundaries = fastaSequence.getFastaContigBoundaries();
+                    
+                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    
+                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                        
+                        std::cout<<fastaHeader<<"\t"<<*(it+1)-*it<<std::endl;
+                        
+                        it = it + 2;
+                        
+                    }
+                    
+                    counter++;
+                    
+                }
+                
+                break;
+                
+            }
+                
+            case 'g': {
+                
+                while (counter < inSequences.getScaffN()) {
+                    
+                    fastaSequence = inSequences.getInSequence(counter);
+                    
+                    fastaHeader = fastaSequence.getFastaHeader();
+                    
+                    fastaBoundaries = fastaSequence.getFastaGapBoundaries();
+                    
+                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    
+                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                        
+                        std::cout<<fastaHeader<<"\t"<<*(it+1)-*it<<std::endl;
+                        
+                        it = it + 2;
+                        
+                    }
+                    
+                    counter++;
+                    
+                }
+                
+                break;
+                
+            }
+                
+        }
         
     }
     
