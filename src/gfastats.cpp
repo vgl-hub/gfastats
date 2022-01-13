@@ -621,11 +621,14 @@ int main(int argc, char **argv) {
         printf("%s%.2f\n",output("Average scaffold length").c_str(), inSequences.computeAverageScaffLen());
         inSequences.computeScaffNstars(gSize);
         std::cout<<output("Scaffold N50")<<inSequences.getScaffN50()<<std::endl;
+        inSequences.computeScaffauNstar(gSize);
+        printf("%s%.2f\n",output("Scaffold auN").c_str(), inSequences.getScaffauN());
         std::cout<<output("Scaffold L50")<<inSequences.getScaffL50()<<std::endl;
         
         if (gSize > 0) {
             
             std::cout<<output("Scaffold NG50")<<inSequences.getScaffNG50()<<std::endl;
+            printf("%s%.2f\n",output("Scaffold auNG").c_str(), inSequences.getScaffauNG());
             std::cout<<output("Scaffold LG50")<<inSequences.getScaffLG50()<<std::endl;
             
         }
@@ -635,18 +638,25 @@ int main(int argc, char **argv) {
         std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<std::endl;
         inSequences.computeContigNstars(gSize);
         std::cout<<output("Contig N50")<<inSequences.getContigN50()<<std::endl;
+        inSequences.computeContigauNstar(gSize);
+        printf("%s%.2f\n",output("Contig auN").c_str(), inSequences.getContigauN());
         std::cout<<output("Contig L50")<<inSequences.getContigL50()<<std::endl;
         
         if (gSize > 0) {
             
             std::cout<<output("Contig NG50")<<inSequences.getContigNG50()<<std::endl;
+            printf("%s%.2f\n",output("Contig auNG").c_str(), inSequences.getContigauNG());
             std::cout<<output("Contig LG50")<<inSequences.getContigLG50()<<std::endl;
             
         }
         
-        inSequences.computeGapNstars(gSize);
         std::cout<<output("# gaps")<<inSequences.getTotGapN()<<std::endl;
         std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<std::endl;
+        inSequences.computeGapNstars();
+        std::cout<<output("Gap N50")<<inSequences.getGapN50()<<std::endl;
+        std::cout<<output("Gap L50")<<inSequences.getGapL50()<<std::endl;
+        inSequences.computeGapauNstar();
+        printf("%s%.2f\n",output("Gap auN").c_str(), inSequences.getGapauN());
         
         printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT)").c_str(), inSequences.getTotA(),
                inSequences.getTotC(),

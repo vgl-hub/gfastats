@@ -349,6 +349,8 @@ private:
     std::vector<unsigned int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> gapLstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
+    double scaffauN = 0, scaffauNG = 0, contigauN = 0, contigauNG = 0, gapauN = 0;
+    
     InSequence inSequence;
     
     unsigned long long int totScaffLen = 0;
@@ -582,7 +584,7 @@ public:
         
     }
     
-    void computeGapNstars(unsigned int gSize) {
+    void computeGapNstars() {
         
         sort(gapLens.begin(), gapLens.end(), std::greater<unsigned int>());
         
@@ -594,7 +596,7 @@ public:
             
             gapSum += gapLens[i];
             
-            if (gapSum >= ((double) totGapLen / 10 * N) && N<= 10) {
+            while (gapSum >= ((double) totGapLen / 10 * N) && N<= 10) {
                 
                 gapNstars[N-1] = gapLens[i];
                 gapLstars[N-1] = i + 1;
@@ -602,6 +604,54 @@ public:
                 N = N + 1;
                 
             }
+            
+        }
+        
+    }
+    
+    void computeScaffauNstar(unsigned int gSize) {
+        
+        unsigned long long int scaffSum = getTotScaffLen();
+        
+        for(unsigned int i = 0; i < getScaffN(); i++) {
+            
+            scaffauN += (double) scaffLens[i] * scaffLens[i] / scaffSum;
+            
+            if (gSize > 0) {
+            
+                scaffauNG += (double) scaffLens[i] * scaffLens[i] / gSize;
+                
+            }
+            
+        }
+        
+    }
+
+    void computeContigauNstar(unsigned int gSize) {
+        
+        unsigned long long int contigSum = getTotContigLen();
+        
+        for(unsigned int i = 0; i < contigLens.size(); i++) {
+            
+            contigauN += (double) contigLens[i] * contigLens[i] / contigSum;
+            
+            if (gSize > 0) {
+            
+                contigauNG += (double) contigLens[i] * contigLens[i] / gSize;
+                
+            }
+            
+        }
+        
+    }
+    
+    void computeGapauNstar() {
+        
+        unsigned long long int gapSum = getTotGapLen();
+        
+        for(unsigned int i = 0; i < gapLens.size(); i++) {
+            
+            gapauN += (double) gapLens[i] * gapLens[i] / gapSum;
             
         }
         
@@ -697,6 +747,36 @@ public:
         
     }
     
+    double getScaffauN() {
+        
+        return scaffauN;
+        
+    }
+    
+    double getScaffauNG() {
+        
+        return scaffauNG;
+        
+    }
+    
+    double getContigauN() {
+        
+        return contigauN;
+        
+    }
+    
+    double getContigauNG() {
+        
+        return contigauNG;
+        
+    }
+    
+    double getGapauN() {
+        
+        return gapauN;
+        
+    }
+    
     unsigned int getContigN() {
         
         return contigLens.size();
@@ -724,6 +804,18 @@ public:
     unsigned int getContigLG50() {
         
         return contigLGstars[4];
+        
+    }
+    
+    unsigned int getGapN50() {
+        
+        return gapNstars[4];
+        
+    }
+    
+    unsigned int getGapL50() {
+        
+        return gapLstars[4];
         
     }
     
