@@ -292,7 +292,7 @@ int main(int argc, char **argv) {
     verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
     
     unsigned int counter = 0;
-    InSequence fastaSequence;
+    InSequence inSequence;
     
     if (seqReport_flag || outSequence_flag) {
         
@@ -300,27 +300,28 @@ int main(int argc, char **argv) {
         
         while (counter < inSequences.getScaffN()) {
             
-            fastaSequence = inSequences.getInSequence(counter);
+            inSequence = inSequences.getInSequence(counter);
             
             std::cout<<output("Seq")<<counter+1<<std::endl;
-            std::cout<<output("Header")<<fastaSequence.getFastaHeader()<<std::endl;
-            std::cout<<output("Comment")<<fastaSequence.getFastaComment()<<std::endl;
-            std::cout<<output("Total sequence length")<<fastaSequence.getFastaScaffLen()<<std::endl;
-            std::cout<<output("Total contig length")<<fastaSequence.getContigSum()<<std::endl;
-            std::cout<<output("# contig")<<fastaSequence.getContigN()<<std::endl;
-            std::cout<<output("Total gap length")<<fastaSequence.getGapSum()<<std::endl;
-            std::cout<<output("# gaps")<<fastaSequence.getGapN()<<std::endl;
+            std::cout<<output("Header")<<inSequence.getFastaHeader()<<std::endl;
+            std::cout<<output("Comment")<<inSequence.getFastaComment()<<std::endl;
+            std::cout<<output("Total sequence length")<<inSequence.getFastaScaffLen()<<std::endl;
+            std::cout<<output("Total contig length")<<inSequence.getContigSum()<<std::endl;
+            std::cout<<output("# contig")<<inSequence.getContigN()<<std::endl;
+            std::cout<<output("Total gap length")<<inSequence.getGapSum()<<std::endl;
+            std::cout<<output("# gaps")<<inSequence.getGapN()<<std::endl;
             
-            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), fastaSequence.getA(),
-                   fastaSequence.getC(),
-                   fastaSequence.getG(),
-                   fastaSequence.getT());
-            printf("%s%.2f\n",output("GC content %").c_str(), fastaSequence.computeGCcontent());
+            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), inSequence.getA(),
+                   inSequence.getC(),
+                   inSequence.getG(),
+                   inSequence.getT());
+            printf("%s%.2f\n",output("GC content %").c_str(), inSequence.computeGCcontent());
+            std::cout<<output("# soft-masked bases")<<inSequence.getLowerCount()<<std::endl;
             
             
             if (outSequence_flag) {
                 
-                std::cout<<output("Sequence")<<fastaSequence.getInSequence()<<std::endl;
+                std::cout<<output("Sequence")<<inSequence.getInSequence()<<std::endl;
                 
             }
             
@@ -341,16 +342,16 @@ int main(int argc, char **argv) {
         
         while (counter < inSequences.getScaffN()) {
             
-            fastaSequence = inSequences.getInSequence(counter);
+            inSequence = inSequences.getInSequence(counter);
             
-            std::cout<<">"<<fastaSequence.getFastaHeader()<<" "<<fastaSequence.getFastaComment()<<std::endl;
+            std::cout<<">"<<inSequence.getFastaHeader()<<" "<<inSequence.getFastaComment()<<std::endl;
             
             if (splitLength != 0) {
                 
                 unsigned int pos = 0;
                 std::string line;
                 
-                for (char& base : fastaSequence.getInSequence())
+                for (char& base : inSequence.getInSequence())
                 {
                     
                     line += base;
@@ -369,7 +370,7 @@ int main(int argc, char **argv) {
                     
                 }
                 
-                if (fastaSequence.getInSequence().length() % splitLength != 0) {
+                if (inSequence.getInSequence().length() % splitLength != 0) {
                     
                     std::cout<<std::endl;
                     
@@ -377,7 +378,7 @@ int main(int argc, char **argv) {
                 
             }else{
                 
-                std::cout<<fastaSequence.getInSequence()<<std::endl;
+                std::cout<<inSequence.getInSequence()<<std::endl;
                 
             }
             
@@ -403,9 +404,9 @@ int main(int argc, char **argv) {
 
                 while (counter < inSequences.getScaffN()) {
                     
-                    fastaSequence = inSequences.getInSequence(counter);
+                    inSequence = inSequences.getInSequence(counter);
                         
-                    std::cout<<fastaSequence.getFastaHeader()<<"\t"<<fastaSequence.getFastaScaffLen()<<std::endl;
+                    std::cout<<inSequence.getFastaHeader()<<"\t"<<inSequence.getFastaScaffLen()<<std::endl;
                     
                     counter++;
                     
@@ -418,11 +419,11 @@ int main(int argc, char **argv) {
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    fastaSequence = inSequences.getInSequence(counter);
+                    inSequence = inSequences.getInSequence(counter);
                     
-                    fastaHeader = fastaSequence.getFastaHeader();
+                    fastaHeader = inSequence.getFastaHeader();
                     
-                    fastaBoundaries = fastaSequence.getFastaContigBoundaries();
+                    fastaBoundaries = inSequence.getFastaContigBoundaries();
                     
                     std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
                     
@@ -446,11 +447,11 @@ int main(int argc, char **argv) {
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    fastaSequence = inSequences.getInSequence(counter);
+                    inSequence = inSequences.getInSequence(counter);
                     
-                    fastaHeader = fastaSequence.getFastaHeader();
+                    fastaHeader = inSequence.getFastaHeader();
                     
-                    fastaBoundaries = fastaSequence.getFastaGapBoundaries();
+                    fastaBoundaries = inSequence.getFastaGapBoundaries();
                     
                     std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
                     
@@ -488,11 +489,11 @@ int main(int argc, char **argv) {
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    fastaSequence = inSequences.getInSequence(counter);
+                    inSequence = inSequences.getInSequence(counter);
                     
-                    fastaHeader = fastaSequence.getFastaHeader();
+                    fastaHeader = inSequence.getFastaHeader();
                     
-                    fastaBoundaries = fastaSequence.getFastaContigBoundaries();
+                    fastaBoundaries = inSequence.getFastaContigBoundaries();
                     
                     std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
                     
@@ -516,11 +517,11 @@ int main(int argc, char **argv) {
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    fastaSequence = inSequences.getInSequence(counter);
+                    inSequence = inSequences.getInSequence(counter);
                     
-                    fastaHeader = fastaSequence.getFastaHeader();
+                    fastaHeader = inSequence.getFastaHeader();
                     
-                    fastaBoundaries = fastaSequence.getFastaGapBoundaries();
+                    fastaBoundaries = inSequence.getFastaGapBoundaries();
                     
                     std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
                     
@@ -547,12 +548,12 @@ int main(int argc, char **argv) {
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    fastaSequence = inSequences.getInSequence(counter);
-                    unsigned int fastaScaffLen = fastaSequence.getFastaScaffLen();
+                    inSequence = inSequences.getInSequence(counter);
+                    unsigned int fastaScaffLen = inSequence.getFastaScaffLen();
                     
-                    fastaHeader = fastaSequence.getFastaHeader();
+                    fastaHeader = inSequence.getFastaHeader();
                     
-                    fastaBoundaries = fastaSequence.getFastaContigBoundaries();
+                    fastaBoundaries = inSequence.getFastaContigBoundaries();
                     
                     std::vector<unsigned int>::const_iterator begin = fastaBoundaries.cbegin();
                     std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
