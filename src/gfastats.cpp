@@ -242,7 +242,7 @@ int main(int argc, char **argv) {
                 printf("\nOptions:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
                 printf("-s s|c|g --out-size generates bed coordinates of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
-                printf("-b c|g|a --out-coord generates bed coordinates of given feature (contigs|gaps|agp default:agp).\n");
+                printf("-b a|c|g --out-coord generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined.\n");
                 printf("-t --tabular output in tabular format.\n");
@@ -663,6 +663,7 @@ int main(int argc, char **argv) {
                inSequences.getTotG(),
                inSequences.getTotT());
         printf("%s%.2f\n",output("GC content %").c_str(), inSequences.computeGCcontent());
+        std::cout<<output("# soft-masked bases")<<inSequences.getTotLowerCount()<<std::endl;
         
         counter = 0;
         

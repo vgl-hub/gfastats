@@ -64,18 +64,25 @@ private:
     std::string inSequence;
     std::vector<unsigned int> fastaContigBoundaries;
     std::vector<unsigned int> fastaGapBoundaries;
-    unsigned int A = 0, C = 0, G = 0, T = 0;
+    unsigned int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     
 public:
     
     void traverseInSequence(std::string* s) {
         
-        unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0;
+        unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
         bool wasN = false, pushbackGap = false;
+        std::vector<unsigned int> caseBoundaries;
         std::vector<unsigned int> fastaGapBoundaries;
         fastaGapBoundaries.reserve(200);
-        
+            
         for (char &base : *s) {
+            
+            if (islower(base)) {
+                
+                lowerCount++;
+                
+            }
             
             switch (base) {
                     
@@ -167,6 +174,7 @@ public:
         setFastaGapBoundaries(fastaGapBoundaries);
         setFastaContigBoundaries(fastaGapBoundaries);
         setACGT(A, C, G, T);
+        setLowerCount(lowerCount);
         
     }
     
@@ -298,6 +306,12 @@ public:
         
     }
     
+    void setLowerCount(unsigned int C) {
+        
+        lowerCount = C;
+        
+    }
+    
     unsigned int getA() {
         
         return A;
@@ -316,6 +330,11 @@ public:
     unsigned int getT() {
         
         return T;
+    }
+    
+    unsigned int getLowerCount() {
+        
+        return lowerCount;
     }
     
     double computeGCcontent() {
@@ -364,6 +383,7 @@ private:
     unsigned long int totC = 0;
     unsigned long int totG = 0;
     unsigned long int totT = 0;
+    unsigned long int totLowerCount = 0;
     
     std::string h;
     
@@ -425,6 +445,10 @@ public:
         increaseTotACGT(inSequence.getA(), inSequence.getC(), inSequence.getG(), inSequence.getT());
         
         verbose(verbose_flag, "Increased ACGT counts");
+        
+        increaseTotLowerCount(inSequence.getLowerCount());
+        
+        verbose(verbose_flag, "Increased count of upper bases");
         
         if(verbose_flag) {std::cout<<"\n";};
         
@@ -850,6 +874,12 @@ public:
         
     }
     
+    void increaseTotLowerCount(unsigned int C) {
+        
+        totLowerCount += C;
+        
+    }
+    
     unsigned long int getTotA() {
         
         return totA;
@@ -868,6 +898,11 @@ public:
     unsigned long int getTotT() {
         
         return totT;
+    }
+    
+    unsigned long int getTotLowerCount() {
+        
+        return totLowerCount;
     }
     
     double computeGCcontent() {
