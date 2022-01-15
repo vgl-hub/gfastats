@@ -54,52 +54,49 @@ public:
         
     }
     
-    bool outFasta (InSequences &inSequences, InSequence &inSequence, short unsigned int splitLength, int &outSequence_flag) {
+    bool outFile (InSequences &inSequences, InSequence &inSequence, int splitLength, std::string &fileOutType) {
         
-        while (counter < inSequences.getScaffN()) {
-            
-            inSequence = inSequences.getInSequence(counter);
-            
-            std::cout<<">"<<inSequence.getFastaHeader()<<" "<<inSequence.getFastaComment()<<std::endl;
-            
-            if (splitLength != 0) {
+        const static std::unordered_map<std::string,int> string_to_case{
+            {"fasta",1},
+            {"fastq",2},
+            {"gfa",3}
+        };
+        
+        std::string output;
+        
+        switch (string_to_case.count(fileOutType) ? string_to_case.at(fileOutType) : 0) {
                 
-                unsigned int pos = 0;
-                std::string line;
-                
-                for (char& base : inSequence.getInSequence())
-                {
+            case 1: {
+                while (counter < inSequences.getScaffN()) {
                     
-                    line += base;
+                    inSequence = inSequences.getInSequence(counter);
                     
-                    if (pos == splitLength) {
+                    std::cout<<">"<<inSequence.getFastaHeader()<<" "<<inSequence.getFastaComment()<<std::endl;
+                    
+                    if (splitLength != 0) {
                         
-                        std::cout<<line;
-                        std::cout<<std::endl;
+                        std::ostream stream(nullptr);
+                        stream.rdbuf(std::cout.rdbuf());
                         
-                        line = "";
-                        pos = 0;
+                        textWrap(inSequence.getInSequence(), stream, splitLength);
+                        
+                    }else{
+                        
+                        output = inSequence.getInSequence();
                         
                     }
                     
-                    pos++;
+                    std::cout<<output<<std::endl;
+                    output = "";
+                    
+                    counter++;
                     
                 }
-                
-                if (inSequence.getInSequence().length() % splitLength != 0) {
-                    
-                    std::cout<<std::endl;
-                    
-                }
-                
-            }else{
-                
-                std::cout<<inSequence.getInSequence()<<std::endl;
                 
             }
-            
-            counter++;
-            
+                
+            case 0: {}//undefined case
+                
         }
         
         return true;

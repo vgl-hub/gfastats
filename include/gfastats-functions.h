@@ -8,10 +8,16 @@
 #ifndef gfastatsFunctions_h
 #define gfastatsFunctions_h
 
+//templates
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 //functions
 
 bool isInt(const std::string &str) {
-  return !str.empty() && str.find_first_not_of("0123456789") == std::string::npos;
+    return !str.empty() && str.find_first_not_of("0123456789") == std::string::npos;
 }
 
 double elapsedTime(){
@@ -75,11 +81,11 @@ std::string output(std::string output){
 bool isDash(char * optarg) {
     
     return (strcmp(optarg, "-") == 0) ? true : false;
-
+    
 }
 
 bool ifFileExists(char * optarg) {
-
+    
     if (!access (optarg, F_OK)) {
         
         return optarg;
@@ -90,7 +96,7 @@ bool ifFileExists(char * optarg) {
         exit(1);
         
     }
-
+    
 }
 
 bool determineGzip(std::string iFastaFileArg) {
@@ -112,15 +118,41 @@ bool determineGzip(std::string iFastaFileArg) {
     }else{
         
         return false;
-            
+        
     }
     
 }
 
-//templates
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+void textWrap(std::string input, std::ostream& output, int width) {
+    
+    std::string tmp;
+    char cur = '\0';
+    char last = '\0';
+    int i = 0;
+    
+    std::stringstream ss(input);
+    
+    while (ss.get(cur)) {
+        if (++i == width+1) {
+
+            output << tmp << '\n';
+            i = tmp.length();
+            tmp.clear();
+            
+        }else{
+            
+            output << tmp;
+            tmp.clear();
+            
+        }
+        
+        tmp += cur;
+        last = cur;
+    }
+    
+    output << tmp;
+    tmp.clear();
+    
 }
 
 #endif /* gfastats-Functions_h */

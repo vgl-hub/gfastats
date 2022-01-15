@@ -15,8 +15,8 @@ int main(int argc, char **argv) {
     
     static int outSize_flag;
     static int outCoord_flag;
+    static int outFile_flag;
     static int outSequence_flag;
-    static int outFasta_flag;
     static int stats_flag;
     static int cmd_flag;
     
@@ -24,11 +24,13 @@ int main(int argc, char **argv) {
     short unsigned int arg_counter;
     short unsigned int pos_op = 1;
     unsigned long long int gSize = 0;
-    short unsigned int splitLength = 0;
+    int splitLength = 0;
     
     std::string iFastaFileArg;
     std::string iBedIncludeFileArg;
     std::string iBedExcludeFileArg;
+    
+    std::string fileOutType = "fasta";
     
     char sizeOutType = 's';
     char bedOutType = 'a';
@@ -53,11 +55,12 @@ int main(int argc, char **argv) {
         {"fasta", required_argument, 0, 'f'},
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},
-        
+ 
+        {"out-format", optional_argument, 0, 'o'},
+        {"line-length", required_argument, 0, 0},
         {"out-sequence", no_argument, &outSequence_flag, 1},
         {"out-size", optional_argument, 0, 's'},
         {"out-coord", optional_argument, 0, 'b'},
-        {"out-fasta", optional_argument, &outFasta_flag, 1},
         
         {"stats", no_argument, &stats_flag, 1},
         {"seq-report", no_argument, &seqReport_flag, 1},
@@ -75,7 +78,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:b:e:f:i:s:tvh",
+        c = getopt_long(argc, argv, "-:b:e:f:i:o:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) {
@@ -95,12 +98,6 @@ int main(int argc, char **argv) {
             
         }
         
-        if (outFasta_flag && optarg != nullptr) {
-            
-            splitLength = atoi(optarg);
-            
-        }
-        
         switch (c) {
             case ':':
                 switch (optopt) {
@@ -112,6 +109,11 @@ int main(int argc, char **argv) {
                     case 's':
                         sizeOutType = 's';
                         outSize_flag = 1;
+                        break;
+                        
+                    case 'o':
+                        fileOutType = "fasta";
+                        outFile_flag = 1;
                         break;
                         
                     default:
@@ -168,6 +170,10 @@ int main(int argc, char **argv) {
                 }
                 else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
             case 0:
+                
+                if (strcmp(long_options[option_index].name,"line-length") == 0)
+                  splitLength = atoi(optarg);
+                
                 break;
                 
             case 'b':
@@ -222,6 +228,11 @@ int main(int argc, char **argv) {
                 stats_flag = 1;
                 break;
                 
+            case 'o':
+                fileOutType = optarg;
+                outFile_flag = 1;
+                break;
+                
             case 's':
                 sizeOutType = *optarg;
                 outSize_flag = 1;
@@ -241,7 +252,10 @@ int main(int argc, char **argv) {
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("\nOptions:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
-                printf("-s s|c|g --out-size generates bed coordinates of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
+                printf("-o --out-format fasta|fastq|gfa outputs selected sequences.\n");
+                printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.");
+                
+                printf("-s --out-size s|c|g  generates bed coordinates of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-b a|c|g --out-coord generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined.\n");
@@ -250,8 +264,7 @@ int main(int argc, char **argv) {
                 printf("-h --help print help and exit.\n");
                 printf("--stats report summary statistics (default).\n");
                 printf("--seq-report report statistics for each sequence.\n");
-                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
-                printf("--out-fasta [line length] generates a fasta output of the selected sequences. Default has no line breaks.\n");
+                printf("\t--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--cmd print $0 to stdout.\n");
                 printf("\nAll input files can be piped from stdin using '-'.\n");
@@ -305,10 +318,11 @@ int main(int argc, char **argv) {
         
     }
     
-    if (outFasta_flag) {
+    if (outFile_flag) {
         
         stats_flag = false;
-        report.outFasta(inSequences, inSequence, splitLength, outSequence_flag);
+        
+        report.outFile(inSequences, inSequence, splitLength, fileOutType);
         
     }
     
