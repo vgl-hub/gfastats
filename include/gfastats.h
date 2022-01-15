@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "izstream.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -22,12 +21,16 @@
 #include <vector>
 #include <string.h>
 #include <algorithm>
+#include <cstring>
+
+#include "zlib.h"
+#include "zstream_common.hpp"
+#include "izstream.hpp"
+#include "izstream_impl.hpp"
 
 #include <chrono>
 
 #include <memory>
-
-#include "zlib.h"
 
 #include "gfastats-global.h"
 #include "gfastats-functions.h"

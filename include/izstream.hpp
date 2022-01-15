@@ -21,14 +21,6 @@
 #ifndef INPUT_ZIP_STREAM_HPP
 #define INPUT_ZIP_STREAM_HPP
 
-#include <vector>
-#include <iostream>
-#include <algorithm>
-
-#include <zlib.h>
-
-#include "zstream_common.hpp"
-
 namespace zstream {
 
 /** \brief A stream decorator that takes compressed input and unzips it to a istream.
@@ -270,8 +262,6 @@ typedef basic_zip_istream<char> izstream;
 typedef basic_zip_istream<wchar_t> wizstream;
 
 } // zstream
-
-#include "izstream_impl.hpp"
 
 #endif
 

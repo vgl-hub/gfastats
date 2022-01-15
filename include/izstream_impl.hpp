@@ -21,10 +21,6 @@
 #ifndef INPUT_ZIP_STREAM_IMPL_HPP
 #define INPUT_ZIP_STREAM_IMPL_HPP
 
-#include "izstream.hpp"
-#include <sstream>
-#include <cstring>
-
 namespace zstream {
 
 template<typename Elem, typename Tr, typename ElemA, typename ByteT,
