@@ -308,53 +308,7 @@ int main(int argc, char **argv) {
     if (outFasta_flag) {
         
         stats_flag = false;
-        
-        while (counter < inSequences.getScaffN()) {
-            
-            inSequence = inSequences.getInSequence(counter);
-            
-            std::cout<<">"<<inSequence.getFastaHeader()<<" "<<inSequence.getFastaComment()<<std::endl;
-            
-            if (splitLength != 0) {
-                
-                unsigned int pos = 0;
-                std::string line;
-                
-                for (char& base : inSequence.getInSequence())
-                {
-                    
-                    line += base;
-                    
-                    if (pos == splitLength) {
-                        
-                        std::cout<<line;
-                        std::cout<<std::endl;
-                        
-                        line = "";
-                        pos = 0;
-                        
-                    }
-                    
-                    pos++;
-                    
-                }
-                
-                if (inSequence.getInSequence().length() % splitLength != 0) {
-                    
-                    std::cout<<std::endl;
-                    
-                }
-                
-            }else{
-                
-                std::cout<<inSequence.getInSequence()<<std::endl;
-                
-            }
-            
-            counter++;
-            
-        }
-        
+        report.outFasta(inSequences, inSequence, splitLength, outSequence_flag);
         
     }
     
