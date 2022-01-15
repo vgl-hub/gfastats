@@ -1,6 +1,6 @@
 CC = g++
 
-CFLAGS  = -g -Wall -std=c++11 -O3 -I./include -I./zlib
+CFLAGS  = -g -Wall -std=c++11 -O3 -I./include
 
 TARGET = gfastats
 BUILD_PATH = build/bin

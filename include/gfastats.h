@@ -18,15 +18,15 @@
 #include <unistd.h>
 #include <getopt.h>
 
-#include <vector>
+#include <vector>  //required for zstream
 #include <string.h>
-#include <algorithm>
-#include <cstring>
+#include <algorithm> //required for zstream
+#include <cstring> //required for zstream
 
-#include "zlib.h"
-#include "zstream_common.hpp"
-#include "izstream.hpp"
-#include "izstream_impl.hpp"
+#include "zlib/zlib/zlib.h"
+#include "zstream/zstream_common.hpp"
+#include "zstream/izstream.hpp"
+#include "zstream/izstream_impl.hpp"
 
 #include <chrono>
 
