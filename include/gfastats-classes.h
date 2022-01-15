@@ -998,32 +998,32 @@ public:
         std::string firstLine;
         char firstChar;
         
+        std::ifstream is(iFastaFileArg);
+        zstream::igzstream zin(is);
+        
         if (determineGzip(iFastaFileArg)) {
             
-            std::string data;
-            
-            data = loadGzip(iFastaFileArg);
-            
-            stream = make_unique<std::istringstream>(std::istringstream(data));
+            stream = make_unique<std::istream>(zin.rdbuf());
             
         } else if (isPipe && (pipeType == 'f')) {
-            
+
             std::istream &in = std::cin;
             stream = make_unique<std::istream>(in.rdbuf());
-            
+
         } else {
-            
+
             stream = make_unique<std::ifstream>(std::ifstream(iFastaFileArg));
-            
+
         }
         
         if (stream) {
             
             getline(*stream, newLine);
+            
             firstLine = newLine;
             firstChar = newLine[0];
             
-            if (!isPipe || pipeType != 'f') {
+            if ((!isPipe || pipeType != 'f') && !determineGzip(iFastaFileArg)) {
                 
                 stream->clear();
                 stream->seekg(0, stream->beg);
@@ -1034,7 +1034,7 @@ public:
                     
                 case '>': {
                     
-                    if (isPipe && pipeType == 'f') {
+                    if ((isPipe && pipeType == 'f') || determineGzip(iFastaFileArg)) {
                         
                         parseFasta(firstLine, Fasta, fastaHeader, fastaComment, fastaSequence, idx, bedIncludeList, bedExcludeList);
                         
@@ -1170,9 +1170,9 @@ public:
             }
             
         }else{
-            
+
             printf("Stream not successful: %s", iFastaFileArg.c_str());
-            
+
         }
         
         return Fasta;

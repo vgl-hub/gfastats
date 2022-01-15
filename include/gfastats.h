@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "izstream.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>
