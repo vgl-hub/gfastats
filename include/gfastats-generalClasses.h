@@ -5,8 +5,8 @@
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef gfastatsClasses_h
-#define gfastatsClasses_h
+#ifndef gfastatsgeneralClasses_h
+#define gfastatsgeneralClasses_h
 
 //classes
 class BedCoordinates {

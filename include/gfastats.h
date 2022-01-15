@@ -34,6 +34,7 @@
 
 #include "gfastats-global.h"
 #include "gfastats-functions.h"
-#include "gfastats-classes.h"
+#include "gfastats-generalClasses.h"
+#include "gfastats-outputClasses.h"
 
 #endif /* gfastats_h */

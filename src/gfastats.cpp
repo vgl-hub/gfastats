@@ -289,50 +289,19 @@ int main(int argc, char **argv) {
     
     inSequences = inFile.readFiles(iFastaFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType);
     
-    verbose(verbose_flag, "Finished reading sequences from file to fasta sequence object");
+    verbose(verbose_flag, "Finished reading sequences from file to sequence object");
+    
+    InSequence inSequence;
     
     unsigned int counter = 0;
-    InSequence inSequence;
+    
+    Report report;
     
     if (seqReport_flag || outSequence_flag) {
         
         stats_flag = true;
         
-        while (counter < inSequences.getScaffN()) {
-            
-            inSequence = inSequences.getInSequence(counter);
-            
-            std::cout<<output("Seq")<<counter+1<<std::endl;
-            std::cout<<output("Header")<<inSequence.getFastaHeader()<<std::endl;
-            std::cout<<output("Comment")<<inSequence.getFastaComment()<<std::endl;
-            std::cout<<output("Total sequence length")<<inSequence.getFastaScaffLen()<<std::endl;
-            std::cout<<output("Total contig length")<<inSequence.getContigSum()<<std::endl;
-            std::cout<<output("# contig")<<inSequence.getContigN()<<std::endl;
-            std::cout<<output("Total gap length")<<inSequence.getGapSum()<<std::endl;
-            std::cout<<output("# gaps")<<inSequence.getGapN()<<std::endl;
-            
-            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), inSequence.getA(),
-                   inSequence.getC(),
-                   inSequence.getG(),
-                   inSequence.getT());
-            printf("%s%.2f\n",output("GC content %").c_str(), inSequence.computeGCcontent());
-            std::cout<<output("# soft-masked bases")<<inSequence.getLowerCount()<<std::endl;
-            
-            
-            if (outSequence_flag) {
-                
-                std::cout<<output("Sequence")<<inSequence.getInSequence()<<std::endl;
-                
-            }
-            
-            std::cout<<std::endl;
-            counter++;
-            
-        }
-        
-        counter = 0;
-        
-        std::cout<<output("+++Summary+++")<<std::endl;
+        report.generateSeqReport(inSequences, inSequence, outSequence_flag);
         
     }
     
@@ -616,6 +585,12 @@ int main(int argc, char **argv) {
     if (stats_flag) {
         
         verbose(verbose_flag, "Computed scaffN50");
+        
+        if (!tabular_flag) {
+        
+            std::cout<<output("+++Summary+++")<<std::endl;
+        
+        }
         
         std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<std::endl;
         std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<std::endl;
