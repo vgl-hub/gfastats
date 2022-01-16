@@ -352,6 +352,13 @@ public:
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
                     inSequence->erase(offset, cBegin-prevCEnd);
+                    
+                    if (inSequenceQuality != NULL) {
+                    
+                        inSequenceQuality->erase(offset, cBegin-prevCEnd);
+                    
+                    }
+                        
                     offset += cEnd-cBegin;
                     prevCEnd = cEnd;
                     
@@ -367,6 +374,12 @@ public:
                 if (offset>0) {
                 
                     inSequence->erase(offset, inSequence->size()-offset);
+                    
+                    if (inSequenceQuality != NULL) {
+                    
+                        inSequenceQuality->erase(offset, inSequenceQuality->size()-offset);
+                        
+                    }
                     
                 }
                 
@@ -403,6 +416,13 @@ public:
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
                     inSequence->erase(cBegin-offset, cEnd-cBegin);
+                    
+                    if (inSequenceQuality != NULL) {
+                    
+                        inSequenceQuality->erase(cBegin-offset, cEnd-cBegin);
+                        
+                    }
+                        
                     offset += cEnd-cBegin;
                     
                 }else{

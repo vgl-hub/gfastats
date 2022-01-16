@@ -59,7 +59,9 @@ public:
         
         const static std::unordered_map<std::string,int> string_to_case{
             {"fasta",1},
+            {"fa",1},
             {"fastq",2},
+            {"fq",2},
             {"gfa",3}
         };
         

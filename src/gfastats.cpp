@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
                         
                     }else{
                         
-                        header = std::string(strtok(strdup(optarg),""));
+                        header = std::string(strtok(strdup(optarg),":"));
                         
                         coord = strtok(NULL,"-");
                         
@@ -160,6 +160,7 @@ int main(int argc, char **argv) {
                                 cEnd = atoi(coord);
                                 
                             }else{printf("Error: missing end coordinate (%s).\n", header.c_str()); exit(1);}
+                            
                             
                         }
                         
@@ -258,7 +259,7 @@ int main(int argc, char **argv) {
                 printf("-s --out-size s|c|g  generates bed coordinates of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-b a|c|g --out-coord generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
-                printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined.\n");
+                printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined (no coordinates).\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --verbose verbose output.\n");
                 printf("-h --help print help and exit.\n");
