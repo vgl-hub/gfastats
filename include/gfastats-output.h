@@ -5,8 +5,8 @@
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef gfastatsoutputClasses_h
-#define gfastatsoutputClasses_h
+#ifndef gfastatsoutput_h
+#define gfastatsoutput_h
 
 //classes
 class Report {
@@ -21,9 +21,9 @@ public:
             inSequence = inSequences.getInSequence(counter);
             
             std::cout<<output("Seq")<<counter+1<<std::endl;
-            std::cout<<output("Header")<<inSequence.getFastaHeader()<<std::endl;
-            std::cout<<output("Comment")<<inSequence.getFastaComment()<<std::endl;
-            std::cout<<output("Total sequence length")<<inSequence.getFastaScaffLen()<<std::endl;
+            std::cout<<output("Header")<<inSequence.getSeqHeader()<<std::endl;
+            std::cout<<output("Comment")<<inSequence.getSeqComment()<<std::endl;
+            std::cout<<output("Total sequence length")<<inSequence.getSeqScaffLen()<<std::endl;
             std::cout<<output("Total contig length")<<inSequence.getContigSum()<<std::endl;
             std::cout<<output("# contig")<<inSequence.getContigN()<<std::endl;
             std::cout<<output("Total gap length")<<inSequence.getGapSum()<<std::endl;
@@ -40,6 +40,7 @@ public:
             if (outSequence_flag) {
                 
                 std::cout<<output("Sequence")<<inSequence.getInSequence()<<std::endl;
+                std::cout<<output("Quality")<<inSequence.getInSequenceQuality()<<std::endl;
                 
             }
             
@@ -71,7 +72,7 @@ public:
                     
                     inSequence = inSequences.getInSequence(counter);
                     
-                    std::cout<<">"<<inSequence.getFastaHeader()<<" "<<inSequence.getFastaComment()<<std::endl;
+                    std::cout<<">"<<inSequence.getSeqHeader()<<" "<<inSequence.getSeqComment()<<std::endl;
                     
                     if (splitLength != 0) {
                         
@@ -95,6 +96,21 @@ public:
                 
             }
                 
+            case 2: {
+                while (counter < inSequences.getScaffN()) {
+                    
+                    inSequence = inSequences.getInSequence(counter);
+                    
+                    std::cout<<"@"<<inSequence.getSeqHeader()<<" "<<inSequence.getSeqComment()<<"\n"<<inSequence.getInSequence()<<"\n+\n"<<inSequence.getInSequenceQuality()<<"\n";
+                    
+                    counter++;
+                    
+                }
+                
+            }
+            
+                
+                
             case 0: {}//undefined case
                 
         }
@@ -106,4 +122,4 @@ public:
 };
 
 
-#endif /* gfastats-classes_h */
+#endif /* gfastats-output_h */

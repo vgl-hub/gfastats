@@ -24,18 +24,18 @@
 #include <algorithm> //required for zstream
 #include <cstring> //required for zstream
 
+#include <chrono>
+#include <memory>
+
 #include "zlib/zlib/zlib.h"
 #include "zstream/zstream_common.hpp"
 #include "zstream/izstream.hpp"
 #include "zstream/izstream_impl.hpp"
 
-#include <chrono>
-
-#include <memory>
-
 #include "gfastats-global.h"
 #include "gfastats-functions.h"
-#include "gfastats-generalClasses.h"
-#include "gfastats-outputClasses.h"
+#include "gfastats-commons.h"
+#include "gfastats-input.h"
+#include "gfastats-output.h"
 
 #endif /* gfastats_h */

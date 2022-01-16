@@ -7,6 +7,7 @@
 //global
 static int verbose_flag;
 static int seqReport_flag;
+static int outSequence_flag;
 static int nstarReport_flag;
 
 #include <gfastats.h>
@@ -16,7 +17,6 @@ int main(int argc, char **argv) {
     static int outSize_flag;
     static int outCoord_flag;
     static int outFile_flag;
-    static int outSequence_flag;
     static int stats_flag;
     static int cmd_flag;
     
@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
     unsigned long long int gSize = 0;
     int splitLength = 0;
     
-    std::string iFastaFileArg;
+    std::string iSeqFileArg;
     std::string iBedIncludeFileArg;
     std::string iBedExcludeFileArg;
     
@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
                     }else{
                         
                         ifFileExists(optarg);
-                        iFastaFileArg = optarg;
+                        iSeqFileArg = optarg;
                         
                     }
                     
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
                 }else{
                     
                     ifFileExists(optarg);
-                    iFastaFileArg = optarg;
+                    iSeqFileArg = optarg;
                     
                 }
                     
@@ -300,7 +300,7 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Sequence object generated");
     
-    inSequences = inFile.readFiles(iFastaFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType);
+    inSequences = inFile.readFiles(iSeqFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType);
     
     verbose(verbose_flag, "Finished reading sequences from file to sequence object");
     
@@ -331,8 +331,8 @@ int main(int argc, char **argv) {
         stats_flag = false;
         counter = 0;
         
-        std::string fastaHeader;
-        std::vector<unsigned int> fastaBoundaries;
+        std::string seqHeader;
+        std::vector<unsigned int> seqBoundaries;
         
         switch (sizeOutType) {
  
@@ -343,7 +343,7 @@ int main(int argc, char **argv) {
                     
                     inSequence = inSequences.getInSequence(counter);
                         
-                    std::cout<<inSequence.getFastaHeader()<<"\t"<<inSequence.getFastaScaffLen()<<std::endl;
+                    std::cout<<inSequence.getSeqHeader()<<"\t"<<inSequence.getSeqScaffLen()<<std::endl;
                     
                     counter++;
                     
@@ -358,15 +358,15 @@ int main(int argc, char **argv) {
                     
                     inSequence = inSequences.getInSequence(counter);
                     
-                    fastaHeader = inSequence.getFastaHeader();
+                    seqHeader = inSequence.getSeqHeader();
                     
-                    fastaBoundaries = inSequence.getFastaContigBoundaries();
+                    seqBoundaries = inSequence.getSeqContigBoundaries();
                     
-                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     
-                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
                         
-                        std::cout<<fastaHeader<<"\t"<<*(it+1)-*it<<std::endl;
+                        std::cout<<seqHeader<<"\t"<<*(it+1)-*it<<std::endl;
                         
                         it = it + 2;
                         
@@ -386,15 +386,15 @@ int main(int argc, char **argv) {
                     
                     inSequence = inSequences.getInSequence(counter);
                     
-                    fastaHeader = inSequence.getFastaHeader();
+                    seqHeader = inSequence.getSeqHeader();
                     
-                    fastaBoundaries = inSequence.getFastaGapBoundaries();
+                    seqBoundaries = inSequence.getSeqGapBoundaries();
                     
-                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     
-                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
                         
-                        std::cout<<fastaHeader<<"\t"<<*(it+1)-*it<<std::endl;
+                        std::cout<<seqHeader<<"\t"<<*(it+1)-*it<<std::endl;
                         
                         it = it + 2;
                         
@@ -417,8 +417,8 @@ int main(int argc, char **argv) {
         stats_flag = false;
         counter = 0;
         
-        std::string fastaHeader;
-        std::vector<unsigned int> fastaBoundaries;
+        std::string seqHeader;
+        std::vector<unsigned int> seqBoundaries;
         
         switch (bedOutType) {
                 
@@ -428,15 +428,15 @@ int main(int argc, char **argv) {
                     
                     inSequence = inSequences.getInSequence(counter);
                     
-                    fastaHeader = inSequence.getFastaHeader();
+                    seqHeader = inSequence.getSeqHeader();
                     
-                    fastaBoundaries = inSequence.getFastaContigBoundaries();
+                    seqBoundaries = inSequence.getSeqContigBoundaries();
                     
-                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     
-                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
                         
-                        std::cout<<fastaHeader<<"\t"<<*it<<"\t"<<*(it+1)<<std::endl;
+                        std::cout<<seqHeader<<"\t"<<*it<<"\t"<<*(it+1)<<std::endl;
                         
                         it = it + 2;
                         
@@ -456,15 +456,15 @@ int main(int argc, char **argv) {
                     
                     inSequence = inSequences.getInSequence(counter);
                     
-                    fastaHeader = inSequence.getFastaHeader();
+                    seqHeader = inSequence.getSeqHeader();
                     
-                    fastaBoundaries = inSequence.getFastaGapBoundaries();
+                    seqBoundaries = inSequence.getSeqGapBoundaries();
                     
-                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     
-                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
                         
-                        std::cout<<fastaHeader<<"\t"<<*it<<"\t"<<*(it+1)<<std::endl;
+                        std::cout<<seqHeader<<"\t"<<*it<<"\t"<<*(it+1)<<std::endl;
                         
                         it = it + 2;
                         
@@ -486,47 +486,47 @@ int main(int argc, char **argv) {
                 while (counter < inSequences.getScaffN()) {
                     
                     inSequence = inSequences.getInSequence(counter);
-                    unsigned int fastaScaffLen = inSequence.getFastaScaffLen();
+                    unsigned int seqScaffLen = inSequence.getSeqScaffLen();
                     
-                    fastaHeader = inSequence.getFastaHeader();
+                    seqHeader = inSequence.getSeqHeader();
                     
-                    fastaBoundaries = inSequence.getFastaContigBoundaries();
+                    seqBoundaries = inSequence.getSeqContigBoundaries();
                     
-                    std::vector<unsigned int>::const_iterator begin = fastaBoundaries.cbegin();
-                    std::vector<unsigned int>::const_iterator end = fastaBoundaries.cend();
+                    std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
+                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     auto last = std::prev(end);
                     
                     if (*begin>0) {
                         
-                        std::cout<<fastaHeader<<"\t"<<1<<"\t"<<*begin<<"\t"<<1<<"\t"<<"N"<<"\t"<<*begin<<"\tscaffold\tyes\t"<<std::endl;
+                        std::cout<<seqHeader<<"\t"<<1<<"\t"<<*begin<<"\t"<<1<<"\t"<<"N"<<"\t"<<*begin<<"\tscaffold\tyes\t"<<std::endl;
                         
                         item++;
                         
                     }
                     
-                    for (std::vector<unsigned int>::const_iterator it = fastaBoundaries.cbegin(); it != end;) {
+                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
                         
                         len = *(it+1) - *it;
                         
-                        std::cout<<fastaHeader<<"\t"<<*it+1<<"\t"<<*(it+1)<<"\t"<<item<<"\t"<<"W"<<"\t"<<fastaHeader+"."<<ctgN<<"\t1\t"<<len<<"\t+"<<std::endl;
+                        std::cout<<seqHeader<<"\t"<<*it+1<<"\t"<<*(it+1)<<"\t"<<item<<"\t"<<"W"<<"\t"<<seqHeader+"."<<ctgN<<"\t1\t"<<len<<"\t+"<<std::endl;
                         
                         item++;
                         
-                        if (ctgN != fastaBoundaries.size()/2) {
+                        if (ctgN != seqBoundaries.size()/2) {
                             
                             len = *(it+2) - *(it+1);
                             
-                            std::cout<<fastaHeader<<"\t"<<*(it+1)+1<<"\t"<<*(it+2)<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
+                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<*(it+2)<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
                             
                             item++;
                             
                         }
                         
-                        if (ctgN == fastaBoundaries.size()/2 && fastaScaffLen > *last) {
+                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) {
                             
-                            len = fastaScaffLen - *(it+1);
+                            len = seqScaffLen - *(it+1);
                             
-                            std::cout<<fastaHeader<<"\t"<<*(it+1)+1<<"\t"<<fastaScaffLen<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
+                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<seqScaffLen<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
                             
                             item++;
                             
