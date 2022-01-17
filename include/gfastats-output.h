@@ -121,6 +121,7 @@ public:
         switch (string_to_case.count(ext) ? string_to_case.at(ext) : 0) {
                 
             case 1: {
+                
                 while (counter < inSequences.getScaffN()) {
                     
                     inSequence = inSequences.getInSequence(counter);
@@ -144,9 +145,12 @@ public:
                     
                 }
                 
+                break;
+                
             }
                 
             case 2: {
+                
                 while (counter < inSequences.getScaffN()) {
                     
                     inSequence = inSequences.getInSequence(counter);
@@ -157,9 +161,17 @@ public:
                     
                 }
                 
+                break;
+                
             }
                 
-            //case 0: {std::cout<<"Unrecognized output: "<<outSeq;}//undefined case
+            case 0: {//undefined case
+                
+                std::cout<<"Unrecognized output: "<<outSeq;
+                
+                break;
+                
+            }
                 
         }
         
