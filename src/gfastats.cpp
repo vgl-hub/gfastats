@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     std::string iBedIncludeFileArg;
     std::string iBedExcludeFileArg;
     
-    std::string fileOutType = "fasta";
+    std::string outSeq = "fasta";
     
     char sizeOutType = 's';
     char bedOutType = 'a';
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
                         break;
                         
                     case 'o':
-                        fileOutType = "fasta";
+                        outSeq = "fasta";
                         outFile_flag = 1;
                         break;
                         
@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'o':
-                fileOutType = optarg;
+                outSeq = optarg;
                 outFile_flag = 1;
                 break;
                 
@@ -253,7 +253,7 @@ int main(int argc, char **argv) {
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("\nOptions:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
-                printf("-o --out-format fasta|fastq|gfa outputs selected sequences.\n");
+                printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
                 printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.");
                 
                 printf("-s --out-size s|c|g  generates bed coordinates of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
@@ -323,7 +323,7 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outFile(inSequences, inSequence, splitLength, fileOutType);
+        report.outFile(inSequences, inSequence, splitLength, outSeq);
         
     }
     

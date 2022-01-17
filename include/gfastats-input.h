@@ -29,8 +29,7 @@ public:
             
             if (isPipe && (pipeType == 'i')) {
                 
-                std::istream &in = std::cin;
-                stream = make_unique<std::istream>(in.rdbuf());
+                stream = make_unique<std::istream>(std::cin.rdbuf());
                 
             }else{
                 
@@ -56,8 +55,7 @@ public:
             
             if (isPipe && (pipeType == 'e')) {
                 
-                std::istream &in = std::cin;
-                stream = make_unique<std::istream>(in.rdbuf());
+                stream = make_unique<std::istream>(std::cin.rdbuf());
                 
             }else{
                 
@@ -91,8 +89,7 @@ public:
             
         } else if (isPipe && (pipeType == 'f')) {
 
-            std::istream &in = std::cin;
-            stream = make_unique<std::istream>(in.rdbuf());
+            stream = make_unique<std::istream>(std::cin.rdbuf());
 
         } else {
 

@@ -155,4 +155,22 @@ void textWrap(std::string input, std::ostream& output, int width) {
     
 }
 
+std::string rmFileExt(const std::string& path) {
+    if (path == "." || path == "..")
+        return path;
+
+    size_t pos = path.find_last_of("\\/.");
+    if (pos != std::string::npos && path[pos] == '.')
+        return path.substr(0, pos);
+
+    return path;
+}
+
+std::string getFileExt(const std::string& FileName)
+{
+    if(FileName.find_last_of(".") != std::string::npos)
+        return FileName.substr(FileName.find_last_of(".")+1);
+    return "";
+}
+
 #endif /* gfastats-Functions_h */

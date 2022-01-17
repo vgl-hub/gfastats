@@ -55,33 +55,81 @@ public:
         
     }
     
-    bool outFile (InSequences &inSequences, InSequence &inSequence, int splitLength, std::string &fileOutType) {
+    bool outFile (InSequences &inSequences, InSequence &inSequence, int splitLength, std::string &outSeq) {
         
         const static std::unordered_map<std::string,int> string_to_case{
             {"fasta",1},
             {"fa",1},
+            {"fasta.gz",1},
+            {"fa.gz",1},
             {"fastq",2},
             {"fq",2},
-            {"gfa",3}
+            {"fastq.gz",2},
+            {"fq.gz",2},
+            {"gfa",3},
+            {"gfa.gz",3}
         };
+        
+        bool gzip = false;
+        bool outFile = false;
+        
+        std::string path = rmFileExt(outSeq);
+        std::string ext = getFileExt(outSeq);
+        
+        if(ext == "gz") {
+            
+            ext = getFileExt(path) + ".gz";
+            path = rmFileExt(path);
+            gzip = true;
+            
+        }
+        
+        if (string_to_case.find(path) == string_to_case.end()) {
+            
+            outFile = true;
+            
+        }else{
+            
+            ext = outSeq;
+            
+        }
         
         std::string output;
         
-        switch (string_to_case.count(fileOutType) ? string_to_case.at(fileOutType) : 0) {
+        std::unique_ptr<std::ostream> stream;
+        
+        std::ofstream os(outSeq);
+        zstream::ogzstream zout(os);
+        
+        if (gzip && outFile) {
+            
+            stream = make_unique<std::ostream>(zout.rdbuf());
+            
+        }else if (!gzip && outFile){
+            
+            stream = make_unique<std::ostream>(os.rdbuf());
+            
+        }else{
+            
+            os.close();
+            remove(outSeq.c_str());
+            
+            stream = make_unique<std::ostream>(std::cout.rdbuf());
+            
+        }
+        
+        switch (string_to_case.count(ext) ? string_to_case.at(ext) : 0) {
                 
             case 1: {
                 while (counter < inSequences.getScaffN()) {
                     
                     inSequence = inSequences.getInSequence(counter);
                     
-                    std::cout<<">"<<inSequence.getSeqHeader()<<" "<<inSequence.getSeqComment()<<std::endl;
+                    *stream<<">"<<inSequence.getSeqHeader()<<" "<<inSequence.getSeqComment()<<std::endl;
                     
                     if (splitLength != 0) {
                         
-                        std::ostream stream(nullptr);
-                        stream.rdbuf(std::cout.rdbuf());
-                        
-                        textWrap(inSequence.getInSequence(), stream, splitLength);
+                        textWrap(inSequence.getInSequence(), *stream, splitLength);
                         
                     }else{
                         
@@ -89,7 +137,7 @@ public:
                         
                     }
                     
-                    std::cout<<output<<std::endl;
+                    *stream<<output<<std::endl;
                     output = "";
                     
                     counter++;
@@ -103,17 +151,15 @@ public:
                     
                     inSequence = inSequences.getInSequence(counter);
                     
-                    std::cout<<"@"<<inSequence.getSeqHeader()<<" "<<inSequence.getSeqComment()<<"\n"<<inSequence.getInSequence()<<"\n+\n"<<inSequence.getInSequenceQuality()<<"\n";
+                    *stream<<"@"<<inSequence.getSeqHeader()<<" "<<inSequence.getSeqComment()<<"\n"<<inSequence.getInSequence()<<"\n+\n"<<inSequence.getInSequenceQuality()<<"\n";
                     
                     counter++;
                     
                 }
                 
             }
-            
                 
-                
-            case 0: {}//undefined case
+            //case 0: {std::cout<<"Unrecognized output: "<<outSeq;}//undefined case
                 
         }
         
