@@ -5,8 +5,8 @@
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef classes_h
-#define classes_h
+#ifndef gfastats_h
+#define gfastats_h
 
 #include <stdio.h>
 #include <stdlib.h>
