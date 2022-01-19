@@ -189,14 +189,87 @@ public:
                 
             case 3: { // gfa[.gz]
                 
+                std::string seqHeader;
+                std::vector<unsigned int> seqBoundaries;
+                unsigned int ctgN = 1, item = 1, len = 0;
+                
                 *stream<<"H\tVN:Z:2.0\n";
                 
                 while (counter < inSequences.getScaffN()) {
                     
                     inSequence = inSequences.getInSequence(counter);
+                    unsigned int seqScaffLen = inSequence.getSeqScaffLen();
                     
-                    *stream<<"S\t"<<inSequence.getSeqHeader()<<"\t"<<inSequence.getInSequence()<<"\t"<<inSequence.getSeqComment()<<"\n";
+                    seqHeader = inSequence.getSeqHeader();
                     
+                    seqBoundaries = inSequence.getSeqContigBoundaries();
+                    
+                    std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
+                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
+                    auto last = std::prev(end);
+                    
+                    if (*begin>0) { // case apparently missing for GFA2 spec (starting gap)
+                        
+                        *stream <<"G\t" // line type
+                                <<seqHeader<<"."<<item<<"\t" // id
+                                <<seqHeader<<"."<<item<<"\t" // sid1:ref
+                                <<seqHeader<<"."<<item<<"\t" // sid2:ref
+                                <<len<<"\t" // size
+                                <<inSequence.getSeqComment()<<"\n"; // optional comment
+                        
+                        item++;
+                        
+                    }
+                    
+                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
+                        
+                        len = *(it+1) - *it;
+
+                        *stream <<"S\t" // line type
+                                <<seqHeader<<"."<<item<<"\t" // id
+                                <<*(it+1)-*(it)<<"\t" // size
+                                <<inSequence.getInSequence().substr(*(it),*(it+1))<<"\t" // sequence
+                                <<inSequence.getSeqComment()<<"\n"; // optional comment
+                        
+                        item++;
+                        
+                        if (ctgN != seqBoundaries.size()/2) {
+                            
+                            len = *(it+2) - *(it+1);
+                            
+                            *stream <<"G\t" // line type
+                                    <<seqHeader<<"."<<item<<"\t" // id
+                                    <<seqHeader<<"."<<item-1<<"\t" // sid1:ref
+                                    <<seqHeader<<"."<<item+1<<"\t" // sid2:ref
+                                    <<len<<"\t" // size
+                                    <<inSequence.getSeqComment()<<"\n"; // optional comment
+                            
+                            item++;
+                            
+                        }
+                        
+                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) {
+                            
+                            len = seqScaffLen - *(it+1);
+                            
+                            *stream <<"G\t" // line type
+                                    <<seqHeader<<"."<<item<<"\t" // id
+                                    <<seqHeader<<"."<<item-1<<"\t" // sid1:ref
+                                    <<seqHeader<<"."<<item+1<<"\t" // sid2:ref
+                                    <<len<<"\t" // size
+                                    <<inSequence.getSeqComment()<<"\n"; // optional comment
+                            
+                            item++;
+                            
+                        }
+                        
+                        ctgN++;
+                        it = it + 2;
+                        
+                    }
+                    
+                    ctgN = 1;
+                    item = 1;
                     counter++;
                     
                 }
