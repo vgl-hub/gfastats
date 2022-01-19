@@ -14,7 +14,7 @@ private:
     unsigned int counter = 0;
     
 public:
-    bool seqReport (InSequences &inSequences, InSequence &inSequence, int &outSequence_flag) {
+    bool seqReport (InSequences &inSequences, InSequence &inSequence, int &outSequence_flag) { // method to output the summary statistics for each sequence
         
         counter = 0;
         
@@ -57,8 +57,9 @@ public:
         
     }
     
-    bool outFile (InSequences &inSequences, InSequence &inSequence, int splitLength, std::string &outSeq) {
+    bool outFile (InSequences &inSequences, InSequence &inSequence, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
         
+        // unordered map to handle out correspondence in following switch statement
         const static std::unordered_map<std::string,int> string_to_case{
             {"fasta",1},
             {"fa",1},
@@ -72,12 +73,15 @@ public:
             {"gfa.gz",3}
         };
         
+        // variables to handle output type
         bool gzip = false;
         bool outFile = false;
         
+        // variable to handle output path and extension
         std::string path = rmFileExt(outSeq);
         std::string ext = getFileExt(outSeq);
         
+        // depending on use input get output format
         if(ext == "gz") {
             
             ext = getFileExt(path) + ".gz";
@@ -86,6 +90,7 @@ public:
             
         }
         
+        // if the input is not in the unordered map, it means we need to write a new file with the path provided by the user otherwise the output is in the format specified by the user
         if (string_to_case.find(path) == string_to_case.end()) {
             
             outFile = true;
@@ -96,33 +101,48 @@ public:
             
         }
         
-        std::string output;
-        
+        // here we create a smart pointer to handle any kind of output stream
         std::unique_ptr<std::ostream> stream;
         
-        std::ofstream os(outSeq);
-        zstream::ogzstream zout(os);
+        // this stream outputs gzip compressed to stdout
+        zstream::ogzstream zout(std::cout);
         
-        if (gzip && outFile) {
+        // this stream outputs gzip to file
+        std::ofstream ofs(outSeq);
+        
+        // this stream outputs gzip compressed to file
+        zstream::ogzstream zfout(ofs);
+
+        if (gzip && outFile) { // if the requested output is gzip compressed and should be outputted to a file
             
-            stream = make_unique<std::ostream>(zout.rdbuf());
+            stream = make_unique<std::ostream>(zfout.rdbuf()); // then we use the stream for gzip compressed file outputs
             
-        }else if (!gzip && outFile){
+        }else if (!gzip && outFile){ // else if no compression is requested
             
-            stream = make_unique<std::ostream>(os.rdbuf());
+            stream = make_unique<std::ostream>(ofs.rdbuf());  // we use the stream regular file outputs
             
-        }else{
+        }else{ // else the output is not written to a file
             
-            os.close();
+            // we close and delete the file
+            ofs.close();
             remove(outSeq.c_str());
             
-            stream = make_unique<std::ostream>(std::cout.rdbuf());
+            if (gzip) { // if the output to stdout needs to be compressed we use the appropriate stream
             
+                stream = make_unique<std::ostream>(zout.rdbuf());
+            
+            }else{ // else we use a regular cout stream
+                
+                stream = make_unique<std::ostream>(std::cout.rdbuf());
+                
+            }
         }
         
-        switch (string_to_case.count(ext) ? string_to_case.at(ext) : 0) {
+        switch (string_to_case.count(ext) ? string_to_case.at(ext) : 0) { // this switch allows us to generate the output according to the input request and the unordered map. If the requested output format is not in the map we fall back to the undefined case (0)
                 
-            case 1: {
+            case 1: { // fasta[.gz]
+                
+                std::string output;
                 
                 while (counter < inSequences.getScaffN()) {
                     
@@ -151,7 +171,7 @@ public:
                 
             }
                 
-            case 2: {
+            case 2: { // fastq[.gz]
                 
                 while (counter < inSequences.getScaffN()) {
                     
@@ -167,7 +187,25 @@ public:
                 
             }
                 
-            case 0: {//undefined case
+            case 3: { // gfa[.gz]
+                
+                *stream<<"H\tVN:Z:2.0\n";
+                
+                while (counter < inSequences.getScaffN()) {
+                    
+                    inSequence = inSequences.getInSequence(counter);
+                    
+                    *stream<<"S\t"<<inSequence.getSeqHeader()<<"\t"<<inSequence.getInSequence()<<"\t"<<inSequence.getSeqComment()<<"\n";
+                    
+                    counter++;
+                    
+                }
+                
+                break;
+                
+            }
+                
+            case 0: { // undefined case
                 
                 std::cout<<"Unrecognized output: "<<outSeq;
                 
@@ -177,11 +215,17 @@ public:
                 
         }
         
+        if(outFile) { // if we wrote to file, we close it
+            
+            ofs.close();
+            
+        }
+        
         return true;
         
     }
     
-    bool outSize (InSequences &inSequences, InSequence &inSequence, char &sizeOutType) {
+    bool outSize (InSequences &inSequences, InSequence &inSequence, char &sizeOutType) { // method to output only the size of the sequences
         
         counter = 0;
         
@@ -191,7 +235,7 @@ public:
         switch (sizeOutType) {
  
             default:
-            case 's': {
+            case 's': { // scaffolds
 
                 while (counter < inSequences.getScaffN()) {
                     
@@ -206,7 +250,7 @@ public:
                 break;
             }
                 
-            case 'c': {
+            case 'c': { // contigs
                 
                 while (counter < inSequences.getScaffN()) {
                     
@@ -234,7 +278,7 @@ public:
                 
             }
                 
-            case 'g': {
+            case 'g': { // gaps
                 
                 while (counter < inSequences.getScaffN()) {
                     
@@ -268,7 +312,7 @@ public:
         
     }
     
-    bool outCoord (InSequences &inSequences, InSequence &inSequence, char bedOutType) {
+    bool outCoord (InSequences &inSequences, InSequence &inSequence, char bedOutType) { // method to output the coordinates of each feature
         
         counter = 0;
         
@@ -277,7 +321,7 @@ public:
         
         switch (bedOutType) {
                 
-            case 'c': {
+            case 'c': { // contigs
                 
                 while (counter < inSequences.getScaffN()) {
                     
@@ -305,7 +349,7 @@ public:
                 
             }
                 
-            case 'g': {
+            case 'g': { // gaps
                 
                 while (counter < inSequences.getScaffN()) {
                     
@@ -334,7 +378,7 @@ public:
             }
                 
             default:
-            case 'a': {
+            case 'a': { // both contigs and gaps in .agp format
                 
                 unsigned int ctgN = 1, item = 1, len = 0;
                 
@@ -407,7 +451,7 @@ public:
         
     }
     
-    bool reportStats (InSequences &inSequences, unsigned long long int gSize, int bedOutType) {
+    bool reportStats (InSequences &inSequences, unsigned long long int gSize, int bedOutType) { // method to output all summary statistic for the entire sequence set
         
         verbose(verbose_flag, "Computed scaffN50");
         
@@ -472,7 +516,7 @@ public:
         
     }
     
-    bool nstarReport (InSequences &inSequences, unsigned long long int gSize) {
+    bool nstarReport (InSequences &inSequences, unsigned long long int gSize) { // method to generate all N** reports
         
         int pos = 1;
         std::vector <unsigned int> scaffNstars = inSequences.getScaffNstars();

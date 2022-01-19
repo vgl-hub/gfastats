@@ -160,7 +160,6 @@ int main(int argc, char **argv) {
                                 
                             }else{printf("Error: missing end coordinate (%s).\n", header.c_str()); exit(1);}
                             
-                            
                         }
                         
                         bedInclude.pushCoordinates(header, cBegin, cEnd); pos_op++;
