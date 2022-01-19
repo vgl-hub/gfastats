@@ -212,8 +212,8 @@ public:
                         
                         *stream <<"G\t" // line type
                                 <<seqHeader<<"."<<item<<"\t" // id
-                                <<seqHeader<<"."<<item<<"\t" // sid1:ref
-                                <<seqHeader<<"."<<item<<"\t" // sid2:ref
+                                <<seqHeader<<".begin"<<"\t" // sid1:ref (begin of sequence)
+                                <<seqHeader<<"."<<item+1<<"\t" // sid2:ref
                                 <<len<<"\t" // size
                                 <<inSequence.getSeqComment()<<"\n"; // optional comment
                         
@@ -255,7 +255,7 @@ public:
                             *stream <<"G\t" // line type
                                     <<seqHeader<<"."<<item<<"\t" // id
                                     <<seqHeader<<"."<<item-1<<"\t" // sid1:ref
-                                    <<seqHeader<<"."<<item+1<<"\t" // sid2:ref
+                                    <<seqHeader<<".end"<<"\t" // sid2:ref (end of sequence)
                                     <<len<<"\t" // size
                                     <<inSequence.getSeqComment()<<"\n"; // optional comment
                             
