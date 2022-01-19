@@ -34,10 +34,10 @@
 #include "zstream/ozstream.hpp"
 #include "zstream/ozstream_impl.hpp"
 
-#include "gfastats-global.h"
-#include "gfastats-functions.h"
-#include "gfastats-commons.h"
-#include "gfastats-input.h"
-#include "gfastats-output.h"
+#include "gfastats-global.h" // global variables
+#include "gfastats-functions.h" // global functions
+#include "gfastats-commons.h" // common classes
+#include "gfastats-input.h" // input classes
+#include "gfastats-output.h" // output classes
 
 #endif /* gfastats_h */
