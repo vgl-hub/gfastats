@@ -179,6 +179,91 @@ public:
         
     }
     
+    bool outSize (InSequences &inSequences, InSequence &inSequence, char sizeOutType) {
+        
+        std::string seqHeader;
+        std::vector<unsigned int> seqBoundaries;
+        
+        switch (sizeOutType) {
+ 
+            default:
+            case 's': {
+
+                while (counter < inSequences.getScaffN()) {
+                    
+                    inSequence = inSequences.getInSequence(counter);
+                        
+                    std::cout<<inSequence.getSeqHeader()<<"\t"<<inSequence.getSeqScaffLen()<<std::endl;
+                    
+                    counter++;
+                    
+                }
+                
+                break;
+            }
+                
+            case 'c': {
+                
+                while (counter < inSequences.getScaffN()) {
+                    
+                    inSequence = inSequences.getInSequence(counter);
+                    
+                    seqHeader = inSequence.getSeqHeader();
+                    
+                    seqBoundaries = inSequence.getSeqContigBoundaries();
+                    
+                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
+                    
+                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
+                        
+                        std::cout<<seqHeader<<"\t"<<*(it+1)-*it<<std::endl;
+                        
+                        it = it + 2;
+                        
+                    }
+                    
+                    counter++;
+                    
+                }
+                
+                break;
+                
+            }
+                
+            case 'g': {
+                
+                while (counter < inSequences.getScaffN()) {
+                    
+                    inSequence = inSequences.getInSequence(counter);
+                    
+                    seqHeader = inSequence.getSeqHeader();
+                    
+                    seqBoundaries = inSequence.getSeqGapBoundaries();
+                    
+                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
+                    
+                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
+                        
+                        std::cout<<seqHeader<<"\t"<<*(it+1)-*it<<std::endl;
+                        
+                        it = it + 2;
+                        
+                    }
+                    
+                    counter++;
+                    
+                }
+                
+                break;
+                
+            }
+                
+        }
+        
+        return true;
+        
+    }
+    
 };
 
 

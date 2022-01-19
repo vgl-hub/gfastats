@@ -56,11 +56,11 @@ int main(int argc, char **argv) {
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},
  
-        {"out-format", optional_argument, 0, 'o'},
+        {"out-format", required_argument, 0, 'o'},
         {"line-length", required_argument, 0, 0},
         {"out-sequence", no_argument, &outSequence_flag, 1},
-        {"out-size", optional_argument, 0, 's'},
-        {"out-coord", optional_argument, 0, 'b'},
+        {"out-size", required_argument, 0, 's'},
+        {"out-coord", required_argument, 0, 'b'},
         
         {"stats", no_argument, &stats_flag, 1},
         {"seq-report", no_argument, &seqReport_flag, 1},
@@ -254,7 +254,7 @@ int main(int argc, char **argv) {
                 printf("\nOptions:\n");
                 printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
                 printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
-                printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.");
+                printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 
                 printf("-s --out-size s|c|g  generates bed coordinates of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-b a|c|g --out-coord generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
@@ -330,86 +330,8 @@ int main(int argc, char **argv) {
     if (outSize_flag) {
         
         stats_flag = false;
-        counter = 0;
         
-        std::string seqHeader;
-        std::vector<unsigned int> seqBoundaries;
-        
-        switch (sizeOutType) {
- 
-            default:
-            case 's': {
-
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSequence = inSequences.getInSequence(counter);
-                        
-                    std::cout<<inSequence.getSeqHeader()<<"\t"<<inSequence.getSeqScaffLen()<<std::endl;
-                    
-                    counter++;
-                    
-                }
-                
-                break;
-            }
-                
-            case 'c': {
-                
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSequence = inSequences.getInSequence(counter);
-                    
-                    seqHeader = inSequence.getSeqHeader();
-                    
-                    seqBoundaries = inSequence.getSeqContigBoundaries();
-                    
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
-                        
-                        std::cout<<seqHeader<<"\t"<<*(it+1)-*it<<std::endl;
-                        
-                        it = it + 2;
-                        
-                    }
-                    
-                    counter++;
-                    
-                }
-                
-                break;
-                
-            }
-                
-            case 'g': {
-                
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSequence = inSequences.getInSequence(counter);
-                    
-                    seqHeader = inSequence.getSeqHeader();
-                    
-                    seqBoundaries = inSequence.getSeqGapBoundaries();
-                    
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
-                        
-                        std::cout<<seqHeader<<"\t"<<*(it+1)-*it<<std::endl;
-                        
-                        it = it + 2;
-                        
-                    }
-                    
-                    counter++;
-                    
-                }
-                
-                break;
-                
-            }
-                
-        }
+        report.outSize(inSequences, inSequence, sizeOutType);
         
     }
     
