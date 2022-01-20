@@ -14,7 +14,7 @@ private:
     unsigned int counter = 0;
     
 public:
-    bool seqReport (InSequences &inSequences, InSequence &inSequence, int &outSequence_flag) { // method to output the summary statistics for each sequence
+    bool seqReport(InSequences &inSequences, InSequence &inSequence, int &outSequence_flag) { // method to output the summary statistics for each sequence
         
         counter = 0;
         
@@ -57,7 +57,7 @@ public:
         
     }
     
-    bool outFile (InSequences &inSequences, InSequence &inSequence, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
+    bool outFile(InSequences &inSequences, InSequence &inSequence, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
         
         // unordered map to handle out correspondence in following switch statement
         const static std::unordered_map<std::string,int> string_to_case{
@@ -298,7 +298,7 @@ public:
         
     }
     
-    bool outSize (InSequences &inSequences, InSequence &inSequence, char &sizeOutType) { // method to output only the size of the sequences
+    bool outSize(InSequences &inSequences, InSequence &inSequence, char &sizeOutType) { // method to output only the size of the sequences
         
         counter = 0;
         
@@ -385,7 +385,7 @@ public:
         
     }
     
-    bool outCoord (InSequences &inSequences, InSequence &inSequence, char bedOutType) { // method to output the coordinates of each feature
+    bool outCoord(InSequences &inSequences, InSequence &inSequence, char bedOutType) { // method to output the coordinates of each feature
         
         counter = 0;
         
@@ -524,9 +524,7 @@ public:
         
     }
     
-    bool reportStats (InSequences &inSequences, unsigned long long int gSize, int bedOutType) { // method to output all summary statistic for the entire sequence set
-        
-        verbose(verbose_flag, "Computed scaffN50");
+    bool reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType) { // method to output all summary statistic for the entire sequence set
         
         if (!tabular_flag) {
         
@@ -534,12 +532,17 @@ public:
         
         }
         
-        std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<std::endl;
+        if (gSize > 0) {
+        
+            std::cout<<output("Expected genome size")<<gSize<<std::endl;
+        
+        }
+        
         std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<std::endl;
         printf("%s%.2f\n",output("Average scaffold length").c_str(), inSequences.computeAverageScaffLen());
-        inSequences.computeScaffNstars(gSize);
+        inSequences.evalNstars('s', gSize); // scaffold N* statistics
         std::cout<<output("Scaffold N50")<<inSequences.getScaffN50()<<std::endl;
-        inSequences.computeScaffauNstar(gSize);
+        inSequences.evalAuN('s', gSize); // scaffold auN
         printf("%s%.2f\n",output("Scaffold auN").c_str(), inSequences.getScaffauN());
         std::cout<<output("Scaffold L50")<<inSequences.getScaffL50()<<std::endl;
         
@@ -554,9 +557,9 @@ public:
         
         std::cout<<output("# contigs")<<inSequences.getContigN()<<std::endl;
         std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<std::endl;
-        inSequences.computeContigNstars(gSize);
+        inSequences.evalNstars('c', gSize); // contig N* statistics
         std::cout<<output("Contig N50")<<inSequences.getContigN50()<<std::endl;
-        inSequences.computeContigauNstar(gSize);
+        inSequences.evalAuN('c', gSize); // contig auN
         printf("%s%.2f\n",output("Contig auN").c_str(), inSequences.getContigauN());
         std::cout<<output("Contig L50")<<inSequences.getContigL50()<<std::endl;
         
@@ -570,10 +573,10 @@ public:
         
         std::cout<<output("# gaps")<<inSequences.getTotGapN()<<std::endl;
         std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<std::endl;
-        inSequences.computeGapNstars();
+        inSequences.evalNstars('g'); // gap N* statistics
         std::cout<<output("Gap N50")<<inSequences.getGapN50()<<std::endl;
         std::cout<<output("Gap L50")<<inSequences.getGapL50()<<std::endl;
-        inSequences.computeGapauNstar();
+        inSequences.evalAuN('g'); // gap auN
         printf("%s%.2f\n",output("Gap auN").c_str(), inSequences.getGapauN());
         
         printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT)").c_str(), inSequences.getTotA(),
@@ -589,7 +592,7 @@ public:
         
     }
     
-    bool nstarReport (InSequences &inSequences, unsigned long long int gSize) { // method to generate all N** reports
+    bool nstarReport(InSequences &inSequences, unsigned long long int gSize) { // method to generate all N** reports
         
         int pos = 1;
         std::vector <unsigned int> scaffNstars = inSequences.getScaffNstars();

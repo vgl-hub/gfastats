@@ -9,7 +9,7 @@
 #define gfastatscommons_h
 
 //classes
-class BedCoordinates {
+class BedCoordinates { // generic representation of bed coordinates
 private:
     std::vector<std::string> seqHeaders;
     std::vector<unsigned int> cBegin;
@@ -17,7 +17,7 @@ private:
     
 public:
     
-    void pushCoordinates(std::string h, unsigned int b, unsigned int e) {
+    void pushCoordinates(std::string h, unsigned int b, unsigned int e) { // reading coordinates
         
         seqHeaders.push_back(h);
         cBegin.push_back(b);
@@ -27,29 +27,29 @@ public:
     
     bool empty() {
         
-        return (seqHeaders.size()==0) ? true : false;
+        return (seqHeaders.size()==0) ? true : false; // check if no coordinates are present
         
     }
     
-    std::vector<std::string> getSeqHeaders() {
+    std::vector<std::string> getSeqHeaders() { // get all the headers
         
         return seqHeaders;
         
     }
     
-    std::string getSeqHeader(unsigned int pos) {
+    std::string getSeqHeader(unsigned int pos) { // get a specific header
         
         return seqHeaders[pos];
         
     }
     
-    unsigned int getcBegin(unsigned int pos) {
+    unsigned int getcBegin(unsigned int pos) { // get a specific start coordinate
         
         return cBegin[pos];
         
     }
     
-    unsigned int getcEnd(unsigned int pos) {
+    unsigned int getcEnd(unsigned int pos) { // get a specific end coordinate
         
         return cEnd[pos];
         
@@ -57,26 +57,26 @@ public:
     
 };
 
-class InSequence {
+class InSequence { // generic representation of a DNA sequence
 private:
     std::string seqHeader;
     std::string seqComment;
     std::string inSequence;
     std::string inSequenceQuality;
-    std::vector<unsigned int> contigBoundaries;
-    std::vector<unsigned int> gapBoundaries;
+    std::vector<unsigned int> contigBoundaries; // we store the coordinates of contig boundaries for easy access
+    std::vector<unsigned int> gapBoundaries; // we store the coordinates of gap boundaries for easy access
     unsigned int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     
 public:
     
-    void traverseInSequence(std::string* s) {
+    void traverseInSequence(std::string* s) { // traverse the sequence to measure sequence properties
         
         unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
         bool wasN = false, pushbackGap = false;
         std::vector<unsigned int> caseBoundaries;
         std::vector<unsigned int> gapBoundaries;
         gapBoundaries.reserve(200);
-            
+        
         for (char &base : *s) {
             
             if (islower(base)) {
@@ -195,7 +195,7 @@ public:
         inSequenceQuality = *q;
     }
     
-    void setSeqContigBoundaries(std::vector<unsigned int> &gapBoundaries) {
+    void setSeqContigBoundaries(std::vector<unsigned int> &gapBoundaries) { // set the contig boundaries
         
         std::vector<unsigned int> newSeqContigBoundaries;
         
@@ -235,7 +235,7 @@ public:
         
     }
     
-    void setSeqGapBoundaries(std::vector<unsigned int> &g) {
+    void setSeqGapBoundaries(std::vector<unsigned int> &g) { // set gap boundaries
         gapBoundaries = g;
     }
     
@@ -356,7 +356,7 @@ public:
     
 };
 
-class InSequences {
+class InSequences { //collection of InSequence objects and their summary statistics
     
 private:
     std::vector<InSequence> newSeq = std::vector<InSequence>();
@@ -378,7 +378,7 @@ private:
     std::vector<unsigned int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> gapLstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
-    double scaffauN = 0, scaffauNG = 0, contigauN = 0, contigauNG = 0, gapauN = 0;
+    double scaffAuN = 0, scaffAuNG = 0, contigAuN = 0, contigAuNG = 0, gapAuN = 0;
     
     InSequence inSequence;
     
@@ -396,7 +396,7 @@ private:
     unsigned long int totLowerCount = 0;
     
 public:
-    void appendSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) {
+    void appendSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence
         
         inSequence.setSeqHeader(seqHeader);
         
@@ -419,9 +419,9 @@ public:
         verbose(verbose_flag, "Sequence traversed");
         
         if (sequenceQuality != NULL) {
-        
+            
             inSequence.setInSequenceQuality(sequenceQuality);
-        
+            
             verbose(verbose_flag, "Sequence quality set");
             
         }
@@ -555,66 +555,66 @@ public:
         
     }
     
-    void computeScaffNstars(unsigned int gSize) {
+    void evalNstars(char type, unsigned long long int gSize = 0) { // switch between scaffold, contig, gap while computing N* statistics
         
-        sort(scaffLens.begin(), scaffLens.end(), std::greater<unsigned int>());
-        
-        unsigned long long int scaffSum = 0;
-        
-        double N = 1, NG = 1;
-        
-        for(unsigned int i = 0; i < getScaffN(); i++) {
-            
-            scaffSum += scaffLens[i];
-            
-            while (scaffSum >= ((double) getTotScaffLen() / 10 * N) && N<= 10) {
+        switch(type) {
                 
-                scaffNstars[N-1] = scaffLens[i];
-                scaffLstars[N-1] = i + 1;
+            case 's': {
                 
-                N = N + 1;
+                computeNstars(scaffLens, scaffNstars, scaffLstars, &scaffNGstars, &scaffLGstars, gSize);
+                break;
                 
             }
-            
-            
-            while (gSize > 0 && (scaffSum >= ((double) gSize / 10 * NG)) && NG<= 10) {
                 
-                scaffNGstars[NG-1] = scaffLens[i];
-                scaffLGstars[NG-1] = i + 1;
+            case 'c': {
                 
-                NG = NG + 1;
+                computeNstars(contigLens, contigNstars, contigLstars, &contigNGstars, &contigLGstars, gSize);
+                break;
                 
             }
-            
+                
+            case 'g': {
+                
+                computeNstars(gapLens, gapNstars, gapLstars);
+                break;
+                
+            }
+                
         }
         
     }
     
-    void computeContigNstars(unsigned int gSize) {
+    
+    void computeNstars(std::vector<unsigned int>& lens, // compute N/L* statistics, vector of all lengths
+                       std::vector<unsigned int>& Nstars,      std::vector<unsigned int>& Lstars, // required arguments are passed by reference
+                       std::vector<unsigned int>* NGstars = 0, std::vector<unsigned int>* LGstars = 0, unsigned long long int gSize = 0) { // optional arguments are passed by pointer
         
-        sort(contigLens.begin(), contigLens.end(), std::greater<unsigned int>());
+        sort(lens.begin(), lens.end(), std::greater<unsigned int>()); // sort lengths Z-A
         
-        unsigned long long int contigSum = 0;
+        unsigned long long int sum = 0, totLen = 0;
+        
+        for(std::vector<unsigned int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
+            totLen += *it;
         
         short int N = 1, NG = 1;
         
-        for(unsigned int i = 0; i < contigLens.size(); i++) {
+        for(unsigned int i = 0; i < lens.size(); i++) { // for each length
             
-            contigSum += contigLens[i];
+            sum += lens[i]; // increase sum
             
-            while (contigSum >= ((double) getTotContigLen() / 10 * N) && N<= 10) {
+            while (sum >= ((double) totLen / 10 * N) && N<= 10) { // conditionally add length.at or pos to each N/L* bin
                 
-                contigNstars[N-1] = contigLens[i];
-                contigLstars[N-1] = i + 1;
+                Nstars[N-1] = lens[i];
+                Lstars[N-1] = i + 1;
                 
                 N = N + 1;
                 
             }
-            
-            while (gSize > 0 && (contigSum >= ((double) gSize / 10 * NG)) && NG<= 10) {
                 
-                contigNGstars[NG-1] = contigLens[i];
-                contigLGstars[NG-1] = i + 1;
+            while (gSize > 0 && (sum >= ((double) gSize / 10 * NG)) && NG<= 10) { // if not computing gap statistics repeat also for NG/LG* statistics
+                
+                (*NGstars)[NG-1] = lens[i];
+                (*LGstars)[NG-1] = i + 1;
                 
                 NG = NG + 1;
                 
@@ -624,74 +624,51 @@ public:
         
     }
     
-    void computeGapNstars() {
+    void evalAuN(char type, unsigned long long int gSize = 0) { // switch between scaffold, contig, gap while computing N* statistics
         
-        sort(gapLens.begin(), gapLens.end(), std::greater<unsigned int>());
-        
-        unsigned long long int gapSum = 0;
-        
-        short int N = 1;
-        
-        for(unsigned int i = 0; i < gapLens.size(); i++) {
-            
-            gapSum += gapLens[i];
-            
-            while (gapSum >= ((double) totGapLen / 10 * N) && N<= 10) {
+        switch(type) {
                 
-                gapNstars[N-1] = gapLens[i];
-                gapLstars[N-1] = i + 1;
+            case 's': {
                 
-                N = N + 1;
+                computeAuN(scaffLens, scaffAuN, &scaffAuNG, gSize);
+                break;
                 
             }
-            
+                
+            case 'c': {
+                
+                computeAuN(contigLens, contigAuN, &contigAuNG, gSize);
+                break;
+                
+            }
+                
+            case 'g': {
+                
+                computeAuN(gapLens, gapAuN);
+                break;
+                
+            }
+                
         }
         
     }
     
-    void computeScaffauNstar(unsigned int gSize) {
+    void computeAuN(std::vector<unsigned int>& lens, double& auN, double* auNG = 0, unsigned long long int gSize = 0) {// compute N* statistics
         
-        unsigned long long int scaffSum = getTotScaffLen();
+        unsigned long long int totLen = 0;
         
-        for(unsigned int i = 0; i < getScaffN(); i++) {
+        for(std::vector<unsigned int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
+            totLen += *it;
+        
+        for(unsigned int i = 0; i < lens.size(); i++) { //
             
-            scaffauN += (double) scaffLens[i] * scaffLens[i] / scaffSum;
+            auN += (double) lens[i] * lens[i] / totLen;
             
             if (gSize > 0) {
-            
-                scaffauNG += (double) scaffLens[i] * scaffLens[i] / gSize;
+                
+                *auNG += (double) lens[i] * lens[i] / gSize;
                 
             }
-            
-        }
-        
-    }
-
-    void computeContigauNstar(unsigned int gSize) {
-        
-        unsigned long long int contigSum = getTotContigLen();
-        
-        for(unsigned int i = 0; i < contigLens.size(); i++) {
-            
-            contigauN += (double) contigLens[i] * contigLens[i] / contigSum;
-            
-            if (gSize > 0) {
-            
-                contigauNG += (double) contigLens[i] * contigLens[i] / gSize;
-                
-            }
-            
-        }
-        
-    }
-    
-    void computeGapauNstar() {
-        
-        unsigned long long int gapSum = getTotGapLen();
-        
-        for(unsigned int i = 0; i < gapLens.size(); i++) {
-            
-            gapauN += (double) gapLens[i] * gapLens[i] / gapSum;
             
         }
         
@@ -789,31 +766,31 @@ public:
     
     double getScaffauN() {
         
-        return scaffauN;
+        return scaffAuN;
         
     }
     
     double getScaffauNG() {
         
-        return scaffauNG;
+        return scaffAuNG;
         
     }
     
     double getContigauN() {
         
-        return contigauN;
+        return contigAuN;
         
     }
     
     double getContigauNG() {
         
-        return contigauNG;
+        return contigAuNG;
         
     }
     
     double getGapauN() {
         
-        return gapauN;
+        return gapAuN;
         
     }
     
