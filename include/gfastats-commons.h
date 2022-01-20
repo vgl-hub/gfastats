@@ -856,9 +856,19 @@ public:
     
     double computeAverageScaffLen() {
         
-        double AverageScaffLen = (double) totScaffLen/scaffLens.size();
+        return (double) totScaffLen/scaffLens.size();
         
-        return AverageScaffLen;
+    }
+    
+    double computeAverageContigLen() {
+        
+        return (double) totContigLen/contigLens.size();
+        
+    }
+    
+    double computeAverageGapLen() {
+        
+        return (double) totGapLen/gapLens.size();
         
     }
     

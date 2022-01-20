@@ -557,6 +557,7 @@ public:
         
         std::cout<<output("# contigs")<<inSequences.getContigN()<<std::endl;
         std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<std::endl;
+        printf("%s%.2f\n",output("Average contig length").c_str(), inSequences.computeAverageContigLen());
         inSequences.evalNstars('c', gSize); // contig N* statistics
         std::cout<<output("Contig N50")<<inSequences.getContigN50()<<std::endl;
         inSequences.evalAuN('c', gSize); // contig auN
@@ -574,6 +575,7 @@ public:
         
         std::cout<<output("# gaps")<<inSequences.getTotGapN()<<std::endl;
         std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<std::endl;
+        printf("%s%.2f\n",output("Average gap length").c_str(), inSequences.computeAverageGapLen());
         inSequences.evalNstars('g'); // gap N* statistics
         std::cout<<output("Gap N50")<<inSequences.getGapN50()<<std::endl;
         inSequences.evalAuN('g'); // gap auN
