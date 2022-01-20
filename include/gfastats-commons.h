@@ -660,9 +660,9 @@ public:
         for(std::vector<unsigned int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
             totLen += *it;
         
-        for(unsigned int i = 0; i < lens.size(); i++) { //
+        for(unsigned int i = 0; i < lens.size(); i++) { // for each length
             
-            auN += (double) lens[i] * lens[i] / totLen;
+            auN += (double) lens[i] * lens[i] / totLen; // the area under the curve is the length (height) * fraction of the total length
             
             if (gSize > 0) {
                 
@@ -802,7 +802,7 @@ public:
     
     unsigned int getContigN50() {
         
-        return contigNstars[4];
+        return contigNstars[4]; // middle value
         
     }
     
@@ -837,16 +837,20 @@ public:
     }
     
     unsigned int getLargestScaffold() {
+            
+        return scaffLens[0]; // sorted during N/L* computation
         
-        if (newSeq.size()>0) {
+    }
+    
+    unsigned int getLargestContig() {
             
-            return scaffLens[0];
+        return contigLens[0]; // sorted during N/L* computation
+        
+    }
+    
+    unsigned int getLargestGap() {
             
-        }else{
-            
-            return 0;
-            
-        }
+        return gapLens[0]; // sorted during N/L* computation
         
     }
     

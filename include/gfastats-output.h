@@ -570,14 +570,16 @@ public:
             std::cout<<output("Contig LG50")<<inSequences.getContigLG50()<<std::endl;
             
         }
+        std::cout<<output("Largest contig")<<inSequences.getLargestContig()<<std::endl;
         
         std::cout<<output("# gaps")<<inSequences.getTotGapN()<<std::endl;
         std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<std::endl;
         inSequences.evalNstars('g'); // gap N* statistics
         std::cout<<output("Gap N50")<<inSequences.getGapN50()<<std::endl;
-        std::cout<<output("Gap L50")<<inSequences.getGapL50()<<std::endl;
         inSequences.evalAuN('g'); // gap auN
         printf("%s%.2f\n",output("Gap auN").c_str(), inSequences.getGapauN());
+        std::cout<<output("Gap L50")<<inSequences.getGapL50()<<std::endl;
+        std::cout<<output("Largest gap")<<inSequences.getLargestGap()<<std::endl;
         
         printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT)").c_str(), inSequences.getTotA(),
                inSequences.getTotC(),
