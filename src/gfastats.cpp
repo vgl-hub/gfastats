@@ -4,54 +4,38 @@
 //Created by Giulio Formenti on 12/17/21.
 //
 
-//global
-static int verbose_flag;
-static int seqReport_flag;
-static int outSequence_flag;
-static int nstarReport_flag;
-
 #include <gfastats.h>
 
 int main(int argc, char **argv) {
     
-    static int outSize_flag;
-    static int outCoord_flag;
-    static int outFile_flag;
-    static int stats_flag;
-    static int cmd_flag;
+    short int c; // optarg
+    short unsigned int pos_op = 1; // optional arguments
+    unsigned long long int gSize = 0; // expected genome size, with 0 NG/LG* statistics are not computed
+    int splitLength = 0; // line length for fasta output
     
-    short int c;
-    short unsigned int arg_counter;
-    short unsigned int pos_op = 1;
-    unsigned long long int gSize = 0;
-    int splitLength = 0;
+    std::string iSeqFileArg; // input file to evaluate
+    std::string iBedIncludeFileArg; // input bed file of coordinates to include
+    std::string iBedExcludeFileArg; // input bed file of coordinates to exclude
     
-    std::string iSeqFileArg;
-    std::string iBedIncludeFileArg;
-    std::string iBedExcludeFileArg;
+    std::string outSeq = "fasta"; // default output type
     
-    std::string outSeq = "fasta";
+    char sizeOutType = 's'; // default output type with size flag (scaffold)
+    char bedOutType = 'a'; // default output type with bed flag (agp)
     
-    char sizeOutType = 's';
-    char bedOutType = 'a';
+    BedCoordinates bedInclude; // if include coordinates are provided as positional argument
     
-    BedCoordinates bedInclude;
-    std::string header;
-    unsigned int cBegin = 0, cEnd = 0;
-    char* coord;
+    bool isPipe = false; // to check if input is from pipe
+    char pipeType = 'n'; // default pipe type null
     
-    bool isPipe = false;
-    char pipeType = 'n';
-    
-    if (argc == 1) {
+    if (argc == 1) { // gfastats with no arguments
             
             printf("gfastats input.[fasta|fastq|gfa][.gz] [genome size] [header[:start-end]]\n-h for additional help.\n");
             exit(0);
         
     }
     
-    static struct option long_options[] = {
-        {"fasta", required_argument, 0, 'f'},
+    static struct option long_options[] = { // struct mapping long options
+        {"input-sequence", required_argument, 0, 'f'},
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},
  
@@ -73,45 +57,45 @@ int main(int argc, char **argv) {
         {0, 0, 0, 0}
     };
     
-    while (1) {
+    while (1) { // loop through argv
         
         int option_index = 0;
         
         c = getopt_long(argc, argv, "-:b:e:f:i:o:s:tvh",
                         long_options, &option_index);
 
-        if (optind < argc && !isPipe) {
+        if (optind < argc && !isPipe) { // if pipe wasn't assigned already
             
-            isPipe = isDash(argv[optind]) ? true : false;
+            isPipe = isDash(argv[optind]) ? true : false; // check if the argument to the option is a '-' and set it as pipe input
             
         }
         
-        if (optarg != nullptr && !isPipe) {
+        if (optarg != nullptr && !isPipe) { // case where pipe input is given as positional argument (input sequence file)
         
             isPipe = isDash(optarg) ? true : false;
             
         }
 
-        if (c == -1) {
+        if (c == -1) { // exit the loop if run out of options
             break;
             
         }
         
         switch (c) {
-            case ':':
-                switch (optopt) {
+            case ':': // handle options without arguments
+                switch (optopt) { // the command line option last matched
                     case 'b':
-                        bedOutType = 'a';
+                        bedOutType = 'a'; // default bed output is agp is -b option is given without argument
                         outCoord_flag = 1;
                         break;
                         
                     case 's':
-                        sizeOutType = 's';
+                        sizeOutType = 's'; // default size output is scaffold is -s option is given without argument
                         outSize_flag = 1;
                         break;
                         
                     case 'o':
-                        outSeq = "fasta";
+                        outSeq = "fasta"; // default output is fasta is -o option is given without argument
                         outFile_flag = 1;
                         break;
                         
@@ -120,14 +104,14 @@ int main(int argc, char **argv) {
                         return EXIT_FAILURE;
                 }
                 break;
-            default:
-                if (pos_op == 1) {
+            default: // handle positional arguments
+                if (pos_op == 1) { // only one positional argument given
                     
-                    if (isPipe && pipeType == 'n') {
+                    if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                     
-                        pipeType = 'f';
+                        pipeType = 's'; // pipe input is a sequence
                     
-                    }else{
+                    }else{ // input is a regular file
                         
                         ifFileExists(optarg);
                         iSeqFileArg = optarg;
@@ -136,17 +120,19 @@ int main(int argc, char **argv) {
                     
                     pos_op++;
                     
-                }else if (pos_op == 2 || pos_op == 3) {
+                }else if (pos_op == 2 || pos_op == 3) { // if >1 positional argument, check what additional positional arguments are present
                     
-                    if (isInt(optarg)) {
+                    if (isInt(optarg)) { // if the positional argument is a number, it is likely the expected genome size
                         
                         gSize = atoi(optarg); pos_op++;
                         
-                    }else{
+                    }else{ // else it is an include argument
                         
-                        header = std::string(strtok(strdup(optarg),":"));
+                        std::string header = std::string(strtok(strdup(optarg),":")); // the header for coordinates provided as positional argument
+                        unsigned int cBegin = 0; // start coordinate provided as positional argument
+                        unsigned int cEnd = 0; // end coordinate provided as positional argument
                         
-                        coord = strtok(NULL,"-");
+                        char* coord = strtok(NULL,"-"); // process coordinates
                         
                         if (coord != NULL) {
                             
@@ -168,25 +154,26 @@ int main(int argc, char **argv) {
                     
                 }
                 else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
-            case 0:
+                
+            case 0: // case for long options without short options
                 
                 if (strcmp(long_options[option_index].name,"line-length") == 0)
                   splitLength = atoi(optarg);
                 
                 break;
                 
-            case 'b':
+            case 'b': // output bed type (agp, contig, gaps)
                 bedOutType = *optarg;
                 outCoord_flag = 1;
                 break;
                 
-            case 'e':
+            case 'e': // bed exclude
                 
-                if (isPipe && pipeType == 'n') {
+                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'e';
+                    pipeType = 'e'; // pipe input is an exclude bed
                 
-                }else{
+                }else{ // input is a regular file
                 
                     ifFileExists(optarg);
                     iBedExcludeFileArg = optarg;
@@ -196,13 +183,13 @@ int main(int argc, char **argv) {
                 stats_flag = 1;
                 break;
                 
-            case 'f':
+            case 'f': // input sequence
                 
-                if (isPipe && pipeType == 'n') {
+                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'f';
+                    pipeType = 's'; // pipe input is a sequence
                 
-                }else{
+                }else{ // input is a regular file
                     
                     ifFileExists(optarg);
                     iSeqFileArg = optarg;
@@ -212,13 +199,13 @@ int main(int argc, char **argv) {
                     
                 break;
                 
-            case 'i':
+            case 'i': // bed include
                 
-                if (isPipe && pipeType == 'n') {
+                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'i';
+                    pipeType = 'i'; // pipe input is an include bed
                 
-                }else{
+                }else{ // input is a regular file
                     
                     ifFileExists(optarg);
                     iBedIncludeFileArg = optarg;
@@ -228,25 +215,25 @@ int main(int argc, char **argv) {
                 stats_flag = 1;
                 break;
                 
-            case 'o':
+            case 'o': // handle output (file or stdout)
                 outSeq = optarg;
                 outFile_flag = 1;
                 break;
                 
-            case 's':
+            case 's': // output size of features
                 sizeOutType = *optarg;
                 outSize_flag = 1;
                 break;
                 
-            case 't':
+            case 't': // tabular output
                 tabular_flag = 1;
                 break;
                 
-            case 'v':
+            case 'v': // verbose output
                 verbose_flag = 1;
                 break;
                 
-            case 'h':
+            case 'h': // help
                 printf("gfastats input.[fasta|fastq|gfa][.gz] [genome size] [header[:start-end]]\n");
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
@@ -271,7 +258,7 @@ int main(int argc, char **argv) {
                 exit(0);
         }
         
-        if   (argc == 2 ||
+        if   (argc == 2 || // handle various cases in which the output should include summary stats
               (argc == 3 && pos_op == 2) ||
               (argc == 4 && pos_op == 3) ||
               nstarReport_flag) {
@@ -282,33 +269,31 @@ int main(int argc, char **argv) {
         
     }
     
-    if (cmd_flag) {
-        
-        arg_counter = -1;
-        while (arg_counter++ < argc-1) {
+    if (cmd_flag) { // print command line
+        for (unsigned short int arg_counter = 0; arg_counter < argc; arg_counter++) {
             printf("%s ", argv[arg_counter]);
         }
         printf("\n");
         
     }
     
-    InFile inFile;
+    InFile inFile; // initialize sequence input file object
     
     verbose(verbose_flag, "File object generated");
     
-    InSequences inSequences;
+    InSequences inSequences; // initialize sequence collection object
     
     verbose(verbose_flag, "Sequence object generated");
     
-    inSequences = inFile.readFiles(iSeqFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType);
+    inSequences = inFile.readFiles(iSeqFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType); // read the sequence input file object into the sequence collection object
     
     verbose(verbose_flag, "Finished reading sequences from file to sequence object");
     
-    InSequence inSequence;
+    InSequence inSequence; // initialize a single input sequence object for output purposes
     
     Report report;
     
-    if (seqReport_flag || outSequence_flag) {
+    if (seqReport_flag || outSequence_flag) { // report results for each sequence
         
         stats_flag = true;
         
@@ -316,7 +301,7 @@ int main(int argc, char **argv) {
         
     }
     
-    if (outFile_flag) {
+    if (outFile_flag) { // output sequences to file or stdout
         
         stats_flag = false;
         
@@ -324,7 +309,7 @@ int main(int argc, char **argv) {
         
     }
     
-    if (outSize_flag) {
+    if (outSize_flag) { // output sequence sizes
         
         stats_flag = false;
         
@@ -332,7 +317,7 @@ int main(int argc, char **argv) {
         
     }
     
-    if (outCoord_flag) {
+    if (outCoord_flag) { // output coordinates
         
         stats_flag = false;
         
@@ -340,13 +325,13 @@ int main(int argc, char **argv) {
         
     }
     
-    if (stats_flag) {
+    if (stats_flag) { // output summary statistics
         
         report.reportStats(inSequences, gSize, bedOutType);
         
     }
     
-    if (nstarReport_flag) {
+    if (nstarReport_flag) { // output full N/L* statistics
         
         report.nstarReport(inSequences, gSize);
         

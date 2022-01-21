@@ -87,7 +87,7 @@ public:
             
             stream = make_unique<std::istream>(zin.rdbuf());
             
-        } else if (isPipe && (pipeType == 'f')) {
+        } else if (isPipe && (pipeType == 's')) {
 
             stream = make_unique<std::istream>(std::cin.rdbuf());
 
@@ -104,7 +104,7 @@ public:
             firstLine = newLine;
             firstChar = newLine[0];
             
-            if ((!isPipe || pipeType != 'f') && !determineGzip(iSeqFileArg)) {
+            if ((!isPipe || pipeType != 's') && !determineGzip(iSeqFileArg)) {
                 
                 stream->clear();
                 stream->seekg(0, stream->beg);
@@ -115,7 +115,7 @@ public:
                     
                 case '>': {
                     
-                    if ((isPipe && pipeType == 'f') || determineGzip(iSeqFileArg)) {
+                    if ((isPipe && pipeType == 's') || determineGzip(iSeqFileArg)) {
                         
                         parseFasta(firstLine, inSequences, seqHeader, seqComment, inSequence, idx, bedIncludeList, bedExcludeList);
                         
@@ -133,7 +133,7 @@ public:
                 }
                 case '@': {
                     
-                    if (isPipe && pipeType == 'f') {
+                    if (isPipe && pipeType == 's') {
                         
                         firstLine.erase(0, 1);
                         

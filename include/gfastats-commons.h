@@ -17,7 +17,7 @@ private:
     
 public:
     
-    void pushCoordinates(std::string h, unsigned int b, unsigned int e) { // reading coordinates
+    void pushCoordinates(std::string h, unsigned int b = 0, unsigned int e = 0) { // reading coordinates
         
         seqHeaders.push_back(h);
         cBegin.push_back(b);
@@ -1002,6 +1002,22 @@ public:
     std::vector<InGap> getGFAGaps() {
         
         return inGaps;
+        
+    }
+    
+};
+
+class SAK { // the swiss army knife
+private:
+    InSequences inSequences;
+    InGap inGap;
+    
+public:
+    
+    bool joinByGap(InSequences &inSequences, InGap inGap) {
+        
+        
+        return true;
         
     }
     

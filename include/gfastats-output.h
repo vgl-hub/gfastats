@@ -144,6 +144,12 @@ public:
                 
                 std::string output;
                 
+                if (!inSequences.getGFAGaps().empty()) {
+                    
+                    std::cout<<"hello";
+                    
+                }
+                
                 while (counter < inSequences.getScaffN()) {
                     
                     inSequence = inSequences.getInSequence(counter);
