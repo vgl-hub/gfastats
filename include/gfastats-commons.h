@@ -265,14 +265,14 @@ public:
     }
     
     std::vector<unsigned int> getSeqContigLens() {
-        return bedIntervalSizes(contigBoundaries);
+        return intervalSizes(contigBoundaries);
     }
     
     unsigned int getContigSum() {
         
         unsigned int contigSum = 0;
         
-        for (unsigned int& g : bedIntervalSizes(contigBoundaries))
+        for (unsigned int& g : intervalSizes(contigBoundaries))
             contigSum += g;
         
         return contigSum;
@@ -280,7 +280,7 @@ public:
     
     unsigned int getContigN() {
         
-        return bedIntervalSizes(contigBoundaries).size();
+        return intervalSizes(contigBoundaries).size();
     }
     
     std::vector<unsigned int> getSeqGapBoundaries() {
@@ -289,14 +289,14 @@ public:
     
     std::vector<unsigned int> getSeqGapLens() {
         
-        return bedIntervalSizes(gapBoundaries);
+        return intervalSizes(gapBoundaries);
     }
     
     unsigned int getGapSum() {
         
         unsigned int gapSum = 0;
         
-        for (auto& g : bedIntervalSizes(gapBoundaries))
+        for (auto& g : intervalSizes(gapBoundaries))
             gapSum += g;
         
         return gapSum;
@@ -304,7 +304,7 @@ public:
     
     unsigned int getGapN() {
         
-        return bedIntervalSizes(gapBoundaries).size();
+        return intervalSizes(gapBoundaries).size();
     }
     
     void setACGT(unsigned int a, unsigned int c, unsigned int g, unsigned int t) {
@@ -356,6 +356,61 @@ public:
     
 };
 
+class InGap {
+private:
+    unsigned long long int lineN;
+    std::string gId;
+    std::string sId1;
+    std::string sId2;
+    unsigned int dist;
+    
+public:
+    bool readLine(std::string* newLine, unsigned long long int* lN) {
+    
+        lineN = *lN;
+        
+        strtok(strdup((*newLine).c_str()),"\t"); // strip G
+        
+        gId = strtok(NULL,"\t");
+        
+        sId1 = strtok(NULL,"\t");
+        sId2 = strtok(NULL,"\t");
+        
+        dist = std::stoi(strtok(NULL,"\t"));
+        
+        return true;
+        
+    }
+    
+    std::string getgIds() {
+        
+        return gId;
+        
+    }
+    
+    std::string getsIds1() {
+        
+        return sId1;
+        
+    }
+    
+    std::string getsIds2() {
+        
+        return sId2;
+        
+    }
+    
+    unsigned int getsDists() {
+        
+        return dist;
+        
+    }
+    
+};
+class InEdges {};
+class InOlines {};
+class InUlines {};
+
 class InSequences { //collection of InSequence objects and their summary statistics
     
 private:
@@ -394,6 +449,12 @@ private:
     unsigned long int totG = 0;
     unsigned long int totT = 0;
     unsigned long int totLowerCount = 0;
+    
+    //gfa variables
+    std::vector<InGap> inGaps;
+    //InEdges inEdges;
+    //InOlines inOlines;
+    //InUlines inUlines;
     
 public:
     void appendSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence
@@ -929,7 +990,21 @@ public:
         return GCcontent;
     }
     
+    //gfa methods
+    bool appendGFAGap(InGap inGap) {
+        
+        inGaps.push_back(inGap);
+        
+        return true;
+        
+    }
+    
+    std::vector<InGap> getGFAGaps() {
+        
+        return inGaps;
+        
+    }
+    
 };
-
 
 #endif /* gfastats-commons_h */

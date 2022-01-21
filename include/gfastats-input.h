@@ -195,6 +195,10 @@ public:
                     std::string h_col1, h_col2, s;
                     char* version;
                     
+                    InGap inGap;
+                    
+                    unsigned long long int lineN = 1;
+                    
                     h_col1 = std::string(strtok(strdup(firstLine.c_str()),"\t")); //process first line
                     
                     if(h_col1 == "H"){
@@ -212,7 +216,6 @@ public:
                             
                             printf("Cannot recognize GFA version");
                             printf("Offending line: %s", firstLine.c_str());
-                            exit(1);
                             
                         }
                         
@@ -224,7 +227,7 @@ public:
                                 
                             case 'S': {
                                 
-                                std::string(strtok(strdup(newLine.c_str()),"\t")); //process first line
+                                strtok(strdup(newLine.c_str()),"\t"); //process first line
                                 h = strtok(NULL,"\t");
                                 
                                 seqHeader = h;
@@ -233,11 +236,17 @@ public:
                                 inSequence = s;
                                 
                                 includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                lineN++;
                                 
                                 break;
                                 
                             }
-                            default: {
+                            case 'G': {
+                                
+                                inGap.readLine(&newLine, &lineN);
+                                
+                                inSequences.appendGFAGap(inGap);
+                                lineN++;
                                 
                                 break;
                                 

@@ -9,18 +9,17 @@
 #define gfastatsFunctions_h
 
 //templates
-template<typename T, typename... Args>
+template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
 std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 //functions
-
 bool isInt(const std::string &str) {
     return !str.empty() && str.find_first_not_of("0123456789") == std::string::npos;
 }
 
-double elapsedTime(){
+double elapsedTime(){ // compute runtime in verbose mode
     
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
@@ -30,7 +29,7 @@ double elapsedTime(){
     
 }
 
-void verbose(int &verbose_flag, std::string msg) {
+void verbose(int &verbose_flag, std::string msg) { // verbose decorated output
     
     if(verbose_flag) {
         
@@ -41,7 +40,7 @@ void verbose(int &verbose_flag, std::string msg) {
     }
 }
 
-std::vector<unsigned int> bedIntervalSizes(std::vector<unsigned int> &intervalVec){
+std::vector<unsigned int> intervalSizes(std::vector<unsigned int> &intervalVec){ // compute sizes of a vector of intervals to be read as paired coordinates in 0-bed format
     
     std::vector<unsigned int> intervalVecLens;
     intervalVecLens.reserve(200);
@@ -51,9 +50,9 @@ std::vector<unsigned int> bedIntervalSizes(std::vector<unsigned int> &intervalVe
         
         for (std::vector<unsigned int>::const_iterator it = intervalVec.cbegin(); it != end;) {
             
-            intervalVecLens.push_back(*(it+1) - *it);
+            intervalVecLens.push_back(*(it+1) - *it); // compute size of the interval
             
-            it = it + 2;
+            it = it + 2; // jump to next pair
             
         }
         
@@ -63,7 +62,7 @@ std::vector<unsigned int> bedIntervalSizes(std::vector<unsigned int> &intervalVe
     
 }
 
-std::string output(std::string output){
+std::string output(std::string output){ // use tab delimiter if tabular flag is true
     
     if (tabular_flag) {
         
@@ -78,13 +77,13 @@ std::string output(std::string output){
     return output;
 }
 
-bool isDash(char * optarg) {
+bool isDash(char * optarg) { // check if user input is dash (substitute of input from pipe)
     
     return (strcmp(optarg, "-") == 0) ? true : false;
     
 }
 
-bool ifFileExists(char * optarg) {
+bool ifFileExists(char * optarg) { // check if file exists
     
     if (!access (optarg, F_OK)) {
         
@@ -99,7 +98,7 @@ bool ifFileExists(char * optarg) {
     
 }
 
-bool determineGzip(std::string iFastaFileArg) {
+bool determineGzip(std::string iFastaFileArg) { // check first two bytes for gzip compression
     
     std::ifstream stream(iFastaFileArg);
     
@@ -123,7 +122,7 @@ bool determineGzip(std::string iFastaFileArg) {
     
 }
 
-void textWrap(std::string input, std::ostream& output, int width) {
+void textWrap(std::string input, std::ostream& output, int width) { // generic text wrapper (useful for fasta output)
     
     std::string tmp;
     char cur = '\0';
@@ -155,7 +154,7 @@ void textWrap(std::string input, std::ostream& output, int width) {
     
 }
 
-std::string rmFileExt(const std::string& path) {
+std::string rmFileExt(const std::string& path) { // utility to strip file extension from file
     if (path == "." || path == "..")
         return path;
 
@@ -166,7 +165,7 @@ std::string rmFileExt(const std::string& path) {
     return path;
 }
 
-std::string getFileExt(const std::string& FileName)
+std::string getFileExt(const std::string& FileName) // utility to get file extension
 {
     if(FileName.find_last_of(".") != std::string::npos)
         return FileName.substr(FileName.find_last_of(".")+1);

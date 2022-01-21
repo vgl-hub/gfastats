@@ -274,6 +274,21 @@ public:
                     
                 }
                 
+                counter = 0;
+                std::vector<InGap> inGaps = inSequences.getGFAGaps();
+                
+                while (counter < inGaps.size()) {
+                
+                    *stream <<"G\t" // line type
+                            <<inGaps[counter].getgIds()<<"\t" // id
+                            <<inGaps[counter].getsIds1()<<"\t" // sid1:ref
+                            <<inGaps[counter].getsIds2()<<"\t" // sid2:ref (end of sequence)
+                            <<inGaps[counter].getsDists()<<"\n"; // size
+                    
+                    counter++;
+                    
+                }
+                
                 break;
                 
             }
