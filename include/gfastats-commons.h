@@ -66,6 +66,7 @@ private:
     std::vector<unsigned int> contigBoundaries; // we store the coordinates of contig boundaries for easy access
     std::vector<unsigned int> gapBoundaries; // we store the coordinates of gap boundaries for easy access
     unsigned int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
+    friend class SAK;
     
 public:
     
@@ -359,24 +360,33 @@ public:
 class InGap {
 private:
     unsigned long long int lineN;
-    std::string gId;
-    std::string sId1;
-    std::string sId2;
+    std::string gId, sId1, sId2, sId1Or, sId2Or;
     unsigned int dist;
+    friend class SAK;
+    friend class InSequences;
+    int counter = 0;
     
 public:
     bool readLine(std::string* newLine, unsigned long long int* lN) {
     
         lineN = *lN;
         
-        strtok(strdup((*newLine).c_str()),"\t"); // strip G
+        gId = strtok(strdup((*newLine).c_str()),"\t"); // strip G
         
         gId = strtok(NULL,"\t");
         
         sId1 = strtok(NULL,"\t");
         sId2 = strtok(NULL,"\t");
         
+        sId1Or = sId1.back(); // get sequence orientation in the gap
+        sId2Or = sId2.back();
+        
+        sId1.pop_back(); // remove sequence orientation in the gap
+        sId2.pop_back();
+        
         dist = std::stoi(strtok(NULL,"\t"));
+        
+        counter++;
         
         return true;
         
@@ -452,11 +462,75 @@ private:
     
     //gfa variables
     std::vector<InGap> inGaps;
+    std::vector<std::vector<Pair>> adjList;
+    std::unordered_map<std::string, unsigned long long int> ump;
+    std::unordered_map<int, bool> visited;
     //InEdges inEdges;
     //InOlines inOlines;
     //InUlines inUlines;
     
+    friend class SAK;
+    
 public:
+    
+    //gfa methods
+    void insertHash(std::string seqHeader, unsigned long long int seqN) {
+    
+        ump.insert({seqHeader, seqN});
+    
+    }
+        
+    std::vector<std::vector<Pair>> buildGraph(std::vector<InGap> const& edges) // graph Constructor
+    {
+        
+        adjList.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
+ 
+        
+        for (auto &edge: edges) // add edges to the directed graph
+        {
+            
+            adjList[ump.at(edge.sId1)].push_back(std::make_pair(ump.at(edge.sId2),edge.dist)); // insert at gap start gap destination and weight (gap size)
+            
+            // undirected graph
+            adjList[ump.at(edge.sId2)].push_back(std::make_pair(ump.at(edge.sId1),edge.dist));
+        }
+        
+        return adjList;
+        
+    }
+    
+    void DFS(int v, InSequence &inSequenceNew, std::string &inSequence)
+    {
+    
+        visited[v] = true; // Mark the current node as visited
+        
+        inSequence += newSeq[v].getInSequence();
+        
+        for (Pair i: adjList[v]) { // Recur for all the vertices adjacent to this vertex
+            if (!visited[i.first]) {
+                inSequence += std::string(i.second, 'N');
+                DFS(i.first, inSequenceNew, inSequence);
+            }
+        }
+        
+        inSequenceNew.setInSequence(&inSequence);
+        
+    }
+    
+    std::vector<std::vector<Pair>> getAdjList() {
+    
+        return adjList;
+        
+    }
+    
+    bool getVisited(unsigned long long int seqN) {
+    
+        return visited[seqN];
+        
+    }
+        
+    //end of gfa methods
+    
     void appendSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence
         
         inSequence.setSeqHeader(seqHeader);
@@ -535,6 +609,12 @@ public:
         
         InSequence inSequence = newSeq[idx];
         return inSequence;
+        
+    }
+    
+    std::vector<InSequence> getInSequences() {
+        
+        return newSeq;
         
     }
     
@@ -999,7 +1079,7 @@ public:
         
     }
     
-    std::vector<InGap> getGFAGaps() {
+    std::vector<InGap> getGFAGaps() { // return gfa gaps vector
         
         return inGaps;
         
@@ -1010,12 +1090,60 @@ public:
 class SAK { // the swiss army knife
 private:
     InSequences inSequences;
-    InGap inGap;
+    InSequence inSequence1, inSequence2, inSequenceNew;
+    std::string sId1Header, sId2Header;
+    bool seq1 = false, seq2 = false;
     
 public:
     
-    bool joinByGap(InSequences &inSequences, InGap inGap) {
+    bool joinByGap(InSequences &inSequences) { // joins two sequences via a gap based on instruction in gfa format
         
+        std::vector<InGap> inGaps = inSequences.inGaps; // get the gaps vector
+        
+        for (std::vector<InGap>::const_iterator gapIt = inGaps.cbegin(); gapIt != inGaps.cend();) { // for each gap in the gap vector
+            
+            for (std::vector<InSequence>::const_iterator seqIt = inSequences.newSeq.cbegin(); seqIt != inSequences.newSeq.cend();) { //
+                
+                std::cout<<"sId1Header: "<<sId1Header<<std::endl;
+                std::cout<<"sId2Header: "<<sId2Header<<std::endl;
+                std::cout<<"(*seqIt).seqHeader: "<<(*seqIt).seqHeader<<std::endl;
+                
+                if ((*seqIt).seqHeader == sId1Header) {
+                    
+                    inSequence1 = (*seqIt);
+                    seq1 = true;
+                    inSequences.newSeq.erase(seqIt);
+                    seqIt--;
+                    
+                }
+                
+                if ((*seqIt).seqHeader == sId2Header) {
+
+                    inSequence2 = (*seqIt);
+                    seq2 = true;
+                    inSequences.newSeq.erase(seqIt);
+                    seqIt--;
+                    
+                }
+                
+                if (seq1 && seq2) {break;}
+                
+                seqIt++;
+                
+            }
+            
+            seq1 = false, seq2 = false;
+            
+            inSequenceNew.seqHeader = (*gapIt).gId;
+            inSequenceNew.seqComment = "JOIN " + inSequence1.seqHeader + " & " + inSequence2.seqHeader;
+            inSequenceNew.inSequence = inSequence1.inSequence + std::string((*gapIt).dist, 'N') + inSequence2.inSequence;
+            //inSequenceNew.inSequenceQuality = inSequence1.inSequenceQuality + std::string((*gapIt).dist, '!') + inSequence1.inSequenceQuality;
+
+            inSequences.newSeq.push_back(inSequenceNew);
+            
+            gapIt++;
+                
+        }
         
         return true;
         

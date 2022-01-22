@@ -144,11 +144,53 @@ public:
                 
                 std::string output;
                 
-                if (!inSequences.getGFAGaps().empty()) {
+                std::string seqHeader, seqComment, inSeq;
+                char* c, *h;
+                
+                // gfa postprocessing
+                // print adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGFAGaps());
+                
+                InSequences inSequencesNew; // the new sequence set resulting from the graph
+                
+                    for (unsigned int i = 0; i != inSequences.getAdjList().size(); ++i) { // loop through all nodes
+                        
+                        InSequence inSequence; // a new inSequence object, the result of concatenating by gaps
+                        std::string inSequenceNew; // the new sequence being built recursively
                     
-                    std::cout<<"hello";
+                        seqComment = inSequences.getInSequence(i).getSeqComment();
+                        
+                        h = strtok(strdup(seqComment.c_str())," "); //process header
+                        
+                        if (h != NULL) {
+                        
+                            seqHeader = std::string(h);
+                        
+                        }
+                        
+                        c = strtok(NULL,"\t");
+                        
+                        if (c != NULL) {
+                            
+                            seqComment = std::string(c);
+                        
+                        }
+                        
+                        inSequence.setSeqHeader(&seqComment);
+                        
+                        if (!inSequences.getVisited(i)) { // check if the node was already visited
+                    
+                            inSequences.DFS(i, inSequence, inSequenceNew); // if not, visit all connected components recursively
+                        
+                            inSeq = inSequence.getInSequence();
+                        
+                            inSequencesNew.appendSequence(&seqHeader, &seqComment, &inSeq); // push the new sequence
+                    
+                        }
                     
                 }
+                
+                inSequences = inSequencesNew;
                 
                 while (counter < inSequences.getScaffN()) {
                     
@@ -214,12 +256,14 @@ public:
                     std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     auto last = std::prev(end);
                     
-                    if (*begin>0) { // case apparently missing for GFA2 spec (starting gap)
+                    if (*begin>0) { // case apparently missing for GFA2 spec (start gap)
+                        
+                        len = *begin;
                         
                         *stream <<"G\t" // line type
                                 <<seqHeader<<"."<<item<<"\t" // id
-                                <<seqHeader<<".begin"<<"\t" // sid1:ref (begin of sequence)
-                                <<seqHeader<<"."<<item+1<<"\t" // sid2:ref
+                                <<seqHeader<<"."<<item<<"+\t" // sid1:ref (begin of sequence)
+                                <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
                                 <<len<<"\t" // size
                                 <<inSequence.getSeqComment()<<"\n"; // optional comment
                         
@@ -234,19 +278,27 @@ public:
                         *stream <<"S\t" // line type
                                 <<seqHeader<<"."<<item<<"\t" // id
                                 <<*(it+1)-*(it)<<"\t" // size
-                                <<inSequence.getInSequence().substr(*(it),*(it+1))<<"\t" // sequence
-                                <<inSequence.getSeqComment()<<"\n"; // optional comment
+                                <<inSequence.getInSequence().substr(*(it),len)<<"\t" // sequence
+                                <<inSequence.getSeqHeader(); // header
+                        
+                        if (inSequence.getSeqComment() != "") {
+                        
+                        *stream <<" "<<inSequence.getSeqComment(); // optional comment
+                    
+                        }
+                
+                        *stream <<"\n";
                         
                         item++;
                         
-                        if (ctgN != seqBoundaries.size()/2) {
+                        if (ctgN != seqBoundaries.size()/2) { // inner gap
                             
                             len = *(it+2) - *(it+1);
                             
                             *stream <<"G\t" // line type
                                     <<seqHeader<<"."<<item<<"\t" // id
-                                    <<seqHeader<<"."<<item-1<<"\t" // sid1:ref
-                                    <<seqHeader<<"."<<item+1<<"\t" // sid2:ref
+                                    <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
+                                    <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
                                     <<len<<"\t" // size
                                     <<inSequence.getSeqComment()<<"\n"; // optional comment
                             
@@ -254,14 +306,14 @@ public:
                             
                         }
                         
-                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) {
+                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) { // end gap
                             
                             len = seqScaffLen - *(it+1);
                             
                             *stream <<"G\t" // line type
                                     <<seqHeader<<"."<<item<<"\t" // id
-                                    <<seqHeader<<"."<<item-1<<"\t" // sid1:ref
-                                    <<seqHeader<<".end"<<"\t" // sid2:ref (end of sequence)
+                                    <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
+                                    <<seqHeader<<"."<<item-1<<"+\t" // sid2:ref (end of sequence)
                                     <<len<<"\t" // size
                                     <<inSequence.getSeqComment()<<"\n"; // optional comment
                             
@@ -497,7 +549,7 @@ public:
                         
                     }
                     
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
+                    for (std::vector<unsigned int>::const_iterator it = begin; it != end;) {
                         
                         len = *(it+1) - *it;
                         

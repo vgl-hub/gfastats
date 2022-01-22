@@ -198,13 +198,14 @@ public:
                     InGap inGap;
                     
                     unsigned long long int lineN = 1;
+                    unsigned long long int seqN = 0;
                     
-                    h_col1 = std::string(strtok(strdup(firstLine.c_str()),"\t")); //process first line
+                    h_col1 = std::string(strtok(strdup(firstLine.c_str()),"\t")); // process first line
                     
                     if(h_col1 == "H"){
                         
-                        h_col2 = strtok(NULL,""); //read header col2
-                        std::string(strtok(strdup(h_col2.c_str()),":")); //process version tag
+                        h_col2 = strtok(NULL,""); // read header col2
+                        std::string(strtok(strdup(h_col2.c_str()),":")); // process version tag
                         strtok(NULL,":");
                         version = strtok(NULL,"");
                         
@@ -232,10 +233,21 @@ public:
                                 
                                 seqHeader = h;
                                 
+                                strtok(NULL,"\t");
                                 s = strtok(NULL,"\t");
                                 inSequence = s;
                                 
+                                c = strtok(NULL,"\t");
+                                if (c != NULL) {
+                                    
+                                    seqComment = std::string(c);
+                                    
+                                }
+                                
+                                inSequences.insertHash(seqHeader, seqN); // header to hash table
+                                
                                 includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                seqN++;
                                 lineN++;
                                 
                                 break;

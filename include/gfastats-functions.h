@@ -8,6 +8,9 @@
 #ifndef gfastatsFunctions_h
 #define gfastatsFunctions_h
 
+//typedef
+typedef std::pair<unsigned long long int, unsigned long long int> Pair;
+
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
 std::unique_ptr<T> make_unique(Args&&... args) {

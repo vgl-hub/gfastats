@@ -23,4 +23,6 @@ static int outFile_flag;
 static int stats_flag;
 static int cmd_flag;
 
+const int PRIME_CONST = 31; // hash constant
+
 #endif /* gfastats-global_h */
