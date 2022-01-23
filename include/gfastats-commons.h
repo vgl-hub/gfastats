@@ -1071,8 +1071,8 @@ public:
     }
     
     unsigned int getLargestGap() {
-            
-        return gapLens[0]; // sorted during N/L* computation
+        
+        return gapLens.size() > 0 ? gapLens[0] : 0; // sorted during N/L* computation
         
     }
     
