@@ -153,7 +153,7 @@ public:
                 
                 InSequences inSequencesNew; // the new sequence set resulting from the graph
                 
-                    for (unsigned int i = 0; i != inSequences.getAdjList().size(); ++i) { // loop through all nodes
+                    for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
                         
                         InSequence inSequence; // a new inSequence object, the result of concatenating by gaps
                         std::string inSequenceNew; // the new sequence being built recursively
@@ -262,7 +262,7 @@ public:
                         
                         *stream <<"G\t" // line type
                                 <<seqHeader<<"."<<item<<"\t" // id
-                                <<seqHeader<<"."<<item<<"+\t" // sid1:ref (begin of sequence)
+                                <<seqHeader<<"."<<item+1<<"+\t" // sid1:ref (begin of sequence)
                                 <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
                                 <<len<<"\t" // size
                                 <<inSequence.getSeqComment()<<"\n"; // optional comment
@@ -313,7 +313,7 @@ public:
                             *stream <<"G\t" // line type
                                     <<seqHeader<<"."<<item<<"\t" // id
                                     <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
-                                    <<seqHeader<<"."<<item-1<<"+\t" // sid2:ref (end of sequence)
+                                    <<seqHeader<<"."<<item-1<<"-\t" // sid2:ref (end of sequence)
                                     <<len<<"\t" // size
                                     <<inSequence.getSeqComment()<<"\n"; // optional comment
                             

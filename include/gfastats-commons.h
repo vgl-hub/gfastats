@@ -463,8 +463,8 @@ private:
     
     //gfa variables
     std::vector<InGap> inGaps;
-    std::vector<std::vector<Tuple>> adjList;
-    std::vector<std::vector<Tuple>> adjListRV;
+    std::vector<std::vector<Tuple>> adjListFW;
+    std::vector<std::vector<Tuple>> adjListBW;
     std::unordered_map<std::string, unsigned long long int> ump;
     std::unordered_map<int, bool> visited;
     bool backward = false;
@@ -486,16 +486,16 @@ public:
     void buildGraph(std::vector<InGap> const& edges) // graph Constructor
     {
         
-        adjList.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
-        adjListRV.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
+        adjListFW.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
+        adjListBW.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
  
         
         for (auto &edge: edges) // add edges to the graph
         {
             
-            adjList[ump.at(edge.sId1)].push_back(std::make_tuple(edge.sId1Or, ump.at(edge.sId2), edge.sId2Or, edge.dist)); // insert at gap start gap destination and weight (gap size)
-            adjListRV[ump.at(edge.sId2)].push_back(std::make_tuple(edge.sId2Or, ump.at(edge.sId1), edge.sId1Or, edge.dist)); // undirected graph
-
+            adjListFW.at(ump.at(edge.sId1)).push_back(std::make_tuple(edge.sId1Or, ump.at(edge.sId2), edge.sId2Or, edge.dist)); // insert at gap start gap destination and weight (gap size)
+            adjListBW.at(ump.at(edge.sId2)).push_back(std::make_tuple(edge.sId2Or, ump.at(edge.sId1), edge.sId1Or, edge.dist)); // undirected graph
+            
         }
         
     }
@@ -506,41 +506,67 @@ public:
         visited[v] = true; // mark the current node as visited
         std::string inSequenceNext;
         
-        if (adjList[v].size() > 0 && adjListRV[v].size() > 0 && !backward) { // if there is more than one connected component to the vertex
+        if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0)))) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
-            inSequence = (std::get<0>(adjList.at(v).at(0)) == '+') ? inSequence : reverse(inSequence); // check if vertex should be in forward orientation, if not reverse-complement
+            inSequence = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSequence : reverse(inSequence); // check if vertex should be in forward orientation, if not reverse-complement
             
-            inSequenceNext = (std::get<0>(adjListRV.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence()); // check if vertex should be in forward orientation, if not reverse-complement
+            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence()); // check if vertex should be in forward orientation, if not reverse-complement
             
             inSequence += inSequenceNext;
                 
-        }else if (adjListRV[v].size() > 0 && !(adjList[v].size() > 0)){ // this is the final vertex
+        }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
             
-            inSequenceNext = (std::get<0>(adjListRV.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
             
             inSequence += inSequenceNext;
             
             backward = true; // reached the end
             
-        }else if (adjListRV[v].size() > 0){ // this is an intermediate vertex, only walking back
+        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
             
-            inSequenceNext = (std::get<0>(adjListRV.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
             
+            inSequence += inSequenceNext;
+            
+            inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
+            
+            backward = true; // reached the end
+            
+        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && backward){ // this is an intermediate vertex, only walking back
+            
+            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+
             inSequence.insert(0, inSequenceNext);
         
-        }else if(adjList[v].size() == 0 && adjListRV[v].size() == 0){ // disconnected component
+        }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
             
             inSequence += newSeq[v].getInSequence();
             
-        }else{ // this is the first vertex
+        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
                 
-            inSequenceNext = (std::get<0>(adjList.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+            inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
             
             inSequence.insert(0, inSequenceNext);
             
+        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
+            
+            inSequence.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
+            
+            inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+            
+            inSequence.insert(0, inSequenceNext);
+            
+        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
+            
+            inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+            
+            inSequence += inSequenceNext;
+            
+            std::get<2>(adjListFW.at(v).at(0)) == '-' ? inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N') : inSequence.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap: if - in second vertex is terminal else is start gap
+            
         }
         
-        for (Tuple i: adjList[v]) { // recur for all forward vertices adjacent to this vertex
+        for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
             if (!visited[std::get<1>(i)]) {
                 
                 inSequence += std::string(std::get<3>(i), 'N'); // add gaps
@@ -550,7 +576,7 @@ public:
             }
         }
         
-        for (Tuple i: adjListRV[v]) { // recur for all backward vertices adjacent to this vertex
+        for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
             if (!visited[std::get<1>(i)]) {
 
                 inSequence.insert(0,std::string(std::get<3>(i), 'N')); // add gaps
@@ -562,11 +588,19 @@ public:
         
         inSequenceNew.setInSequence(&inSequence);
         
+        backward = false;
+        
     }
     
-    std::vector<std::vector<Tuple>> getAdjList() {
+    std::vector<std::vector<Tuple>> getAdjListFW() {
     
-        return adjList;
+        return adjListFW;
+        
+    }
+    
+    std::vector<std::vector<Tuple>> getAdjListBW() {
+    
+        return adjListBW;
         
     }
     
