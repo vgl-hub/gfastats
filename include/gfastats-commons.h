@@ -500,7 +500,7 @@ public:
         
     }
     
-    void DFS(int v, InSequence &inSequenceNew, std::string &inSequence)
+    void DFS(int v, InSequence &inSequenceNew, std::string &inSequence) // Depth First Search
     {
     
         visited[v] = true; // mark the current node as visited
