@@ -9,7 +9,7 @@
 #define gfastatsFunctions_h
 
 //typedef
-typedef std::pair<unsigned long long int, unsigned long long int> Pair;
+typedef std::tuple<char, unsigned long long int, char, unsigned long long int> Tuple;
 
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
@@ -173,6 +173,31 @@ std::string getFileExt(const std::string& FileName) // utility to get file exten
     if(FileName.find_last_of(".") != std::string::npos)
         return FileName.substr(FileName.find_last_of(".")+1);
     return "";
+}
+
+std::string reverse(std::string seq) { // reverse complement
+    auto lambda = [](const char c) {
+        switch (c) {
+        case 'A':
+            return 'T';
+        case 'G':
+            return 'C';
+        case 'C':
+            return 'G';
+        case 'T':
+            return 'A';
+        case 'N':
+        case 'n':
+        case 'X':
+        case 'x':
+            return 'N';
+        default:
+            throw std::domain_error("Invalid nucleotide.");
+        }
+    };
+
+    std::transform(seq.cbegin(), seq.cend(), seq.begin(), lambda);
+    return seq;
 }
 
 #endif /* gfastats-Functions_h */

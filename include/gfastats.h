@@ -23,6 +23,7 @@
 #include <string.h>
 #include <algorithm> //required for zstream
 #include <cstring> //required for zstream
+#include <tuple> // for graph manipulation
 
 #include <chrono>
 #include <memory>

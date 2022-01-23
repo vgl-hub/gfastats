@@ -185,7 +185,7 @@ public:
                             inSeq = inSequence.getInSequence();
                         
                             inSequencesNew.appendSequence(&seqHeader, &seqComment, &inSeq); // push the new sequence
-                    
+                            
                         }
                     
                 }

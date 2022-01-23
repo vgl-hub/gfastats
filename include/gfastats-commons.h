@@ -360,7 +360,8 @@ public:
 class InGap {
 private:
     unsigned long long int lineN;
-    std::string gId, sId1, sId2, sId1Or, sId2Or;
+    std::string gId, sId1, sId2;
+    char sId1Or, sId2Or;
     unsigned int dist;
     friend class SAK;
     friend class InSequences;
@@ -462,9 +463,11 @@ private:
     
     //gfa variables
     std::vector<InGap> inGaps;
-    std::vector<std::vector<Pair>> adjList;
+    std::vector<std::vector<Tuple>> adjList;
+    std::vector<std::vector<Tuple>> adjListRV;
     std::unordered_map<std::string, unsigned long long int> ump;
     std::unordered_map<int, bool> visited;
+    bool backward = false;
     //InEdges inEdges;
     //InOlines inOlines;
     //InUlines inUlines;
@@ -480,36 +483,80 @@ public:
     
     }
         
-    std::vector<std::vector<Pair>> buildGraph(std::vector<InGap> const& edges) // graph Constructor
+    void buildGraph(std::vector<InGap> const& edges) // graph Constructor
     {
         
         adjList.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
+        adjListRV.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
  
         
-        for (auto &edge: edges) // add edges to the directed graph
+        for (auto &edge: edges) // add edges to the graph
         {
             
-            adjList[ump.at(edge.sId1)].push_back(std::make_pair(ump.at(edge.sId2),edge.dist)); // insert at gap start gap destination and weight (gap size)
-            
-            // undirected graph
-            adjList[ump.at(edge.sId2)].push_back(std::make_pair(ump.at(edge.sId1),edge.dist));
+            adjList[ump.at(edge.sId1)].push_back(std::make_tuple(edge.sId1Or, ump.at(edge.sId2), edge.sId2Or, edge.dist)); // insert at gap start gap destination and weight (gap size)
+            adjListRV[ump.at(edge.sId2)].push_back(std::make_tuple(edge.sId2Or, ump.at(edge.sId1), edge.sId1Or, edge.dist)); // undirected graph
+
         }
-        
-        return adjList;
         
     }
     
     void DFS(int v, InSequence &inSequenceNew, std::string &inSequence)
     {
     
-        visited[v] = true; // Mark the current node as visited
+        visited[v] = true; // mark the current node as visited
+        std::string inSequenceNext;
         
-        inSequence += newSeq[v].getInSequence();
+        if (adjList[v].size() > 0 && adjListRV[v].size() > 0 && !backward) { // if there is more than one connected component to the vertex
+            
+            inSequence = (std::get<0>(adjList.at(v).at(0)) == '+') ? inSequence : reverse(inSequence); // check if vertex should be in forward orientation, if not reverse-complement
+            
+            inSequenceNext = (std::get<0>(adjListRV.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence()); // check if vertex should be in forward orientation, if not reverse-complement
+            
+            inSequence += inSequenceNext;
+                
+        }else if (adjListRV[v].size() > 0 && !(adjList[v].size() > 0)){ // this is the final vertex
+            
+            inSequenceNext = (std::get<0>(adjListRV.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+            
+            inSequence += inSequenceNext;
+            
+            backward = true; // reached the end
+            
+        }else if (adjListRV[v].size() > 0){ // this is an intermediate vertex, only walking back
+            
+            inSequenceNext = (std::get<0>(adjListRV.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+            
+            inSequence.insert(0, inSequenceNext);
         
-        for (Pair i: adjList[v]) { // Recur for all the vertices adjacent to this vertex
-            if (!visited[i.first]) {
-                inSequence += std::string(i.second, 'N');
-                DFS(i.first, inSequenceNew, inSequence);
+        }else if(adjList[v].size() == 0 && adjListRV[v].size() == 0){ // disconnected component
+            
+            inSequence += newSeq[v].getInSequence();
+            
+        }else{ // this is the first vertex
+                
+            inSequenceNext = (std::get<0>(adjList.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
+            
+            inSequence.insert(0, inSequenceNext);
+            
+        }
+        
+        for (Tuple i: adjList[v]) { // recur for all forward vertices adjacent to this vertex
+            if (!visited[std::get<1>(i)]) {
+                
+                inSequence += std::string(std::get<3>(i), 'N'); // add gaps
+                
+                DFS(std::get<1>(i), inSequenceNew, inSequence); // recurse
+                
+            }
+        }
+        
+        for (Tuple i: adjListRV[v]) { // recur for all backward vertices adjacent to this vertex
+            if (!visited[std::get<1>(i)]) {
+
+                inSequence.insert(0,std::string(std::get<3>(i), 'N')); // add gaps
+
+                DFS(std::get<1>(i), inSequenceNew, inSequence); // recurse
+
             }
         }
         
@@ -517,7 +564,7 @@ public:
         
     }
     
-    std::vector<std::vector<Pair>> getAdjList() {
+    std::vector<std::vector<Tuple>> getAdjList() {
     
         return adjList;
         
