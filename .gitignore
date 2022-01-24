@@ -83,6 +83,6 @@ fastlane/test_output
 *.xcworkspacedata
 *.plist
 
-logo/
+paper/
 
 # End of https://www.gitignore.io/api/swift,xcode
