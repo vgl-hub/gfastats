@@ -289,7 +289,7 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Finished reading sequences from file to sequence object");
     
-    InSequence inSequence; // initialize a single input sequence object for output purposes
+    InSegment inSegment; // initialize a single input sequence object for output purposes
     
     Report report;
     
@@ -297,7 +297,7 @@ int main(int argc, char **argv) {
         
         stats_flag = true;
         
-        report.seqReport(inSequences, inSequence, outSequence_flag);
+        report.seqReport(inSequences, inSegment, outSequence_flag);
         
     }
     
@@ -305,7 +305,7 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outFile(inSequences, inSequence, splitLength, outSeq);
+        report.outFile(inSequences, inSegment, splitLength, outSeq);
         
     }
     
@@ -313,7 +313,7 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outSize(inSequences, inSequence, sizeOutType);
+        report.outSize(inSequences, inSegment, sizeOutType);
         
     }
     
@@ -321,7 +321,7 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outCoord(inSequences, inSequence, bedOutType);
+        report.outCoord(inSequences, inSegment, bedOutType);
         
     }
     

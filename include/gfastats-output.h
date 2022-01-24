@@ -14,50 +14,50 @@ private:
     unsigned int counter = 0;
     
 public:
-    bool seqReport(InSequences &inSequences, InSequence &inSequence, int &outSequence_flag) { // method to output the summary statistics for each sequence
+    bool seqReport(InSequences &inSequences, InSegment &inSegment, int &outSequence_flag) { // method to output the summary statistics for each sequence
         
-        counter = 0;
-        
-        while (counter < inSequences.getScaffN()) {
-            
-            inSequence = inSequences.getInSequence(counter);
-            
-            std::cout<<output("Seq")<<counter+1<<std::endl;
-            std::cout<<output("Header")<<inSequence.getSeqHeader()<<std::endl;
-            std::cout<<output("Comment")<<inSequence.getSeqComment()<<std::endl;
-            std::cout<<output("Total sequence length")<<inSequence.getSeqScaffLen()<<std::endl;
-            std::cout<<output("Total contig length")<<inSequence.getContigSum()<<std::endl;
-            std::cout<<output("# contig")<<inSequence.getContigN()<<std::endl;
-            std::cout<<output("Total gap length")<<inSequence.getGapSum()<<std::endl;
-            std::cout<<output("# gaps")<<inSequence.getGapN()<<std::endl;
-            
-            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), inSequence.getA(),
-                   inSequence.getC(),
-                   inSequence.getG(),
-                   inSequence.getT());
-            printf("%s%.2f\n",output("GC content %").c_str(), inSequence.computeGCcontent());
-            std::cout<<output("# soft-masked bases")<<inSequence.getLowerCount()<<std::endl;
-            
-            
-            if (outSequence_flag) {
-                
-                std::cout<<output("Sequence")<<inSequence.getInSequence()<<std::endl;
-                std::cout<<output("Quality")<<inSequence.getInSequenceQuality()<<std::endl;
-                
-            }
-            
-            std::cout<<std::endl;
-            counter++;
-            
-        }
-        
-        counter = 0;
+//        counter = 0;
+//
+//        while (counter < inSequences.getScaffN()) {
+//
+//            inSegment = inSequences.getInSequence(counter);
+//
+//            std::cout<<output("Seq")<<counter+1<<std::endl;
+//            std::cout<<output("Header")<<inSegment.getSeqHeader()<<std::endl;
+//            std::cout<<output("Comment")<<inSegment.getSeqComment()<<std::endl;
+//            std::cout<<output("Total sequence length")<<inSegment.getSegmentLength()<<std::endl;
+//            std::cout<<output("Total contig length")<<inSegment.getContigSum()<<std::endl;
+//            std::cout<<output("# contig")<<inSegment.getContigN()<<std::endl;
+//            std::cout<<output("Total gap length")<<inSegment.getGapSum()<<std::endl;
+//            std::cout<<output("# gaps")<<inSegment.getGapN()<<std::endl;
+//
+//            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), inSequence.getA(),
+//                   inSequence.getC(),
+//                   inSequence.getG(),
+//                   inSequence.getT());
+//            printf("%s%.2f\n",output("GC content %").c_str(), inSequence.computeGCcontent());
+//            std::cout<<output("# soft-masked bases")<<inSequence.getLowerCount()<<std::endl;
+//
+//
+//            if (outSequence_flag) {
+//
+//                std::cout<<output("Sequence")<<inSequence.getInSequence()<<std::endl;
+//                std::cout<<output("Quality")<<inSequence.getInSequenceQuality()<<std::endl;
+//
+//            }
+//
+//            std::cout<<std::endl;
+//            counter++;
+//
+//        }
+//
+//        counter = 0;
         
         return true;
         
     }
     
-    bool outFile(InSequences &inSequences, InSequence &inSequence, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
+    bool outFile(InSequences &inSequences, InSegment &inSegment, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
         
         // unordered map to handle out correspondence in following switch statement
         const static std::unordered_map<std::string,int> string_to_case{
@@ -104,16 +104,13 @@ public:
         // here we create a smart pointer to handle any kind of output stream
         std::unique_ptr<std::ostream> stream;
         
-        // this stream outputs gzip compressed to stdout
-        zstream::ogzstream zout(std::cout);
-        
-        // this stream outputs gzip to file
+        // this stream outputs to file
         std::ofstream ofs(outSeq);
-        
-        // this stream outputs gzip compressed to file
-        zstream::ogzstream zfout(ofs);
 
         if (gzip && outFile) { // if the requested output is gzip compressed and should be outputted to a file
+            
+            // this stream outputs gzip compressed to file
+            zstream::ogzstream zfout(ofs);
             
             stream = make_unique<std::ostream>(zfout.rdbuf()); // then we use the stream for gzip compressed file outputs
             
@@ -129,6 +126,9 @@ public:
             
             if (gzip) { // if the output to stdout needs to be compressed we use the appropriate stream
             
+                // this stream outputs gzip compressed to stdout
+                zstream::ogzstream zout(std::cout);
+                
                 stream = make_unique<std::ostream>(zout.rdbuf());
             
             }else{ // else we use a regular cout stream
@@ -145,7 +145,6 @@ public:
                 std::string output;
                 
                 std::string seqHeader, seqComment, inSeq;
-                char* c, *h;
                 
                 // gfa postprocessing
                 // print adjacency list representation of a graph
@@ -153,40 +152,26 @@ public:
                 
                 InSequences inSequencesNew; // the new sequence set resulting from the graph
                 
-                    for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
-                        
-                        InSequence inSequence; // a new inSequence object, the result of concatenating by gaps
-                        std::string inSequenceNew; // the new sequence being built recursively
+                
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
                     
-                        seqComment = inSequences.getInSequence(i).getSeqComment();
-                        
-                        h = strtok(strdup(seqComment.c_str())," "); //process header
-                        
-                        if (h != NULL) {
-                        
-                            seqHeader = std::string(h);
-                        
-                        }
-                        
-                        c = strtok(NULL,"\t");
-                        
-                        if (c != NULL) {
-                            
-                            seqComment = std::string(c);
-                        
-                        }
-                        
-                        inSequence.setSeqHeader(&seqComment);
-                        
-                        if (!inSequences.getVisited(i)) { // check if the node was already visited
+                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
+                    std::string inSeqNew; // the new sequence being built recursively
+                
+                    seqHeader = inSequences.getInSegment(i).getSeqHeader();
+                    seqComment = inSequences.getInSegment(i).getSeqComment();
                     
-                            inSequences.DFS(i, inSequence, inSequenceNew); // if not, visit all connected components recursively
+                    if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
-                            inSeq = inSequence.getInSequence();
+                        inSequences.DFS(i, inSegment, inSeqNew); // if not, visit all connected components recursively
                         
-                            inSequencesNew.appendSequence(&seqHeader, &seqComment, &inSeq); // push the new sequence
-                            
-                        }
+                        inSeq = inSegment.getInSegment();
+                    
+                        inSequencesNew.addSegment(&seqHeader, &seqComment, &inSeq); // push the new sequence
+                        
+                        inSequencesNew.increaseTotScaffN();
+                        
+                    }
                     
                 }
                 
@@ -194,17 +179,17 @@ public:
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
+                    inSegment = inSequences.getInSegment(counter);
                     
-                    *stream<<">"<<inSequence.getSeqHeader()<<" "<<inSequence.getSeqComment()<<std::endl;
+                    *stream<<">"<<inSegment.getSeqHeader()<<" "<<inSegment.getSeqComment()<<std::endl;
                     
                     if (splitLength != 0) {
                         
-                        textWrap(inSequence.getInSequence(), *stream, splitLength);
+                        textWrap(inSegment.getInSegment(), *stream, splitLength);
                         
                     }else{
                         
-                        output = inSequence.getInSequence();
+                        output = inSegment.getInSegment();
                         
                     }
                     
@@ -223,9 +208,9 @@ public:
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
+                    inSegment = inSequences.getInSegment(counter);
                     
-                    *stream<<"@"<<inSequence.getSeqHeader()<<" "<<inSequence.getSeqComment()<<"\n"<<inSequence.getInSequence()<<"\n+\n"<<inSequence.getInSequenceQuality()<<"\n";
+                    *stream<<"@"<<inSegment.getSeqHeader()<<" "<<inSegment.getSeqComment()<<"\n"<<inSegment.getInSegment()<<"\n+\n"<<inSegment.getInSequenceQuality()<<"\n";
                     
                     counter++;
                     
@@ -245,12 +230,10 @@ public:
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
-                    unsigned int seqScaffLen = inSequence.getSeqScaffLen();
+                    inSegment = inSequences.getInSegment(counter);
+                    unsigned int seqScaffLen = inSegment.getSegmentLength();
                     
-                    seqHeader = inSequence.getSeqHeader();
-                    
-                    seqBoundaries = inSequence.getSeqContigBoundaries();
+                    seqHeader = inSegment.getSeqHeader();
                     
                     std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
                     std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
@@ -265,7 +248,7 @@ public:
                                 <<seqHeader<<"."<<item+1<<"+\t" // sid1:ref (begin of sequence)
                                 <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
                                 <<len<<"\t" // size
-                                <<inSequence.getSeqComment()<<"\n"; // optional comment
+                                <<inSegment.getSeqComment()<<"\n"; // optional comment
                         
                         item++;
                         
@@ -278,12 +261,12 @@ public:
                         *stream <<"S\t" // line type
                                 <<seqHeader<<"."<<item<<"\t" // id
                                 <<*(it+1)-*(it)<<"\t" // size
-                                <<inSequence.getInSequence().substr(*(it),len)<<"\t" // sequence
-                                <<inSequence.getSeqHeader(); // header
+                                <<inSegment.getInSegment().substr(*(it),len)<<"\t" // sequence
+                                <<inSegment.getSeqHeader(); // header
                         
-                        if (inSequence.getSeqComment() != "") {
+                        if (inSegment.getSeqComment() != "") {
                         
-                        *stream <<" "<<inSequence.getSeqComment(); // optional comment
+                        *stream <<" "<<inSegment.getSeqComment(); // optional comment
                     
                         }
                 
@@ -300,7 +283,7 @@ public:
                                     <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
                                     <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
                                     <<len<<"\t" // size
-                                    <<inSequence.getSeqComment()<<"\n"; // optional comment
+                                    <<inSegment.getSeqComment()<<"\n"; // optional comment
                             
                             item++;
                             
@@ -315,7 +298,7 @@ public:
                                     <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
                                     <<seqHeader<<"."<<item-1<<"-\t" // sid2:ref (end of sequence)
                                     <<len<<"\t" // size
-                                    <<inSequence.getSeqComment()<<"\n"; // optional comment
+                                    <<inSegment.getSeqComment()<<"\n"; // optional comment
                             
                             item++;
                             
@@ -371,7 +354,7 @@ public:
         
     }
     
-    bool outSize(InSequences &inSequences, InSequence &inSequence, char &sizeOutType) { // method to output only the size of the sequences
+    bool outSize(InSequences &inSequences, InSegment &inSegment, char &sizeOutType) { // method to output only the size of the sequences
         
         counter = 0;
         
@@ -385,9 +368,9 @@ public:
 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
+                    inSegment = inSequences.getInSegment(counter);
                         
-                    std::cout<<inSequence.getSeqHeader()<<"\t"<<inSequence.getSeqScaffLen()<<std::endl;
+                    std::cout<<inSegment.getSeqHeader()<<"\t"<<inSegment.getSegmentLength()<<std::endl;
                     
                     counter++;
                     
@@ -400,11 +383,9 @@ public:
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
+                    inSegment = inSequences.getInSegment(counter);
                     
-                    seqHeader = inSequence.getSeqHeader();
-                    
-                    seqBoundaries = inSequence.getSeqContigBoundaries();
+                    seqHeader = inSegment.getSeqHeader();
                     
                     std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     
@@ -428,11 +409,9 @@ public:
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
+                    inSegment = inSequences.getInSegment(counter);
                     
-                    seqHeader = inSequence.getSeqHeader();
-                    
-                    seqBoundaries = inSequence.getSeqGapBoundaries();
+                    seqHeader = inSegment.getSeqHeader();
                     
                     std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     
@@ -458,7 +437,7 @@ public:
         
     }
     
-    bool outCoord(InSequences &inSequences, InSequence &inSequence, char bedOutType) { // method to output the coordinates of each feature
+    bool outCoord(InSequences &inSequences, InSegment &inSegment, char bedOutType) { // method to output the coordinates of each feature
         
         counter = 0;
         
@@ -471,11 +450,9 @@ public:
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
+                    inSegment = inSequences.getInSegment(counter);
                     
-                    seqHeader = inSequence.getSeqHeader();
-                    
-                    seqBoundaries = inSequence.getSeqContigBoundaries();
+                    seqHeader = inSegment.getSeqHeader();
                     
                     std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     
@@ -499,11 +476,9 @@ public:
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
+                    inSegment = inSequences.getInSegment(counter);
                     
-                    seqHeader = inSequence.getSeqHeader();
-                    
-                    seqBoundaries = inSequence.getSeqGapBoundaries();
+                    seqHeader = inSegment.getSeqHeader();
                     
                     std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
                     
@@ -530,12 +505,10 @@ public:
                 
                 while (counter < inSequences.getScaffN()) {
                     
-                    inSequence = inSequences.getInSequence(counter);
-                    unsigned int seqScaffLen = inSequence.getSeqScaffLen();
+                    inSegment = inSequences.getInSegment(counter);
+                    unsigned int seqScaffLen = inSegment.getSegmentLength();
                     
-                    seqHeader = inSequence.getSeqHeader();
-                    
-                    seqBoundaries = inSequence.getSeqContigBoundaries();
+                    seqHeader = inSegment.getSeqHeader();
                     
                     std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
                     std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
@@ -611,6 +584,7 @@ public:
         
         }
         
+        std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<std::endl;
         std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<std::endl;
         printf("%s%.2f\n",output("Average scaffold length").c_str(), inSequences.computeAverageScaffLen());
         inSequences.evalNstars('s', gSize); // scaffold N* statistics
@@ -629,8 +603,8 @@ public:
         std::cout<<output("Largest scaffold")<<inSequences.getLargestScaffold()<<std::endl;
         
         std::cout<<output("# contigs")<<inSequences.getContigN()<<std::endl;
-        std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<std::endl;
-        printf("%s%.2f\n",output("Average contig length").c_str(), inSequences.computeAverageContigLen());
+        std::cout<<output("Total contig length")<<inSequences.getTotSegmentLen()<<std::endl;
+        printf("%s%.2f\n",output("Average contig length").c_str(), inSequences.computeAverageSegmentLen());
         inSequences.evalNstars('c', gSize); // contig N* statistics
         std::cout<<output("Contig N50")<<inSequences.getContigN50()<<std::endl;
         inSequences.evalAuN('c', gSize); // contig auN

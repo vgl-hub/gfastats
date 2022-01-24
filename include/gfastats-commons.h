@@ -57,128 +57,17 @@ public:
     
 };
 
-class InSequence { // generic representation of a DNA sequence
+class InSegment { // DNA sequence with no gaps
 private:
     std::string seqHeader;
     std::string seqComment;
     std::string inSequence;
     std::string inSequenceQuality;
-    std::vector<unsigned int> contigBoundaries; // we store the coordinates of contig boundaries for easy access
-    std::vector<unsigned int> gapBoundaries; // we store the coordinates of gap boundaries for easy access
     unsigned int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
+    
     friend class SAK;
     
 public:
-    
-    void traverseInSequence(std::string* s) { // traverse the sequence to measure sequence properties
-        
-        unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
-        bool wasN = false, pushbackGap = false;
-        std::vector<unsigned int> caseBoundaries;
-        std::vector<unsigned int> gapBoundaries;
-        gapBoundaries.reserve(200);
-        
-        for (char &base : *s) {
-            
-            if (islower(base)) {
-                
-                lowerCount++;
-                
-            }
-            
-            switch (base) {
-                    
-                case 'N':
-                case 'n':
-                case 'X':
-                case 'x': {
-                    
-                    if (!wasN) { // gap start
-                        
-                        pushbackGap = true;
-                        
-                    }
-                    
-                    if(pos == (s->length()-1)) { // end of scaffold
-                        
-                        if (!wasN){
-                            
-                            gapBoundaries.push_back(pos);
-                            
-                        }
-                        
-                        pushbackGap = true;
-                        pos++;
-                        
-                    }
-                    
-                    wasN = true;
-                    
-                    break;
-                }
-                default: {
-                    
-                    if (wasN) { // internal gap end
-                        
-                        pushbackGap = true;
-                        
-                    }
-                    
-                    switch (base) {
-                        case 'A':
-                        case 'a':{
-                            
-                            A++;
-                            break;
-                            
-                        }
-                        case 'C':
-                        case 'c':{
-                            
-                            C++;
-                            break;
-                            
-                        }
-                        case 'G':
-                        case 'g': {
-                            
-                            G++;
-                            break;
-                            
-                        }
-                        case 'T':
-                        case 't': {
-                            
-                            T++;
-                            break;
-                            
-                        }
-                            
-                    }
-                    
-                    wasN = false;
-                    
-                }
-                    
-            }
-            
-            if (pushbackGap) {
-                
-                gapBoundaries.push_back(pos);
-                pushbackGap = false;
-                
-            }
-            
-            pos++;
-            
-        }
-        
-        setSeqGapBoundaries(gapBoundaries);
-        setSeqContigBoundaries(gapBoundaries);
-        setACGT(A, C, G, T);
-        setLowerCount(lowerCount);
-        
-    }
     
     void setSeqHeader(std::string* h) {
         seqHeader = *h;
@@ -196,50 +85,6 @@ public:
         inSequenceQuality = *q;
     }
     
-    void setSeqContigBoundaries(std::vector<unsigned int> &gapBoundaries) { // set the contig boundaries
-        
-        std::vector<unsigned int> newSeqContigBoundaries;
-        
-        newSeqContigBoundaries.reserve(gapBoundaries.size() + 2);
-        
-        if (gapBoundaries.size() > 0) {
-            
-            newSeqContigBoundaries = gapBoundaries;
-            
-            if (gapBoundaries[0] != 0) {
-                
-                newSeqContigBoundaries.insert(newSeqContigBoundaries.begin(), 0);
-                
-            }else{
-                
-                newSeqContigBoundaries.erase(newSeqContigBoundaries.begin());
-                
-            }
-            
-            if (newSeqContigBoundaries[newSeqContigBoundaries.size()-1] != inSequence.size()) {
-                
-                newSeqContigBoundaries.insert(newSeqContigBoundaries.end(), inSequence.size());
-                
-            }else{
-                
-                newSeqContigBoundaries.pop_back();
-                
-            }
-            
-        }else{
-            
-            newSeqContigBoundaries = {0, (unsigned int) inSequence.size()};
-            
-        }
-        
-        contigBoundaries = newSeqContigBoundaries;
-        
-    }
-    
-    void setSeqGapBoundaries(std::vector<unsigned int> &g) { // set gap boundaries
-        gapBoundaries = g;
-    }
-    
     std::string getSeqHeader() {
         return seqHeader;
     }
@@ -248,7 +93,7 @@ public:
         return seqComment;
     }
     
-    std::string getInSequence() {
+    std::string getInSegment() {
         return inSequence;
     }
     
@@ -257,57 +102,10 @@ public:
         return inSequenceQuality;
     }
     
-    unsigned int getSeqScaffLen() {
+    unsigned int getSegmentLen() {
         return inSequence.size();
     }
-    
-    std::vector<unsigned int> getSeqContigBoundaries() {
-        return contigBoundaries;
-    }
-    
-    std::vector<unsigned int> getSeqContigLens() {
-        return intervalSizes(contigBoundaries);
-    }
-    
-    unsigned int getContigSum() {
         
-        unsigned int contigSum = 0;
-        
-        for (unsigned int& g : intervalSizes(contigBoundaries))
-            contigSum += g;
-        
-        return contigSum;
-    }
-    
-    unsigned int getContigN() {
-        
-        return intervalSizes(contigBoundaries).size();
-    }
-    
-    std::vector<unsigned int> getSeqGapBoundaries() {
-        return gapBoundaries;
-    }
-    
-    std::vector<unsigned int> getSeqGapLens() {
-        
-        return intervalSizes(gapBoundaries);
-    }
-    
-    unsigned int getGapSum() {
-        
-        unsigned int gapSum = 0;
-        
-        for (auto& g : intervalSizes(gapBoundaries))
-            gapSum += g;
-        
-        return gapSum;
-    }
-    
-    unsigned int getGapN() {
-        
-        return intervalSizes(gapBoundaries).size();
-    }
-    
     void setACGT(unsigned int a, unsigned int c, unsigned int g, unsigned int t) {
         
         A = a;
@@ -342,10 +140,15 @@ public:
         
         return T;
     }
-    
+
     unsigned int getLowerCount() {
         
         return lowerCount;
+    }
+
+    unsigned int getSegmentLength() {
+        
+        return inSequence.size();
     }
     
     double computeGCcontent() {
@@ -368,6 +171,17 @@ private:
     int counter = 0;
     
 public:
+    void newGap(const std::string& gid, const std::string& sid1, const std::string& sid2, const char& sid1or, const char& sid2or, unsigned int& d) {
+        
+        gId = gid;
+        sId1 = sid1;
+        sId2 = sid2;
+        sId1Or = sid1or;
+        sId2Or = sid2or;
+        dist = d;
+        
+    }
+    
     bool readLine(std::string* newLine, unsigned long long int* lN) {
     
         lineN = *lN;
@@ -422,10 +236,21 @@ class InEdges {};
 class InOlines {};
 class InUlines {};
 
-class InSequences { //collection of InSequence objects and their summary statistics
+class InSequences { //collection of InSegment and inGap objects and their summary statistics
     
 private:
-    std::vector<InSequence> newSeq = std::vector<InSequence>();
+    std::vector<InSegment> inSegments = std::vector<InSegment>();
+    
+    //gfa variables
+    std::vector<InGap> inGaps;
+    std::vector<std::vector<Tuple>> adjListFW;
+    std::vector<std::vector<Tuple>> adjListBW;
+    std::unordered_map<std::string, unsigned long long int> ump;
+    std::unordered_map<int, bool> visited;
+    bool backward = false;
+    //InEdges inEdges;
+    //InOlines inOlines;
+    //InUlines inUlines;
     
     std::vector<unsigned int> scaffLens;
     std::vector<unsigned int> contigLens;
@@ -446,14 +271,18 @@ private:
     
     double scaffAuN = 0, scaffAuNG = 0, contigAuN = 0, contigAuNG = 0, gapAuN = 0;
     
-    InSequence inSequence;
+    InSegment inSegment;
+    InGap gap;
     
     unsigned long long int totScaffLen = 0;
-    unsigned long long int totContigLen = 0;
+    unsigned long long int totSegmentLen = 0;
     
     unsigned int
+    totScaffN = 0,
     totGapLen = 0,
-    totGapN = 0;
+    totGapN = 0,
+    seqN = 0,
+    gapN = 0;
     
     unsigned long int totA = 0;
     unsigned long int totC = 0;
@@ -461,241 +290,252 @@ private:
     unsigned long int totT = 0;
     unsigned long int totLowerCount = 0;
     
-    //gfa variables
-    std::vector<InGap> inGaps;
-    std::vector<std::vector<Tuple>> adjListFW;
-    std::vector<std::vector<Tuple>> adjListBW;
-    std::unordered_map<std::string, unsigned long long int> ump;
-    std::unordered_map<int, bool> visited;
-    bool backward = false;
-    //InEdges inEdges;
-    //InOlines inOlines;
-    //InUlines inUlines;
-    
     friend class SAK;
     
 public:
     
-    //gfa methods
-    void insertHash(std::string seqHeader, unsigned long long int seqN) {
-    
-        ump.insert({seqHeader, seqN});
-    
-    }
+    void addSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) {
         
-    void buildGraph(std::vector<InGap> const& edges) // graph Constructor
-    {
-        
-        adjListFW.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
-        adjListBW.resize(newSeq.size()); // resize the vertex vector to hold `n` elements
- 
-        
-        for (auto &edge: edges) // add edges to the graph
-        {
-            
-            adjListFW.at(ump.at(edge.sId1)).push_back(std::make_tuple(edge.sId1Or, ump.at(edge.sId2), edge.sId2Or, edge.dist)); // insert at gap start gap destination and weight (gap size)
-            adjListBW.at(ump.at(edge.sId2)).push_back(std::make_tuple(edge.sId2Or, ump.at(edge.sId1), edge.sId1Or, edge.dist)); // undirected graph
-            
-        }
-        
-    }
-    
-    void DFS(int v, InSequence &inSequenceNew, std::string &inSequence) // Depth First Search
-    {
-    
-        visited[v] = true; // mark the current node as visited
-        std::string inSequenceNext;
-        
-        if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0)))) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
-            
-            inSequence = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSequence : reverse(inSequence); // check if vertex should be in forward orientation, if not reverse-complement
-            
-            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence()); // check if vertex should be in forward orientation, if not reverse-complement
-            
-            inSequence += inSequenceNext;
-                
-        }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
-            
-            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
-            
-            inSequence += inSequenceNext;
-            
-            backward = true; // reached the end
-            
-        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
-            
-            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
-            
-            inSequence += inSequenceNext;
-            
-            inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
-            
-            backward = true; // reached the end
-            
-        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && backward){ // this is an intermediate vertex, only walking back
-            
-            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
-
-            inSequence.insert(0, inSequenceNext);
-        
-        }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
-            
-            inSequence += newSeq[v].getInSequence();
-            
-        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
-                
-            inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
-            
-            inSequence.insert(0, inSequenceNext);
-            
-        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
-            
-            inSequence.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
-            
-            inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
-            
-            inSequence.insert(0, inSequenceNext);
-            
-        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
-            
-            inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? newSeq[v].getInSequence() : reverse(newSeq[v].getInSequence());
-            
-            inSequence += inSequenceNext;
-            
-            std::get<2>(adjListFW.at(v).at(0)) == '-' ? inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N') : inSequence.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap: if - in second vertex is terminal else is start gap
-            
-        }
-        
-        for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
-            if (!visited[std::get<1>(i)]) {
-                
-                inSequence += std::string(std::get<3>(i), 'N'); // add gaps
-                
-                DFS(std::get<1>(i), inSequenceNew, inSequence); // recurse
-                
-            }
-        }
-        
-        for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
-            if (!visited[std::get<1>(i)]) {
-
-                inSequence.insert(0,std::string(std::get<3>(i), 'N')); // add gaps
-
-                DFS(std::get<1>(i), inSequenceNew, inSequence); // recurse
-
-            }
-        }
-        
-        inSequenceNew.setInSequence(&inSequence);
-        
-        backward = false;
-        
-    }
-    
-    std::vector<std::vector<Tuple>> getAdjListFW() {
-    
-        return adjListFW;
-        
-    }
-    
-    std::vector<std::vector<Tuple>> getAdjListBW() {
-    
-        return adjListBW;
-        
-    }
-    
-    bool getVisited(unsigned long long int seqN) {
-    
-        return visited[seqN];
-        
-    }
-        
-    //end of gfa methods
-    
-    void appendSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence
-        
-        inSequence.setSeqHeader(seqHeader);
+        inSegment.setSeqHeader(seqHeader);
         
         if (seqComment != NULL) {
             
-            inSequence.setSeqComment(*seqComment);
+            inSegment.setSeqComment(*seqComment);
             
         }
         
         verbose(verbose_flag, "Header, comment, and sequence read");
         
-        verbose(verbose_flag, "Processing scaffold: " + *seqHeader);
+        verbose(verbose_flag, "Processing segment: " + *seqHeader);
         
-        inSequence.setInSequence(sequence);
+        inSegment.setInSequence(sequence);
         
         verbose(verbose_flag, "Sequence set");
         
-        inSequence.traverseInSequence(sequence);
-        
-        verbose(verbose_flag, "Sequence traversed");
-        
         if (sequenceQuality != NULL) {
             
-            inSequence.setInSequenceQuality(sequenceQuality);
+            inSegment.setInSequenceQuality(sequenceQuality);
             
             verbose(verbose_flag, "Sequence quality set");
             
         }
         
-        newSeq.push_back(inSequence);
+        inSegments.push_back(inSegment);
         
         verbose(verbose_flag, "Sequence added to sequence vector");
         
-        increaseTotScaffLen(inSequence.getSeqScaffLen());
-        
-        verbose(verbose_flag, "Increased total scaffold length");
-        
-        recordScaffLen(inSequence.getSeqScaffLen());
-        
-        verbose(verbose_flag, "Recorded length of sequence");
-        
-        increaseTotContigLen(inSequence.getContigSum());
-        
-        verbose(verbose_flag, "Increased total contig length");
-        
-        recordContigLens(inSequence.getSeqContigLens());
+        unsigned int seqSize = sequence->size();
+    
+        contigLens.push_back(seqSize);
         
         verbose(verbose_flag, "Recorded length of contigs in sequence");
         
-        recordGapLens(inSequence.getSeqGapLens());
+        increaseTotSegmentLen(seqSize);
         
-        verbose(verbose_flag, "Recorded length of gaps in sequence");
+        verbose(verbose_flag, "Increased total contig length");
         
-        increaseTotGapLen(inSequence.getGapSum());
+    }
+    
+    void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
-        verbose(verbose_flag, "Increased total gap length");
+        unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0, dist = 0, n = 2;
+        char sign = '+';
+        bool wasN = false, pushbackSegment = false, pushbackGap = false;
+
+        std::string bases;
+        std::string newSeqHeader;
         
-        increaseGapN(inSequence.getGapN());
+        unsigned int seqLen = sequence->length()-1;
+ 
+        for (char &base : *sequence) {
+
+            if (islower(base)) {
+
+                lowerCount++;
+
+            }
+
+            switch (base) {
+
+                case 'N':
+                case 'n':
+                case 'X':
+                case 'x': {
+                    
+                    dist++;
+                    
+                    if (!wasN) { // gap start
+
+                        pushbackSegment = true;
+                        pushbackGap = false;
+
+                    }
+
+                    if(pos == seqLen) { // end of scaffold
+                        
+                        sign = '-';
+                        
+                        if (!wasN){ // case of a single bp gap at the end
+                            
+                            pushbackSegment = true;
+
+                        }else{
+                         
+                            pushbackSegment = false;
+                            
+                        }
+                        n = 1;
+                        pushbackGap = true;
+
+                    }
+
+                    wasN = true;
+
+                    break;
+                }
+                default: {
+                    
+                    bases += base;
+
+                    if (wasN) { // internal gap end
+                        
+                        pushbackGap = true;
+                        pushbackSegment = false;
+
+                    }
+                    
+                    if (pos == seqLen) {
+                        
+                        pushbackSegment = true;
+                        pushbackGap = false;
+                        
+                    }
+                    
+                    if (wasN && pos == seqLen) { // internal gap end
+                        
+                        pushbackGap = true;
+                        pushbackSegment = true;
+
+                    }
+
+                    switch (base) {
+                        case 'A':
+                        case 'a':{
+
+                            A++;
+                            break;
+
+                        }
+                        case 'C':
+                        case 'c':{
+
+                            C++;
+                            break;
+
+                        }
+                        case 'G':
+                        case 'g': {
+
+                            G++;
+                            break;
+
+                        }
+                        case 'T':
+                        case 't': {
+
+                            T++;
+                            break;
+
+                        }
+
+                    }
+
+                    wasN = false;
+
+                }
+
+            }
+            
+            if (pushbackSegment) {
+                
+                newSeqHeader = *seqHeader + "." + std::to_string(seqN);
+                insertHash(newSeqHeader, seqN);
+
+                addSegment(seqHeader, seqComment, &bases, sequenceQuality);
+                pushbackSegment = false;
+                bases = "";
+                seqN++;
+
+            }
+            if (pushbackGap) {
+                
+                gap.newGap(*seqHeader + "." + std::to_string(gapN), *seqHeader + "." + std::to_string((pos == seqLen) ? seqN-n : seqN-1), *seqHeader + "." + std::to_string((pos == seqLen) ? seqN-1 : seqN), '+', sign, dist);
+                inGaps.push_back(gap);
+                
+                recordGapLen(dist);
+                
+                verbose(verbose_flag, "Recorded length of gaps in sequence");
+                
+                increaseTotGapLen(dist);
+                
+                verbose(verbose_flag, "Increased total gap length");
+
+                pushbackGap = false;
+                
+                dist=0;
+                gapN++;
+
+            }
+
+            pos++;
+
+        }
         
-        verbose(verbose_flag, "Increased total number of gaps");
+        increaseTotScaffLen(seqLen+dist);
+
+        verbose(verbose_flag, "Increased total scaffold length");
+
+        recordScaffLen(seqLen+dist);
+
+        verbose(verbose_flag, "Recorded length of sequence");
         
-        increaseTotACGT(inSequence.getA(), inSequence.getC(), inSequence.getG(), inSequence.getT());
+        totScaffN++;
         
+        increaseTotACGT(A, C, G, T);
+
         verbose(verbose_flag, "Increased ACGT counts");
-        
-        increaseTotLowerCount(inSequence.getLowerCount());
-        
-        verbose(verbose_flag, "Increased count of upper bases");
+
+        increaseTotLowerCount(lowerCount);
+
+        verbose(verbose_flag, "Increased count of lower bases");
         
         if(verbose_flag) {std::cout<<"\n";};
         
-    }
-    
-    InSequence getInSequence(unsigned int &idx) {
-        
-        InSequence inSequence = newSeq[idx];
-        return inSequence;
+        verbose(verbose_flag, "Sequence traversed");
         
     }
     
-    std::vector<InSequence> getInSequences() {
+    void appendSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence
         
-        return newSeq;
+        traverseInSequence(seqHeader, seqComment, sequence, sequenceQuality = NULL);
+        
+    }
+    
+    unsigned int getContigN() {
+        
+        return inSegments.size();
+    }
+
+    InSegment getInSegment(unsigned int &idx) {
+        
+        InSegment inSegment = inSegments[idx];
+        return inSegment;
+        
+    }
+    
+    std::vector<InSegment> getInSequences() {
+        
+        return inSegments;
         
     }
     
@@ -707,19 +547,19 @@ public:
     
     unsigned long long int getTotScaffLen() {
         
-        return totScaffLen;
+        return totSegmentLen+totGapLen;
         
     }
     
-    void increaseTotContigLen(unsigned int contigLen) {
+    void increaseTotSegmentLen(unsigned int segmentLen) {
         
-        totContigLen += contigLen;
+        totSegmentLen += segmentLen;
         
     }
     
-    unsigned long long int getTotContigLen() {
+    unsigned long long int getTotSegmentLen() {
         
-        return totContigLen;
+        return totSegmentLen;
         
     }
     
@@ -743,7 +583,7 @@ public:
     
     unsigned int getTotGapN() {
         
-        return totGapN;
+        return inGaps.size();
         
     }
     
@@ -753,27 +593,9 @@ public:
         
     }
     
-    void recordContigLens(std::vector <unsigned int> seqLens) {
+    void recordGapLen(unsigned int gapLen) {
         
-        std::vector <unsigned int> newContigLens;
-        
-        newContigLens.reserve(contigLens.size() + seqLens.size());
-        newContigLens.insert(newContigLens.end(), contigLens.begin(), contigLens.end());
-        newContigLens.insert(newContigLens.end(), seqLens.begin(), seqLens.end());
-        
-        contigLens = newContigLens;
-        
-    }
-    
-    void recordGapLens(std::vector <unsigned int> seqLens) {
-        
-        std::vector <unsigned int> newGapLens;
-        
-        newGapLens.reserve(gapLens.size() + seqLens.size());
-        newGapLens.insert(newGapLens.end(), gapLens.begin(), gapLens.end());
-        newGapLens.insert(newGapLens.end(), seqLens.begin(), seqLens.end());
-        
-        gapLens = newGapLens;
+        gapLens.push_back(gapLen);
         
     }
     
@@ -898,7 +720,13 @@ public:
     
     unsigned int getScaffN() {
         
-        return newSeq.size();
+        return totScaffN;
+        
+    }
+    
+    unsigned int increaseTotScaffN() {
+        
+        return totScaffN++;
         
     }
     
@@ -1016,9 +844,9 @@ public:
         
     }
     
-    unsigned int getContigN() {
+    unsigned int getContigNs() {
         
-        return contigLens.size();
+        return inSegments.size();
         
     }
     
@@ -1078,13 +906,13 @@ public:
     
     double computeAverageScaffLen() {
         
-        return (double) totScaffLen/scaffLens.size();
+        return (double) totScaffLen/totScaffN;
         
     }
     
-    double computeAverageContigLen() {
+    double computeAverageSegmentLen() {
         
-        return (double) totContigLen/contigLens.size();
+        return (double) totSegmentLen/contigLens.size();
         
     }
     
@@ -1138,7 +966,7 @@ public:
         
         double GCcontent;
         
-        if (newSeq.size()>0) {
+        if (inSegments.size()>0) {
             
             GCcontent = (double) (totC + totG) / (totA + totC + totG + totT) * 100;
             
@@ -1166,65 +994,153 @@ public:
         
     }
     
+    //gfa methods
+    void insertHash(std::string seqHeader, unsigned long long int seqN) {
+    
+        ump.insert({seqHeader, seqN});
+    
+    }
+        
+    void buildGraph(std::vector<InGap> const& edges) // graph Constructor
+    {
+        
+        adjListFW.resize(inSegments.size()); // resize the vertex vector to hold `n` elements
+        adjListBW.resize(inSegments.size()); // resize the vertex vector to hold `n` elements
+ 
+        
+        for (auto &edge: edges) // add edges to the graph
+        {
+            
+            adjListFW.at(ump.at(edge.sId1)).push_back(std::make_tuple(edge.sId1Or, ump.at(edge.sId2), edge.sId2Or, edge.dist)); // insert at gap start gap destination and weight (gap size)
+            adjListBW.at(ump.at(edge.sId2)).push_back(std::make_tuple(edge.sId2Or, ump.at(edge.sId1), edge.sId1Or, edge.dist)); // undirected graph
+            
+        }
+        
+    }
+    
+    void DFS(int v, InSegment &inSegmentNew, std::string &inSegment) // Depth First Search
+    {
+    
+        visited[v] = true; // mark the current node as visited
+         std::string inSegmentNext;
+         
+         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0)))) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
+             
+             inSegment = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegment : reverse(inSegment); // check if vertex should be in forward orientation, if not reverse-complement
+             
+             inSegmentNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment()); // check if vertex should be in forward orientation, if not reverse-complement
+             
+             inSegment += inSegmentNext;
+                 
+         }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
+             
+             inSegmentNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             
+             inSegment += inSegmentNext;
+             
+             backward = true; // reached the end
+             
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
+             
+             inSegmentNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             
+             inSegment += inSegmentNext;
+             
+             inSegment += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
+             
+             backward = true; // reached the end
+             
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && backward){ // this is an intermediate vertex, only walking back
+             
+             inSegmentNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+
+             inSegment.insert(0, inSegmentNext);
+         
+         }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
+             
+             inSegment += inSegments[v].getInSegment();
+             
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
+                 
+             inSegmentNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             
+             inSegment.insert(0, inSegmentNext);
+             
+         }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
+             
+             inSegment.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
+             
+             inSegmentNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             
+             inSegment.insert(0, inSegmentNext);
+             
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
+             
+             inSegmentNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             
+             inSegment += inSegmentNext;
+             
+             std::get<2>(adjListFW.at(v).at(0)) == '-' ? inSegment += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N') : inSegment.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap: if - in second vertex is terminal else is start gap
+             
+         }
+         
+         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
+             if (!visited[std::get<1>(i)]) {
+                 
+                 inSegment += std::string(std::get<3>(i), 'N'); // add gaps
+                 
+                 DFS(std::get<1>(i), inSegmentNew, inSegment); // recurse
+                 
+             }
+         }
+         
+         for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
+             if (!visited[std::get<1>(i)]) {
+
+                 inSegment.insert(0,std::string(std::get<3>(i), 'N')); // add gaps
+
+                 DFS(std::get<1>(i), inSegmentNew, inSegment); // recurse
+
+             }
+         }
+        
+        inSegmentNew.setInSequence(&inSegment);
+        
+        backward = false;
+        
+    }
+    
+    std::vector<std::vector<Tuple>> getAdjListFW() {
+    
+        return adjListFW;
+        
+    }
+    
+    std::vector<std::vector<Tuple>> getAdjListBW() {
+    
+        return adjListBW;
+        
+    }
+    
+    bool getVisited(unsigned long long int seqN) {
+    
+        return visited[seqN];
+        
+    }
+        
+    //end of gfa methods
+    
 };
 
 class SAK { // the swiss army knife
 private:
     InSequences inSequences;
-    InSequence inSequence1, inSequence2, inSequenceNew;
+    InSegment inSegment1, inSegment2, inSegmentNew;
     std::string sId1Header, sId2Header;
-    bool seq1 = false, seq2 = false;
     
 public:
     
     bool joinByGap(InSequences &inSequences) { // joins two sequences via a gap based on instruction in gfa format
-        
-        std::vector<InGap> inGaps = inSequences.inGaps; // get the gaps vector
-        
-        for (std::vector<InGap>::const_iterator gapIt = inGaps.cbegin(); gapIt != inGaps.cend();) { // for each gap in the gap vector
-            
-            for (std::vector<InSequence>::const_iterator seqIt = inSequences.newSeq.cbegin(); seqIt != inSequences.newSeq.cend();) { //
-                
-                std::cout<<"sId1Header: "<<sId1Header<<std::endl;
-                std::cout<<"sId2Header: "<<sId2Header<<std::endl;
-                std::cout<<"(*seqIt).seqHeader: "<<(*seqIt).seqHeader<<std::endl;
-                
-                if ((*seqIt).seqHeader == sId1Header) {
-                    
-                    inSequence1 = (*seqIt);
-                    seq1 = true;
-                    inSequences.newSeq.erase(seqIt);
-                    seqIt--;
-                    
-                }
-                
-                if ((*seqIt).seqHeader == sId2Header) {
-
-                    inSequence2 = (*seqIt);
-                    seq2 = true;
-                    inSequences.newSeq.erase(seqIt);
-                    seqIt--;
-                    
-                }
-                
-                if (seq1 && seq2) {break;}
-                
-                seqIt++;
-                
-            }
-            
-            seq1 = false, seq2 = false;
-            
-            inSequenceNew.seqHeader = (*gapIt).gId;
-            inSequenceNew.seqComment = "JOIN " + inSequence1.seqHeader + " & " + inSequence2.seqHeader;
-            inSequenceNew.inSequence = inSequence1.inSequence + std::string((*gapIt).dist, 'N') + inSequence2.inSequence;
-            //inSequenceNew.inSequenceQuality = inSequence1.inSequenceQuality + std::string((*gapIt).dist, '!') + inSequence1.inSequenceQuality;
-
-            inSequences.newSeq.push_back(inSequenceNew);
-            
-            gapIt++;
-                
-        }
         
         return true;
         
