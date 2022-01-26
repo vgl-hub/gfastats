@@ -175,7 +175,7 @@ std::string getFileExt(const std::string& FileName) // utility to get file exten
     return "";
 }
 
-std::string reverse(std::string seq) { // reverse complement
+std::string revCom(std::string seq) { // reverse complement
     auto lambda = [](const char c) {
         switch (c) {
         case 'A':
@@ -190,14 +190,23 @@ std::string reverse(std::string seq) { // reverse complement
         case 'n':
         case 'X':
         case 'x':
-            return 'N';
+            return c;
         default:
             throw std::domain_error("Invalid nucleotide.");
         }
     };
 
     std::transform(seq.cbegin(), seq.cend(), seq.begin(), lambda);
+    reverse(seq.begin(), seq.end());
     return seq;
+}
+
+std::string rev(std::string seq) { // reverse string
+    
+    reverse(seq.begin(), seq.end());
+ 
+    return seq;
+    
 }
 
 #endif /* gfastats-Functions_h */

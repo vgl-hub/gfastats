@@ -133,7 +133,7 @@ public:
                 }
                 case '@': {
                     
-                    if (isPipe && pipeType == 's') {
+                    if (isPipe && pipeType == 's') { // pipe input
                         
                         firstLine.erase(0, 1);
                         
@@ -160,7 +160,7 @@ public:
                         
                     }
                     
-                    while (getline(*stream, newLine)) {
+                    while (getline(*stream, newLine)) { // file input
                         
                         newLine.erase(0, 1);
                         

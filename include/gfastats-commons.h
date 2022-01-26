@@ -93,7 +93,7 @@ public:
         return seqComment;
     }
     
-    std::string getInSegment() {
+    std::string getInSequence() {
         return inSequence;
     }
     
@@ -106,18 +106,18 @@ public:
         return inSequence.size();
     }
         
-    void setACGT(unsigned int a, unsigned int c, unsigned int g, unsigned int t) {
+    void setACGT(unsigned int* a, unsigned int* c, unsigned int* g, unsigned int* t) {
         
-        A = a;
-        C = c;
-        G = g;
-        T = t;
+        A = *a;
+        C = *c;
+        G = *g;
+        T = *t;
         
     }
     
-    void setLowerCount(unsigned int C) {
+    void setLowerCount(unsigned int* C) {
         
-        lowerCount = C;
+        lowerCount = *C;
         
     }
     
@@ -207,25 +207,25 @@ public:
         
     }
     
-    std::string getgIds() {
+    std::string getgId() {
         
         return gId;
         
     }
     
-    std::string getsIds1() {
+    std::string getsId1() {
         
         return sId1;
         
     }
     
-    std::string getsIds2() {
+    std::string getsId2() {
         
         return sId2;
         
     }
     
-    unsigned int getsDists() {
+    unsigned int getDist() {
         
         return dist;
         
@@ -278,11 +278,10 @@ private:
     unsigned long long int totSegmentLen = 0;
     
     unsigned int
-    totScaffN = 0,
+    scaffN = 0,
     totGapLen = 0,
-    totGapN = 0,
-    seqN = 0,
-    gapN = 0;
+    segUniqN = 0, // unique numeric identifier for each segment
+    gapUniqN = 0; // unique numeric identifier for each gap
     
     unsigned long int totA = 0;
     unsigned long int totC = 0;
@@ -294,7 +293,9 @@ private:
     
 public:
     
-    void addSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) {
+    void addSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* A, unsigned int* C, unsigned int* G, unsigned int* T, unsigned int* lowerCount, std::string* sequenceQuality = NULL) {
+        
+        // operation on the segment
         
         inSegment.setSeqHeader(seqHeader);
         
@@ -303,8 +304,6 @@ public:
             inSegment.setSeqComment(*seqComment);
             
         }
-        
-        verbose(verbose_flag, "Header, comment, and sequence read");
         
         verbose(verbose_flag, "Processing segment: " + *seqHeader);
         
@@ -320,30 +319,39 @@ public:
             
         }
         
-        inSegments.push_back(inSegment);
+        inSegment.setACGT(A, C, G, T);
         
-        verbose(verbose_flag, "Sequence added to sequence vector");
+        verbose(verbose_flag, "Increased ACGT counts");
+        
+        inSegment.setLowerCount(lowerCount);
+
+        verbose(verbose_flag, "Increased count of lower bases");
+        
+        inSegments.push_back(inSegment); // adding segment to segment set
+        
+        // operations of the segment set
+        
+        verbose(verbose_flag, "Segment added to sequence vector");
         
         unsigned int seqSize = sequence->size();
     
         contigLens.push_back(seqSize);
         
-        verbose(verbose_flag, "Recorded length of contigs in sequence");
+        verbose(verbose_flag, "Recorded length of sequence");
         
         increaseTotSegmentLen(seqSize);
         
-        verbose(verbose_flag, "Increased total contig length");
+        verbose(verbose_flag, "Increased total segment length");
         
     }
     
-    void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned long int* totA, unsigned long int* totC, unsigned long int* totG, unsigned long int* totT, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
-        unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0, dist = 0, n = 2;
+        unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0, dist = 0, n = 2, segN = 1, gapN = 1;
         char sign = '+';
         bool wasN = false, pushbackSegment = false, pushbackGap = false;
 
-        std::string bases;
-        std::string newSeqHeader;
+        std::string bases, quals, newSeqHeader;
         
         unsigned int seqLen = sequence->length()-1;
  
@@ -365,8 +373,13 @@ public:
                     dist++;
                     
                     if (!wasN) { // gap start
-
-                        pushbackSegment = true;
+                        
+                        if (pos>0) {  // gap not at the start of the sequence
+                            
+                            pushbackSegment = true;
+                        
+                        }
+                        
                         pushbackGap = false;
 
                     }
@@ -396,6 +409,12 @@ public:
                 default: {
                     
                     bases += base;
+                    
+                    if (sequenceQuality != NULL) {
+                    
+                        quals += (*sequenceQuality)[pos];
+                        
+                    }
 
                     if (wasN) { // internal gap end
                         
@@ -458,18 +477,26 @@ public:
             
             if (pushbackSegment) {
                 
-                newSeqHeader = *seqHeader + "." + std::to_string(seqN);
-                insertHash(newSeqHeader, seqN);
-
-                addSegment(seqHeader, seqComment, &bases, sequenceQuality);
+                newSeqHeader = *seqHeader + "." + std::to_string(segN);
+                insertHash(newSeqHeader, segUniqN);
+                
+                addSegment(&newSeqHeader, seqComment, &bases, &A, &C, &G, &T, &lowerCount, &quals);
                 pushbackSegment = false;
                 bases = "";
-                seqN++;
+                quals = "";
+                segN++;
+                segUniqN++;
 
             }
             if (pushbackGap) {
                 
-                gap.newGap(*seqHeader + "." + std::to_string(gapN), *seqHeader + "." + std::to_string((pos == seqLen) ? seqN-n : seqN-1), *seqHeader + "." + std::to_string((pos == seqLen) ? seqN-1 : seqN), '+', sign, dist);
+                if (pos - dist == 0) { // gap at the start
+                    
+                    segN++; // to prevent overflow
+                    
+                }
+            
+                gap.newGap(*seqHeader + "." + std::to_string(gapN), *seqHeader + "." + std::to_string((pos == seqLen) ? segN-n : segN-1), *seqHeader + "." + std::to_string((pos == seqLen || pos - dist == 0) ? segN-1 : segN), '+', sign, dist);
                 inGaps.push_back(gap);
                 
                 recordGapLen(dist);
@@ -482,8 +509,15 @@ public:
 
                 pushbackGap = false;
                 
+                if (pos - dist == 0) { // gap at the start
+                    
+                    segN--; // to restore original count
+                    
+                }
+                
                 dist=0;
-                gapN++;
+                gapN++; // number of gaps in the current scaffold
+                gapUniqN++; // gap unique numeric identified
 
             }
 
@@ -498,30 +532,37 @@ public:
         recordScaffLen(seqLen+dist);
 
         verbose(verbose_flag, "Recorded length of sequence");
+
+        scaffN++;
         
-        totScaffN++;
+        verbose(verbose_flag, "Increased total scaffold N");
         
-        increaseTotACGT(A, C, G, T);
+        *totA += A;
+        *totC += C;
+        *totG += G;
+        *totT += T;
 
         verbose(verbose_flag, "Increased ACGT counts");
 
         increaseTotLowerCount(lowerCount);
 
         verbose(verbose_flag, "Increased count of lower bases");
-        
-        if(verbose_flag) {std::cout<<"\n";};
-        
+
         verbose(verbose_flag, "Sequence traversed");
         
     }
     
     void appendSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence
         
-        traverseInSequence(seqHeader, seqComment, sequence, sequenceQuality = NULL);
+        verbose(verbose_flag, "Header, comment, sequence and (optionally) quality read");
+        
+        traverseInSequence(seqHeader, seqComment, sequence, &totA, &totC, &totG, &totT, sequenceQuality);
+        
+        if(verbose_flag) {std::cout<<"\n";};
         
     }
     
-    unsigned int getContigN() {
+    unsigned int getSegmentN() {
         
         return inSegments.size();
     }
@@ -533,9 +574,15 @@ public:
         
     }
     
-    std::vector<InSegment> getInSequences() {
+    std::vector<InSegment> getInSegments() {
         
         return inSegments;
+        
+    }
+    
+    std::vector<InGap> getInGaps() {
+        
+        return inGaps;
         
     }
     
@@ -575,13 +622,7 @@ public:
         
     }
     
-    void increaseGapN(unsigned int gapN) {
-        
-        totGapN += gapN;
-        
-    }
-    
-    unsigned int getTotGapN() {
+    unsigned int getGapN() {
         
         return inGaps.size();
         
@@ -720,13 +761,7 @@ public:
     
     unsigned int getScaffN() {
         
-        return totScaffN;
-        
-    }
-    
-    unsigned int increaseTotScaffN() {
-        
-        return totScaffN++;
+        return scaffN;
         
     }
     
@@ -906,7 +941,7 @@ public:
     
     double computeAverageScaffLen() {
         
-        return (double) totScaffLen/totScaffN;
+        return (double) totScaffLen/scaffN;
         
     }
     
@@ -919,15 +954,6 @@ public:
     double computeAverageGapLen() {
         
         return (double) totGapLen/gapLens.size();
-        
-    }
-    
-    void increaseTotACGT(unsigned int A, unsigned int C, unsigned int G, unsigned int T) {
-        
-        totA += A;
-        totC += C;
-        totG += G;
-        totT += T;
         
     }
     
@@ -995,9 +1021,9 @@ public:
     }
     
     //gfa methods
-    void insertHash(std::string seqHeader, unsigned long long int seqN) {
+    void insertHash(std::string segHeader, unsigned long long int segUniqN) {
     
-        ump.insert({seqHeader, seqN});
+        ump.insert({segHeader, segUniqN});
     
     }
         
@@ -1018,78 +1044,155 @@ public:
         
     }
     
-    void DFS(int v, InSegment &inSegmentNew, std::string &inSegment) // Depth First Search
+    void DFS(int v, std::string &inSequence, std::string* inSequenceQuality = NULL) // Depth First Search
     {
     
         visited[v] = true; // mark the current node as visited
-         std::string inSegmentNext;
+        std::string inSequenceNext;
+        std::string inSequenceQualityNext;
          
          if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0)))) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
              
-             inSegment = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegment : reverse(inSegment); // check if vertex should be in forward orientation, if not reverse-complement
+             inSequence = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSequence : revCom(inSequence); // check if vertex should be in forward orientation, if not reverse-complement
              
-             inSegmentNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment()); // check if vertex should be in forward orientation, if not reverse-complement
+             inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence()); // check if vertex should be in forward orientation, if not reverse-complement
              
-             inSegment += inSegmentNext;
+             inSequence += inSequenceNext;
+             
+             if (!(inSequenceQuality == NULL)) {
+                 
+                 *inSequenceQuality = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? *inSequenceQuality : rev(*inSequenceQuality); // check if vertex should be in forward orientation, if not reverse-complement
+             
+                 inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequenceQuality() : rev(inSegments[v].getInSequenceQuality()); // check if vertex should be in forward orientation, if not reverse-complement
+                 
+                 *inSequenceQuality += inSequenceQualityNext;
+                 
+             }
                  
          }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
              
-             inSegmentNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
-             inSegment += inSegmentNext;
+             inSequence += inSequenceNext;
+             
+             if (!(inSequenceQuality == NULL)) {
+             
+                 inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequenceQuality() : rev(inSegments[v].getInSequenceQuality());
+             
+                 *inSequenceQuality += inSequenceQualityNext;
+                 
+             }
              
              backward = true; // reached the end
              
          }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
              
-             inSegmentNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
-             inSegment += inSegmentNext;
+             inSequence += inSequenceNext;
              
-             inSegment += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
+             inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
+             
+             if (!(inSequenceQuality == NULL)) {
+             
+                 inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequenceQuality() : rev(inSegments[v].getInSequenceQuality());
+             
+                 *inSequenceQuality += inSequenceQualityNext;
+             
+                 *inSequenceQuality += std::string(std::get<3>(adjListFW.at(v).at(0)), '!'); // add missing quality
+                 
+             }
              
              backward = true; // reached the end
              
          }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && backward){ // this is an intermediate vertex, only walking back
              
-             inSegmentNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
 
-             inSegment.insert(0, inSegmentNext);
-         
+             inSequence.insert(0, inSequenceNext);
+             
+             if (!(inSequenceQuality == NULL)) {
+             
+                 inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequenceQuality() : rev(inSegments[v].getInSequenceQuality());
+             
+                 (*inSequenceQuality).insert(0, inSequenceQualityNext);
+             
+             }
+            
          }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
              
-             inSegment += inSegments[v].getInSegment();
+             inSequence += inSegments[v].getInSequence();
+             
+             if (!(inSequenceQuality == NULL)) {
+             
+                 *inSequenceQuality += inSegments[v].getInSequenceQuality();
+                 
+             }
              
          }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
                  
-             inSegmentNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
-             inSegment.insert(0, inSegmentNext);
+             inSequence.insert(0, inSequenceNext);
+             
+             if (!(inSequenceQuality == NULL)) {
+             
+                 inSequenceQualityNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequenceQuality() : rev(inSegments[v].getInSequenceQuality());
+             
+                 (*inSequenceQuality).insert(0, inSequenceQualityNext);
+                 
+             }
              
          }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
              
-             inSegment.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
+             inSequence.insert(0, std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
              
-             inSegmentNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
-             inSegment.insert(0, inSegmentNext);
+             inSequence.insert(0, inSequenceNext);
+             
+             if (!(inSequenceQuality == NULL)) {
+             
+                 (*inSequenceQuality).insert(0, std::string(std::get<3>(adjListBW.at(v).at(0)), '!')); // add missing quality
+             
+                 inSequenceQualityNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequenceQuality() : rev(inSegments[v].getInSequenceQuality());
+             
+                 (*inSequenceQuality).insert(0, inSequenceQualityNext);
+                 
+             }
              
          }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
              
-             inSegmentNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSegment() : reverse(inSegments[v].getInSegment());
+             inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
-             inSegment += inSegmentNext;
+             inSequence += inSequenceNext;
              
-             std::get<2>(adjListFW.at(v).at(0)) == '-' ? inSegment += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N') : inSegment.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap: if - in second vertex is terminal else is start gap
+             std::get<2>(adjListFW.at(v).at(0)) == '-' ? inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N') : inSequence.insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap: if - in second vertex is terminal else is start gap
              
-         }
+             if (!(inSequenceQuality == NULL)) {
+             
+                 inSequenceQualityNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequenceQuality() : rev(inSegments[v].getInSequenceQuality());
+             
+                 *inSequenceQuality += inSequenceQualityNext;
+             
+                 std::get<2>(adjListFW.at(v).at(0)) == '-' ? *inSequenceQuality += std::string(std::get<3>(adjListFW.at(v).at(0)), '!') : (*inSequenceQuality).insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), '!')); // add missing sequence: if - in second vertex is terminal else is start gap
+                 
+             }
+             
+         } // note: case with only a start and a terminal gap is not yet handled
          
          for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
              if (!visited[std::get<1>(i)]) {
                  
-                 inSegment += std::string(std::get<3>(i), 'N'); // add gaps
+                 inSequence += std::string(std::get<3>(i), 'N'); // add gaps
                  
-                 DFS(std::get<1>(i), inSegmentNew, inSegment); // recurse
+                 if (!(inSequenceQuality == NULL)) {
+                 
+                     *inSequenceQuality += std::string(std::get<3>(i), '!'); // add missing quality
+                     
+                 }
+                 
+                 DFS(std::get<1>(i), inSequence, inSequenceQuality); // recurse
                  
              }
          }
@@ -1097,14 +1200,18 @@ public:
          for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
              if (!visited[std::get<1>(i)]) {
 
-                 inSegment.insert(0,std::string(std::get<3>(i), 'N')); // add gaps
+                 inSequence.insert(0, std::string(std::get<3>(i), 'N')); // add gaps
+                 
+                 if (!(inSequenceQuality == NULL)) {
+                 
+                     (*inSequenceQuality).insert(0, std::string(std::get<3>(i), '!')); // add missing quality
+                     
+                 }
 
-                 DFS(std::get<1>(i), inSegmentNew, inSegment); // recurse
+                 DFS(std::get<1>(i), inSequence, inSequenceQuality); // recurse
 
              }
          }
-        
-        inSegmentNew.setInSequence(&inSegment);
         
         backward = false;
         
@@ -1122,9 +1229,9 @@ public:
         
     }
     
-    bool getVisited(unsigned long long int seqN) {
+    bool getVisited(unsigned long long int segUniqN) {
     
-        return visited[seqN];
+        return visited[segUniqN];
         
     }
         
