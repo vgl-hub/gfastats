@@ -514,15 +514,8 @@ public:
                 }
             
                 gap.newGap(*seqHeader + "." + std::to_string(gapN), *seqHeader + "." + std::to_string((pos == seqLen) ? segN-n : segN-1), *seqHeader + "." + std::to_string((pos == seqLen || pos - dist == 0) ? segN-1 : segN), '+', sign, dist);
-                inGaps.push_back(gap);
                 
-                recordGapLen(dist);
-                
-                verbose(verbose_flag, "Recorded length of gaps in sequence");
-                
-                increaseTotGapLen(dist);
-                
-                verbose(verbose_flag, "Increased total gap length");
+                appendGFAGap(gap);
 
                 pushbackGap = false;
                 
@@ -1033,6 +1026,14 @@ public:
     
     //gfa methods
     bool appendGFAGap(InGap inGap) {
+        
+        recordGapLen(inGap.dist);
+        
+        verbose(verbose_flag, "Recorded length of gaps in sequence");
+        
+        increaseTotGapLen(inGap.dist);
+        
+        verbose(verbose_flag, "Increased total gap length");
         
         inGaps.push_back(inGap);
         
