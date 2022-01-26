@@ -66,6 +66,7 @@ private:
     unsigned int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     
     friend class SAK;
+    friend class InSequences;
     
 public:
     
@@ -166,9 +167,10 @@ private:
     std::string gId, sId1, sId2;
     char sId1Or, sId2Or;
     unsigned int dist;
+    int counter = 0;
+    
     friend class SAK;
     friend class InSequences;
-    int counter = 0;
     
 public:
     void newGap(const std::string& gid, const std::string& sid1, const std::string& sid2, const char& sid1or, const char& sid2or, unsigned int& d) {
@@ -345,13 +347,19 @@ public:
         
     }
     
-    void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned long int* totA, unsigned long int* totC, unsigned long int* totG, unsigned long int* totT, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
-        unsigned int pos = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0, dist = 0, n = 2, segN = 1, gapN = 1;
+        unsigned int pos = 0, // current position in sequence
+                     A = 0, C = 0, G = 0, T = 0,
+                     lowerCount = 0,
+                     dist = 0, // gap size
+                     n = 2, // dynamic value for segment ids depending on gap type
+                     segN = 1, gapN = 1, // segment and gap numeric identifiers
+                     sStart = 0, sEnd = 0; // segment start and end
         char sign = '+';
         bool wasN = false, pushbackSegment = false, pushbackGap = false;
 
-        std::string bases, quals, newSeqHeader;
+        std::string sequenceSubSeq, sequenceQualitySubSeq, newSeqHeader;
         
         unsigned int seqLen = sequence->length()-1;
  
@@ -377,6 +385,7 @@ public:
                         if (pos>0) {  // gap not at the start of the sequence
                             
                             pushbackSegment = true;
+                            sEnd = pos - 1;
                         
                         }
                         
@@ -391,6 +400,9 @@ public:
                         if (!wasN){ // case of a single bp gap at the end
                             
                             pushbackSegment = true;
+                            sEnd = pos - 1;
+                            
+                            std::cout<<"IM HERE";
 
                         }else{
                          
@@ -407,18 +419,12 @@ public:
                     break;
                 }
                 default: {
-                    
-                    bases += base;
-                    
-                    if (sequenceQuality != NULL) {
-                    
-                        quals += (*sequenceQuality)[pos];
-                        
-                    }
 
                     if (wasN) { // internal gap end
                         
                         pushbackGap = true;
+                        sStart = pos;
+                        
                         pushbackSegment = false;
 
                     }
@@ -426,13 +432,16 @@ public:
                     if (pos == seqLen) {
                         
                         pushbackSegment = true;
+                        sEnd = pos;
+                        
                         pushbackGap = false;
                         
                     }
                     
-                    if (wasN && pos == seqLen) { // internal gap end
+                    if (wasN && pos == seqLen) { // single base at the end of sequence
                         
                         pushbackGap = true;
+                        
                         pushbackSegment = true;
 
                     }
@@ -480,12 +489,20 @@ public:
                 newSeqHeader = *seqHeader + "." + std::to_string(segN);
                 insertHash(newSeqHeader, segUniqN);
                 
-                addSegment(&newSeqHeader, seqComment, &bases, &A, &C, &G, &T, &lowerCount, &quals);
+                sequenceSubSeq = sequence->substr(sStart, sEnd + 1 - sStart);
+                
+                if (sequenceQuality != NULL) {
+                
+                    sequenceQualitySubSeq = sequenceQuality->substr(sStart, sEnd + 1 - sStart);
+                
+                }
+                
+                addSegment(&newSeqHeader, seqComment, &sequenceSubSeq, &A, &C, &G, &T, &lowerCount, &sequenceQualitySubSeq);
                 pushbackSegment = false;
-                bases = "";
-                quals = "";
+                
                 segN++;
                 segUniqN++;
+                
 
             }
             if (pushbackGap) {
@@ -532,23 +549,6 @@ public:
         recordScaffLen(seqLen+dist);
 
         verbose(verbose_flag, "Recorded length of sequence");
-
-        scaffN++;
-        
-        verbose(verbose_flag, "Increased total scaffold N");
-        
-        *totA += A;
-        *totC += C;
-        *totG += G;
-        *totT += T;
-
-        verbose(verbose_flag, "Increased ACGT counts");
-
-        increaseTotLowerCount(lowerCount);
-
-        verbose(verbose_flag, "Increased count of lower bases");
-
-        verbose(verbose_flag, "Sequence traversed");
         
     }
     
@@ -556,9 +556,35 @@ public:
         
         verbose(verbose_flag, "Header, comment, sequence and (optionally) quality read");
         
-        traverseInSequence(seqHeader, seqComment, sequence, &totA, &totC, &totG, &totT, sequenceQuality);
+        traverseInSequence(seqHeader, seqComment, sequence, sequenceQuality);
+        
+        verbose(verbose_flag, "Sequence traversed");
+        
+        scaffN++;
+        
+        verbose(verbose_flag, "Increased total scaffold N");
         
         if(verbose_flag) {std::cout<<"\n";};
+        
+    }
+    
+    bool updateStats() {
+        
+        for (InSegment inSegment : inSegments) {
+            
+            totA += inSegment.A;
+            totC += inSegment.C;
+            totG += inSegment.G;
+            totT += inSegment.T;
+
+            increaseTotLowerCount(inSegment.lowerCount);
+            
+        }
+        
+        verbose(verbose_flag, "Increased ACGT counts");
+        verbose(verbose_flag, "Increased count of lower bases");
+        
+        return true;
         
     }
     

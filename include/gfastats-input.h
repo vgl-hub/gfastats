@@ -273,6 +273,8 @@ public:
                 }
             }
             
+            inSequences.updateStats();
+            
         }else{
 
             printf("Stream not successful: %s", iSeqFileArg.c_str());
