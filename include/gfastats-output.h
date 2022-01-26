@@ -208,110 +208,44 @@ public:
             case 3: { // gfa[.gz]
                 
                 std::string seqHeader;
-                std::vector<unsigned int> seqBoundaries;
-                unsigned int ctgN = 1, item = 1, len = 0;
                 
                 *stream<<"H\tVN:Z:2.0\n";
                 
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSegment = inSequences.getInSegment(counter);
-                    unsigned int seqScaffLen = inSegment.getSegmentLength();
+                for (InSegment inSegment : inSequences.getInSegments()) {
                     
                     seqHeader = inSegment.getSeqHeader();
                     
-                    std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    auto last = std::prev(end);
+                    seqHeader.pop_back();
+                    seqHeader.pop_back();
                     
-                    if (*begin>0) { // case apparently missing for GFA2 spec (start gap)
+                    *stream <<"S\t" // line type
+                            <<seqHeader<<"\t" // header
+                            <<inSegment.getSegmentLen()<<"\t" // seq length
+                            <<inSegment.getInSequence(); // sequence
+                    
+                    if (inSegment.getSeqComment() != "") {
                         
-                        len = *begin;
-                        
-                        *stream <<"G\t" // line type
-                                <<seqHeader<<"."<<item<<"\t" // id
-                                <<seqHeader<<"."<<item+1<<"+\t" // sid1:ref (begin of sequence)
-                                <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
-                                <<len<<"\t" // size
-                                <<inSegment.getSeqComment()<<"\n"; // optional comment
-                        
-                        item++;
+                        *stream <<"\tC:"<<inSegment.getSeqComment(); // optional comment
                         
                     }
                     
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
+                    if (inSegment.getInSequenceQuality() != "") {
                         
-                        len = *(it+1) - *it;
-
-                        *stream <<"S\t" // line type
-                                <<seqHeader<<"."<<item<<"\t" // id
-                                <<*(it+1)-*(it)<<"\t" // size
-                                <<inSegment.getInSequence().substr(*(it),len)<<"\t" // sequence
-                                <<inSegment.getSeqHeader(); // header
-                        
-                        if (inSegment.getSeqComment() != "") {
-                        
-                        *stream <<" "<<inSegment.getSeqComment(); // optional comment
-                    
-                        }
-                
-                        *stream <<"\n";
-                        
-                        item++;
-                        
-                        if (ctgN != seqBoundaries.size()/2) { // inner gap
-                            
-                            len = *(it+2) - *(it+1);
-                            
-                            *stream <<"G\t" // line type
-                                    <<seqHeader<<"."<<item<<"\t" // id
-                                    <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
-                                    <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
-                                    <<len<<"\t" // size
-                                    <<inSegment.getSeqComment()<<"\n"; // optional comment
-                            
-                            item++;
-                            
-                        }
-                        
-                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) { // end gap
-                            
-                            len = seqScaffLen - *(it+1);
-                            
-                            *stream <<"G\t" // line type
-                                    <<seqHeader<<"."<<item<<"\t" // id
-                                    <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
-                                    <<seqHeader<<"."<<item-1<<"-\t" // sid2:ref (end of sequence)
-                                    <<len<<"\t" // size
-                                    <<inSegment.getSeqComment()<<"\n"; // optional comment
-                            
-                            item++;
-                            
-                        }
-                        
-                        ctgN++;
-                        it = it + 2;
+                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional comment
                         
                     }
                     
-                    ctgN = 1;
-                    item = 1;
-                    counter++;
+                    *stream<<"\n";
                     
                 }
                 
-                counter = 0;
-                std::vector<InGap> inGaps = inSequences.getGFAGaps();
-                
-                while (counter < inGaps.size()) {
-                
-                    *stream <<"G\t" // line type
-                            <<inGaps[counter].getgId()<<"\t" // id
-                            <<inGaps[counter].getsId1()<<"\t" // sid1:ref
-                            <<inGaps[counter].getsId2()<<"\t" // sid2:ref (end of sequence)
-                            <<inGaps[counter].getDist()<<"\n"; // size
+                for (InGap inGap : inSequences.getGFAGaps()) {
                     
-                    counter++;
+                    *stream <<"G\t" // line type
+                            <<inGap.getgId()<<"\t" // id
+                            <<inGap.getsId1()<<inGap.getsId1Or()<<"\t" // sid1:ref
+                            <<inGap.getsId2()<<inGap.getsId2Or()<<"\t" // sid2:ref
+                            <<inGap.getDist()<<"\n"; // size
                     
                 }
                 
@@ -607,65 +541,68 @@ public:
             default:
             case 'a': { // both contigs and gaps in .agp format
                 
-                unsigned int ctgN = 1, item = 1, len = 0;
+                std::cout<<"Not yet reemplemented, sorry!\n";
+                exit(1);
                 
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSegment = inSequences.getInSegment(counter);
-                    unsigned int seqScaffLen = inSegment.getSegmentLength();
-                    
-                    seqHeader = inSegment.getSeqHeader();
-                    
-                    std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    auto last = std::prev(end);
-                    
-                    if (*begin>0) {
-                        
-                        std::cout<<seqHeader<<"\t"<<1<<"\t"<<*begin<<"\t"<<1<<"\t"<<"N"<<"\t"<<*begin<<"\tscaffold\tyes\t"<<"\n";
-                        
-                        item++;
-                        
-                    }
-                    
-                    for (std::vector<unsigned int>::const_iterator it = begin; it != end;) {
-                        
-                        len = *(it+1) - *it;
-                        
-                        std::cout<<seqHeader<<"\t"<<*it+1<<"\t"<<*(it+1)<<"\t"<<item<<"\t"<<"W"<<"\t"<<seqHeader+"."<<ctgN<<"\t1\t"<<len<<"\t+"<<"\n";
-                        
-                        item++;
-                        
-                        if (ctgN != seqBoundaries.size()/2) {
-                            
-                            len = *(it+2) - *(it+1);
-                            
-                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<*(it+2)<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<"\n";
-                            
-                            item++;
-                            
-                        }
-                        
-                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) {
-                            
-                            len = seqScaffLen - *(it+1);
-                            
-                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<seqScaffLen<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<"\n";
-                            
-                            item++;
-                            
-                        }
-                        
-                        ctgN++;
-                        it = it + 2;
-                        
-                    }
-                    
-                    ctgN = 1;
-                    item = 1;
-                    counter++;
-                    
-                }
+//                unsigned int ctgN = 1, item = 1, len = 0;
+//
+//                while (counter < inSequences.getScaffN()) {
+//
+//                    inSegment = inSequences.getInSegment(counter);
+//                    unsigned int seqScaffLen = inSegment.getSegmentLength();
+//
+//                    seqHeader = inSegment.getSeqHeader();
+//
+//                    std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
+//                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
+//                    auto last = std::prev(end);
+//
+//                    if (*begin>0) {
+//
+//                        std::cout<<seqHeader<<"\t"<<1<<"\t"<<*begin<<"\t"<<1<<"\t"<<"N"<<"\t"<<*begin<<"\tscaffold\tyes\t"<<"\n";
+//
+//                        item++;
+//
+//                    }
+//
+//                    for (std::vector<unsigned int>::const_iterator it = begin; it != end;) {
+//
+//                        len = *(it+1) - *it;
+//
+//                        std::cout<<seqHeader<<"\t"<<*it+1<<"\t"<<*(it+1)<<"\t"<<item<<"\t"<<"W"<<"\t"<<seqHeader+"."<<ctgN<<"\t1\t"<<len<<"\t+"<<"\n";
+//
+//                        item++;
+//
+//                        if (ctgN != seqBoundaries.size()/2) {
+//
+//                            len = *(it+2) - *(it+1);
+//
+//                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<*(it+2)<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<"\n";
+//
+//                            item++;
+//
+//                        }
+//
+//                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) {
+//
+//                            len = seqScaffLen - *(it+1);
+//
+//                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<seqScaffLen<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<"\n";
+//
+//                            item++;
+//
+//                        }
+//
+//                        ctgN++;
+//                        it = it + 2;
+//
+//                    }
+//
+//                    ctgN = 1;
+//                    item = 1;
+//                    counter++;
+//
+//                }
                 
                 break;
             }

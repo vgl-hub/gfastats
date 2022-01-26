@@ -163,7 +163,7 @@ public:
 
 class InGap {
 private:
-    unsigned long long int lineN;
+    unsigned long long int lineN; // useful if we wish to sort as is the original input
     std::string gId, sId1, sId2;
     char sId1Or, sId2Or;
     unsigned int dist;
@@ -221,9 +221,21 @@ public:
         
     }
     
+    char getsId1Or() {
+        
+        return sId1Or;
+        
+    }
+    
     std::string getsId2() {
         
         return sId2;
+        
+    }
+    
+    char getsId2Or() {
+        
+        return sId2Or;
         
     }
     
