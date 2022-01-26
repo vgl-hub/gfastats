@@ -1111,6 +1111,8 @@ public:
                  *inSequenceQuality += inSequenceQualityNext;
                  
              }
+             
+             backward = false;
                  
          }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
              
@@ -1167,6 +1169,8 @@ public:
                  (*inSequenceQuality).insert(0, inSequenceQualityNext);
              
              }
+             
+             backward = true;
             
          }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
              
@@ -1196,15 +1200,17 @@ public:
                  
              }
              
+             backward = false;
+             
          }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
              
              verbose(verbose_flag, "node: " + std::to_string(v) + " --> case g: start node, start gap");
              
-             inSequence.insert(0, std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
-             
              inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
              inSequence.insert(0, inSequenceNext);
+             
+             inSequence.insert(0, std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
              
              if (!(inSequenceQuality == NULL)) {
              
@@ -1215,6 +1221,8 @@ public:
                  (*inSequenceQuality).insert(0, inSequenceQualityNext);
                  
              }
+             
+             backward = false;
              
          }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
              
@@ -1235,6 +1243,8 @@ public:
                  std::get<2>(adjListFW.at(v).at(0)) == '-' ? *inSequenceQuality += std::string(std::get<3>(adjListFW.at(v).at(0)), '!') : (*inSequenceQuality).insert(0,std::string(std::get<3>(adjListBW.at(v).at(0)), '!')); // add missing sequence: if - in second vertex is terminal else is start gap
                  
              }
+             
+             backward = false;
              
          }
          
