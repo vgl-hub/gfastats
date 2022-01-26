@@ -1249,8 +1249,6 @@ public:
                      
                  }
                  
-                 std::cout<<inSequence<<std::endl;
-                 
                  DFS(std::get<1>(i), inSequence, inSequenceQuality); // recurse
                  
              }
@@ -1266,8 +1264,6 @@ public:
                      (*inSequenceQuality).insert(0, std::string(std::get<3>(i), '!')); // add missing quality
                      
                  }
-                 
-                 std::cout<<inSequence<<std::endl;
 
                  DFS(std::get<1>(i), inSequence, inSequenceQuality); // recurse
 
