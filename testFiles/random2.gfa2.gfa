@@ -1,10 +1,10 @@
 H	VN:Z:2.0
 G	id5	id3+	id4-	5
 G	id6	id1+	id2+	3
-S	id3	7	CTTGATT	id3
-S	id2	6	TCAAGG	id2
-S	id1	5	ACCTT	id1
-S	id4	8	CATGACTC	id4
-S	id7	9	TGAATGAAA	id7
+S	id3	7	CTTGATT
+S	id2	6	TCAAGG
+S	id1	5	ACCTT
+S	id4	8	CATGACTC
+S	id7	9	TGAATGAAA
 G	id8	id2+	id3-	2
 O	id9	11+,12-,13+	4M,5M

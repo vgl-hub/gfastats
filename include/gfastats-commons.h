@@ -401,8 +401,6 @@ public:
                             
                             pushbackSegment = true;
                             sEnd = pos - 1;
-                            
-                            std::cout<<"IM HERE";
 
                         }else{
                          
@@ -1057,6 +1055,8 @@ public:
     void buildGraph(std::vector<InGap> const& edges) // graph Constructor
     {
         
+        verbose(verbose_flag, "Building graph");
+        
         adjListFW.resize(inSegments.size()); // resize the vertex vector to hold `n` elements
         adjListBW.resize(inSegments.size()); // resize the vertex vector to hold `n` elements
  
@@ -1069,6 +1069,8 @@ public:
             
         }
         
+        verbose(verbose_flag, "Graph built");
+        
     }
     
     void DFS(int v, std::string &inSequence, std::string* inSequenceQuality = NULL) // Depth First Search
@@ -1078,7 +1080,9 @@ public:
         std::string inSequenceNext;
         std::string inSequenceQualityNext;
          
-         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0)))) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
+         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case a: internal node, forward direction");
              
              inSequence = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSequence : revCom(inSequence); // check if vertex should be in forward orientation, if not reverse-complement
              
@@ -1098,6 +1102,8 @@ public:
                  
          }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
              
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case b: end node, forward direction, no final gap");
+             
              inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
              inSequence += inSequenceNext;
@@ -1113,6 +1119,8 @@ public:
              backward = true; // reached the end
              
          }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case c: end node, forward direction, final gap");
              
              inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
@@ -1132,7 +1140,9 @@ public:
              
              backward = true; // reached the end
              
-         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && backward){ // this is an intermediate vertex, only walking back
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case d: intermediate node, backward direction");
              
              inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
 
@@ -1148,6 +1158,8 @@ public:
             
          }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
              
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case e: disconnected component");
+             
              inSequence += inSegments[v].getInSequence();
              
              if (!(inSequenceQuality == NULL)) {
@@ -1157,6 +1169,8 @@ public:
              }
              
          }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case f: start node, no gaps");
                  
              inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
@@ -1171,6 +1185,8 @@ public:
              }
              
          }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case g: start node, start gap");
              
              inSequence.insert(0, std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
              
@@ -1188,7 +1204,9 @@ public:
                  
              }
              
-         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !backward && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case h: disconnected component with gap");
              
              inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
              
@@ -1206,7 +1224,7 @@ public:
                  
              }
              
-         } // note: case with only a start and a terminal gap is not yet handled
+         }
          
          for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
              if (!visited[std::get<1>(i)]) {
@@ -1218,6 +1236,8 @@ public:
                      *inSequenceQuality += std::string(std::get<3>(i), '!'); // add missing quality
                      
                  }
+                 
+                 std::cout<<inSequence<<std::endl;
                  
                  DFS(std::get<1>(i), inSequence, inSequenceQuality); // recurse
                  
@@ -1234,13 +1254,13 @@ public:
                      (*inSequenceQuality).insert(0, std::string(std::get<3>(i), '!')); // add missing quality
                      
                  }
+                 
+                 std::cout<<inSequence<<std::endl;
 
                  DFS(std::get<1>(i), inSequence, inSequenceQuality); // recurse
 
              }
          }
-        
-        backward = false;
         
     }
     

@@ -154,6 +154,7 @@ public:
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
+                        verbose(verbose_flag, "Graph DFS");
                         inSequences.DFS(i, inSeq); // if not, visit all connected components recursively
                         
                         *stream<<">"<<inSequences.getInSegment(i).getSeqHeader()<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n";
@@ -188,6 +189,7 @@ public:
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
+                        verbose(verbose_flag, "Graph DFS");
                         inSequences.DFS(i, inSeq, &inSeqQual); // if not, visit all connected components recursively
                         
                         *stream<<"@"<<inSequences.getInSegment(i).getSeqHeader()<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n"<<inSeq<<"\n+\n"<<inSeqQual<<"\n";
@@ -361,6 +363,7 @@ public:
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
+                        verbose(verbose_flag, "Graph DFS");
                         inSequences.DFS(i, inSeq); // if not, visit all connected components recursively
                         
                         seqHeader.pop_back();
@@ -443,6 +446,7 @@ public:
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
+                        verbose(verbose_flag, "Graph DFS");
                         inSequences.DFS(i, inSeq); // if not, visit all connected components recursively
                         
                         seqHeader.pop_back();
@@ -531,6 +535,7 @@ public:
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
+                        verbose(verbose_flag, "Graph DFS");
                         inSequences.DFS(i, inSeq); // if not, visit all connected components recursively
                         
                         seqHeader.pop_back();
