@@ -545,11 +545,11 @@ public:
 
         }
         
-        increaseTotScaffLen(seqLen+dist);
+        increaseTotScaffLen(seqLen+1);
 
         verbose(verbose_flag, "Increased total scaffold length");
 
-        recordScaffLen(seqLen+dist);
+        recordScaffLen(seqLen+1);
 
         verbose(verbose_flag, "Recorded length of sequence");
         
