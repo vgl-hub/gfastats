@@ -497,6 +497,7 @@ public:
             if (pushbackSegment) {
                 
                 newSeqHeader = *seqHeader + "." + std::to_string(segN);
+                
                 insertHash(newSeqHeader, segUniqN);
                 
                 sequenceSubSeq = sequence->substr(sStart, sEnd + 1 - sStart);
@@ -1085,7 +1086,7 @@ public:
         
     }
     
-    void DFS(int v, std::string &inSequence, std::string* inSequenceQuality = NULL) // Depth First Search
+    void dfsSeq(int v, std::string &inSequence, std::string* inSequenceQuality = NULL) // Depth First Search
     {
     
         visited[v] = true; // mark the current node as visited
@@ -1249,6 +1250,7 @@ public:
          }
          
          for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
+             
              if (!visited[std::get<1>(i)]) {
                  
                  inSequence += std::string(std::get<3>(i), 'N'); // add gaps
@@ -1259,12 +1261,13 @@ public:
                      
                  }
                  
-                 DFS(std::get<1>(i), inSequence, inSequenceQuality); // recurse
+                 dfsSeq(std::get<1>(i), inSequence, inSequenceQuality); // recurse
                  
              }
          }
          
          for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
+             
              if (!visited[std::get<1>(i)]) {
 
                  inSequence.insert(0, std::string(std::get<3>(i), 'N')); // add gaps
@@ -1275,7 +1278,166 @@ public:
                      
                  }
 
-                 DFS(std::get<1>(i), inSequence, inSequenceQuality); // recurse
+                 dfsSeq(std::get<1>(i), inSequence, inSequenceQuality); // recurse
+
+             }
+         }
+        
+    }
+    
+    void dfsAgp(int v, std::string &agp, unsigned int &cStart, unsigned int &cEnd) // Depth First Search
+    {
+    
+        visited[v] = true; // mark the current node as visited
+        std::string agpNext, seqHeader;
+        
+        seqHeader = inSegments[v].getSeqHeader();
+        seqHeader.pop_back();
+        seqHeader.pop_back();
+         
+         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case a: internal node, forward direction");
+             
+             cEnd = cStart + inSegments[v].getInSequence().size() - 1;
+             
+             agpNext = seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t"+inSegments[v].getSeqHeader().substr(inSegments[v].getSeqHeader().length() - 1)+"\tW\t"+inSegments[v].getSeqHeader()+"\t1\t"+std::to_string(inSegments[v].getInSequence().size())+"\t+\n";
+             
+             agp += agpNext;
+             
+             cStart = cEnd + 1;
+             
+             backward = false;
+                 
+         }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case b: end node, forward direction, no final gap");
+             
+             cEnd = cStart + inSegments[v].getInSequence().size() - 1;
+             
+             agpNext = seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t"+inSegments[v].getSeqHeader().substr(inSegments[v].getSeqHeader().length() - 1)+"\tW\t"+inSegments[v].getSeqHeader()+"\t1\t"+std::to_string(inSegments[v].getInSequence().size())+"\t+\n";
+             
+             agp += agpNext;
+             
+             cStart = cEnd + 1;
+             
+             backward = true; // reached the end
+             
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case c: end node, forward direction, final gap");
+             
+             cEnd = cStart + inSegments[v].getInSequence().size() - 1;
+             
+             agpNext = seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t"+inSegments[v].getSeqHeader().substr(inSegments[v].getSeqHeader().length() - 1)+"\tW\t"+inSegments[v].getSeqHeader()+"\t1\t"+std::to_string(inSegments[v].getInSequence().size())+"\t+\n";
+             
+             agp += agpNext;
+             
+             cStart = cEnd + 1;
+             
+             cEnd = cStart + std::get<3>(adjListFW.at(v).at(0)) - 1;
+             
+             agp += seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t"+std::to_string(std::get<3>(adjListFW.at(v).at(0)))+"\tN\t"+std::to_string(std::get<3>(adjListFW.at(v).at(0)))+"\tscaffold\tyes\n"; // add gaps
+             
+             cStart = cEnd + 1;
+             
+             backward = true; // reached the end
+             
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case d: intermediate node, backward direction");
+             
+             agpNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
+
+             agp.insert(0, agpNext);
+             
+             backward = true;
+            
+         }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case e: disconnected component");
+             
+             agp += inSegments[v].getInSequence();
+             
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case f: start node, no gaps");
+                 
+             cEnd = cStart + inSegments[v].getInSequence().size() - 1;
+             
+             agpNext = seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t"+inSegments[v].getSeqHeader().substr(inSegments[v].getSeqHeader().length() - 1)+"\tW\t"+inSegments[v].getSeqHeader()+"\t1\t"+std::to_string(inSegments[v].getInSequence().size())+"\t"+std::get<0>(adjListFW.at(v).at(0))+"\n";
+             
+             agp += agpNext;
+             
+             cStart = cEnd + 1;
+             
+             backward = false;
+             
+         }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case g: start node, start gap");
+             
+             agpNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[v].getInSequence() : revCom(inSegments[v].getInSequence());
+             
+             agp.insert(0, agpNext);
+             
+             agp.insert(0, std::string(std::get<3>(adjListBW.at(v).at(0)), 'N')); // add gap
+             
+             backward = false;
+             
+         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
+             
+             verbose(verbose_flag, "node: " + std::to_string(v) + " --> case h: disconnected component with gap");
+             
+             std::get<2>(adjListFW.at(v).at(0)) == '-' ? // if negative gap (-)
+             cStart = 1 :
+             cStart = std::get<3>(adjListFW.at(v).at(0)) + 1;
+             
+             cEnd = cStart + inSegments[v].getInSequence().size() - 1;
+             
+             agpNext = seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t"+inSegments[v].getSeqHeader().substr(inSegments[v].getSeqHeader().length() - 1)+"\tW\t"+inSegments[v].getSeqHeader()+"\t1\t"+std::to_string(inSegments[v].getInSequence().size())+"\t+\n";
+             
+             agp += agpNext;
+             
+             cStart = cEnd + 1;
+             
+             cEnd = cStart + std::get<3>(adjListFW.at(v).at(0)) - 1;
+             
+             std::get<2>(adjListFW.at(v).at(0)) == '-' ? // if negative gap (-)
+             agp += seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t1\tN\t"+std::to_string(std::get<3>(adjListFW.at(v).at(0)))+"\tscaffold\tyes\n": // insert at the end
+             agp.insert(0,seqHeader+"\t1\t"+std::to_string(std::get<3>(adjListFW.at(v).at(0)))+"\t1\tN\t"+std::to_string(std::get<3>(adjListFW.at(v).at(0)))+"\tscaffold\tyes\n"); // insert at the beginning
+
+             
+             backward = false;
+             
+         }
+         
+         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
+             
+             if (!visited[std::get<1>(i)]) {
+                 
+                 cEnd = cStart + std::get<3>(i) - 1;
+                 
+                 agp += seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t"+std::to_string(std::get<3>(i))+"\tN\t"+std::to_string(std::get<3>(i))+"\tscaffold\tyes\n"; // add gaps
+                 
+                 cStart = cEnd + 1;
+                 
+                 dfsAgp(std::get<1>(i), agp, cStart, cEnd); // recurse
+                 
+             }
+         }
+         
+         for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
+             
+             if (!visited[std::get<1>(i)]) {
+                 
+                 cEnd = cEnd + std::get<3>(i) - 1;
+
+                 agp += seqHeader+"\t"+std::to_string(cStart)+"\t"+std::to_string(cEnd)+"\t"+std::to_string(std::get<3>(i))+"\tN\t"+std::to_string(std::get<3>(i))+"\tscaffold\tyes\n"; // add gaps
+                 
+                 cStart = cEnd + 1;
+
+                 dfsAgp(std::get<1>(i), agp, cStart, cEnd); // recurse
 
              }
          }

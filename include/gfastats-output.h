@@ -143,6 +143,8 @@ public:
                 
             case 1: { // fasta[.gz]
                 
+                std::string seqHeader;
+                
                 std::string inSeq; // the new sequence being built recursively
                 
                 // generate adjacency list representation of a graph
@@ -155,9 +157,14 @@ public:
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
-                        inSequences.DFS(i, inSeq); // if not, visit all connected components recursively
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
-                        *stream<<">"<<inSequences.getInSegment(i).getSeqHeader()<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n";
+                        seqHeader = inSequences.getInSegment(i).getSeqHeader();
+                        
+                        seqHeader.pop_back();
+                        seqHeader.pop_back();
+                        
+                        *stream<<">"<<seqHeader<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n";
                         
                         if (splitLength != 0) {
                             
@@ -190,7 +197,7 @@ public:
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
-                        inSequences.DFS(i, inSeq, &inSeqQual); // if not, visit all connected components recursively
+                        inSequences.dfsSeq(i, inSeq, &inSeqQual); // if not, visit all connected components recursively
                         
                         *stream<<"@"<<inSequences.getInSegment(i).getSeqHeader()<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n"<<inSeq<<"\n+\n"<<inSeqQual<<"\n";
                         
@@ -214,9 +221,6 @@ public:
                 for (InSegment inSegment : inSequences.getInSegments()) {
                     
                     seqHeader = inSegment.getSeqHeader();
-                    
-                    seqHeader.pop_back();
-                    seqHeader.pop_back();
                     
                     *stream <<"S\t" // line type
                             <<seqHeader<<"\t" // header
@@ -298,7 +302,7 @@ public:
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
-                        inSequences.DFS(i, inSeq); // if not, visit all connected components recursively
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         seqHeader.pop_back();
                         seqHeader.pop_back();
@@ -381,7 +385,7 @@ public:
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
-                        inSequences.DFS(i, inSeq); // if not, visit all connected components recursively
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         seqHeader.pop_back();
                         seqHeader.pop_back();
@@ -470,7 +474,7 @@ public:
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
-                        inSequences.DFS(i, inSeq); // if not, visit all connected components recursively
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         seqHeader.pop_back();
                         seqHeader.pop_back();
@@ -541,70 +545,46 @@ public:
             default:
             case 'a': { // both contigs and gaps in .agp format
                 
-                std::cout<<"Not yet reemplemented, sorry!\n";
-                exit(1);
+                std::string seqHeader, seqComment, outAgp; // header, comment and the new sequence being built recursively
+                unsigned int cStart = 1, cEnd = 1; // these are used to track coordinates along the scaffolds
+  
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGFAGaps());
                 
-//                unsigned int ctgN = 1, item = 1, len = 0;
-//
-//                while (counter < inSequences.getScaffN()) {
-//
-//                    inSegment = inSequences.getInSegment(counter);
-//                    unsigned int seqScaffLen = inSegment.getSegmentLength();
-//
-//                    seqHeader = inSegment.getSeqHeader();
-//
-//                    std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
-//                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-//                    auto last = std::prev(end);
-//
-//                    if (*begin>0) {
-//
-//                        std::cout<<seqHeader<<"\t"<<1<<"\t"<<*begin<<"\t"<<1<<"\t"<<"N"<<"\t"<<*begin<<"\tscaffold\tyes\t"<<"\n";
-//
-//                        item++;
-//
-//                    }
-//
-//                    for (std::vector<unsigned int>::const_iterator it = begin; it != end;) {
-//
-//                        len = *(it+1) - *it;
-//
-//                        std::cout<<seqHeader<<"\t"<<*it+1<<"\t"<<*(it+1)<<"\t"<<item<<"\t"<<"W"<<"\t"<<seqHeader+"."<<ctgN<<"\t1\t"<<len<<"\t+"<<"\n";
-//
-//                        item++;
-//
-//                        if (ctgN != seqBoundaries.size()/2) {
-//
-//                            len = *(it+2) - *(it+1);
-//
-//                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<*(it+2)<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<"\n";
-//
-//                            item++;
-//
-//                        }
-//
-//                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) {
-//
-//                            len = seqScaffLen - *(it+1);
-//
-//                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<seqScaffLen<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<"\n";
-//
-//                            item++;
-//
-//                        }
-//
-//                        ctgN++;
-//                        it = it + 2;
-//
-//                    }
-//
-//                    ctgN = 1;
-//                    item = 1;
-//                    counter++;
-//
-//                }
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
+                    
+                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
+                
+                    seqHeader = inSequences.getInSegment(i).getSeqHeader();
+                    seqHeader.pop_back();
+                    seqHeader.pop_back();
+                    
+                    if (!inSequences.getVisited(i)) { // check if the node was already visited
+                        
+                        if (inSequences.getAdjListFW().at(i).size() == 0 && inSequences.getAdjListBW().at(i).size() == 0) { // handle disconnected components
+                            
+                            std::cout<<seqHeader<<"\t1\t"<<inSequences.getInSegment(i).getInSequence().size()<<"\t1\t"<<"W"<<"\t"<<seqHeader<<"\t1\t"<<inSequences.getInSegment(i).getInSequence().size()<<"\t+"<<"\n";
+                            
+                        }else{
+                            
+                            cStart = 1, cEnd = 1;
+                            
+                            verbose(verbose_flag, "Graph DFS");
+                            
+                            inSequences.dfsAgp(i, outAgp, cStart, cEnd); // if not, visit all connected components recursively
+                        
+                            std::cout<<outAgp;
+                        
+                        }
+                    
+                    }
+                    
+                    outAgp="";
+                    
+                }
                 
                 break;
+            
             }
                 
         }

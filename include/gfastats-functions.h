@@ -129,7 +129,6 @@ void textWrap(std::string input, std::ostream& output, int width) { // generic t
     
     std::string tmp;
     char cur = '\0';
-    char last = '\0';
     int i = 0;
     
     std::stringstream ss(input);
@@ -149,7 +148,7 @@ void textWrap(std::string input, std::ostream& output, int width) { // generic t
         }
         
         tmp += cur;
-        last = cur;
+        
     }
     
     output << tmp;
