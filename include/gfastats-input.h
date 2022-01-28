@@ -80,19 +80,41 @@ public:
         
         std::string firstLine;
         char firstChar;
+        unsigned char buffer[2];
         
         std::ifstream is(iSeqFileArg);
-        zstream::igzstream zin(is);
         
-        if (determineGzip(iSeqFileArg)) {
+        // this stream takes input from a gzip compressed file
+        zstream::igzstream zfin(is);
+        
+        if (determineGzip(iSeqFileArg)) { // input is a compressed file
             
-            stream = make_unique<std::istream>(zin.rdbuf());
+            stream = make_unique<std::istream>(zfin.rdbuf());
             
-        } else if (isPipe && (pipeType == 's')) {
+        } else if (isPipe && (pipeType == 's')) { // input is from pipe
+            
+            std::cin.read((char*)(&buffer[0]), 2);
 
-            stream = make_unique<std::istream>(std::cin.rdbuf());
+            if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) { // check if pipe is gzipped
 
-        } else {
+                // this stream takes input from a gzip compressed pipe
+                zstream::igzstream zin(std::cin);
+                
+                stream = make_unique<std::istream>(zin.rdbuf());
+                
+                getline(*stream, newLine);
+                
+                std::cout<<"Gz pipe currently not supported\n";
+                
+                exit(1);
+
+            }else{
+
+                stream = make_unique<std::istream>(std::cin.rdbuf());
+
+            }
+
+        } else { // input is a regular plain text file
 
             stream = make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
 
@@ -101,6 +123,13 @@ public:
         if (stream) {
             
             getline(*stream, newLine);
+            
+            if (isPipe && (pipeType == 's')) { // if input from pipe, recover the first two bytes
+                
+                newLine.insert (0, 1, buffer[1]);
+                newLine.insert (0, 1, buffer[0]);
+                
+            }
             
             firstLine = newLine;
             firstChar = newLine[0];

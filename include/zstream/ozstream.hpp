@@ -211,7 +211,7 @@ public:
 			zip_ostreambase_type(ostream_, level_, strategy_, window_size_,
 					memory_level_, buffer_size_), ostream_type(this->rdbuf()),
 					m_closed(false) {
-		add_header();
+//		add_header(); // GF: this needs to be commented out otherwise we immediately append the header
 	}
 
 	~basic_gzip_ostream() {
@@ -221,6 +221,7 @@ public:
 	void close() {
 		if (m_closed)
 			return;
+        add_header(); // only add the header when flushing
 		this->flush();
 		this->rdbuf()->zfinish();
 		add_footer();

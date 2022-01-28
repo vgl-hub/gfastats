@@ -106,7 +106,7 @@ bool determineGzip(std::string iFastaFileArg) { // check first two bytes for gzi
     std::ifstream stream(iFastaFileArg);
     
     unsigned char buffer[2];
-    stream.read((char*)(&buffer[0]), 2) ;
+    stream.read((char*)(&buffer[0]), 2);
     
     stream.clear();
     stream.seekg(0, stream.beg);

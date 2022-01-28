@@ -108,13 +108,16 @@ public:
         // this stream outputs to file
         std::ofstream ofs(outSeq);
 
+        // this stream outputs gzip compressed to file
+        zstream::ogzstream zfout(ofs);
+        
+        // this stream outputs gzip compressed to stdout
+        zstream::ogzstream zout(std::cout);
+
         if (gzip && outFile) { // if the requested output is gzip compressed and should be outputted to a file
             
-            // this stream outputs gzip compressed to file
-            zstream::ogzstream zfout(ofs);
-            
             stream = make_unique<std::ostream>(zfout.rdbuf()); // then we use the stream for gzip compressed file outputs
-            
+                        
         }else if (!gzip && outFile){ // else if no compression is requested
             
             stream = make_unique<std::ostream>(ofs.rdbuf());  // we use the stream regular file outputs
@@ -126,13 +129,12 @@ public:
             remove(outSeq.c_str());
             
             if (gzip) { // if the output to stdout needs to be compressed we use the appropriate stream
-            
-                // this stream outputs gzip compressed to stdout
-                zstream::ogzstream zout(std::cout);
                 
                 stream = make_unique<std::ostream>(zout.rdbuf());
             
             }else{ // else we use a regular cout stream
+                
+                std::cout.flush();
                 
                 stream = make_unique<std::ostream>(std::cout.rdbuf());
                 
@@ -151,8 +153,6 @@ public:
                 inSequences.buildGraph(inSequences.getGaps());
                 
                 for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
-                    
-                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
@@ -265,6 +265,12 @@ public:
                 
             }
                 
+        }
+
+        if(gzip && outFile) { // if we wrote to file as gzip, we flush the buffer
+            
+            zfout.close();
+            
         }
         
         if(outFile) { // if we wrote to file, we close it
