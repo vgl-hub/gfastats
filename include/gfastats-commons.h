@@ -543,6 +543,8 @@ public:
                 addSegment(segUniqN, segN, seqHeader, seqComment, &sequenceSubSeq, &A, &C, &G, &T, &lowerCount, &sequenceQualitySubSeq);
                 pushbackSegment = false;
                 
+                A = 0, C = 0, G = 0, T = 0;
+                
                 segN++;
                 segUniqN++;
                 
