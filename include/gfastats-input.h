@@ -289,7 +289,7 @@ public:
                                     
                                     inGap.readLine(&newLine, &lineN);
                                     
-                                    inSequences.appendGFAGap(inGap);
+                                    inSequences.appendGap(inGap);
                                     
                                     lineN++;
                                                  
@@ -300,6 +300,8 @@ public:
                             }
                             
                         }
+                        
+                        inSequences.headersTosIds();  // assign sIds to all headers in gaps
                         
                     }else if (version[0] == '1') {
                     
@@ -337,10 +339,9 @@ public:
                                     
                                     inGap.readLine(&newLine, &lineN);
                                     
-                                    inSequences.appendGFAGap(inGap);
+                                    inSequences.appendGap(inGap);
                                     
                                     lineN++;
-                                    
                                     
                                     break;
                                     

@@ -148,9 +148,9 @@ public:
                 std::string inSeq; // the new sequence being built recursively
                 
                 // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGFAGaps());
+                inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                     
@@ -160,9 +160,6 @@ public:
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         seqHeader = inSequences.getInSegment(i).getSeqHeader();
-                        
-                        seqHeader.pop_back();
-                        seqHeader.pop_back();
                         
                         *stream<<">"<<seqHeader<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n";
                         
@@ -188,9 +185,9 @@ public:
                 std::string inSeq, inSeqQual; // the new sequence being built recursively and its quality
                 
                 // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGFAGaps());
+                inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                     
@@ -216,6 +213,9 @@ public:
                 
                 std::string seqHeader;
                 
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGaps());
+                
                 *stream<<"H\tVN:Z:2.0\n";
                 
                 for (InSegment inSegment : inSequences.getInSegments()) {
@@ -223,7 +223,7 @@ public:
                     seqHeader = inSegment.getSeqHeader();
                     
                     *stream <<"S\t" // line type
-                            <<seqHeader<<"\t" // header
+                            <<seqHeader<<"."<<inSegment.getsId()<<"\t" // header
                             <<inSegment.getSegmentLen()<<"\t" // seq length
                             <<inSegment.getInSequence(); // sequence
                     
@@ -243,12 +243,12 @@ public:
                     
                 }
                 
-                for (InGap inGap : inSequences.getGFAGaps()) {
+                for (InGap inGap : inSequences.getGaps()) {
                     
                     *stream <<"G\t" // line type
                             <<inGap.getgId()<<"\t" // id
-                            <<inGap.getsId1()<<inGap.getsId1Or()<<"\t" // sid1:ref
-                            <<inGap.getsId2()<<inGap.getsId2Or()<<"\t" // sid2:ref
+                            <<inSequences.getInSegment(inGap.getsId1()).getSeqHeader()<<"."<<inSequences.getInSegment(inGap.getsId1()).getsId()<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
+                            <<inSequences.getInSegment(inGap.getsId2()).getSeqHeader()<<"."<<inSequences.getInSegment(inGap.getsId2()).getsId()<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
                             <<inGap.getDist()<<"\n"; // size
                     
                 }
@@ -290,9 +290,9 @@ public:
                 std::string seqHeader, seqComment, inSeq; // header, comment and the new sequence being built recursively
                 
                 // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGFAGaps());
+                inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
@@ -303,9 +303,6 @@ public:
                         
                         verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
-                        
-                        seqHeader.pop_back();
-                        seqHeader.pop_back();
                         
                         std::cout<<seqHeader<<"\t"<<inSeq.size()<<"\n";
                         
@@ -322,11 +319,7 @@ public:
                 
                 for (InSegment inSegment : inSequences.getInSegments()) {
                     
-                    seqHeader = inSegment.getSeqHeader(); // remove unique internal identifier
-                    seqHeader.pop_back();
-                    seqHeader.pop_back();
-                    
-                    std::cout<<seqHeader<<"\t"<<inSegment.getInSequence().size()<<"\n";
+                    std::cout<<inSegment.getSeqHeader()<<"\t"<<inSegment.getInSequence().size()<<"\n";
 
                 }
                 
@@ -337,12 +330,8 @@ public:
             case 'g': { // gaps
                 
                 for (InGap inGap : inSequences.getInGaps()) {
-                    
-                    seqHeader = inGap.getgId(); // remove unique internal identifier
-                    seqHeader.pop_back();
-                    seqHeader.pop_back();
 
-                    std::cout<<seqHeader<<"\t"<<inGap.getDist()<<"\n";
+                    std::cout<<inGap.getgId()<<"\t"<<inGap.getDist()<<"\n";
 
                 }
                 
@@ -373,9 +362,9 @@ public:
                 std::string seqHeader, seqComment, inSeq; // header, comment and the new sequence being built recursively
                 
                 // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGFAGaps());
+                inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
@@ -386,9 +375,6 @@ public:
                         
                         verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
-                        
-                        seqHeader.pop_back();
-                        seqHeader.pop_back();
                         
                         for (char &base : inSeq) {
 
@@ -462,9 +448,9 @@ public:
                 std::string seqHeader, seqComment, inSeq; // header, comment and the new sequence being built recursively
                 
                 // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGFAGaps());
+                inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
@@ -475,9 +461,6 @@ public:
                         
                         verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
-                        
-                        seqHeader.pop_back();
-                        seqHeader.pop_back();
                         
                         for (char &base : inSeq) {
 
@@ -549,15 +532,13 @@ public:
                 unsigned int cStart = 1, cEnd = 1; // these are used to track coordinates along the scaffolds
   
                 // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGFAGaps());
+                inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
                     seqHeader = inSequences.getInSegment(i).getSeqHeader();
-                    seqHeader.pop_back();
-                    seqHeader.pop_back();
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
