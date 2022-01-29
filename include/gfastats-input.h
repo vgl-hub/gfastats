@@ -21,6 +21,7 @@ public:
     InSequences readFiles(std::string &iSeqFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
+        
         std::unique_ptr<std::istream> stream;
         
         unsigned int idx = 0, begin = 0, end = 0;
@@ -79,19 +80,41 @@ public:
         
         std::string firstLine;
         char firstChar;
+        unsigned char buffer[2];
         
         std::ifstream is(iSeqFileArg);
-        zstream::igzstream zin(is);
         
-        if (determineGzip(iSeqFileArg)) {
+        // this stream takes input from a gzip compressed file
+        zstream::igzstream zfin(is);
+        
+        if (determineGzip(iSeqFileArg)) { // input is a compressed file
             
-            stream = make_unique<std::istream>(zin.rdbuf());
+            stream = make_unique<std::istream>(zfin.rdbuf());
             
-        } else if (isPipe && (pipeType == 's')) {
+        } else if (isPipe && (pipeType == 's')) { // input is from pipe
+            
+            std::cin.read((char*)(&buffer[0]), 2);
 
-            stream = make_unique<std::istream>(std::cin.rdbuf());
+            if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) { // check if pipe is gzipped
 
-        } else {
+                // this stream takes input from a gzip compressed pipe
+                zstream::igzstream zin(std::cin);
+                
+                stream = make_unique<std::istream>(zin.rdbuf());
+                
+                getline(*stream, newLine);
+                
+                std::cout<<"Gz pipe currently not supported\n";
+                
+                exit(1);
+
+            }else{
+
+                stream = make_unique<std::istream>(std::cin.rdbuf());
+
+            }
+
+        } else { // input is a regular plain text file
 
             stream = make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
 
@@ -100,6 +123,13 @@ public:
         if (stream) {
             
             getline(*stream, newLine);
+            
+            if (isPipe && (pipeType == 's')) { // if input from pipe, recover the first two bytes
+                
+                newLine.insert (0, 1, buffer[1]);
+                newLine.insert (0, 1, buffer[0]);
+                
+            }
             
             firstLine = newLine;
             firstChar = newLine[0];
@@ -129,11 +159,13 @@ public:
                     
                     includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                     
+                    verbose(verbose_flag, "End of file");
+                    
                     break;
                 }
                 case '@': {
                     
-                    if (isPipe && pipeType == 's') {
+                    if (isPipe && pipeType == 's') { // pipe input
                         
                         firstLine.erase(0, 1);
                         
@@ -160,7 +192,7 @@ public:
                         
                     }
                     
-                    while (getline(*stream, newLine)) {
+                    while (getline(*stream, newLine)) { // file input
                         
                         newLine.erase(0, 1);
                         
@@ -192,8 +224,8 @@ public:
                 }
                 default: {
                     
-                    std::string h_col1, h_col2, s;
-                    char* version;
+                    std::string h_col1, h_col2, h_col3, s, version;
+                    char* v;
                     
                     InGap inGap;
                     
@@ -202,76 +234,161 @@ public:
                     
                     h_col1 = std::string(strtok(strdup(firstLine.c_str()),"\t")); // process first line
                     
-                    if(h_col1 == "H"){
+                    if (h_col1 == "H") {
                         
                         h_col2 = strtok(NULL,""); // read header col2
                         std::string(strtok(strdup(h_col2.c_str()),":")); // process version tag
                         strtok(NULL,":");
-                        version = strtok(NULL,"");
+                        v = strtok(NULL,"");
                         
-                        if (version != NULL) {
+                        if (v != NULL) {
                             
-                            verbose(verbose_flag, "GFA version: " + std::string(version));
+                            version = std::string(v);
+                            verbose(verbose_flag, "GFA version: " + version);
                             
                         }else{
                             
                             printf("Cannot recognize GFA version");
                             printf("Offending line: %s", firstLine.c_str());
+                            printf("Trying to detect from content");
+                            
+                            if (h_col1 == "S") {
+                                
+                                h_col3 = strtok(NULL,""); // read sequence col3
+                                
+                                
+                                if (isInt(h_col3) || h_col3 == "*") {
+                                    
+                                    version = '2';
+                                    verbose(verbose_flag, "Proposed GFA version: " + version);
+                                    
+                                }else{
+                                    
+                                    version = '1';
+                                    verbose(verbose_flag, "Proposed GFA version: " + version);
+                                    
+                                }
+                                
+                                
+                            }else if (h_col1 == "G") {
+                                
+                                version = '2';
+                                verbose(verbose_flag, "Proposed GFA version: " + version);
+                                
+                            }
                             
                         }
                         
                     }
                     
-                    while (getline(*stream, newLine)) {
-                        
-                        switch (newLine[0]) {
-                                
-                            case 'S': {
-                                
-                                strtok(strdup(newLine.c_str()),"\t"); //process first line
-                                h = strtok(NULL,"\t");
-                                
-                                seqHeader = h;
-                                
-                                strtok(NULL,"\t");
-                                s = strtok(NULL,"\t");
-                                inSequence = s;
-                                
-                                c = strtok(NULL,"\t");
-                                if (c != NULL) {
+                    if (version[0] == '2') {
+                    
+                        while (getline(*stream, newLine)) {
+                            
+                            switch (newLine[0]) {
                                     
-                                    seqComment = std::string(c);
+                                case 'S': {
+                                    
+                                    strtok(strdup(newLine.c_str()),"\t"); //process first line
+                                    h = strtok(NULL,"\t");
+                                    
+                                    seqHeader = h;
+                                    
+                                    strtok(NULL,"\t");
+                                    s = strtok(NULL,"\t");
+                                    inSequence = s;
+                                    
+                                    c = strtok(NULL,"\t");
+                                    if (c != NULL) {
+                                        
+                                        seqComment = std::string(c);
+                                        
+                                    }
+                                    
+                                    inSequences.insertHash(seqHeader, seqN); // header to hash table
+                                    
+                                    includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    seqN++;
+                                    lineN++;
+                                    
+                                    break;
                                     
                                 }
-                                
-                                inSequences.insertHash(seqHeader, seqN); // header to hash table
-                                
-                                includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
-                                seqN++;
-                                lineN++;
-                                
-                                break;
-                                
+                                case 'G': {
+                                    
+                                    inGap.readLine(&newLine, &lineN);
+                                    
+                                    inSequences.appendGap(inGap);
+                                    
+                                    lineN++;
+                                                 
+                                    break;
+                                    
+                                }
+                                    
                             }
-                            case 'G': {
-                                
-                                inGap.readLine(&newLine, &lineN);
-                                
-                                inSequences.appendGFAGap(inGap);
-                                lineN++;
-                                
-                                break;
-                                
-                            }
-                                
+                            
                         }
+                        
+                        inSequences.headersTosIds();  // assign sIds to all headers in gaps
+                        
+                    }else if (version[0] == '1') {
+                    
+                        while (getline(*stream, newLine)) {
+                            
+                            switch (newLine[0]) {
+                                    
+                                case 'S': {
+                                    
+                                    strtok(strdup(newLine.c_str()),"\t"); //process first line
+                                    h = strtok(NULL,"\t");
+                                    
+                                    seqHeader = h;
+                                    
+                                    s = strtok(NULL,"\t");
+                                    inSequence = s;
+                                    
+                                    c = strtok(NULL,"\t");
+                                    if (c != NULL) {
+                                        
+                                        seqComment = std::string(c);
+                                        
+                                    }
+                                    
+                                    inSequences.insertHash(seqHeader, seqN); // header to hash table
+                                    
+                                    includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    seqN++;
+                                    lineN++;
+                                    
+                                    break;
+                                    
+                                }
+                                case 'G': {
+                                    
+                                    inGap.readLine(&newLine, &lineN);
+                                    
+                                    inSequences.appendGap(inGap);
+                                    
+                                    lineN++;
+                                    
+                                    break;
+                                    
+                                }
+                                    
+                            }
+                            
+                        }
+                        
+                        break;
                         
                     }
                     
-                    break;
-                    
                 }
+                
             }
+            
+            inSequences.updateStats();
             
         }else{
 
@@ -286,10 +403,16 @@ public:
     void parseFasta(std::string &newLine, InSequences &inSequences, std::string &seqHeader, std::string &seqComment, std::string &inSequence, unsigned int &idx, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList) {
         
         switch (newLine[0]) {
+            case '\n':{
                 
+                break;
+            
+            }
             case '>': {
                 
                 if (idx> 0) {
+                    
+                    verbose(verbose_flag, "Individual fasta sequence read");
                     
                     includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                     
@@ -311,10 +434,6 @@ public:
                 }
                 
                 idx++;
-                
-                break;
-            }
-            case '\n':{
                 
                 break;
             }

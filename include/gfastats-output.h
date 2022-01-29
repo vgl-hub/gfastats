@@ -16,42 +16,38 @@ private:
 public:
     bool seqReport(InSequences &inSequences, InSegment &inSegment, int &outSequence_flag) { // method to output the summary statistics for each sequence
         
-//        counter = 0;
-//
-//        while (counter < inSequences.getScaffN()) {
-//
-//            inSegment = inSequences.getInSequence(counter);
-//
-//            std::cout<<output("Seq")<<counter+1<<std::endl;
-//            std::cout<<output("Header")<<inSegment.getSeqHeader()<<std::endl;
-//            std::cout<<output("Comment")<<inSegment.getSeqComment()<<std::endl;
-//            std::cout<<output("Total sequence length")<<inSegment.getSegmentLength()<<std::endl;
-//            std::cout<<output("Total contig length")<<inSegment.getContigSum()<<std::endl;
-//            std::cout<<output("# contig")<<inSegment.getContigN()<<std::endl;
-//            std::cout<<output("Total gap length")<<inSegment.getGapSum()<<std::endl;
-//            std::cout<<output("# gaps")<<inSegment.getGapN()<<std::endl;
-//
-//            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), inSequence.getA(),
-//                   inSequence.getC(),
-//                   inSequence.getG(),
-//                   inSequence.getT());
-//            printf("%s%.2f\n",output("GC content %").c_str(), inSequence.computeGCcontent());
-//            std::cout<<output("# soft-masked bases")<<inSequence.getLowerCount()<<std::endl;
-//
-//
-//            if (outSequence_flag) {
-//
-//                std::cout<<output("Sequence")<<inSequence.getInSequence()<<std::endl;
-//                std::cout<<output("Quality")<<inSequence.getInSequenceQuality()<<std::endl;
-//
-//            }
-//
-//            std::cout<<std::endl;
-//            counter++;
-//
-//        }
-//
-//        counter = 0;
+        counter = 0;
+
+        while (counter < inSequences.getSegmentN()) {
+
+            inSegment = inSequences.getInSegment(counter);
+
+            std::cout<<output("Seq")<<counter+1<<"\n";
+            std::cout<<output("Header")<<inSegment.getSeqHeader()<<"\n";
+            std::cout<<output("Comment")<<inSegment.getSeqComment()<<"\n";
+            std::cout<<output("Total segment length")<<inSegment.getSegmentLen()<<"\n";
+
+            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), inSegment.getA(),
+                   inSegment.getC(),
+                   inSegment.getG(),
+                   inSegment.getT());
+            printf("%s%.2f\n",output("GC content %").c_str(), inSegment.computeGCcontent());
+            std::cout<<output("# soft-masked bases")<<inSegment.getLowerCount()<<"\n";
+
+
+            if (outSequence_flag) {
+
+                std::cout<<output("Sequence")<<inSegment.getInSequence()<<"\n";
+                std::cout<<output("Quality")<<inSegment.getInSequenceQuality()<<"\n";
+
+            }
+
+            std::cout<<"\n";
+            counter++;
+
+        }
+
+        counter = 0;
         
         return true;
         
@@ -107,13 +103,16 @@ public:
         // this stream outputs to file
         std::ofstream ofs(outSeq);
 
+        // this stream outputs gzip compressed to file
+        zstream::ogzstream zfout(ofs);
+        
+        // this stream outputs gzip compressed to stdout
+        zstream::ogzstream zout(std::cout);
+
         if (gzip && outFile) { // if the requested output is gzip compressed and should be outputted to a file
             
-            // this stream outputs gzip compressed to file
-            zstream::ogzstream zfout(ofs);
-            
             stream = make_unique<std::ostream>(zfout.rdbuf()); // then we use the stream for gzip compressed file outputs
-            
+                        
         }else if (!gzip && outFile){ // else if no compression is requested
             
             stream = make_unique<std::ostream>(ofs.rdbuf());  // we use the stream regular file outputs
@@ -125,13 +124,12 @@ public:
             remove(outSeq.c_str());
             
             if (gzip) { // if the output to stdout needs to be compressed we use the appropriate stream
-            
-                // this stream outputs gzip compressed to stdout
-                zstream::ogzstream zout(std::cout);
                 
                 stream = make_unique<std::ostream>(zout.rdbuf());
             
             }else{ // else we use a regular cout stream
+                
+                std::cout.flush();
                 
                 stream = make_unique<std::ostream>(std::cout.rdbuf());
                 
@@ -142,61 +140,34 @@ public:
                 
             case 1: { // fasta[.gz]
                 
-                std::string output;
+                std::string seqHeader;
                 
-                std::string seqHeader, seqComment, inSeq;
+                std::string inSeq; // the new sequence being built recursively
                 
-                // gfa postprocessing
-                // print adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGFAGaps());
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGaps());
                 
-                InSequences inSequencesNew; // the new sequence set resulting from the graph
-                
-                
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all nodes
-                    
-                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
-                    std::string inSeqNew; // the new sequence being built recursively
-                
-                    seqHeader = inSequences.getInSegment(i).getSeqHeader();
-                    seqComment = inSequences.getInSegment(i).getSeqComment();
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
-                        inSequences.DFS(i, inSegment, inSeqNew); // if not, visit all connected components recursively
+                        verbose(verbose_flag, "Graph DFS");
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
-                        inSeq = inSegment.getInSegment();
-                    
-                        inSequencesNew.addSegment(&seqHeader, &seqComment, &inSeq); // push the new sequence
+                        seqHeader = inSequences.getInSegment(i).getSeqHeader();
                         
-                        inSequencesNew.increaseTotScaffN();
+                        *stream<<">"<<seqHeader<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n";
                         
-                    }
-                    
-                }
-                
-                inSequences = inSequencesNew;
-                
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSegment = inSequences.getInSegment(counter);
-                    
-                    *stream<<">"<<inSegment.getSeqHeader()<<" "<<inSegment.getSeqComment()<<std::endl;
-                    
-                    if (splitLength != 0) {
+                        if (splitLength != 0) {
+                            
+                            textWrap(inSeq, *stream, splitLength); // wrapping text at user-specified line length
+                            
+                        }
                         
-                        textWrap(inSegment.getInSegment(), *stream, splitLength);
-                        
-                    }else{
-                        
-                        output = inSegment.getInSegment();
+                        *stream<<inSeq<<"\n";
+                        inSeq = "";
                         
                     }
-                    
-                    *stream<<output<<std::endl;
-                    output = "";
-                    
-                    counter++;
                     
                 }
                 
@@ -206,13 +177,26 @@ public:
                 
             case 2: { // fastq[.gz]
                 
-                while (counter < inSequences.getScaffN()) {
+                std::string inSeq, inSeqQual; // the new sequence being built recursively and its quality
+                
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGaps());
+                
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
-                    inSegment = inSequences.getInSegment(counter);
+                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                     
-                    *stream<<"@"<<inSegment.getSeqHeader()<<" "<<inSegment.getSeqComment()<<"\n"<<inSegment.getInSegment()<<"\n+\n"<<inSegment.getInSequenceQuality()<<"\n";
-                    
-                    counter++;
+                    if (!inSequences.getVisited(i)) { // check if the node was already visited
+                        
+                        verbose(verbose_flag, "Graph DFS");
+                        inSequences.dfsSeq(i, inSeq, &inSeqQual); // if not, visit all connected components recursively
+                        
+                        *stream<<"@"<<inSequences.getInSegment(i).getSeqHeader()<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n"<<inSeq<<"\n+\n"<<inSeqQual<<"\n";
+                        
+                        inSeq = "";
+                        inSeqQual = "";
+                        
+                    }
                     
                 }
                 
@@ -223,110 +207,44 @@ public:
             case 3: { // gfa[.gz]
                 
                 std::string seqHeader;
-                std::vector<unsigned int> seqBoundaries;
-                unsigned int ctgN = 1, item = 1, len = 0;
+                
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGaps());
                 
                 *stream<<"H\tVN:Z:2.0\n";
                 
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSegment = inSequences.getInSegment(counter);
-                    unsigned int seqScaffLen = inSegment.getSegmentLength();
+                for (InSegment inSegment : inSequences.getInSegments()) {
                     
                     seqHeader = inSegment.getSeqHeader();
                     
-                    std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    auto last = std::prev(end);
+                    *stream <<"S\t" // line type
+                            <<seqHeader<<"."<<inSegment.getsId()<<"\t" // header
+                            <<inSegment.getSegmentLen()<<"\t" // seq length
+                            <<inSegment.getInSequence(); // sequence
                     
-                    if (*begin>0) { // case apparently missing for GFA2 spec (start gap)
+                    if (inSegment.getSeqComment() != "") {
                         
-                        len = *begin;
-                        
-                        *stream <<"G\t" // line type
-                                <<seqHeader<<"."<<item<<"\t" // id
-                                <<seqHeader<<"."<<item+1<<"+\t" // sid1:ref (begin of sequence)
-                                <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
-                                <<len<<"\t" // size
-                                <<inSegment.getSeqComment()<<"\n"; // optional comment
-                        
-                        item++;
+                        *stream <<"\tC:"<<inSegment.getSeqComment(); // optional comment
                         
                     }
                     
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
+                    if (inSegment.getInSequenceQuality() != "") {
                         
-                        len = *(it+1) - *it;
-
-                        *stream <<"S\t" // line type
-                                <<seqHeader<<"."<<item<<"\t" // id
-                                <<*(it+1)-*(it)<<"\t" // size
-                                <<inSegment.getInSegment().substr(*(it),len)<<"\t" // sequence
-                                <<inSegment.getSeqHeader(); // header
-                        
-                        if (inSegment.getSeqComment() != "") {
-                        
-                        *stream <<" "<<inSegment.getSeqComment(); // optional comment
-                    
-                        }
-                
-                        *stream <<"\n";
-                        
-                        item++;
-                        
-                        if (ctgN != seqBoundaries.size()/2) { // inner gap
-                            
-                            len = *(it+2) - *(it+1);
-                            
-                            *stream <<"G\t" // line type
-                                    <<seqHeader<<"."<<item<<"\t" // id
-                                    <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
-                                    <<seqHeader<<"."<<item+1<<"+\t" // sid2:ref
-                                    <<len<<"\t" // size
-                                    <<inSegment.getSeqComment()<<"\n"; // optional comment
-                            
-                            item++;
-                            
-                        }
-                        
-                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) { // end gap
-                            
-                            len = seqScaffLen - *(it+1);
-                            
-                            *stream <<"G\t" // line type
-                                    <<seqHeader<<"."<<item<<"\t" // id
-                                    <<seqHeader<<"."<<item-1<<"+\t" // sid1:ref
-                                    <<seqHeader<<"."<<item-1<<"-\t" // sid2:ref (end of sequence)
-                                    <<len<<"\t" // size
-                                    <<inSegment.getSeqComment()<<"\n"; // optional comment
-                            
-                            item++;
-                            
-                        }
-                        
-                        ctgN++;
-                        it = it + 2;
+                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional comment
                         
                     }
                     
-                    ctgN = 1;
-                    item = 1;
-                    counter++;
+                    *stream<<"\n";
                     
                 }
                 
-                counter = 0;
-                std::vector<InGap> inGaps = inSequences.getGFAGaps();
-                
-                while (counter < inGaps.size()) {
-                
-                    *stream <<"G\t" // line type
-                            <<inGaps[counter].getgIds()<<"\t" // id
-                            <<inGaps[counter].getsIds1()<<"\t" // sid1:ref
-                            <<inGaps[counter].getsIds2()<<"\t" // sid2:ref (end of sequence)
-                            <<inGaps[counter].getsDists()<<"\n"; // size
+                for (InGap inGap : inSequences.getGaps()) {
                     
-                    counter++;
+                    *stream <<"G\t" // line type
+                            <<inGap.getgId()<<"\t" // id
+                            <<inSequences.getInSegment(inGap.getsId1()).getSeqHeader()<<"."<<inSequences.getInSegment(inGap.getsId1()).getsId()<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
+                            <<inSequences.getInSegment(inGap.getsId2()).getSeqHeader()<<"."<<inSequences.getInSegment(inGap.getsId2()).getsId()<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
+                            <<inGap.getDist()<<"\n"; // size
                     
                 }
                 
@@ -343,6 +261,12 @@ public:
             }
                 
         }
+
+        if(gzip && outFile) { // if we wrote to file as gzip, we flush the buffer
+            
+            zfout.close();
+            
+        }
         
         if(outFile) { // if we wrote to file, we close it
             
@@ -356,8 +280,6 @@ public:
     
     bool outSize(InSequences &inSequences, InSegment &inSegment, char &sizeOutType) { // method to output only the size of the sequences
         
-        counter = 0;
-        
         std::string seqHeader;
         std::vector<unsigned int> seqBoundaries;
         
@@ -365,14 +287,29 @@ public:
  
             default:
             case 's': { // scaffolds
-
-                while (counter < inSequences.getScaffN()) {
+                
+                std::string seqHeader, seqComment, inSeq; // header, comment and the new sequence being built recursively
+                
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGaps());
+                
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
-                    inSegment = inSequences.getInSegment(counter);
+                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
+                
+                    seqHeader = inSequences.getInSegment(i).getSeqHeader();
+                    seqComment = inSequences.getInSegment(i).getSeqComment();
+                    
+                    if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
-                    std::cout<<inSegment.getSeqHeader()<<"\t"<<inSegment.getSegmentLength()<<std::endl;
-                    
-                    counter++;
+                        verbose(verbose_flag, "Graph DFS");
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
+                        
+                        std::cout<<seqHeader<<"\t"<<inSeq.size()<<"\n";
+                        
+                        inSeq = "";
+                        
+                    }
                     
                 }
                 
@@ -381,24 +318,10 @@ public:
                 
             case 'c': { // contigs
                 
-                while (counter < inSequences.getScaffN()) {
+                for (InSegment inSegment : inSequences.getInSegments()) {
                     
-                    inSegment = inSequences.getInSegment(counter);
-                    
-                    seqHeader = inSegment.getSeqHeader();
-                    
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
-                        
-                        std::cout<<seqHeader<<"\t"<<*(it+1)-*it<<std::endl;
-                        
-                        it = it + 2;
-                        
-                    }
-                    
-                    counter++;
-                    
+                    std::cout<<inSegment.getSeqHeader()<<"\t"<<inSegment.getInSequence().size()<<"\n";
+
                 }
                 
                 break;
@@ -407,24 +330,10 @@ public:
                 
             case 'g': { // gaps
                 
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSegment = inSequences.getInSegment(counter);
-                    
-                    seqHeader = inSegment.getSeqHeader();
-                    
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
-                        
-                        std::cout<<seqHeader<<"\t"<<*(it+1)-*it<<std::endl;
-                        
-                        it = it + 2;
-                        
-                    }
-                    
-                    counter++;
-                    
+                for (InGap inGap : inSequences.getInGaps()) {
+
+                    std::cout<<inGap.getgId()<<"\t"<<inGap.getDist()<<"\n";
+
                 }
                 
                 break;
@@ -448,23 +357,83 @@ public:
                 
             case 'c': { // contigs
                 
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSegment = inSequences.getInSegment(counter);
-                    
-                    seqHeader = inSegment.getSeqHeader();
-                    
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
+                unsigned int pos = 0, gapLen = 0;
+                bool wasN = false;
                         
-                        std::cout<<seqHeader<<"\t"<<*it<<"\t"<<*(it+1)<<std::endl;
+                std::string seqHeader, seqComment, inSeq; // header, comment and the new sequence being built recursively
+                
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGaps());
+                
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
+                    
+                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
+                
+                    seqHeader = inSequences.getInSegment(i).getSeqHeader();
+                    seqComment = inSequences.getInSegment(i).getSeqComment();
+                    
+                    if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
-                        it = it + 2;
+                        verbose(verbose_flag, "Graph DFS");
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
+                        
+                        for (char &base : inSeq) {
+
+                            switch (base) {
+
+                                case 'N': {
+                                    
+                                    gapLen++;
+                                    
+                                    if (!wasN) { // segment end
+                                    
+                                        std::cout<<"\t"<<pos<<"\n";
+                                        
+                                    }
+                                    
+                                    wasN = true;
+                                    
+                                    break;
+                                    
+                                }
+                                default: {
+                                    
+                                    if (pos == 0) { // sequence start
+
+                                        std::cout<<seqHeader<<"\t"<<0;
+
+                                    }
+                                    
+                                    if (wasN) { // segment start
+                                        
+                                        std::cout<<seqHeader<<"\t"<<pos;
+                                        
+                                        
+                                    }
+                                    
+                                    if (pos == inSeq.size()-1) { // gap end at the end of sequence
+
+                                        std::cout<<"\t"<<pos+1<<"\n";
+
+                                    }
+                                    
+                                    wasN = false;
+                                    
+                                    break;
+                                    
+                                }
+                                    
+                            }
+                            
+                            pos++;
+                                    
+                        }
+                        
+                        inSeq = "";
+                        pos = 0;
+                        gapLen = 0;
                         
                     }
-                    
-                    counter++;
                     
                 }
                 
@@ -474,23 +443,82 @@ public:
                 
             case 'g': { // gaps
                 
-                while (counter < inSequences.getScaffN()) {
-                    
-                    inSegment = inSequences.getInSegment(counter);
-                    
-                    seqHeader = inSegment.getSeqHeader();
-                    
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    
-                    for (std::vector<unsigned int>::const_iterator it = seqBoundaries.cbegin(); it != end;) {
+                unsigned int pos = 0, gapLen = 0;
+                bool wasN = false;
                         
-                        std::cout<<seqHeader<<"\t"<<*it<<"\t"<<*(it+1)<<std::endl;
+                std::string seqHeader, seqComment, inSeq; // header, comment and the new sequence being built recursively
+                
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGaps());
+                
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
+                    
+                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
+                
+                    seqHeader = inSequences.getInSegment(i).getSeqHeader();
+                    seqComment = inSequences.getInSegment(i).getSeqComment();
+                    
+                    if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
-                        it = it + 2;
+                        verbose(verbose_flag, "Graph DFS");
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
+                        
+                        for (char &base : inSeq) {
+
+                            switch (base) {
+
+                                case 'N': {
+                                    
+                                    gapLen++;
+                                    
+                                    if (!wasN) { // gap start
+                                    
+                                        std::cout<<seqHeader<<"\t"<<pos;
+                                        
+                                    }
+                                    
+                                    if (pos == inSeq.size()-1) { // gap end at the end of sequence
+                                        
+                                        std::cout<<"\t"<<pos+1<<"\n";
+                                        
+                                    }
+                                    
+                                    wasN = true;
+                                    
+                                    break;
+                                    
+                                }
+                                default: {
+                                    
+                                    if (wasN) { // gap end
+                                        
+                                        if (pos == gapLen) { // gap at the start of sequence
+                                        
+                                            std::cout<<seqHeader<<"\t"<<0;
+                                            
+                                        }
+                                    
+                                        std::cout<<"\t"<<pos<<"\n";
+                                        
+                                    }
+                                    
+                                    wasN = false;
+                                    
+                                    break;
+                                    
+                                }
+                                    
+                            }
+                            
+                            pos++;
+                                    
+                        }
+                        
+                        inSeq = "";
+                        pos = 0;
+                        gapLen = 0;
                         
                     }
-                    
-                    counter++;
                     
                 }
                 
@@ -501,67 +529,44 @@ public:
             default:
             case 'a': { // both contigs and gaps in .agp format
                 
-                unsigned int ctgN = 1, item = 1, len = 0;
+                std::string seqHeader, seqComment, outAgp; // header, comment and the new sequence being built recursively
+                unsigned int cStart = 1, cEnd = 1; // these are used to track coordinates along the scaffolds
+  
+                // generate adjacency list representation of a graph
+                inSequences.buildGraph(inSequences.getGaps());
                 
-                while (counter < inSequences.getScaffN()) {
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
-                    inSegment = inSequences.getInSegment(counter);
-                    unsigned int seqScaffLen = inSegment.getSegmentLength();
+                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
+                
+                    seqHeader = inSequences.getInSegment(i).getSeqHeader();
                     
-                    seqHeader = inSegment.getSeqHeader();
-                    
-                    std::vector<unsigned int>::const_iterator begin = seqBoundaries.cbegin();
-                    std::vector<unsigned int>::const_iterator end = seqBoundaries.cend();
-                    auto last = std::prev(end);
-                    
-                    if (*begin>0) {
+                    if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
-                        std::cout<<seqHeader<<"\t"<<1<<"\t"<<*begin<<"\t"<<1<<"\t"<<"N"<<"\t"<<*begin<<"\tscaffold\tyes\t"<<std::endl;
+                        if (inSequences.getAdjListFW().at(i).size() == 0 && inSequences.getAdjListBW().at(i).size() == 0) { // handle disconnected components
+                            
+                            std::cout<<seqHeader<<"\t1\t"<<inSequences.getInSegment(i).getInSequence().size()<<"\t1\t"<<"W"<<"\t"<<seqHeader<<"\t1\t"<<inSequences.getInSegment(i).getInSequence().size()<<"\t+"<<"\n";
+                            
+                        }else{
+                            
+                            cStart = 1, cEnd = 1;
+                            
+                            verbose(verbose_flag, "Graph DFS");
+                            
+                            inSequences.dfsAgp(i, outAgp, cStart, cEnd); // if not, visit all connected components recursively
                         
-                        item++;
+                            std::cout<<outAgp;
                         
+                        }
+                    
                     }
                     
-                    for (std::vector<unsigned int>::const_iterator it = begin; it != end;) {
-                        
-                        len = *(it+1) - *it;
-                        
-                        std::cout<<seqHeader<<"\t"<<*it+1<<"\t"<<*(it+1)<<"\t"<<item<<"\t"<<"W"<<"\t"<<seqHeader+"."<<ctgN<<"\t1\t"<<len<<"\t+"<<std::endl;
-                        
-                        item++;
-                        
-                        if (ctgN != seqBoundaries.size()/2) {
-                            
-                            len = *(it+2) - *(it+1);
-                            
-                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<*(it+2)<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
-                            
-                            item++;
-                            
-                        }
-                        
-                        if (ctgN == seqBoundaries.size()/2 && seqScaffLen > *last) {
-                            
-                            len = seqScaffLen - *(it+1);
-                            
-                            std::cout<<seqHeader<<"\t"<<*(it+1)+1<<"\t"<<seqScaffLen<<"\t"<<item<<"\t"<<"N"<<"\t"<<len<<"\tscaffold\tyes\t"<<std::endl;
-                            
-                            item++;
-                            
-                        }
-                        
-                        ctgN++;
-                        it = it + 2;
-                        
-                    }
-                    
-                    ctgN = 1;
-                    item = 1;
-                    counter++;
+                    outAgp="";
                     
                 }
                 
                 break;
+            
             }
                 
         }
@@ -574,68 +579,68 @@ public:
         
         if (!tabular_flag) {
         
-            std::cout<<output("+++Summary+++")<<std::endl;
+            std::cout<<output("+++Summary+++")<<"\n";
         
         }
         
         if (gSize > 0) {
         
-            std::cout<<output("Expected genome size")<<gSize<<std::endl;
+            std::cout<<output("Expected genome size")<<gSize<<"\n";
         
         }
         
-        std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<std::endl;
-        std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<std::endl;
+        std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<"\n";
+        std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<"\n";
         printf("%s%.2f\n",output("Average scaffold length").c_str(), inSequences.computeAverageScaffLen());
         inSequences.evalNstars('s', gSize); // scaffold N* statistics
-        std::cout<<output("Scaffold N50")<<inSequences.getScaffN50()<<std::endl;
+        std::cout<<output("Scaffold N50")<<inSequences.getScaffN50()<<"\n";
         inSequences.evalAuN('s', gSize); // scaffold auN
         printf("%s%.2f\n",output("Scaffold auN").c_str(), inSequences.getScaffauN());
-        std::cout<<output("Scaffold L50")<<inSequences.getScaffL50()<<std::endl;
+        std::cout<<output("Scaffold L50")<<inSequences.getScaffL50()<<"\n";
         
         if (gSize > 0) {
             
-            std::cout<<output("Scaffold NG50")<<inSequences.getScaffNG50()<<std::endl;
+            std::cout<<output("Scaffold NG50")<<inSequences.getScaffNG50()<<"\n";
             printf("%s%.2f\n",output("Scaffold auNG").c_str(), inSequences.getScaffauNG());
-            std::cout<<output("Scaffold LG50")<<inSequences.getScaffLG50()<<std::endl;
+            std::cout<<output("Scaffold LG50")<<inSequences.getScaffLG50()<<"\n";
             
         }
-        std::cout<<output("Largest scaffold")<<inSequences.getLargestScaffold()<<std::endl;
+        std::cout<<output("Largest scaffold")<<inSequences.getLargestScaffold()<<"\n";
         
-        std::cout<<output("# contigs")<<inSequences.getContigN()<<std::endl;
-        std::cout<<output("Total contig length")<<inSequences.getTotSegmentLen()<<std::endl;
+        std::cout<<output("# contigs")<<inSequences.getSegmentN()<<"\n";
+        std::cout<<output("Total contig length")<<inSequences.getTotSegmentLen()<<"\n";
         printf("%s%.2f\n",output("Average contig length").c_str(), inSequences.computeAverageSegmentLen());
         inSequences.evalNstars('c', gSize); // contig N* statistics
-        std::cout<<output("Contig N50")<<inSequences.getContigN50()<<std::endl;
+        std::cout<<output("Contig N50")<<inSequences.getContigN50()<<"\n";
         inSequences.evalAuN('c', gSize); // contig auN
         printf("%s%.2f\n",output("Contig auN").c_str(), inSequences.getContigauN());
-        std::cout<<output("Contig L50")<<inSequences.getContigL50()<<std::endl;
+        std::cout<<output("Contig L50")<<inSequences.getContigL50()<<"\n";
         
         if (gSize > 0) {
             
-            std::cout<<output("Contig NG50")<<inSequences.getContigNG50()<<std::endl;
+            std::cout<<output("Contig NG50")<<inSequences.getContigNG50()<<"\n";
             printf("%s%.2f\n",output("Contig auNG").c_str(), inSequences.getContigauNG());
-            std::cout<<output("Contig LG50")<<inSequences.getContigLG50()<<std::endl;
+            std::cout<<output("Contig LG50")<<inSequences.getContigLG50()<<"\n";
             
         }
-        std::cout<<output("Largest contig")<<inSequences.getLargestContig()<<std::endl;
+        std::cout<<output("Largest contig")<<inSequences.getLargestContig()<<"\n";
         
-        std::cout<<output("# gaps")<<inSequences.getTotGapN()<<std::endl;
-        std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<std::endl;
+        std::cout<<output("# gaps")<<inSequences.getGapN()<<"\n";
+        std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<"\n";
         printf("%s%.2f\n",output("Average gap length").c_str(), inSequences.computeAverageGapLen());
         inSequences.evalNstars('g'); // gap N* statistics
-        std::cout<<output("Gap N50")<<inSequences.getGapN50()<<std::endl;
+        std::cout<<output("Gap N50")<<inSequences.getGapN50()<<"\n";
         inSequences.evalAuN('g'); // gap auN
         printf("%s%.2f\n",output("Gap auN").c_str(), inSequences.getGapauN());
-        std::cout<<output("Gap L50")<<inSequences.getGapL50()<<std::endl;
-        std::cout<<output("Largest gap")<<inSequences.getLargestGap()<<std::endl;
+        std::cout<<output("Gap L50")<<inSequences.getGapL50()<<"\n";
+        std::cout<<output("Largest gap")<<inSequences.getLargestGap()<<"\n";
         
         printf("%s%lu, %lu, %lu, %lu\n",output("Base composition (ACGT)").c_str(), inSequences.getTotA(),
                inSequences.getTotC(),
                inSequences.getTotG(),
                inSequences.getTotT());
         printf("%s%.2f\n",output("GC content %").c_str(), inSequences.computeGCcontent());
-        std::cout<<output("# soft-masked bases")<<inSequences.getTotLowerCount()<<std::endl;
+        std::cout<<output("# soft-masked bases")<<inSequences.getTotLowerCount()<<"\n";
         
         counter = 0;
      
@@ -648,14 +653,14 @@ public:
         int pos = 1;
         std::vector <unsigned int> scaffNstars = inSequences.getScaffNstars();
         for (unsigned int val : scaffNstars) {
-            std::cout<<output("Scaffold N"+std::to_string(pos*10))<<val<<std::endl;
+            std::cout<<output("Scaffold N"+std::to_string(pos*10))<<val<<"\n";
             pos++;
         }
         
         pos = 1;
         std::vector <unsigned int> scaffLstars = inSequences.getScaffLstars();
         for (unsigned int val : scaffLstars) {
-            std::cout<<output("Scaffold L"+std::to_string(pos*10))<<val<<std::endl;
+            std::cout<<output("Scaffold L"+std::to_string(pos*10))<<val<<"\n";
             pos++;
         }
         
@@ -664,14 +669,14 @@ public:
             pos = 1;
             std::vector <unsigned int> scaffNGstars = inSequences.getScaffNGstars();
             for (unsigned int val : scaffNGstars) {
-                std::cout<<output("Scaffold NG"+std::to_string(pos*10))<<val<<std::endl;
+                std::cout<<output("Scaffold NG"+std::to_string(pos*10))<<val<<"\n";
                 pos++;
             }
             
             pos = 1;
             std::vector <unsigned int> scaffLGstars = inSequences.getScaffLGstars();
             for (unsigned int val : scaffLGstars) {
-                std::cout<<output("Scaffold LG"+std::to_string(pos*10))<<val<<std::endl;
+                std::cout<<output("Scaffold LG"+std::to_string(pos*10))<<val<<"\n";
                 pos++;
             }
             
@@ -680,14 +685,14 @@ public:
         pos = 1;
         std::vector <unsigned int> contigNstars = inSequences.getContigNstars();
         for (unsigned int val : contigNstars) {
-            std::cout<<output("Contig N"+std::to_string(pos*10))<<val<<std::endl;
+            std::cout<<output("Contig N"+std::to_string(pos*10))<<val<<"\n";
             pos++;
         }
         
         pos = 1;
         std::vector <unsigned int> contigLstars = inSequences.getContigLstars();
         for (unsigned int val : contigLstars) {
-            std::cout<<output("Contig L"+std::to_string(pos*10))<<val<<std::endl;
+            std::cout<<output("Contig L"+std::to_string(pos*10))<<val<<"\n";
             pos++;
         }
         
@@ -696,14 +701,14 @@ public:
             pos = 1;
             std::vector <unsigned int> contigNGstars = inSequences.getContigNGstars();
             for (unsigned int val : contigNGstars) {
-                std::cout<<output("Contig NG"+std::to_string(pos*10))<<val<<std::endl;
+                std::cout<<output("Contig NG"+std::to_string(pos*10))<<val<<"\n";
                 pos++;
             }
             
             pos = 1;
             std::vector <unsigned int> contigLGstars = inSequences.getContigLGstars();
             for (unsigned int val : contigLGstars) {
-                std::cout<<output("Contig LG"+std::to_string(pos*10))<<val<<std::endl;
+                std::cout<<output("Contig LG"+std::to_string(pos*10))<<val<<"\n";
                 pos++;
             }
             
@@ -712,14 +717,14 @@ public:
         pos = 1;
         std::vector <unsigned int> gapNstars = inSequences.getGapNstars();
         for (unsigned int val : gapNstars) {
-            std::cout<<output("Gap N"+std::to_string(pos*10))<<val<<std::endl;
+            std::cout<<output("Gap N"+std::to_string(pos*10))<<val<<"\n";
             pos++;
         }
         
         pos = 1;
         std::vector <unsigned int> gapLstars = inSequences.getGapLstars();
         for (unsigned int val : gapLstars) {
-            std::cout<<output("Gap L"+std::to_string(pos*10))<<val<<std::endl;
+            std::cout<<output("Gap L"+std::to_string(pos*10))<<val<<"\n";
             pos++;
         }
         

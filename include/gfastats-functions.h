@@ -106,7 +106,7 @@ bool determineGzip(std::string iFastaFileArg) { // check first two bytes for gzi
     std::ifstream stream(iFastaFileArg);
     
     unsigned char buffer[2];
-    stream.read((char*)(&buffer[0]), 2) ;
+    stream.read((char*)(&buffer[0]), 2);
     
     stream.clear();
     stream.seekg(0, stream.beg);
@@ -129,7 +129,6 @@ void textWrap(std::string input, std::ostream& output, int width) { // generic t
     
     std::string tmp;
     char cur = '\0';
-    char last = '\0';
     int i = 0;
     
     std::stringstream ss(input);
@@ -149,7 +148,7 @@ void textWrap(std::string input, std::ostream& output, int width) { // generic t
         }
         
         tmp += cur;
-        last = cur;
+        
     }
     
     output << tmp;
@@ -175,7 +174,7 @@ std::string getFileExt(const std::string& FileName) // utility to get file exten
     return "";
 }
 
-std::string reverse(std::string seq) { // reverse complement
+std::string revCom(std::string seq) { // reverse complement
     auto lambda = [](const char c) {
         switch (c) {
         case 'A':
@@ -190,14 +189,23 @@ std::string reverse(std::string seq) { // reverse complement
         case 'n':
         case 'X':
         case 'x':
-            return 'N';
+            return c;
         default:
             throw std::domain_error("Invalid nucleotide.");
         }
     };
 
     std::transform(seq.cbegin(), seq.cend(), seq.begin(), lambda);
+    reverse(seq.begin(), seq.end());
     return seq;
+}
+
+std::string rev(std::string seq) { // reverse string
+    
+    reverse(seq.begin(), seq.end());
+ 
+    return seq;
+    
 }
 
 #endif /* gfastats-Functions_h */
