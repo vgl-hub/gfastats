@@ -50,11 +50,6 @@ public:
         counter = 0;
         
         return true;
-//          for the scaff report
-//        std::cout<<output("# contig")<<inSegment.getContigN()<<"\n";
-//        std::cout<<output("Total sequence length")<<inSegment.getSegmentLength()<<"\n";
-//        std::cout<<output("Total gap length")<<inSegment.getGapSum()<<"\n";
-//        std::cout<<output("# gaps")<<inSegment.getGapN()<<"\n";
         
     }
     
