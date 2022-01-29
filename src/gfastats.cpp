@@ -29,8 +29,8 @@ int main(int argc, char **argv) {
     
     if (argc == 1) { // gfastats with no arguments
             
-            printf("gfastats input.[fasta|fastq|gfa][.gz] [genome size] [header[:start-end]]\n-h for additional help.\n");
-            exit(0);
+        printf("gfastats input.[fasta|fastq|gfa][.gz] [expected genome size] [header[:start-end]]\n-h for additional help.\n");
+        exit(0);
         
     }
     
@@ -234,7 +234,7 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'h': // help
-                printf("gfastats input.[fasta|fastq|gfa][.gz] [genome size] [header[:start-end]]\n");
+                printf("gfastats input.[fasta|fastq|gfa][.gz] [expected genome size] [header[:start-end]]\n");
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("\nOptions:\n");
