@@ -4,7 +4,7 @@ The swiss army knife for genome assembly.
 **gfastats** is a single fast and exhaustive tool for **summary statistics** and simultaneous \*fa\* (fasta, fastq, gfa [.gz]) genome assembly file **manipulation**.
 **gfastats** also allows seamless fasta<>fastq<>gfa[.gz] conversion.
 
-Metrics include:
+Typical fast\* metrics include:
 - scaffold, contig and gap size
 - number of scaffolds, contigs and gaps
 - total length of scaffolds, contigs and gaps
@@ -14,6 +14,9 @@ Metrics include:
 - largest scaffold, contig and gap
 - base composition and GC content
 - soft-masked base counts (lower case bases)
+
+Typical gfa metrics include:
+- 
 
 Metrics for each scaffold/contig can be generated with the `--seq-report` flag.
 
@@ -28,6 +31,7 @@ Either download one of the releases or `git clone https://github.com/vgl-hub/gfa
 
 ## Usage
 `gfastats input.[fasta|fastq|gfa][.gz] [expected genome size] [header[:start-end]]`
+
 To check out all option use `gfastats -h`.
 
 ## Assembly manipulation
