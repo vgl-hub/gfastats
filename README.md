@@ -55,7 +55,7 @@ The *instructions* directly provide the list of edits that were introduced. The 
 Please refer to **gfastats** paper for a complete description. Briefly, **gfastats** reads and stores any fasta<>fastq<>gfa[.gz] in gfa format. **gfastats** then builds a bidirected graph representation of the assembly using adjacency lists, where each node is a segment, and each edge is a gap (see figure below). The original sequence can be directly manipulated from the graph. Finally, walking the graph allows to generate different kinds of outputs, including manipulated assemblies and feature coordinates.
 
 <p align="center">
-![alt gfastats assembly graph](images/graph.png)
+    <img src="images/graph.png" alt="alt gfastats assembly graph" />
 </p>
 
 ## How to cite
