@@ -16,7 +16,7 @@ Typical fast\* metrics include:
 - soft-masked base counts (lower case bases)
 
 Typical gfa metrics include:
-- 
+- Number of nodes and edges
 
 Metrics for each scaffold/contig can be generated with the `--seq-report` flag.
 
@@ -42,7 +42,7 @@ JOIN contig1+ contig2+ 50 // creates a new gap edge of 50 bp between contig1 and
 SPLIT contig1+ contig2+ // splits the scaffold containing contig1 and contig2, effectively removing the existing gap between them
 REMOVE contig1 // removes contig1 from its scaffold, effectively splitting the scaffold in two
 DELETE contig1:10-100 // deletes contig1 sequence between the coordinates provided (in bed format)
-REPLACE contig1:20-24 ACGT // replaces the sequence at coordinates contig1:20-24 with ACGT
+<!--<!--<!--REPLACE contig1:20-24 ACGT // replaces the sequence at coordinates contig1:20-24 with ACGT-->-->-->
 EXCISE contig1 50 // removes contig1 from the scaffold, leaving a 50 bp gap between the original sequences
 INVERT contig1 // inverts contig1 sequence in place
 RVCP contig1 // reverse-complement contig1 sequence in place
