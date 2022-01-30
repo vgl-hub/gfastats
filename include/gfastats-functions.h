@@ -5,8 +5,8 @@
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef gfastatsFunctions_h
-#define gfastatsFunctions_h
+#ifndef GFASTATS_FUNCTIONS_H
+#define GFASTATS_FUNCTIONS_H
 
 //typedef
 typedef std::tuple<char, unsigned long long int, char, unsigned long long int> Tuple;
@@ -208,4 +208,4 @@ std::string rev(std::string seq) { // reverse string
     
 }
 
-#endif /* gfastats-Functions_h */
+#endif /* GFASTATS_FUNCTIONS_H */

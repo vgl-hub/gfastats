@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
     int splitLength = 0; // line length for fasta output
     
     std::string iSeqFileArg; // input file to evaluate
+    std::string iSakFileArg; // input of instructions for the swiss army knife
     std::string iBedIncludeFileArg; // input bed file of coordinates to include
     std::string iBedExcludeFileArg; // input bed file of coordinates to exclude
     
@@ -36,6 +37,9 @@ int main(int argc, char **argv) {
     
     static struct option long_options[] = { // struct mapping long options
         {"input-sequence", required_argument, 0, 'f'},
+        
+        {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
+        
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},
  
@@ -61,7 +65,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:b:e:f:i:o:s:tvh",
+        c = getopt_long(argc, argv, "-:k:b:e:f:i:o:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) { // if pipe wasn't assigned already
@@ -215,6 +219,21 @@ int main(int argc, char **argv) {
                 stats_flag = 1;
                 break;
                 
+            case 'k': // the swiss army knife
+                
+                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                
+                    pipeType = 'k'; // pipe input is a set of instructions for the swiss army knife
+                
+                }else{ // input is a regular file
+                    
+                    ifFileExists(optarg);
+                    iSakFileArg = optarg;
+                    
+                }
+                    
+                stats_flag = 1;
+                break;
             case 'o': // handle output (file or stdout)
                 outSeq = optarg;
                 outFile_flag = 1;
@@ -285,7 +304,7 @@ int main(int argc, char **argv) {
     
     verbose(verbose_flag, "Sequence object generated");
     
-    inSequences = inFile.readFiles(iSeqFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType); // read the sequence input file object into the sequence collection object
+    inSequences = inFile.readFiles(iSeqFileArg, iSakFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType); // read the sequence input file object into the sequence collection object
     
     verbose(verbose_flag, "Finished reading sequences from file to sequence object");
     

@@ -5,8 +5,8 @@
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef gfastatsGlobal_h
-#define gfastatsGlobal_h
+#ifndef GFASTATS_GLOBAL_H
+#define GFASTATS_GLOBAL_H
 
 //global
 static auto start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
@@ -23,6 +23,4 @@ static int outFile_flag;
 static int stats_flag;
 static int cmd_flag;
 
-const int PRIME_CONST = 31; // hash constant
-
-#endif /* gfastats-global_h */
+#endif /* GFASTATS_GLOBAL_H */

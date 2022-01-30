@@ -1,12 +1,12 @@
 //
-//  gfastats-classes.h
+//  gfastats-output.h
 //  
 //
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef gfastatsoutput_h
-#define gfastatsoutput_h
+#ifndef GFASTATS_OUTPUT_H
+#define GFASTATS_OUTPUT_H
 
 //classes
 class Report {
@@ -147,11 +147,12 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
+                verbose(verbose_flag, "Graph DFS");
+                
                 for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
-                        verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         seqHeader = inSequences.getInSegment(i).getSeqHeader();
@@ -254,7 +255,7 @@ public:
                 
             case 0: { // undefined case
                 
-                std::cout<<"Unrecognized output: "<<outSeq;
+                std::cout<<"Unrecognized output format: "<<outSeq;
                 
                 break;
                 
@@ -735,5 +736,4 @@ public:
     
 };
 
-
-#endif /* gfastats-output_h */
+#endif /* GFASTATS_OUTPUT_H */

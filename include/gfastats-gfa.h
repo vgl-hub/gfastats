@@ -1,12 +1,12 @@
 //
-//  gfastats-classes.h
+//  gfastats-gfa.h
 //  
 //
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef gfastatscommons_h
-#define gfastatscommons_h
+#ifndef GFASTATS_GFA_H
+#define GFASTATS_GFA_H
 
 //classes
 class BedCoordinates { // generic representation of bed coordinates
@@ -182,16 +182,16 @@ public:
 class InGap {
 private:
     unsigned long long int lineN; // useful if we wish to sort as is the original input
-    std::string gId, sHeader1, sHeader2;
+    std::string sHeader1, sHeader2;
     char sId1Or, sId2Or;
-    unsigned int sId1, sId2, dist;
+    unsigned int gId, sId1, sId2, dist;
     int counter = 0;
     
     friend class SAK;
     friend class InSequences;
     
 public:
-    void newGap(std::string gid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d) {
+    void newGap(unsigned int gid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d) {
         
         gId = gid;
         sId1 = sid1;
@@ -206,9 +206,9 @@ public:
         
         lineN = *lN;
         
-        gId = strtok(strdup((*newLine).c_str()),"\t"); // strip G
+        strtok(strdup((*newLine).c_str()),"\t"); // strip G
         
-        gId = strtok(NULL,"\t");
+        gId = atoi(strtok(NULL,"\t"));
         
         std::string c = strtok(NULL,"\t");
         
@@ -241,7 +241,7 @@ public:
         
     }
     
-    std::string getgId() {
+    unsigned int getgId() {
         
         return gId;
         
@@ -543,11 +543,12 @@ public:
                 addSegment(segUniqN, segN, seqHeader, seqComment, &sequenceSubSeq, &A, &C, &G, &T, &lowerCount, &sequenceQualitySubSeq);
                 pushbackSegment = false;
                 
+                insertHash(*seqHeader+"."+std::to_string(segN), segUniqN); // header to hash table
+                
                 A = 0, C = 0, G = 0, T = 0;
                 
                 segN++;
                 segUniqN++;
-                
                 
             }
             if (pushbackGap) {
@@ -558,7 +559,7 @@ public:
                     
                 }
                 
-                gap.newGap(*seqHeader + "." + std::to_string(gapN), pos == seqLen ? segUniqN-n : segUniqN-1, (pos == seqLen || pos - dist == 0) ? segUniqN-1 : segUniqN, '+', sign, dist);
+                gap.newGap(gapN, pos == seqLen ? segUniqN-n : segUniqN-1, (pos == seqLen || pos - dist == 0) ? segUniqN-1 : segUniqN, '+', sign, dist);
                 
                 appendGap(gap);
                 
@@ -1081,6 +1082,8 @@ public:
         verbose(verbose_flag, "Increased total gap length");
         
         inGaps.push_back(inGap);
+
+        verbose(verbose_flag, "Gap added to gap vector");
         
         return true;
         
@@ -1105,7 +1108,7 @@ public:
 
     }
     
-    void headersTosIds() {
+    void setGapIds() { // first assignment, when reading gfa input
         
         for (unsigned int i = 0; i != inGaps.size(); ++i) {
             
@@ -1118,7 +1121,10 @@ public:
     void buildGraph(std::vector<InGap> const& edges) // graph Constructor
     {
         
-        verbose(verbose_flag, "Building graph");
+        verbose(verbose_flag, "Started graph construction");
+        
+        adjListFW.clear();
+        adjListBW.clear();
         
         adjListFW.resize(inSegments.size()); // resize the vertex vector to hold `n` elements
         adjListBW.resize(inSegments.size()); // resize the vertex vector to hold `n` elements
@@ -1134,12 +1140,20 @@ public:
         
         verbose(verbose_flag, "Graph built");
         
+        assignSegmentIds();
+        
+    }
+    
+    void assignSegmentIds() { // (re)assignment, whenever the graph is built or modified
+        
         unsigned int sId = 0, i = 0;
+        
+        visited.clear();
         
         for (InSegment inSegment : inSegments) {// loop through all nodes
             
             if (!visited[i]) { // if the node was not visited yet
-            
+                
                 dfsPos(i, &sId); // start from the first node and try to assign sId = 0
             
                 sId = 0;
@@ -1163,6 +1177,8 @@ public:
         (*sId)++; // increase the counter
         
         inSegments[v].setsId(*sId); // set the sId for the node
+        
+        verbose(verbose_flag, "Assigned node internal id: " + std::to_string(*sId));
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
@@ -1254,6 +1270,8 @@ public:
         visited[v] = true; // mark the current node as visited
         std::string inSequenceNext;
         std::string inSequenceQualityNext;
+        
+        verbose(verbose_flag, std::to_string(adjListFW.at(v).size()) + " " + std::to_string(adjListBW.at(v).size()));
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
@@ -1626,20 +1644,4 @@ public:
     
 };
 
-class SAK { // the swiss army knife
-private:
-    InSequences inSequences;
-    InSegment inSegment1, inSegment2, inSegmentNew;
-    std::string sId1Header, sId2Header;
-    
-public:
-    
-    bool joinByGap(InSequences &inSequences) { // joins two sequences via a gap based on instruction in gfa format
-        
-        return true;
-        
-    }
-    
-};
-
-#endif /* gfastats-commons_h */
+#endif /* GFASTATS_GFA_H */

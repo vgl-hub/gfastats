@@ -5,8 +5,8 @@
 //  Created by Giulio Formenti on 1/16/22.
 //
 
-#ifndef gfastats_input_h
-#define gfastats_input_h
+#ifndef GFASTATS_INPUT_H
+#define GFASTATS_INPUT_H
 
 class InFile {
     
@@ -18,13 +18,39 @@ class InFile {
     
 public:
     
-    InSequences readFiles(std::string &iSeqFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType) {
+    InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
         
         std::unique_ptr<std::istream> stream;
         
+        std::vector<Instruction> instructions;
+        
         unsigned int idx = 0, begin = 0, end = 0;
+ 
+        if (!iSakFileArg.empty() || (isPipe && (pipeType == 'k'))) {
+            
+            if (isPipe && (pipeType == 'k')) {
+                
+                stream = make_unique<std::istream>(std::cin.rdbuf());
+                
+            }else{
+                
+                stream = make_unique<std::ifstream>(std::ifstream(iSakFileArg));
+                
+            }
+            
+            SAK sak; // create a new swiss army knife
+            
+            while (getline(*stream, line)) {
+                
+                std::istringstream iss(line);
+                
+                instructions.push_back(sak.readInstruction(line)); // use the swiss army knife to read the instruction
+                
+            }
+            
+        }
         
         if (!iBedIncludeFileArg.empty() || (isPipe && (pipeType == 'i'))) {
             
@@ -330,8 +356,6 @@ public:
                             
                         }
                         
-                        inSequences.headersTosIds();  // assign sIds to all headers in gaps
-                        
                     }else if (version[0] == '1') {
                     
                         while (getline(*stream, newLine)) {
@@ -388,12 +412,30 @@ public:
                 
             }
             
+            verbose(verbose_flag, "\nUpdating statistics");
+            
             inSequences.updateStats();
             
         }else{
 
             printf("Stream not successful: %s", iSeqFileArg.c_str());
 
+        }
+        
+        if (!instructions.empty()) {
+            
+            verbose(verbose_flag, "\nStarted instruction execution");
+        
+            SAK sak; // create a new swiss army knife
+            
+            for (Instruction instruction : instructions) { // execute swiss army knife instructions
+                
+                sak.executeInstruction(inSequences, instruction);
+                
+                verbose(verbose_flag, instruction.action + " instruction executed");
+                
+            }
+        
         }
         
         return inSequences;
@@ -597,4 +639,4 @@ public:
     
 };
 
-#endif /* gfastats_input_h */
+#endif /* GFASTATS_INPUT_H */

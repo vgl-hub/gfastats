@@ -5,8 +5,8 @@
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef gfastats_h
-#define gfastats_h
+#ifndef GFASTATS_H
+#define GFASTATS_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,6 +24,7 @@
 #include <algorithm> //required for zstream
 #include <cstring> //required for zstream
 #include <tuple> // for graph manipulation
+#include <cctype> // toupper()
 
 #include <chrono>
 #include <memory>
@@ -37,8 +38,11 @@
 
 #include "gfastats-global.h" // global variables
 #include "gfastats-functions.h" // global functions
-#include "gfastats-commons.h" // common classes
+
+#include "gfastats-gfa.h" // gfa classes
+#include "gfastats-sak.h" // swiss army knife classes
+
 #include "gfastats-input.h" // input classes
 #include "gfastats-output.h" // output classes
 
-#endif /* gfastats_h */
+#endif /* GFASTATS_H */
