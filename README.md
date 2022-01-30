@@ -1,6 +1,6 @@
 # gfastats
-A single fast and exhaustive tool to compute summary statistics and simultaneously manipulate \*fast\* (fasta, fastq, gfa [.gz]) files.
-It also allows seamless fasta<>fastq<>gfa[.gz] conversion.
+A single fast and exhaustive tool for **summary statistics** and simultaneous \*fast\* (fasta, fastq, gfa [.gz]) genome assembly file **manipulation**.
+**gfastats** also allows seamless fasta<>fastq<>gfa[.gz] conversion.
 
 Metrics include:
 - scaffold, contig and gap size
@@ -15,7 +15,7 @@ Metrics include:
 
 Metrics for each scaffold/contig can be generated with the `--seq-report` flag.
 
-Coordinates ans sizes of scaffolds, contigs and gaps can be outputted with the option `--out-coord` and `--out-size`.
+`Bed` coordinates ans sizes of scaffolds, contigs and gaps can be outputted with the options `--out-coord` and `--out-size`. By default, `--out-coord` produces a full representation of the assembly in `agp` format.
 
 Additionally, input can be filtered using scaffold lists or `bed` coordinate files with the options `--include-bed` and `--exclude-bed`.
 
@@ -28,5 +28,10 @@ Either download one of the releases or `git clone https://github.com/vgl-hub/gfa
 `gfastats input.[fasta|fastq|gfa][.gz] [expected genome size] [header[:start-end]]`
 To check out all option use `gfastats -h`.
 
-##Description
+## Description
+Please refer to **gfastats** paper for a complete description. Briefly, **gfastats** reads and stores any fasta<>fastq<>gfa[.gz] in gfa format. **gfastats** then builds a bidirected graph representation of the assembly using adjaciency lists, where each node is a segment and each edge is a gap (see figure below). The original sequence can be directly manipulated from the graph. Finally, walking the graph allows to generate different kinds of outputs, including manipulated assemblies and feature coordinates.
+
+## How to cite
+If you use **gfastats** in your work please cite:
+
  
