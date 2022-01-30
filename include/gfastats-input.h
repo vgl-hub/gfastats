@@ -414,7 +414,7 @@ public:
             
             verbose(verbose_flag, "\nUpdating statistics");
             
-            inSequences.updateStats();
+            inSequences.updateBaseCounts();
             
         }else{
 

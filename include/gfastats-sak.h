@@ -128,22 +128,20 @@ public:
         
         
 //        if (instruction.scaffold1 != "") {
-//         
+//
 //            inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].seqHeader = instruction.scaffold1;
-//            
+//
 //        }
 //
 //        if (instruction.comment1 != "") {
-//         
+//
 //            inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].seqComment = instruction.comment1;
-//            
+//
 //        }
         
         inSequences.gapUniqN++;
         
         inSequences.appendGap(gap); // introduce the new gap
-        
-        inSequences.buildGraph(inSequences.getGaps()); // build the new graph
         
         return true;
         

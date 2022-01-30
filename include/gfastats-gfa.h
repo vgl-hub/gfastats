@@ -607,7 +607,7 @@ public:
         
     }
     
-    bool updateStats() {
+    bool updateBaseCounts() {
         
         for (InSegment inSegment : inSegments) {
             
