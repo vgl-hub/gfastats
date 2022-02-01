@@ -149,7 +149,7 @@ public:
                 
                 verbose(verbose_flag, "Graph DFS");
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
+                for (unsigned int i = 0; i != inSequences.getInSegments().size(); ++i) { // loop through all edges
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
                         
@@ -209,6 +209,8 @@ public:
                 
                 std::string seqHeader;
                 
+                std::unordered_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
+                
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
@@ -219,7 +221,7 @@ public:
                     seqHeader = inSegment.getSeqHeader();
                     
                     *stream <<"S\t" // line type
-                            <<seqHeader<<"."<<inSegment.getsId()<<"\t" // header
+                            <<seqHeader<<"\t" // header
                             <<inSegment.getSegmentLen()<<"\t" // seq length
                             <<inSegment.getInSequence(); // sequence
                     
@@ -243,8 +245,8 @@ public:
                     
                     *stream <<"G\t" // line type
                             <<inGap.getgId()<<"\t" // id
-                            <<inSequences.getInSegment(inGap.getsId1()).getSeqHeader()<<"."<<inSequences.getInSegment(inGap.getsId1()).getsId()<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
-                            <<inSequences.getInSegment(inGap.getsId2()).getSeqHeader()<<"."<<inSequences.getInSegment(inGap.getsId2()).getsId()<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
+                            <<idsToHeaders[inGap.getsId1()]<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
+                            <<idsToHeaders[inGap.getsId2()]<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
                             <<inGap.getDist()<<"\n"; // size
                     
                 }

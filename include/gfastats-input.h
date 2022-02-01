@@ -250,13 +250,21 @@ public:
                 }
                 default: {
                     
-                    std::string h_col1, h_col2, h_col3, s, version;
-                    char* v;
+                    std::string h_col1, h_col2, h_col3, s, version, gHeader;
+                    char* v, sId1Or, sId2Or;
                     
-                    InGap inGap;
+                    InGap gap;
+                    unsigned int sId1 = 0, sId2 = 0, dist = 0;
+                    std::unordered_map<std::string, unsigned int> hash;
+                    std::unordered_map<std::string, unsigned int>::const_iterator got;
                     
-                    unsigned long long int lineN = 1;
-                    unsigned long long int seqN = 0;
+                    unsigned int lineN = 1;
+                    unsigned int seqN = 0, gapN = 0;
+                    
+                    std::string delimiter = "\t";
+                    std::vector<std::string> arguments;
+                    
+                    size_t pos = 0;
                     
                     h_col1 = std::string(strtok(strdup(firstLine.c_str()),"\t")); // process first line
                     
@@ -331,10 +339,8 @@ public:
                                         
                                     }
                                     
-                                    inSequences.insertHash(seqHeader, seqN); // header to hash table
+                                    includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                                     
-                                    includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
-                                    seqN++;
                                     lineN++;
                                     
                                     break;
@@ -342,10 +348,81 @@ public:
                                 }
                                 case 'G': {
                                     
-                                    inGap.readLine(&newLine, &lineN);
+                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
+                                        
+                                        arguments.push_back(newLine.substr(0, pos));
+                                        
+                                        newLine.erase(0, pos + delimiter.length());
                                     
-                                    inSequences.appendGap(inGap);
+                                    }
                                     
+                                    arguments.push_back(newLine); // last column
+                                    
+                                    sId1Or = arguments[2].back(); // get sequence orientation in the gap
+                                    
+                                    seqHeader = std::string(arguments[2]);
+                                    seqHeader.pop_back();
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        seqN = inSequences.getSegUniqN();
+                                        
+                                        inSequences.insertHash1(seqHeader, seqN); // header to hash table
+                                        inSequences.insertHash2(seqN, seqHeader); // header to hash table
+                                    
+                                        sId1 = seqN;
+                                        
+                                        seqN++;
+                                        
+                                        inSequences.setSegUniqN(seqN); // we have touched a segment need to increase the unique segment counter
+                                        
+                                    }else{
+                                        
+                                        sId1 = got->second;
+                                        
+                                    }
+                                    
+                                    sId2Or = arguments[3].back(); // get sequence orientation in the gap
+                                    
+                                    seqHeader = arguments[3];
+                                    seqHeader.pop_back();
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        seqN = inSequences.getSegUniqN();
+                                        
+                                        inSequences.insertHash1(seqHeader, seqN); // header to hash table
+                                        inSequences.insertHash2(seqN, seqHeader); // header to hash table
+                                    
+                                        sId2 = seqN;
+                                        
+                                        seqN++;
+                                        
+                                        inSequences.setSegUniqN(seqN); // we have touched a segment need to increase the unique segment counter
+                                        
+                                    }else{
+                                        
+                                        sId2 = got->second;
+                                        
+                                    }
+                                    
+                                    dist = stoi(arguments[4]);
+                                    
+                                    gap.newGap(gapN, sId1, sId2, sId1Or, sId2Or, dist);
+                                    
+                                    inSequences.appendGap(gap);
+                                    
+                                    arguments.clear();
+                                    
+                                    gapN++;
                                     lineN++;
                                                  
                                     break;
@@ -379,7 +456,8 @@ public:
                                         
                                     }
                                     
-                                    inSequences.insertHash(seqHeader, seqN); // header to hash table
+                                    inSequences.insertHash1(seqHeader, seqN); // header to hash table
+                                    inSequences.insertHash2(seqN, seqHeader); // header to hash table
                                     
                                     includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                                     seqN++;
@@ -388,13 +466,7 @@ public:
                                     break;
                                     
                                 }
-                                case 'G': {
-                                    
-                                    inGap.readLine(&newLine, &lineN);
-                                    
-                                    inSequences.appendGap(inGap);
-                                    
-                                    lineN++;
+                                default: {
                                     
                                     break;
                                     
@@ -632,6 +704,150 @@ public:
                  std::find(bedExcludeListHeaders.begin(), bedExcludeListHeaders.end(), *seqHeader) == bedExcludeListHeaders.end()) {
                     
                     inSequences->appendSequence(seqHeader, seqComment, inSequence, inSequenceQuality);
+                    
+        }
+        
+    }
+    
+    void includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL) {
+ 
+        bedIncludeListHeaders = bedIncludeList.getSeqHeaders();
+        bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
+        bool outSeq;
+        
+        if   (bedIncludeList.empty() &&
+              bedExcludeList.empty()) {
+            
+            inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
+            
+        }else if
+            (!bedIncludeList.empty() &&
+             bedExcludeList.empty()) {
+            
+            offset = 0, prevCEnd = 0;
+            outSeq = false;
+            
+            auto it = begin(bedIncludeListHeaders);
+            
+            while (it != end(bedIncludeListHeaders)) {
+                
+                it = std::find(it, bedIncludeListHeaders.end(), *seqHeader);
+                
+                if (it == end(bedIncludeListHeaders) || bedIncludeList.getSeqHeader(pos) != *seqHeader) {
+                    
+                    break;
+                    
+                }
+                
+                outSeq = true;
+
+                cBegin = bedIncludeList.getcBegin(pos);
+                cEnd = bedIncludeList.getcEnd(pos);
+                
+                if (!(cBegin == 0 && cEnd == 0)) {
+                    
+                    inSequence->erase(offset, cBegin-prevCEnd);
+                    
+                    if (inSequenceQuality != NULL) {
+                    
+                        inSequenceQuality->erase(offset, cBegin-prevCEnd);
+                    
+                    }
+                        
+                    offset += cEnd-cBegin;
+                    prevCEnd = cEnd;
+                    
+                }
+              
+                ++it;
+                pos++;
+                
+            }
+                
+            if (outSeq && inSequence->size()>0) {
+                
+                if (offset>0) {
+                
+                    inSequence->erase(offset, inSequence->size()-offset);
+                    
+                    if (inSequenceQuality != NULL) {
+                    
+                        inSequenceQuality->erase(offset, inSequenceQuality->size()-offset);
+                        
+                    }
+                    
+                }
+                
+                inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
+            
+            }else {
+                
+                verbose(verbose_flag, "Scaffold entirely removed as a result of include: " + *seqHeader);
+                
+            }
+                
+        }else if
+            (bedIncludeList.empty() &&
+             !bedExcludeList.empty()) {
+                
+            offset = 0;
+            outSeq = true;
+            
+            auto it = begin(bedExcludeListHeaders);
+            
+            while (it != end(bedExcludeListHeaders)) {
+                
+                it = std::find(it, bedExcludeListHeaders.end(), *seqHeader);
+                
+                if (it == end(bedExcludeListHeaders) || bedExcludeList.getSeqHeader(pos) != *seqHeader) {
+                    
+                    break;
+                    
+                }
+
+                cBegin = bedExcludeList.getcBegin(pos);
+                cEnd = bedExcludeList.getcEnd(pos);
+                
+                if (!(cBegin == 0 && cEnd == 0)) {
+                    
+                    inSequence->erase(cBegin-offset, cEnd-cBegin);
+                    
+                    if (inSequenceQuality != NULL) {
+                    
+                        inSequenceQuality->erase(cBegin-offset, cEnd-cBegin);
+                        
+                    }
+                        
+                    offset += cEnd-cBegin;
+                    
+                }else{
+                    
+                    outSeq = false;
+                    
+                }
+              
+                ++it;
+                pos++;
+                
+            }
+                
+            if (outSeq && inSequence->size()>0) {
+            
+                inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
+            
+            }else {
+                
+                verbose(verbose_flag, "Scaffold entirely removed as a result of exclude: " + *seqHeader);
+                
+            }
+                    
+        }else if
+                (!bedIncludeList.empty() &&
+                 !bedExcludeList.empty() &&
+                 std::find(bedIncludeListHeaders.begin(), bedIncludeListHeaders.end(), *seqHeader) != bedIncludeListHeaders.end() &&
+                 std::find(bedExcludeListHeaders.begin(), bedExcludeListHeaders.end(), *seqHeader) == bedExcludeListHeaders.end()) {
+                    
+                    inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
                     
         }
         
