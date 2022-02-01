@@ -358,6 +358,8 @@ public:
                                     
                                     arguments.push_back(newLine); // last column
                                     
+                                    gHeader = arguments[1];
+                                    
                                     sId1Or = arguments[2].back(); // get sequence orientation in the gap
                                     
                                     seqHeader = std::string(arguments[2]);
@@ -416,7 +418,7 @@ public:
                                     
                                     dist = stoi(arguments[4]);
                                     
-                                    gap.newGap(gapN, sId1, sId2, sId1Or, sId2Or, dist);
+                                    gap.newGap(gapN, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
                                     
                                     inSequences.appendGap(gap);
                                     

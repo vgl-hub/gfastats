@@ -182,6 +182,7 @@ public:
 class InGap {
 private:
 //    unsigned long long int lineN; // useful if we wish to sort as is the original input
+    std::string gHeader;
     char sId1Or, sId2Or;
     unsigned int gUId, gId, sId1, sId2, dist;
     
@@ -189,8 +190,9 @@ private:
     friend class InSequences;
     
 public:
-    void newGap(unsigned int gid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d) {
+    void newGap(unsigned int gid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d, std::string gheader = NULL) {
         
+        gHeader = gheader;
         gId = gid;
         sId1 = sid1;
         sId2 = sid2;
@@ -214,6 +216,12 @@ public:
     
     void setsId2(unsigned int i) { // temporary id, internal to scaffold
         sId2 = i;
+    }
+    
+    std::string getgHeader() {
+        
+        return gHeader;
+        
     }
     
     unsigned int getgId() {
@@ -536,7 +544,7 @@ public:
                     
                 }
                 
-                gap.newGap(gapN, pos == seqLen ? segUniqN-n : segUniqN-1, (pos == seqLen || pos - dist == 0) ? segUniqN-1 : segUniqN, '+', sign, dist);
+                gap.newGap(gapN, pos == seqLen ? segUniqN-n : segUniqN-1, (pos == seqLen || pos - dist == 0) ? segUniqN-1 : segUniqN, '+', sign, dist, *seqHeader+"."+std::to_string(gapN));
                 
                 appendGap(gap);
                 

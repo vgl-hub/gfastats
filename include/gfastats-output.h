@@ -207,7 +207,7 @@ public:
                 
             case 3: { // gfa[.gz]
                 
-                std::string seqHeader;
+                std::string seqHeader, gHeader;
                 
                 std::unordered_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
                 
@@ -243,8 +243,18 @@ public:
                 
                 for (InGap inGap : inSequences.getGaps()) {
                     
+                    if (inGap.getgHeader() == "") {
+                        
+                        gHeader = inGap.getgId();
+                        
+                    }else{
+                        
+                        gHeader = inGap.getgHeader();
+                        
+                    }
+                    
                     *stream <<"G\t" // line type
-                            <<inGap.getgId()<<"\t" // id
+                            <<gHeader<<"\t" // id
                             <<idsToHeaders[inGap.getsId1()]<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
                             <<idsToHeaders[inGap.getsId2()]<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
                             <<inGap.getDist()<<"\n"; // size
