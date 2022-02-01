@@ -40,16 +40,9 @@ To check out all options and flags use `gfastats -h`.
 ```
 JOIN contig1+ contig2+ 50 [scaffold1] [this is a new scaffold] // introduces a new gap of 50 bp between scaffold1 and scaffold2, effectively joining the two sequences into a new sequences named scaffold1 with an optional comment
 SPLIT contig1+ contig2+ // splits the scaffold containing contig1 and contig2, effectively removing the existing gap between them
-REMOVE contig1 // removes contig1 from its scaffold, effectively splitting the scaffold in two
-DELETE contig1:10-100 // deletes contig1 sequence between the coordinates provided (in bed format)
-ADD contig3 contig1+ 50 contig2+ 50 ACGT // introduces a new contig named contig3 with sequence ACGT between contig1 and contig2 leaving 50bp gaps on each side
-REPLACE contig1:20-24 ACGT // replaces the sequence at coordinates contig1:20-24 with ACGT
-EXCISE contig1 50 // removes contig1 from the scaffold, leaving a 50 bp gap between the original sequences
-INVERT contig1 // inverts contig1 sequence in place
-RVCP contig1 // reverse-complement contig1 sequence in place
 ```
 
-The *instructions* directly provide the list of edits that were introduced. The *instructions* could be from an automated tool or from manual annotation. See this wiki for a full list of *instructions*.
+The *instructions* directly provide the list of edits that were introduced. The *instructions* could be from an automated tool or from manual annotation. See the <a href="instructions/">instruction wiki</a> for a full list of *instructions*.
 
 ## Description
 Please refer to **gfastats** paper for a complete description. Briefly, **gfastats** reads and stores any fasta<>fastq<>gfa[.gz] in gfa format. **gfastats** then builds a bidirected graph representation of the assembly using adjacency lists, where each node is a segment, and each edge is a gap (see figure below). The original sequence can be directly manipulated from the graph. Finally, walking the graph allows to generate different kinds of outputs, including manipulated assemblies and feature coordinates.
