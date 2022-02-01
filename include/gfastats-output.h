@@ -233,7 +233,7 @@ public:
                     
                     if (inSegment.getInSequenceQuality() != "") {
                         
-                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional comment
+                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional quality
                         
                     }
                     
@@ -552,19 +552,13 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
+                for (unsigned int i = 0; i != inSequences.getInSegments().size(); ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
                     seqHeader = inSequences.getInSegment(i).getSeqHeader();
                     
                     if (!inSequences.getVisited(i)) { // check if the node was already visited
-                        
-                        if (inSequences.getAdjListFW().at(i).size() == 0 && inSequences.getAdjListBW().at(i).size() == 0) { // handle disconnected components
-                            
-                            std::cout<<seqHeader<<"\t1\t"<<inSequences.getInSegment(i).getInSequence().size()<<"\t1\t"<<"W"<<"\t"<<seqHeader<<"\t1\t"<<inSequences.getInSegment(i).getInSequence().size()<<"\t+"<<"\n";
-                            
-                        }else{
                             
                             cStart = 1, cEnd = 1;
                             
@@ -574,8 +568,6 @@ public:
                         
                             std::cout<<outAgp;
                         
-                        }
-                    
                     }
                     
                     outAgp="";

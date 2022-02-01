@@ -96,6 +96,8 @@ public:
                 exit(1);
         }
         
+        verbose(verbose_flag, "Instruction read");
+        
         return instruction;
         
     }
