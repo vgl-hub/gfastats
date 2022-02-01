@@ -267,7 +267,11 @@ public:
 
         if(gzip && outFile) { // if we wrote to file as gzip, we flush the buffer
             
-            zfout.close();
+            zfout.stream();
+            
+        }else if(gzip && !outFile) { // if we streamed as gzip, we flush the buffer
+            
+            zout.stream();
             
         }
         

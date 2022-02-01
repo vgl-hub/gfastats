@@ -214,11 +214,11 @@ public:
 //		add_header(); // GF: this needs to be commented out otherwise we immediately append the header
 	}
 
-	~basic_gzip_ostream() {
-		close();
-	}
+//	~basic_gzip_ostream() { // GF: commented out, so that we do not start the output witht he constructor
+//		close();
+//	}
 
-	void close() {
+	void stream() {
 		if (m_closed)
 			return;
         add_header(); // only add the header when flushing
