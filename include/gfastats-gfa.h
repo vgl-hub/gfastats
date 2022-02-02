@@ -668,26 +668,6 @@ public:
         
     }
     
-    bool updateBaseCounts() {
-        
-        for (InSegment inSegment : inSegments) {
-            
-            totA += inSegment.A;
-            totC += inSegment.C;
-            totG += inSegment.G;
-            totT += inSegment.T;
-            
-            increaseTotLowerCount(inSegment.lowerCount);
-            
-        }
-        
-        verbose(verbose_flag, "Increased ACGT counts");
-        verbose(verbose_flag, "Increased count of lower bases");
-        
-        return true;
-        
-    }
-    
     unsigned int getSegmentN() {
         
         return inSegments.size();
@@ -1077,12 +1057,6 @@ public:
         
     }
     
-    void increaseTotLowerCount(unsigned int C) {
-        
-        totLowerCount += C;
-        
-    }
-    
     unsigned long int getTotA() {
         
         return totA;
@@ -1358,7 +1332,7 @@ public:
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
             
-            inSequence = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSequence : revCom(inSequence); // check if vertex should be in forward orientation, if not reverse-complement
+            inSequence = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSequence : revCom(inSequence); // check if sequence should be in forward orientation, if not reverse-complement
             
             inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence()); // check if vertex should be in forward orientation, if not reverse-complement
             
@@ -1751,19 +1725,25 @@ public:
         
     }
     
-    void dfsScaffolds(unsigned int v, unsigned int& scaffSize) { // Depth First Search to return scaffold statistics
+    void dfsScaffolds(unsigned int v, unsigned int& scaffSize, unsigned int* A, unsigned int* C, unsigned int* G, unsigned int* T, unsigned int* lowerCount) // Depth First Search to build fast* sequence
+    {
         
         visited[v] = true; // mark the current node as visited
+        unsigned int idx = 0, a = 0, c = 0, g = 0, t = 0;
         
-        unsigned int idx = 0;
+        bool seqRevCom = false, segRevCom = false;
         
-        auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getsUId() == v;}); // given a vertex id, search its index in the segment vector
+        auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getsUId() == v;}); // given a vertex id, search it in the segment vector
         
-        if (it != inSegments.end()) {idx = std::distance(inSegments.begin(), it);} // gives us the vertex index
+        if (it != inSegments.end()) {idx = std::distance(inSegments.begin(), it);} // if found, get its index
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+            
+            seqRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true; // check if sequence should be in forward orientation, if not reverse-complement
+            
+            segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true; // check if vertex should be in forward orientation, if not reverse-complement
             
             backward = false;
             
@@ -1771,19 +1751,25 @@ public:
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
             
+            segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
+            
             backward = true; // reached the end
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
-            scaffSize += std::get<3>(adjListBW.at(v).at(0));
+            segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
+            
+            scaffSize += std::get<3>(adjListBW.at(v).at(1));
             
             backward = true; // reached the end
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+            
+            segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
             
             backward = true;
             
@@ -1795,13 +1781,17 @@ public:
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
             
+            segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
+            
             backward = false;
             
-        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a start gap
+        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case g: start node, start gap");
             
-            scaffSize += std::get<3>(adjListFW.at(v).at(0));
+            segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
+            
+            scaffSize += std::get<3>(adjListFW.at(v).at(1));
             
             backward = false;
             
@@ -1809,11 +1799,38 @@ public:
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
             
+            segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
+            
+            scaffSize += std::get<3>(adjListFW.at(v).at(0));
+            
             backward = false;
             
         }
         
         scaffSize += inSegments[idx].getInSequence().size();
+        
+        if (!segRevCom) {
+            
+            a = inSegments[idx].getA();
+            c = inSegments[idx].getC();
+            g = inSegments[idx].getG();
+            t = inSegments[idx].getT();
+            
+        }else {
+            
+            a = inSegments[idx].getT();
+            c = inSegments[idx].getG();
+            g = inSegments[idx].getC();
+            t = inSegments[idx].getA();
+            
+        }
+        
+        (*A) += a;
+        (*C) += c;
+        (*G) += g;
+        (*T) += t;
+        
+        (*lowerCount) += inSegments[idx].getLowerCount();
         
         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
             
@@ -1821,7 +1838,7 @@ public:
                 
                 scaffSize += std::get<3>(i);
                 
-                dfsScaffolds(std::get<1>(i), scaffSize); // recurse
+                dfsScaffolds(std::get<1>(i), scaffSize, A, C, G, T, lowerCount); // recurse
                 
             }
         }
@@ -1832,7 +1849,7 @@ public:
                 
                 scaffSize += std::get<3>(i);
                 
-                dfsScaffolds(std::get<1>(i), scaffSize); // recurse
+                dfsScaffolds(std::get<1>(i), scaffSize, A, C, G, T, lowerCount); // recurse
                 
             }
         }
@@ -1862,7 +1879,7 @@ public:
         scaffLens.clear();
         scaffN = 0;
         
-        unsigned int scaffSize = 0;
+        unsigned int scaffSize = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
         
         buildGraph(getGaps()); // first build the graph
         
@@ -1870,19 +1887,33 @@ public:
             
             if (!getVisited(i)) { // check if the node was already visited
         
-                dfsScaffolds(i, scaffSize); // then walk the scaffold to update statistics
+                dfsScaffolds(i, scaffSize, &A, &C, &G, &T, &lowerCount); // then walk the scaffold to update statistics
              
                 scaffN++;
                 
                 verbose(verbose_flag, "Increased total scaffold N");
-                
-                verbose(verbose_flag, std::to_string(scaffSize));
                 
                 recordScaffLen(scaffSize);
                 
                 verbose(verbose_flag, "Recorded length of sequence");
                 
                 scaffSize = 0;
+                
+                totA += A;
+                totC += C;
+                totG += G;
+                totT += T;
+                
+                verbose(verbose_flag, "Increased ACGT counts");
+                
+                A = 0, C = 0, G = 0, T = 0;
+                
+                totLowerCount += lowerCount;
+
+                verbose(verbose_flag, "Increased count of lower bases");
+                
+                lowerCount = 0;
+
                 
             }
             

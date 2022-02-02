@@ -435,8 +435,6 @@ public:
                             
                         }
                         
-                        inSequences.updateScaffoldStats();
-                        
                     }else if (version[0] == '1') {
                     
                         while (getline(*stream, newLine)) {
@@ -488,9 +486,7 @@ public:
                 
             }
             
-            verbose(verbose_flag, "\nUpdating statistics");
-            
-            inSequences.updateBaseCounts();
+            inSequences.updateScaffoldStats();
             
         }else{
 
