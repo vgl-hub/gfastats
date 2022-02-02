@@ -435,6 +435,8 @@ public:
                             
                         }
                         
+                        inSequences.updateScaffoldStats();
+                        
                     }else if (version[0] == '1') {
                     
                         while (getline(*stream, newLine)) {

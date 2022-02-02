@@ -304,7 +304,6 @@ private:
     InSegment inSegment;
     InGap gap;
     
-    unsigned long long int totScaffLen = 0;
     unsigned long long int totSegmentLen = 0;
     
     unsigned int
@@ -566,10 +565,6 @@ public:
             
         }
         
-        increaseTotScaffLen(seqLen+1);
-        
-        verbose(verbose_flag, "Increased total scaffold length");
-        
         recordScaffLen(seqLen+1);
         
         verbose(verbose_flag, "Recorded length of sequence");
@@ -642,14 +637,6 @@ public:
         addSegment(sUId, sUId, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
             
         A = 0, C = 0, G = 0, T = 0;
-
-        increaseTotScaffLen(sequence->length());
-        
-        verbose(verbose_flag, "Increased total scaffold length");
-        
-        recordScaffLen(sequence->length());
-        
-        verbose(verbose_flag, "Recorded length of sequence");
         
     }
     
@@ -676,10 +663,6 @@ public:
         traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality);
         
         verbose(verbose_flag, "Segment traversed");
-        
-        scaffN++;
-        
-        verbose(verbose_flag, "Increased total scaffold N");
         
         if(verbose_flag) {std::cout<<"\n";};
         
@@ -726,12 +709,6 @@ public:
     std::vector<InGap> getInGaps() {
         
         return inGaps;
-        
-    }
-    
-    void increaseTotScaffLen(unsigned int ScaffLen) {
-        
-        totScaffLen += ScaffLen;
         
     }
     
@@ -1084,7 +1061,7 @@ public:
     
     double computeAverageScaffLen() {
         
-        return (double) totScaffLen/scaffN;
+        return (double) (totSegmentLen+totGapLen)/scaffN;
         
     }
     
@@ -1306,10 +1283,6 @@ public:
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
             
             visited.clear();
-            
-            for (auto it = visited.begin(); it != visited.end(); it++) {
-              (*it).second = false;
-            }
             
             *sId = 1; // we have just found the start node, count nodes from here
             
@@ -1778,6 +1751,94 @@ public:
         
     }
     
+    void dfsScaffolds(unsigned int v, unsigned int& scaffSize) { // Depth First Search to return scaffold statistics
+        
+        visited[v] = true; // mark the current node as visited
+        
+        unsigned int idx = 0;
+        
+        auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getsUId() == v;}); // given a vertex id, search its index in the segment vector
+        
+        if (it != inSegments.end()) {idx = std::distance(inSegments.begin(), it);} // gives us the vertex index
+        
+        if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
+            
+            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+            
+            backward = false;
+            
+        }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
+            
+            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+            
+            backward = true; // reached the end
+            
+        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
+            
+            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+            
+            scaffSize += std::get<3>(adjListBW.at(v).at(0));
+            
+            backward = true; // reached the end
+            
+        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
+            
+            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+            
+            backward = true;
+            
+        }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
+            
+            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case e: disconnected component");
+            
+        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
+            
+            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+            
+            backward = false;
+            
+        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a start gap
+            
+            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+            
+            scaffSize += std::get<3>(adjListFW.at(v).at(0));
+            
+            backward = false;
+            
+        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
+            
+            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+            
+            backward = false;
+            
+        }
+        
+        scaffSize += inSegments[idx].getInSequence().size();
+        
+        for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
+            
+            if (!visited[std::get<1>(i)]) {
+                
+                scaffSize += std::get<3>(i);
+                
+                dfsScaffolds(std::get<1>(i), scaffSize); // recurse
+                
+            }
+        }
+        
+        for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
+            
+            if (!visited[std::get<1>(i)]) {
+                
+                scaffSize += std::get<3>(i);
+                
+                dfsScaffolds(std::get<1>(i), scaffSize); // recurse
+                
+            }
+        }
+        
+    }
+    
     std::vector<std::vector<Tuple>> getAdjListFW() {
         
         return adjListFW;
@@ -1793,6 +1854,41 @@ public:
     bool getVisited(unsigned long long int segUniqN) {
         
         return visited[segUniqN];
+        
+    }
+    
+    bool updateScaffoldStats() {
+        
+        scaffLens.clear();
+        scaffN = 0;
+        
+        unsigned int scaffSize = 0;
+        
+        buildGraph(getGaps()); // first build the graph
+        
+        for (unsigned int i = 0; i != inSegments.size(); ++i) { // loop through all edges
+            
+            if (!getVisited(i)) { // check if the node was already visited
+        
+                dfsScaffolds(i, scaffSize); // then walk the scaffold to update statistics
+             
+                scaffN++;
+                
+                verbose(verbose_flag, "Increased total scaffold N");
+                
+                verbose(verbose_flag, std::to_string(scaffSize));
+                
+                recordScaffLen(scaffSize);
+                
+                verbose(verbose_flag, "Recorded length of sequence");
+                
+                scaffSize = 0;
+                
+            }
+            
+        }
+        
+        return true;
         
     }
     
