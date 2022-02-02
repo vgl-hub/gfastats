@@ -38,7 +38,7 @@ To check out all options and flags use `gfastats -h`.
 **gfastats** allows extensive assembly manipulation at the sequence level. Manipulation is achieved using a set of *instructions* provided as an ordered list in a file to the option `-k` / `--swiss-army-knife`. The *instructions* are sequentially processed to generate the final output. Examples of *instructions* are:
 
 ```
-JOIN contig1+ contig2+ 50 [scaffold1] [this is a new scaffold] // introduces a new gap of 50 bp between scaffold1 and scaffold2, effectively joining the two sequences into a new sequences named scaffold1 with an optional comment
+JOIN contig1+ contig2+ 50 [gap1] [scaffold1] [this is a new scaffold] // introduces a new gap of 50 bp between scaffold1 and scaffold2 with optional id gap1, effectively joining the two sequences into a new sequences named scaffold1 with an optional comment
 SPLIT contig1+ contig2+ // splits the scaffold containing contig1 and contig2, effectively removing the existing gap between them
 ```
 

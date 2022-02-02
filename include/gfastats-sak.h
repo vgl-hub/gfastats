@@ -30,6 +30,7 @@ struct Instruction {
     std::string contig2;
     std::string comment1;
     std::string comment2;
+    std::string gHeader = "";
     
     char sId1Or, sId2Or;
     
@@ -84,9 +85,20 @@ public:
                 
                 instruction.dist = stoi(arguments[3]);
                 
-                instruction.scaffold1 = arguments[4];
+                instruction.gHeader = arguments[4];
                 
-                instruction.comment1 = arguments[5];
+                instruction.scaffold1 = arguments[5];
+                
+                instruction.comment1 = arguments[6];
+                
+                break;
+            }
+                
+            case 2: { // SPLIT
+                
+                instruction.contig1 = arguments[1];
+                
+                instruction.contig2 = arguments[2];
                 
                 break;
             }
@@ -112,6 +124,14 @@ public:
                 break;
                 
             }
+                
+            case 2: { // SPLIT
+                
+                split(inSequences, instruction);
+                
+                break;
+                
+            }
             
             default:
                 fprintf(stderr, "unrecognized action %s\n", instruction.action.c_str());
@@ -125,25 +145,20 @@ public:
     bool joinByGap(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
         
         InGap gap;
-        
-        gap.newGap(inSequences.gapUniqN+1, inSequences.headersToIds[instruction.contig1], inSequences.headersToIds[instruction.contig2], instruction.sId1Or, instruction.sId2Or, instruction.dist); // define the new gap
-        
-        
-//        if (instruction.scaffold1 != "") {
-//
-//            inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].seqHeader = instruction.scaffold1;
-//
-//        }
-//
-//        if (instruction.comment1 != "") {
-//
-//            inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].seqComment = instruction.comment1;
-//
-//        }
-        
+                
+        gap.newGap(inSequences.gapUniqN+1, inSequences.headersToIds[instruction.contig1], inSequences.headersToIds[instruction.contig2], instruction.sId1Or, instruction.sId2Or, instruction.dist, instruction.gHeader); // define the new gap
+            
         inSequences.gapUniqN++;
         
         inSequences.appendGap(gap); // introduce the new gap
+        
+        return true;
+        
+    }
+    
+    bool split(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
+        
+        inSequences.removeGap(instruction.contig1, instruction.contig2); // introduce the new gap
         
         return true;
         

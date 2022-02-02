@@ -190,7 +190,7 @@ private:
     friend class InSequences;
     
 public:
-    void newGap(unsigned int gid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d, std::string gheader = NULL) {
+    void newGap(unsigned int gid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d, std::string gheader = "") {
         
         gHeader = gheader;
         gId = gid;
@@ -268,9 +268,9 @@ class InUlines {};
 class InSequences { //collection of InSegment and inGap objects and their summary statistics
     
 private:
-    std::vector<InSegment> inSegments = std::vector<InSegment>();
     
     //gfa variables
+    std::vector<InSegment> inSegments = std::vector<InSegment>();
     std::vector<InGap> inGaps;
     std::vector<std::vector<Tuple>> adjListFW;
     std::vector<std::vector<Tuple>> adjListBW;
@@ -1377,9 +1377,9 @@ public:
         std::string inSequenceQualityNext;
         unsigned int idx = 0;
         
-        auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getsUId() == v;}); // given a vertex id, search its index in the segment vector
+        auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getsUId() == v;}); // given a vertex id, search it in the segment vector
         
-        if (it != inSegments.end()) {idx = std::distance(inSegments.begin(), it);}
+        if (it != inSegments.end()) {idx = std::distance(inSegments.begin(), it);} // if found, get its index
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
@@ -1796,7 +1796,27 @@ public:
         
     }
     
-    //end of gfa methods
+    // instruction methods
+    
+    bool removeGap(std::string contig1, std::string contig2) {
+ 
+        unsigned int gIdx = 2;
+        
+        unsigned int sUId1 = headersToIds[contig1];
+        
+        unsigned int sUId2 = headersToIds[contig2];
+        
+        auto gId = find_if(inGaps.begin(), inGaps.end(), [sUId1, sUId2](InGap& obj) {return (obj.getsId1() == sUId1 && obj.getsId2() == sUId2);}); // given two vertex ids, search the gap tha to connects them
+        
+        if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the gap index
+        
+        inGaps.erase(inGaps.begin()+gIdx);
+        
+        return true;
+        
+    }
+    
+    // end of gfa methods
     
 };
 
