@@ -1342,7 +1342,7 @@ public:
         
     }
     
-    void dfsSeq(int v, std::string &inSequence, std::string* inSequenceQuality = NULL) // Depth First Search to build fast* sequence
+    void dfsSeq(unsigned int v, std::string &inSequence, std::string* inSequenceQuality = NULL) // Depth First Search to build fast* sequence
     {
         
         visited[v] = true; // mark the current node as visited
@@ -1546,7 +1546,7 @@ public:
         
     }
     
-    void dfsAgp(int v, std::string &agp, unsigned int &cStart, unsigned int &cEnd) // Depth First Search to generate AGP output
+    void dfsAgp(unsigned int v, std::string &agp, unsigned int &cStart, unsigned int &cEnd) // Depth First Search to generate AGP output
     {
         
         visited[v] = true; // mark the current node as visited

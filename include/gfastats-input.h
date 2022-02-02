@@ -649,7 +649,8 @@ public:
         }else if
             (bedIncludeList.empty() &&
              !bedExcludeList.empty()) {
-                
+            
+            pos = 0;
             offset = 0;
             outSeq = true;
             
@@ -659,7 +660,7 @@ public:
                 
                 it = std::find(it, bedExcludeListHeaders.end(), *seqHeader);
                 
-                if (it == end(bedExcludeListHeaders) || bedExcludeList.getSeqHeader(pos) != *seqHeader) {
+                if (it == end(bedExcludeListHeaders)) {
                     
                     break;
                     
@@ -803,7 +804,7 @@ public:
                 
                 it = std::find(it, bedExcludeListHeaders.end(), *seqHeader);
                 
-                if (it == end(bedExcludeListHeaders) || bedExcludeList.getSeqHeader(pos) != *seqHeader) {
+                if (it == end(bedExcludeListHeaders)) {
                     
                     break;
                     
