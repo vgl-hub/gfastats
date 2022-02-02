@@ -22,7 +22,6 @@
 #define OUTPUT_ZIP_STREAM_IMPL_HPP
 
 #include "ozstream.hpp"
-#include "zlib.h"
 #include <sstream>
 #include <cstring>
 
