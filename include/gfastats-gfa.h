@@ -1731,7 +1731,7 @@ public:
         visited[v] = true; // mark the current node as visited
         unsigned int idx = 0, a = 0, c = 0, g = 0, t = 0;
         
-        bool seqRevCom = false, segRevCom = false;
+        bool segRevCom = false;
         
         auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getsUId() == v;}); // given a vertex id, search it in the segment vector
         
