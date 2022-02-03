@@ -1731,7 +1731,7 @@ public:
         visited[v] = true; // mark the current node as visited
         unsigned int idx = 0, a = 0, c = 0, g = 0, t = 0;
         
-        bool segRevCom = false;
+        bool seqRevCom = false, segRevCom = false;
         
         auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getsUId() == v;}); // given a vertex id, search it in the segment vector
         
@@ -1742,6 +1742,17 @@ public:
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
             
             seqRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true; // check if sequence should be in forward orientation, if not reverse-complement
+            
+            if (seqRevCom) {
+                
+                unsigned int tmpA = *A, tmpC = *C;
+                
+                (*A) = *T;
+                (*C) = *G;
+                (*G) = tmpC;
+                (*T) = tmpA;
+                
+            }
             
             segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true; // check if vertex should be in forward orientation, if not reverse-complement
             
