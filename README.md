@@ -34,6 +34,14 @@ Either download one of the releases or `git clone https://github.com/vgl-hub/gfa
 
 To check out all options and flags use `gfastats -h`.
 
+You can test some typical usage with the files in the `testFiles` folder, e.g.:
+
+```
+gfastats testFiles/random1.fasta -o gfa // converts fasta to gfa
+gfastats testFiles/random2.gfa2.gfa -o fa // converts gfa to fasta
+gfastats testFiles/random1.fasta -k testFiles/random1.instructions.sak -o gfa // reads fasta applies a set of instructions using the swiss army knife and outputs gfa
+```
+
 ## Assembly manipulation
 **gfastats** allows extensive assembly manipulation at the sequence level. Manipulation is achieved using a set of *instructions* provided as an ordered list in a file to the option `-k` / `--swiss-army-knife`. The *instructions* are sequentially processed to generate the final output. Examples of *instructions* are:
 
