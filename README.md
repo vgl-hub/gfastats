@@ -39,7 +39,6 @@ You can test some typical usage with the files in the `testFiles` folder, e.g.:
 ```
 gfastats testFiles/random1.fasta -o gfa // converts fasta to gfa
 gfastats testFiles/random2.gfa2.gfa -o fa // converts gfa to fasta
-gfastats testFiles/random1.fasta -k testFiles/random1.instructions.sak -o gfa // reads fasta applies a set of instructions using the swiss army knife and outputs gfa
 ```
 
 ## Assembly manipulation
@@ -48,6 +47,12 @@ gfastats testFiles/random1.fasta -k testFiles/random1.instructions.sak -o gfa //
 ```
 JOIN contig1+ contig2+ 50 [gap1] [scaffold1] [this is a new scaffold] // introduces a new gap of 50 bp between scaffold1 and scaffold2 with optional id gap1, effectively joining the two sequences into a new sequences named scaffold1 with an optional comment
 SPLIT contig1+ contig2+ // splits the scaffold containing contig1 and contig2, effectively removing the existing gap between them
+```
+
+Instructions are applied with the swiss army knife:
+
+```
+gfastats testFiles/random1.fasta -k testFiles/random1.instructions.sak -o gfa // reads fasta applies a set of instructions and outputs gfa
 ```
 
 The *instructions* directly provide the list of edits that were introduced. The *instructions* could be from an automated tool or from manual annotation. See the <a href="instructions/">instruction wiki</a> for a full list of *instructions*.
