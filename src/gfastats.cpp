@@ -6,6 +6,8 @@
 
 #include <gfastats.h>
 
+std::string version = "1.0";
+
 int main(int argc, char **argv) {
     
     short int c; // optarg
@@ -54,8 +56,9 @@ int main(int argc, char **argv) {
         {"nstar-report", no_argument, &nstarReport_flag, 1},
         {"tabular", no_argument, 0, 't'},
         
-        {"verbose", no_argument, 0, 'v'},
+        {"verbose", no_argument, &verbose_flag, 1},
         {"cmd", no_argument, &cmd_flag, 1},
+        {"version", no_argument, 0, 'v'},
         {"help", no_argument, 0, 'h'},
         
         {0, 0, 0, 0}
@@ -248,9 +251,10 @@ int main(int argc, char **argv) {
                 tabular_flag = 1;
                 break;
                 
-            case 'v': // verbose output
-                verbose_flag = 1;
-                break;
+            case 'v': // software version
+                printf("gfastats v%s.\n", version.c_str());
+                printf("Giulio Formenti giulio.formenti@gmail.com.\n");
+                exit(0);
                 
             case 'h': // help
                 printf("gfastats input.[fasta|fastq|gfa][.gz] [expected genome size] [header[:start-end]]\n");
@@ -266,12 +270,13 @@ int main(int argc, char **argv) {
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined (no coordinates).\n");
                 printf("-t --tabular output in tabular format.\n");
-                printf("-v --verbose verbose output.\n");
+                printf("-v --version software version.\n");
                 printf("-h --help print help and exit.\n");
                 printf("--stats report summary statistics (default).\n");
                 printf("--seq-report report statistics for each sequence.\n");
                 printf("\t--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
+                printf("--verbose verbose output.\n");
                 printf("--cmd print $0 to stdout.\n");
                 printf("\nAll input files can be piped from stdin using '-'.\n");
                 exit(0);
