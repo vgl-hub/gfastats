@@ -151,7 +151,7 @@ public:
                 
                 for (unsigned int i = 0; i != inSequences.getInSegments().size(); ++i) { // loop through all edges
                     
-                    if (!inSequences.getVisited(i)) { // check if the node was already visited
+                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
@@ -187,7 +187,7 @@ public:
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                     
-                    if (!inSequences.getVisited(i)) { // check if the node was already visited
+                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq, &inSeqQual); // if not, visit all connected components recursively
@@ -317,7 +317,7 @@ public:
                     seqHeader = inSequences.getInSegment(i).getSeqHeader();
                     seqComment = inSequences.getInSegment(i).getSeqComment();
                     
-                    if (!inSequences.getVisited(i)) { // check if the node was already visited
+                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
@@ -389,7 +389,7 @@ public:
                     seqHeader = inSequences.getInSegment(i).getSeqHeader();
                     seqComment = inSequences.getInSegment(i).getSeqComment();
                     
-                    if (!inSequences.getVisited(i)) { // check if the node was already visited
+                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
@@ -475,7 +475,7 @@ public:
                     seqHeader = inSequences.getInSegment(i).getSeqHeader();
                     seqComment = inSequences.getInSegment(i).getSeqComment();
                     
-                    if (!inSequences.getVisited(i)) { // check if the node was already visited
+                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
                         verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
@@ -558,7 +558,7 @@ public:
                 
                     seqHeader = inSequences.getInSegment(i).getSeqHeader();
                     
-                    if (!inSequences.getVisited(i)) { // check if the node was already visited
+                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                             
                             cStart = 1, cEnd = 1;
                             

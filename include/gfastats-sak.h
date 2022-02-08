@@ -139,7 +139,15 @@ public:
                 break;
                 
             }
-            
+
+            case 3: { // SPLIT
+                
+                remove(inSequences, instruction);
+                
+                break;
+                
+            }
+                
             default:
                 fprintf(stderr, "unrecognized action %s\n", instruction.action.c_str());
                 return EXIT_FAILURE;
@@ -149,7 +157,7 @@ public:
         
     }
     
-    bool join(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
+    bool join(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction
         
         InGap gap;
                 
@@ -163,17 +171,19 @@ public:
         
     }
     
-    bool split(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
+    bool split(InSequences& inSequences, Instruction instruction) { // splits two sequences removing the gap in between based on instruction
         
-        inSequences.removeGap(instruction.contig1, instruction.contig2); // introduce the new gap
+        inSequences.removeGap(&instruction.contig1, &instruction.contig2); // remove the gap
         
         return true;
         
     }
     
-    bool remove(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
+    bool remove(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if presents
         
-        inSequences.removeGap(instruction.contig1, instruction.contig2); // introduce the new gap
+        inSequences.removeGap(&instruction.contig1); // remove the gap
+        
+        inSequences.removeSegment(&instruction.contig1); // remove the segment
         
         return true;
         

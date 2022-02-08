@@ -276,7 +276,7 @@ private:
     std::vector<std::vector<Tuple>> adjListBW;
     std::unordered_map<std::string, unsigned int> headersToIds;
     std::unordered_map<unsigned int, std::string> idsToHeaders;
-    std::unordered_map<int, bool> visited;
+    std::unordered_map<int, bool> visited, deleted;
     bool backward = false, first = false;
     //InEdges inEdges;
     //InOlines inOlines;
@@ -1172,14 +1172,18 @@ public:
         adjListFW.clear();
         adjListBW.clear();
         
-        adjListFW.resize(inSegments.size()); // resize the vertex vector to hold `n` elements
-        adjListBW.resize(inSegments.size()); // resize the vertex vector to hold `n` elements
-        
+        adjListFW.resize(inSegments.size()); // resize the segment vector to hold all edges
+        adjListBW.resize(inSegments.size()); // resize the segment vector to hold all edges
         
         for (auto &edge: edges) // add edges to the graph
         {
             
+            verbose(verbose_flag, "Adding forward node: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            
             adjListFW.at(edge.sId1).push_back(std::make_tuple(edge.sId1Or, edge.sId2, edge.sId2Or, edge.dist)); // insert at gap start gap destination, orientations and weight (gap size)
+
+            verbose(verbose_flag, "Adding reverse node: " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            
             adjListBW.at(edge.sId2).push_back(std::make_tuple(edge.sId2Or, edge.sId1, edge.sId1Or, edge.dist)); // undirected graph
             
         }
@@ -1198,7 +1202,7 @@ public:
         
         for (InSegment inSegment : inSegments) {// loop through all nodes
             
-            if (!visited[i]) { // if the node was not visited yet
+            if (!visited[i] && !deleted[i]) { // if the node was not visited yet
                 
                 dfsPos(i, &sId, &gId); // start from the first node and try to assign sId = 0
             
@@ -1294,7 +1298,7 @@ public:
         
         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
             
-            if (!visited[std::get<1>(i)]) {
+            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
                 inGaps[v].setgId(*gId); // set the sId for the edge
                 
@@ -1307,7 +1311,7 @@ public:
         
         for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
             
-            if (!visited[std::get<1>(i)]) {
+            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
                 dfsPos(std::get<1>(i), sId, gId); // recurse
                 
@@ -1486,7 +1490,7 @@ public:
         
         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
             
-            if (!visited[std::get<1>(i)]) {
+            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
                 inSequence += std::string(std::get<3>(i), 'N'); // add gaps
                 
@@ -1503,7 +1507,7 @@ public:
         
         for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
             
-            if (!visited[std::get<1>(i)]) {
+            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
                 inSequence.insert(0, std::string(std::get<3>(i), 'N')); // add gaps
                 
@@ -1687,7 +1691,7 @@ public:
         
         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
             
-            if (!visited[std::get<1>(i)]) {
+            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
                 if (first) {
                 
@@ -1706,7 +1710,7 @@ public:
         
         for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
             
-            if (!visited[std::get<1>(i)]) {
+            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
                 if (first) {
                 
@@ -1845,7 +1849,7 @@ public:
         
         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
             
-            if (!visited[std::get<1>(i)]) {
+            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
                 scaffSize += std::get<3>(i);
                 
@@ -1856,7 +1860,7 @@ public:
         
         for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
             
-            if (!visited[std::get<1>(i)]) {
+            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
                 scaffSize += std::get<3>(i);
                 
@@ -1879,9 +1883,15 @@ public:
         
     }
     
-    bool getVisited(unsigned long long int segUniqN) {
+    bool getVisited(unsigned int segUniqN) {
         
         return visited[segUniqN];
+        
+    }
+    
+    bool getDeleted(unsigned int segUniqN) {
+        
+        return deleted[segUniqN];
         
     }
     
@@ -1936,19 +1946,70 @@ public:
     
     // instruction methods
     
-    bool removeGap(std::string contig1, std::string contig2) {
+    bool removeGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
  
-        unsigned int gIdx = 2;
+        unsigned int sUId1 = headersToIds[*contig1], gIdx = 0;
         
-        unsigned int sUId1 = headersToIds[contig1];
+        if (contig2 != NULL) {
         
-        unsigned int sUId2 = headersToIds[contig2];
+            unsigned int sUId2 = headersToIds[*contig2];
         
-        auto gId = find_if(inGaps.begin(), inGaps.end(), [sUId1, sUId2](InGap& obj) {return (obj.getsId1() == sUId1 && obj.getsId2() == sUId2);}); // given two vertex ids, search the gap tha to connects them
+            auto gId = find_if(inGaps.begin(), inGaps.end(), [sUId1, sUId2](InGap& obj) {return ( // given two vertex ids, search the gap that connects them
+                
+                (obj.getsId1() == sUId1 && obj.getsId2() == sUId2) || // fw orientation
+                (obj.getsId1() == sUId2 && obj.getsId2() == sUId1)    // rv orientation
+                                                                                                 
+            );});
         
-        if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the gap index
+            if (gId != inGaps.end()) {
+                
+                gIdx = std::distance(inGaps.begin(), gId); // gives us the gap index
+            
+                inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
+                
+            }
+            
+        }else{
+            
+            auto it = inGaps.begin();
+            
+            while (it != end(inGaps)) {
+
+                auto gId = find_if(it, inGaps.end(), [sUId1](InGap& obj) {return obj.getsId1() == sUId1 || obj.getsId2() == sUId1;}); // check whether an edge containing the node was found
+
+                if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId); // gives us the gap index
+            
+                inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
+                    
+                }
+                
+                it = gId;
+                
+            }
+            
+        }
         
-        inGaps.erase(inGaps.begin()+gIdx);
+        return true;
+        
+    }
+    
+    bool removeSegment(std::string* contig1) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+        
+        if (contig1 != NULL) {
+            
+            unsigned int sIdx = 0, sUId = headersToIds[*contig1];
+        
+            auto sId = find_if(inSegments.begin(), inSegments.end(), [sUId](InSegment& obj) {return obj.getsUId() == sUId;}); // given a node Uid, find it
+        
+            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+        
+            deleted[sIdx] = true;
+            
+        }else{
+            
+            verbose(verbose_flag, "Cannot detect node: " + *contig1);
+            
+        }
         
         return true;
         

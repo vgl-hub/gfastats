@@ -504,8 +504,12 @@ public:
                 
             }
             
-            inSequences.updateScaffoldStats();
-            
+            if (instructions.empty()) { // it only makes sense to update the stats if we are not manipulating the sequence
+                
+                inSequences.updateScaffoldStats();
+                
+            }
+                
         }else{
 
             printf("Stream not successful: %s", iSeqFileArg.c_str());
