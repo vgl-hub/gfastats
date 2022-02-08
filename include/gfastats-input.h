@@ -251,7 +251,7 @@ public:
                 default: {
                     
                     std::string h_col1, h_col2, h_col3, s, version, gHeader;
-                    char* v, sId1Or, sId2Or;
+                    char sId1Or, sId2Or;
                     
                     InGap gap;
                     unsigned int sId1 = 0, sId2 = 0, dist = 0;
@@ -262,57 +262,74 @@ public:
                     unsigned int seqN = 0, gapN = 0;
                     
                     std::string delimiter = "\t";
-                    std::vector<std::string> arguments;
+                    std::vector<std::string> arguments; // process the columns of each row
                     
                     size_t pos = 0;
                     
-                    h_col1 = std::string(strtok(strdup(firstLine.c_str()),"\t")); // process first line
+                    while ((pos = firstLine.find(delimiter)) != std::string::npos) { // process first line
+                        
+                        arguments.push_back(firstLine.substr(0, pos));
+                        
+                        firstLine.erase(0, pos + delimiter.length());
                     
-                    if (h_col1 == "H") {
+                    }
+                    
+                    arguments.push_back(firstLine); // last column
+                    
+                    if (arguments[0] == "H") {
                         
-                        h_col2 = strtok(NULL,""); // read header col2
-                        std::string(strtok(strdup(h_col2.c_str()),":")); // process version tag
-                        strtok(NULL,":");
-                        v = strtok(NULL,"");
+                        h_col2 = arguments[1]; // read header col2
+                        delimiter = ":";
                         
-                        if (v != NULL) {
+                        arguments.clear();
+                        
+                        while ((pos = h_col2.find(delimiter)) != std::string::npos) { // process version tag
                             
-                            version = std::string(v);
+                            arguments.push_back(h_col2.substr(0, pos));
+                            
+                            h_col2.erase(0, pos + delimiter.length());
+                        
+                        }
+                        
+                        arguments.push_back(h_col2); // last column
+                        
+                        if (arguments[2] != "") {
+                            
+                            version = arguments[2];
                             verbose(verbose_flag, "GFA version: " + version);
                             
                         }else{
                             
-                            printf("Cannot recognize GFA version");
-                            printf("Offending line: %s", firstLine.c_str());
-                            printf("Trying to detect from content");
+                            verbose(verbose_flag, "Failed to parse GFA version. Please check your header.");
                             
-                            if (h_col1 == "S") {
-                                
-                                h_col3 = strtok(NULL,""); // read sequence col3
-                                
-                                
-                                if (isInt(h_col3) || h_col3 == "*") {
-                                    
-                                    version = '2';
-                                    verbose(verbose_flag, "Proposed GFA version: " + version);
-                                    
-                                }else{
-                                    
-                                    version = '1';
-                                    verbose(verbose_flag, "Proposed GFA version: " + version);
-                                    
-                                }
-                                
-                                
-                            }else if (h_col1 == "G") {
+                        }
+                    
+                    }else{
+                            
+                        verbose(verbose_flag, "Cannot recognize GFA version from first line. Trying to detect from content.");
+                        
+                        if (arguments[0] == "S") {
+                            
+                            if (isInt(arguments[2]) || arguments[2] == "*") {
                                 
                                 version = '2';
                                 verbose(verbose_flag, "Proposed GFA version: " + version);
                                 
+                            }else{
+                                
+                                version = '1';
+                                verbose(verbose_flag, "Proposed GFA version: " + version);
+                                
                             }
                             
+                            
+                        }else if (arguments[0] == "G") {
+                            
+                            version = '2';
+                            verbose(verbose_flag, "Proposed GFA version: " + version);
+                            
                         }
-                        
+                            
                     }
                     
                     if (version[0] == '2') {
@@ -347,6 +364,9 @@ public:
                                     
                                 }
                                 case 'G': {
+                                    
+                                    delimiter = "\t";
+                                    arguments.clear();
                                     
                                     while ((pos = newLine.find(delimiter)) != std::string::npos) {
                                         
@@ -421,8 +441,6 @@ public:
                                     gap.newGap(gapN, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
                                     
                                     inSequences.appendGap(gap);
-                                    
-                                    arguments.clear();
                                     
                                     gapN++;
                                     lineN++;

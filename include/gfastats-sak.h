@@ -102,6 +102,13 @@ public:
                 
                 break;
             }
+                
+            case 3: { // REMOVE
+                
+                instruction.contig1 = arguments[1];
+                
+                break;
+            }
             
             default:
                 fprintf(stderr, "unrecognized action %s\n", instruction.action.c_str());
@@ -119,7 +126,7 @@ public:
         switch (string_to_case.count(instruction.action) ? string_to_case.at(instruction.action) : 0) {
             case 1: { // JOIN
                 
-                joinByGap(inSequences, instruction);
+                join(inSequences, instruction);
                 
                 break;
                 
@@ -142,7 +149,7 @@ public:
         
     }
     
-    bool joinByGap(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
+    bool join(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
         
         InGap gap;
                 
@@ -157,6 +164,14 @@ public:
     }
     
     bool split(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
+        
+        inSequences.removeGap(instruction.contig1, instruction.contig2); // introduce the new gap
+        
+        return true;
+        
+    }
+    
+    bool remove(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction in gfa format
         
         inSequences.removeGap(instruction.contig1, instruction.contig2); // introduce the new gap
         
