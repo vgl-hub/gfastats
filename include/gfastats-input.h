@@ -508,6 +508,8 @@ public:
                 
                 inSequences.updateScaffoldStats();
                 
+                verbose(verbose_flag, "Updated scaffold statistics");
+                
             }
                 
         }else{
@@ -529,6 +531,10 @@ public:
                 verbose(verbose_flag, instruction.action + " instruction executed");
                 
             }
+            
+            inSequences.updateScaffoldStats();
+            
+            verbose(verbose_flag, "Updated scaffold statistics");
         
         }
         

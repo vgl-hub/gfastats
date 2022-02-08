@@ -372,7 +372,7 @@ public:
         
         verbose(verbose_flag, "Recorded length of sequence");
         
-        increaseTotSegmentLen(seqSize);
+        changeTotSegmentLen(seqSize);
         
         verbose(verbose_flag, "Increased total segment length");
         
@@ -698,7 +698,7 @@ public:
         
     }
     
-    void increaseTotSegmentLen(unsigned int segmentLen) {
+    void changeTotSegmentLen(int segmentLen) {
         
         totSegmentLen += segmentLen;
         
@@ -710,7 +710,7 @@ public:
         
     }
     
-    void increaseTotGapLen(unsigned int gapLen) {
+    void changeTotGapLen(unsigned int gapLen) {
         
         totGapLen += gapLen;
         
@@ -1108,7 +1108,7 @@ public:
         
         verbose(verbose_flag, "Recorded length of gaps in sequence");
         
-        increaseTotGapLen(inGap.dist);
+        changeTotGapLen(inGap.dist);
         
         verbose(verbose_flag, "Increased total gap length");
         
@@ -1776,7 +1776,7 @@ public:
             
             segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
             
-            scaffSize += std::get<3>(adjListBW.at(v).at(1));
+            scaffSize += std::get<3>(adjListBW.at(v).at(0));
             
             backward = true; // reached the end
             
@@ -1806,7 +1806,7 @@ public:
             
             segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
             
-            scaffSize += std::get<3>(adjListFW.at(v).at(1));
+            scaffSize += std::get<3>(adjListFW.at(v).at(0));
             
             backward = false;
             
@@ -1904,9 +1904,9 @@ public:
         
         buildGraph(getGaps()); // first build the graph
         
-        for (unsigned int i = 0; i != inSegments.size(); ++i) { // loop through all edges
+        for (unsigned int i = 0; i != inSegments.size(); ++i) { // loop through all nodes
             
-            if (!getVisited(i)) { // check if the node was already visited
+            if (!getVisited(i) && !getDeleted(i)) { // check if the node was already visited
         
                 dfsScaffolds(i, scaffSize, &A, &C, &G, &T, &lowerCount); // then walk the scaffold to update statistics
              
@@ -1916,7 +1916,7 @@ public:
                 
                 recordScaffLen(scaffSize);
                 
-                verbose(verbose_flag, "Recorded length of sequence");
+                verbose(verbose_flag, "Recorded length of sequence: " + std::to_string(scaffSize));
                 
                 scaffSize = 0;
                 
@@ -1967,6 +1967,8 @@ public:
             
                 inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
                 
+                changeTotGapLen(-gId->getDist()); // update length of gaps
+                
             }
             
         }else{
@@ -1981,11 +1983,23 @@ public:
             
                 inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
                     
+                changeTotGapLen(-gId->getDist()); // update length of gaps
+                    
                 }
                 
                 it = gId;
                 
             }
+            
+        }
+        
+        gapLens.clear();
+        
+        for (unsigned int i = 0; i != inGaps.size(); ++i) { // loop through all edges
+        
+            recordGapLen(inGaps[i].getDist());
+            
+            verbose(verbose_flag, "Recorded length of gaps in sequence");
             
         }
         
@@ -2004,6 +2018,8 @@ public:
             if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
         
             deleted[sIdx] = true;
+            
+            changeTotSegmentLen(-sId->getSegmentLen());
             
         }else{
             
