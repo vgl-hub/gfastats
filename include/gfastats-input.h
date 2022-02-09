@@ -518,6 +518,12 @@ public:
 
         }
         
+        if (rmGaps_flag) {
+         
+            inSequences.removeTerminalGaps();
+            
+        }
+        
         if (!instructions.empty()) {
             
             verbose(verbose_flag, "\nStarted instruction execution");

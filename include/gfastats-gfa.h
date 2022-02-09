@@ -1944,6 +1944,41 @@ public:
         
     }
     
+    bool removeTerminalGaps() { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+        
+        std::vector<InGap>::iterator it = inGaps.begin();
+        
+        while (it != end(inGaps)) {
+        
+            if (it->getsId1() == it->getsId2()) {
+            
+                inGaps.erase(it); // remove the element by position, considering elements that were already removed in the loop
+                
+                changeTotGapLen(-it->getDist()); // update length of gaps
+                
+                it--; // the iterator is now one gap short
+                
+            }
+    
+        it++; // check the new gap
+            
+        }
+        
+        
+        gapLens.clear();
+        
+        for (unsigned int i = 0; i != inGaps.size(); ++i) { // loop through all edges
+        
+            recordGapLen(inGaps[i].getDist());
+            
+            verbose(verbose_flag, "Recorded length of gaps in sequence");
+            
+        }
+        
+        return true;
+        
+    }
+    
     // instruction methods
     
     bool removeGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears

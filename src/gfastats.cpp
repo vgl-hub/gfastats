@@ -41,6 +41,7 @@ int main(int argc, char **argv) {
         {"input-sequence", required_argument, 0, 'f'},
         
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
+        {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1},
         
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},
