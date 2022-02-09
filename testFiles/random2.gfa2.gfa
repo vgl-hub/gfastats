@@ -7,4 +7,5 @@ S	id1	5	ACCTT
 S	id4	8	CATGACTC
 S	id7	9	TGAATGAAA
 G	id8	id2+	id3-	2
-O	id9	11+,12-,13+	4M,5M
+G	id9	id7+	id7+	5
+O	id10	11+,12-,13+	4M,5M
