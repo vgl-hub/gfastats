@@ -179,6 +179,42 @@ public:
     
     bool trimSegment(unsigned int start, unsigned int end) {
         
+        for(char& base : inSequence.substr(start, end-start)) {
+            
+            switch (base) {
+                case 'A':
+                case 'a':{
+                    
+                    A--;
+                    break;
+                    
+                }
+                case 'C':
+                case 'c':{
+                    
+                    C--;
+                    break;
+                    
+                }
+                case 'G':
+                case 'g': {
+                    
+                    G--;
+                    break;
+                    
+                }
+                case 'T':
+                case 't': {
+                    
+                    T--;
+                    break;
+                    
+                }
+                    
+            }
+            
+        }
+        
         inSequence.erase(start, end-start);
         
         if (inSequenceQuality.size()>0) {
