@@ -1376,16 +1376,32 @@ public:
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
-            inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
+            if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
+            
+                inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
+                
+            }else{
+            
+                inSequenceNext = (std::get<0>(adjListBW.at(v).at(1)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
+            
+            }
             
             inSequence += inSequenceNext;
             
             inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
             
             if (!(inSequenceQuality == NULL)) {
+            
+                if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
                 
-                inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequenceQuality() : rev(inSegments[idx].getInSequenceQuality());
+                    inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequenceQuality() : rev(inSegments[idx].getInSequenceQuality());
                 
+                }else{
+                    
+                    inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(1)) == '+') ? inSegments[idx].getInSequenceQuality() : rev(inSegments[idx].getInSequenceQuality());
+                    
+                }
+                    
                 *inSequenceQuality += inSequenceQualityNext;
                 
                 *inSequenceQuality += std::string(std::get<3>(adjListFW.at(v).at(0)), '!'); // add missing quality
@@ -1774,7 +1790,15 @@ public:
             
             verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
-            segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
+            if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
+            
+                segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
+                
+            }else{
+            
+                segRevCom = (std::get<0>(adjListBW.at(v).at(1)) == '+') ? false : true;
+            
+            }
             
             scaffSize += std::get<3>(adjListBW.at(v).at(0));
             
@@ -2024,7 +2048,7 @@ public:
         
     }
     
-    bool removeGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+    bool removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
  
         unsigned int sUId1 = headersToIds[*contig1], gIdx = 0;
         

@@ -32,10 +32,16 @@ The REMOVE instruction removes contig1 from the segment set, effectively splitti
 REMOVE contig1
 ```
 
-## Yet to be implemented
+## ERASE
+The ERASE instruction trims off the sequence range specified from the given segment.
 
 ```
 ERASE contig1:10-100 // deletes contig1 sequence between the coordinates provided (in bed format)
+```
+
+## Yet to be implemented
+
+```
 INVERT contig1 // inverts contig1 sequence in place
 RVCP contig1 // reverse-complement contig1 sequence in place
 ADD contig3 contig1+ 50 contig2+ 50 ACGT // introduces a new contig named contig3 with sequence ACGT between contig1 and contig2 leaving 50bp gaps on each side

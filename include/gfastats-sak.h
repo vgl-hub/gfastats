@@ -200,7 +200,7 @@ public:
     
     bool split(InSequences& inSequences, Instruction instruction) { // splits two sequences removing the gap in between based on instruction
         
-        inSequences.removeGap(&instruction.contig1, &instruction.contig2); // remove the gap
+        inSequences.removeGaps(&instruction.contig1, &instruction.contig2); // remove the gap
         
         return true;
         
@@ -210,9 +210,9 @@ public:
         
         std::vector<InGap> oldGaps = inSequences.getGap(&instruction.contig1); // get neighbour gaps
         
-        inSequences.removeGap(&instruction.contig1); // remove the gap
+        inSequences.removeGaps(&instruction.contig1); // remove the gaps associated with the excised contig
         
-        if (instruction.dist > 0 && oldGaps.size() == 2) {
+        if (instruction.dist > 0 && oldGaps[0].getsId1() != oldGaps[0].getsId2() && oldGaps[1].getsId1() != oldGaps[1].getsId2()) { // terminal gaps are not allowed to create new gaps when excised
         
             InGap gap;
         
@@ -230,7 +230,7 @@ public:
     
     bool remove(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
         
-        inSequences.removeGap(&instruction.contig1); // remove the gaps associated with contig1
+        inSequences.removeGaps(&instruction.contig1); // remove the gaps associated with contig1
         
         inSequences.removeSegment(&instruction.contig1); // remove the segment
         
