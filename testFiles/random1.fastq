@@ -7,7 +7,7 @@ CGAXT
 +
 56789
 @Header3 10bp sequence with internal 4bp and 1bp terminal canonical gap
-TGANNNNCTN
+TGANATNCTN
 +
 56789:;<=>
 @Header4 15bp sequence with start 3bp canonical gap

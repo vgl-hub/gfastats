@@ -177,6 +177,19 @@ public:
         return GCcontent;
     }
     
+    bool trimSegment(unsigned int start, unsigned int end) {
+        
+        inSequence.erase(start, end-start);
+        
+        if (inSequenceQuality.size()>0) {
+        
+            inSequenceQuality.erase(start, end-start);
+        
+        }
+        
+        return true;
+    }
+    
 };
 
 class InGap {

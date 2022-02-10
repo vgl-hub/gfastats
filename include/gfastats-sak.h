@@ -34,7 +34,7 @@ struct Instruction {
     
     char sId1Or, sId2Or;
     
-    unsigned int dist;
+    unsigned int dist, start, end;
     
 };
 
@@ -128,6 +128,23 @@ public:
                 
                 break;
             }
+                
+            case 5: { // ERASE
+                
+                size_t pos1 = 0, pos2 = 0;
+                
+                pos1 = arguments[1].find(":");
+                
+                pos2 = arguments[1].find("-");
+                
+                instruction.contig1 = arguments[1].substr(0, pos1);
+                
+                instruction.start = stoi(arguments[1].substr(pos1+1, pos2));
+                
+                instruction.end = stoi(arguments[1].substr(pos2+1, arguments[1].size()+1));
+                
+                break;
+            }
             
             default:
                 fprintf(stderr, "unrecognized action %s\n", instruction.action.c_str());
@@ -170,6 +187,14 @@ public:
             case 4: { // REMOVE
                 
                 remove(inSequences, instruction);
+                
+                break;
+                
+            }
+                
+            case 5: { // ERASE
+                
+                erase(inSequences, instruction);
                 
                 break;
                 
@@ -237,6 +262,16 @@ public:
         inSequences.removeSegment(&instruction.contig1); // remove the segment
         
         inSequences.updateGapLens();
+        
+        return true;
+        
+    }
+    
+    bool erase(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
+        
+        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].trimSegment(instruction.start, instruction.end); // trim segment
+        
+        inSequences.changeTotSegmentLen(instruction.start-instruction.end);
         
         return true;
         
