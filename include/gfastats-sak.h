@@ -12,13 +12,13 @@
 const static std::unordered_map<std::string,int> string_to_case{
     {"JOIN", 1},
     {"SPLIT", 2},
-    {"REMOVE", 3},
-    {"DELETE", 4},
-    {"ADD", 5},
-    {"REPLACE", 6},
-    {"EXCISE", 7},
+    {"EXCISE", 3},
+    {"REMOVE", 4},
+    {"ERASE", 5},
+    {"ADD", 6},
+    {"REPLACE", 7},
     {"INVERT", 8},
-    {"RVCP", 9},
+    {"RVCP", 9}
 };
 
 struct Instruction {
@@ -102,8 +102,27 @@ public:
                 
                 break;
             }
+
+            case 3: { // EXCISE
                 
-            case 3: { // REMOVE
+                instruction.contig1 = arguments[1];
+                
+                if (arguments[2] != "") {
+                
+                    instruction.dist = stoi(arguments[2]);
+                    
+                }else{
+                    
+                    instruction.dist = 0;
+                    
+                }
+                
+                instruction.gHeader = arguments[3];
+                
+                break;
+            }
+                
+            case 4: { // REMOVE
                 
                 instruction.contig1 = arguments[1];
                 
@@ -139,8 +158,16 @@ public:
                 break;
                 
             }
+                
+            case 3: { // EXCISE
+                
+                excise(inSequences, instruction);
+                
+                break;
+                
+            }
 
-            case 3: { // SPLIT
+            case 4: { // REMOVE
                 
                 remove(inSequences, instruction);
                 
@@ -178,10 +205,32 @@ public:
         return true;
         
     }
-    
-    bool remove(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if presents
+
+    bool excise(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
+        
+        std::vector<InGap> oldGap = inSequences.getGap(&instruction.contig1); // get neighbour gaps
         
         inSequences.removeGap(&instruction.contig1); // remove the gap
+        
+        if (instruction.dist > 0) {
+        
+            InGap gap;
+        
+            gap.newGap(inSequences.gapUniqN+1, oldGap[0].getsId1(), oldGap[1].getsId2(), oldGap[0].getsId1Or(), oldGap[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
+            
+            inSequences.gapUniqN++;
+            
+            inSequences.appendGap(gap); // introduce the new gap
+        
+        }
+            
+        return true;
+        
+    }
+    
+    bool remove(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
+        
+        inSequences.removeGap(&instruction.contig1); // remove the gaps associated with contig1
         
         inSequences.removeSegment(&instruction.contig1); // remove the segment
         

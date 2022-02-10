@@ -1981,6 +1981,45 @@ public:
     
     // instruction methods
     
+    std::vector<InGap> getGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, returns all edges connecting them, if only one contig is provided returns all edges where it appears
+ 
+        std::vector<InGap> gaps;
+        
+        unsigned int sUId1 = headersToIds[*contig1];
+        
+        if (contig2 != NULL) {
+        
+            unsigned int sUId2 = headersToIds[*contig2];
+        
+            auto gId = find_if(inGaps.begin(), inGaps.end(), [sUId1, sUId2](InGap& obj) {return ( // given two vertex ids, search the gap that connects them
+                
+                (obj.getsId1() == sUId1 && obj.getsId2() == sUId2) || // fw orientation
+                (obj.getsId1() == sUId2 && obj.getsId2() == sUId1)    // rv orientation
+                                                                                                 
+            );});
+            
+            gaps.push_back(*gId);
+            
+        }else{
+            
+            auto it = inGaps.begin();
+            
+            while (it != end(inGaps)) {
+
+                auto gId = find_if(it+1, inGaps.end(), [sUId1](InGap& obj) {return obj.getsId1() == sUId1 || obj.getsId2() == sUId1;}); // check whether an edge containing the node was found
+                
+                gaps.push_back(*gId);
+                
+                it = gId;
+                
+            }
+            
+        }
+        
+        return gaps;
+        
+    }
+    
     bool removeGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
  
         unsigned int sUId1 = headersToIds[*contig1], gIdx = 0;
@@ -2014,11 +2053,13 @@ public:
 
                 auto gId = find_if(it, inGaps.end(), [sUId1](InGap& obj) {return obj.getsId1() == sUId1 || obj.getsId2() == sUId1;}); // check whether an edge containing the node was found
 
-                if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId); // gives us the gap index
-            
-                inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
+                if (gId != inGaps.end()) {
                     
-                changeTotGapLen(-gId->getDist()); // update length of gaps
+                    gIdx = std::distance(inGaps.begin(), gId); // gives us the gap index
+            
+                    inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
+                    
+                    changeTotGapLen(-gId->getDist()); // update length of gaps
                     
                 }
                 
