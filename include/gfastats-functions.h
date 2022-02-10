@@ -185,6 +185,14 @@ std::string revCom(std::string seq) { // reverse complement
             return 'G';
         case 'T':
             return 'A';
+        case 'a':
+            return 't';
+        case 'g':
+            return 'c';
+        case 'c':
+            return 'g';
+        case 't':
+            return 'a';
         case 'N':
         case 'n':
         case 'X':

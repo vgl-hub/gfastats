@@ -226,6 +226,22 @@ public:
         return true;
     }
     
+    bool rvcpSegment() {
+    
+        inSequence = revCom(inSequence);
+    
+        return true;
+        
+    }
+    
+    bool invertSegment() {
+    
+        inSequence = rev(inSequence);
+    
+        return true;
+        
+    }
+    
 };
 
 class InGap {

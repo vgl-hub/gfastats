@@ -15,10 +15,8 @@ const static std::unordered_map<std::string,int> string_to_case{
     {"EXCISE", 3},
     {"REMOVE", 4},
     {"ERASE", 5},
-    {"ADD", 6},
-    {"REPLACE", 7},
-    {"INVERT", 8},
-    {"RVCP", 9}
+    {"RVCP", 6},
+    {"INVERT", 7}
 };
 
 struct Instruction {
@@ -145,6 +143,20 @@ public:
                 
                 break;
             }
+                
+            case 6: { // RVCP
+                
+                instruction.contig1 = arguments[1];
+                
+                break;
+            }
+                
+            case 7: { // INVERT
+                
+                instruction.contig1 = arguments[1];
+                
+                break;
+            }
             
             default:
                 fprintf(stderr, "unrecognized action %s\n", instruction.action.c_str());
@@ -200,6 +212,22 @@ public:
                 
             }
                 
+            case 6: { // RVCP
+                
+                rvcp(inSequences, instruction);
+                
+                break;
+                
+            }
+                
+            case 7: { // INVERT
+                
+                invert(inSequences, instruction);
+                
+                break;
+                
+            }
+                
             default:
                 fprintf(stderr, "unrecognized action %s\n", instruction.action.c_str());
                 return EXIT_FAILURE;
@@ -231,7 +259,7 @@ public:
         
     }
 
-    bool excise(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
+    bool excise(InSequences& inSequences, Instruction instruction) { // excises a sequence, removing also edges if present and optionally adding a gap
         
         std::vector<InGap> oldGaps = inSequences.getGap(&instruction.contig1); // get neighbour gaps
         
@@ -267,9 +295,29 @@ public:
         
     }
     
-    bool erase(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
+    bool erase(InSequences& inSequences, Instruction instruction) { // erases a portion of sequence
         
         inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].trimSegment(instruction.start, instruction.end); // trim segment
+        
+        inSequences.changeTotSegmentLen(instruction.start-instruction.end);
+        
+        return true;
+        
+    }
+    
+    bool rvcp(InSequences& inSequences, Instruction instruction) { // reverse complement sequence
+        
+        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].rvcpSegment(); // rvcp segment
+        
+        inSequences.changeTotSegmentLen(instruction.start-instruction.end);
+        
+        return true;
+        
+    }
+    
+    bool invert(InSequences& inSequences, Instruction instruction) { // invert sequence
+        
+        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].invertSegment(); // invert segment
         
         inSequences.changeTotSegmentLen(instruction.start-instruction.end);
         

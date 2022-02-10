@@ -39,11 +39,23 @@ The ERASE instruction trims off the sequence range specified from the given segm
 ERASE contig1:10-100 // deletes contig1 sequence between the coordinates provided (in bed format)
 ```
 
+## RVCP
+The RVCP instruction reverse-complements contig1 sequence in place
+
+```
+RVCP contig1
+```
+
+## INVERT
+The INVERT instruction inverts contig1 sequence in place
+
+```
+INVERT contig1
+```
+
 ## Yet to be implemented
 
 ```
-INVERT contig1 // inverts contig1 sequence in place
-RVCP contig1 // reverse-complement contig1 sequence in place
 ADD contig3 contig1+ 50 contig2+ 50 ACGT // introduces a new contig named contig3 with sequence ACGT between contig1 and contig2 leaving 50bp gaps on each side
 REPLACE contig1:20-24 ACGT // replaces the sequence at coordinates contig1:20-24 with ACGT
 ```
