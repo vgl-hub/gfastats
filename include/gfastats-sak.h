@@ -208,15 +208,15 @@ public:
 
     bool excise(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
         
-        std::vector<InGap> oldGap = inSequences.getGap(&instruction.contig1); // get neighbour gaps
+        std::vector<InGap> oldGaps = inSequences.getGap(&instruction.contig1); // get neighbour gaps
         
         inSequences.removeGap(&instruction.contig1); // remove the gap
         
-        if (instruction.dist > 0) {
+        if (instruction.dist > 0 && oldGaps.size() == 2) {
         
             InGap gap;
         
-            gap.newGap(inSequences.gapUniqN+1, oldGap[0].getsId1(), oldGap[1].getsId2(), oldGap[0].getsId1Or(), oldGap[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
+            gap.newGap(inSequences.gapUniqN+1, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
             
             inSequences.gapUniqN++;
             

@@ -2008,7 +2008,11 @@ public:
 
                 auto gId = find_if(it+1, inGaps.end(), [sUId1](InGap& obj) {return obj.getsId1() == sUId1 || obj.getsId2() == sUId1;}); // check whether an edge containing the node was found
                 
-                gaps.push_back(*gId);
+                if (gId != inGaps.end()) {
+                
+                    gaps.push_back(*gId);
+                    
+                }
                 
                 it = gId;
                 
