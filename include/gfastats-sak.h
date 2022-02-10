@@ -223,6 +223,8 @@ public:
             inSequences.appendGap(gap); // introduce the new gap
         
         }
+        
+        inSequences.updateGapLens();
             
         return true;
         
@@ -233,6 +235,8 @@ public:
         inSequences.removeGaps(&instruction.contig1); // remove the gaps associated with contig1
         
         inSequences.removeSegment(&instruction.contig1); // remove the segment
+        
+        inSequences.updateGapLens();
         
         return true;
         

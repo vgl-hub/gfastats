@@ -1968,6 +1968,25 @@ public:
         
     }
     
+    bool updateGapLens() {
+        
+        totGapLen = 0;
+        gapLens.clear();
+        
+        for (unsigned int i = 0; i != inGaps.size(); ++i) { // loop through all edges
+        
+            recordGapLen(inGaps[i].getDist());
+            
+            changeTotGapLen(inGaps[i].getDist());
+            
+        }
+        
+        verbose(verbose_flag, "Updated list of gap lengths");
+        
+        return true;
+        
+    }
+    
     bool removeTerminalGaps() { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
         
         std::vector<InGap>::iterator it = inGaps.begin();
@@ -2094,16 +2113,6 @@ public:
                 it = gId;
                 
             }
-            
-        }
-        
-        gapLens.clear();
-        
-        for (unsigned int i = 0; i != inGaps.size(); ++i) { // loop through all edges
-        
-            recordGapLen(inGaps[i].getDist());
-            
-            verbose(verbose_flag, "Recorded length of gaps in sequence");
             
         }
         
