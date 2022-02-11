@@ -1255,15 +1255,15 @@ public:
         
         verbose(verbose_flag, "Graph built");
         
-        assignIds();
+        visited.clear();
+        
+//        assignIds();
         
     }
     
     void assignIds() { // (re)assignment, whenever the graph is built or modified
         
         unsigned int i = 0, sId = 0, gId = 0;
-        
-        visited.clear();
         
         for (InSegment inSegment : inSegments) {// loop through all nodes
             
