@@ -1444,16 +1444,20 @@ public:
             if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
             
                 inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
+             
+                inSequence += inSequenceNext;
+                
+                inSequence += std::string(std::get<3>(adjListFW.at(v).at(1)), 'N'); // add gap
                 
             }else{
             
                 inSequenceNext = (std::get<0>(adjListBW.at(v).at(1)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
             
+                inSequence += inSequenceNext;
+                
+                inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
+                
             }
-            
-            inSequence += inSequenceNext;
-            
-            inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
             
             if (!(inSequenceQuality == NULL)) {
             
@@ -1810,7 +1814,7 @@ public:
         
     }
     
-    void dfsScaffolds(unsigned int v, unsigned int& scaffSize, unsigned int* A, unsigned int* C, unsigned int* G, unsigned int* T, unsigned int* lowerCount) // Depth First Search to build fast* sequence
+    void dfsScaffolds(unsigned int v, unsigned int* scaffSize, unsigned int* A, unsigned int* C, unsigned int* G, unsigned int* T, unsigned int* lowerCount) // Depth First Search to build fast* sequence
     {
         
         visited[v] = true; // mark the current node as visited
@@ -1832,10 +1836,10 @@ public:
                 
                 unsigned int tmpA = *A, tmpC = *C;
                 
-                (*A) = *T;
-                (*C) = *G;
-                (*G) = tmpC;
-                (*T) = tmpA;
+                *A = *T;
+                *C = *G;
+                *G = tmpC;
+                *T = tmpA;
                 
             }
             
@@ -1858,14 +1862,16 @@ public:
             if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
             
                 segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
+             
+                *scaffSize += std::get<3>(adjListBW.at(v).at(1));
                 
             }else{
             
                 segRevCom = (std::get<0>(adjListBW.at(v).at(1)) == '+') ? false : true;
             
+                *scaffSize += std::get<3>(adjListBW.at(v).at(0));
+                
             }
-            
-            scaffSize += std::get<3>(adjListBW.at(v).at(0));
             
             backward = true; // reached the end
             
@@ -1895,7 +1901,7 @@ public:
             
             segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
             
-            scaffSize += std::get<3>(adjListFW.at(v).at(0));
+            *scaffSize += std::get<3>(adjListFW.at(v).at(0));
             
             backward = false;
             
@@ -1905,13 +1911,13 @@ public:
             
             segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
             
-            scaffSize += std::get<3>(adjListFW.at(v).at(0));
+            *scaffSize += std::get<3>(adjListFW.at(v).at(0));
             
             backward = false;
             
         }
         
-        scaffSize += inSegments[idx].getInSequence().size();
+        *scaffSize += inSegments[idx].getInSequence().size();
         
         if (!segRevCom) {
             
@@ -1929,18 +1935,18 @@ public:
             
         }
         
-        (*A) += a;
-        (*C) += c;
-        (*G) += g;
-        (*T) += t;
+        *A += a;
+        *C += c;
+        *G += g;
+        *T += t;
         
-        (*lowerCount) += inSegments[idx].getLowerCount();
+        *lowerCount += inSegments[idx].getLowerCount();
         
         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
             
             if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
-                scaffSize += std::get<3>(i);
+                *scaffSize += std::get<3>(i);
                 
                 dfsScaffolds(std::get<1>(i), scaffSize, A, C, G, T, lowerCount); // recurse
                 
@@ -1951,7 +1957,7 @@ public:
             
             if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
                 
-                scaffSize += std::get<3>(i);
+                *scaffSize += std::get<3>(i);
                 
                 dfsScaffolds(std::get<1>(i), scaffSize, A, C, G, T, lowerCount); // recurse
                 
@@ -1987,6 +1993,7 @@ public:
     bool updateScaffoldStats() {
         
         scaffLens.clear();
+        
         scaffN = 0;
         
         unsigned int scaffSize = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
@@ -1995,9 +2002,9 @@ public:
         
         for (unsigned int i = 0; i != inSegments.size(); ++i) { // loop through all nodes
             
-            if (!getVisited(i) && !getDeleted(i)) { // check if the node was already visited
+            if (!getVisited(i) && !getDeleted(i)) { // check if the node was already visited and not deleted
         
-                dfsScaffolds(i, scaffSize, &A, &C, &G, &T, &lowerCount); // then walk the scaffold to update statistics
+                dfsScaffolds(i, &scaffSize, &A, &C, &G, &T, &lowerCount); // then walk the scaffold to update statistics
              
                 scaffN++;
                 
@@ -2023,7 +2030,6 @@ public:
                 verbose(verbose_flag, "Increased count of lower bases");
                 
                 lowerCount = 0;
-
                 
             }
             
