@@ -149,7 +149,7 @@ public:
                 
                 verbose(verbose_flag, "Graph DFS");
                 
-                for (unsigned int i = 0; i != inSequences.getInSegments().size(); ++i) { // loop through all edges
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all node edges
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
@@ -183,13 +183,13 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
-                    
-                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
+                verbose(verbose_flag, "Graph DFS");
+                
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all node edges
+
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
-                        verbose(verbose_flag, "Graph DFS");
                         inSequences.dfsSeq(i, inSeq, &inSeqQual); // if not, visit all connected components recursively
                         
                         *stream<<"@"<<inSequences.getInSegment(i).getSeqHeader()<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n"<<inSeq<<"\n+\n"<<inSeqQual<<"\n";
@@ -552,7 +552,7 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getInSegments().size(); ++i) { // loop through all edges
+                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
