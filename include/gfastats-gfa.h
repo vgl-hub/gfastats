@@ -1257,7 +1257,7 @@ public:
         
         visited.clear();
         
-//        assignIds();
+//        assignIds(); // this is not used at present, and seems outdated (segfault on some templates)
         
     }
     
