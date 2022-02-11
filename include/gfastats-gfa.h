@@ -1447,7 +1447,7 @@ public:
              
                 inSequence += inSequenceNext;
                 
-                inSequence += std::string(std::get<3>(adjListFW.at(v).at(1)), 'N'); // add gap
+                inSequence += std::string(std::get<3>(adjListBW.at(v).at(1)), 'N'); // add gap
                 
             }else{
             
@@ -1455,7 +1455,7 @@ public:
             
                 inSequence += inSequenceNext;
                 
-                inSequence += std::string(std::get<3>(adjListFW.at(v).at(0)), 'N'); // add gap
+                inSequence += std::string(std::get<3>(adjListBW.at(v).at(0)), 'N'); // add gap
                 
             }
             
@@ -1464,16 +1464,20 @@ public:
                 if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
                 
                     inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequenceQuality() : rev(inSegments[idx].getInSequenceQuality());
+                    
+                    *inSequenceQuality += inSequenceQualityNext;
+                    
+                    *inSequenceQuality += std::string(std::get<3>(adjListBW.at(v).at(1)), '!'); // add missing quality
                 
                 }else{
                     
                     inSequenceQualityNext = (std::get<0>(adjListBW.at(v).at(1)) == '+') ? inSegments[idx].getInSequenceQuality() : rev(inSegments[idx].getInSequenceQuality());
                     
-                }
+                    *inSequenceQuality += inSequenceQualityNext;
                     
-                *inSequenceQuality += inSequenceQualityNext;
-                
-                *inSequenceQuality += std::string(std::get<3>(adjListFW.at(v).at(0)), '!'); // add missing quality
+                    *inSequenceQuality += std::string(std::get<3>(adjListBW.at(v).at(0)), '!'); // add missing quality
+                    
+                }
                 
             }
             
