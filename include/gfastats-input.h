@@ -147,6 +147,8 @@ public:
             stream = make_unique<std::istream>(zfin.rdbuf());
             
         } else if (isPipe && (pipeType == 's')) { // input is from pipe
+            
+            std::cin.read((char*)(&buffer[0]), 2);
 
             if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) { // check if pipe is gzipped
 
