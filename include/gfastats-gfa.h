@@ -335,7 +335,7 @@ class InSequences { //collection of InSegment and inGap objects and their summar
 private:
     
     //gfa variables
-    std::vector<InSegment> inSegments = std::vector<InSegment>();
+    std::vector<InSegment> inSegments;
     std::vector<InGap> inGaps;
     std::vector<std::vector<Tuple>> adjListFW;
     std::vector<std::vector<Tuple>> adjListBW;

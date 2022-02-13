@@ -18,11 +18,11 @@ class InFile {
     
 public:
     
-    bool getFasta(std::istream &is, std::string& s) // buffer reader for fasta
+    bool getFasta(std::istream& is, std::string& s) // buffer reader for fasta
     {
         s.clear();
         
-        int i = 0, buffer_s = 150000000;
+        int i = 0, buffer_s = 200000000;
         
         char* str = (char*) malloc(buffer_s * sizeof(char));
         char* str_new = (char*) malloc(buffer_s * sizeof(char));
