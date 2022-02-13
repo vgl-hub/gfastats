@@ -246,7 +246,7 @@ public:
                 }
                 case '@': {
                     
-                    if (isPipe && pipeType == 's' || determineGzip(iSeqFileArg)) { // pipe input
+                    if ((isPipe && pipeType == 's') || determineGzip(iSeqFileArg)) { // pipe input
                         
                         firstLine.erase(0, 1);
                         
