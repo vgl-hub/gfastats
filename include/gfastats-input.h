@@ -22,7 +22,7 @@ public:
     {
         s.clear();
         
-        int i = 0, buffer_s = 200000000;
+        int i = 0, buffer_s = 500000000;
         
         char* str = (char*) malloc(buffer_s * sizeof(char));
         char* str_new = (char*) malloc(buffer_s * sizeof(char));
