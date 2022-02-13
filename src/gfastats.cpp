@@ -304,15 +304,15 @@ int main(int argc, char **argv) {
     
     InFile inFile; // initialize sequence input file object
     
-    verbose(verbose_flag, "File object generated");
+    verbose("File object generated");
     
     InSequences inSequences; // initialize sequence collection object
     
-    verbose(verbose_flag, "Sequence object generated");
+    verbose("Sequence object generated");
     
     inSequences = inFile.readFiles(iSeqFileArg, iSakFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType); // read the sequence input file object into the sequence collection object
     
-    verbose(verbose_flag, "Finished reading sequences from file to sequence object");
+    verbose("Finished reading sequences from file to sequence object");
     
     InSegment inSegment; // initialize a single input sequence object for output purposes
     
@@ -362,7 +362,7 @@ int main(int argc, char **argv) {
         
     }
     
-    verbose(verbose_flag, "Generated output");
+    verbose("Generated output");
     
     exit(EXIT_SUCCESS);
     

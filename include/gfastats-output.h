@@ -147,7 +147,7 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                verbose(verbose_flag, "Graph DFS");
+                verbose("Graph DFS");
                 
                 for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all node edges
                     
@@ -183,7 +183,7 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                verbose(verbose_flag, "Graph DFS");
+                verbose("Graph DFS");
                 
                 for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all node edges
 
@@ -319,7 +319,7 @@ public:
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
-                        verbose(verbose_flag, "Graph DFS");
+                        verbose("Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         std::cout<<seqHeader<<"\t"<<inSeq.size()<<"\n";
@@ -391,7 +391,7 @@ public:
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
-                        verbose(verbose_flag, "Graph DFS");
+                        verbose("Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         for (char &base : inSeq) {
@@ -477,7 +477,7 @@ public:
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
-                        verbose(verbose_flag, "Graph DFS");
+                        verbose("Graph DFS");
                         inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         for (char &base : inSeq) {
@@ -562,7 +562,7 @@ public:
                             
                             cStart = 1, cEnd = 1;
                             
-                            verbose(verbose_flag, "Graph DFS");
+                            verbose("Graph DFS");
                             
                             inSequences.dfsAgp(i, outAgp, cStart, cEnd); // if not, visit all connected components recursively
                         

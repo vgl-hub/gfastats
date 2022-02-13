@@ -163,7 +163,7 @@ public:
                 exit(1);
         }
         
-        verbose(verbose_flag, "Instruction read");
+        verbose("Instruction read");
         
         return instruction;
         

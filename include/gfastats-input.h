@@ -18,6 +18,35 @@ class InFile {
     
 public:
     
+    bool getFasta(std::istream &is, std::string& s) // buffer reader for fasta
+    {
+        s.clear();
+        
+        int i = 0, buffer_s = 150000000;
+        
+        char* str = (char*) malloc(buffer_s * sizeof(char));
+        char* str_new = (char*) malloc(buffer_s * sizeof(char));
+        
+        is.getline(str, buffer_s, '>');
+        
+        for(char* c = str; *c != '\0'; c++) {
+
+            if (*c != '\n') {
+
+                str_new[i] = *c; i++;
+
+            }
+
+        }
+
+        s = str_new;
+        free(str);
+        free(str_new);
+
+        return is.eof() ? false : true;
+
+    }
+    
     InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
@@ -26,7 +55,7 @@ public:
         
         std::vector<Instruction> instructions;
         
-        unsigned int idx = 0, begin = 0, end = 0;
+        unsigned int begin = 0, end = 0;
  
         if (!iSakFileArg.empty() || (isPipe && (pipeType == 'k'))) {
             
@@ -118,8 +147,6 @@ public:
             stream = make_unique<std::istream>(zfin.rdbuf());
             
         } else if (isPipe && (pipeType == 's')) { // input is from pipe
-            
-            std::cin.read((char*)(&buffer[0]), 2);
 
             if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) { // check if pipe is gzipped
 
@@ -173,19 +200,45 @@ public:
                     
                     if ((isPipe && pipeType == 's') || determineGzip(iSeqFileArg)) {
                         
-                        parseFasta(firstLine, inSequences, seqHeader, seqComment, inSequence, idx, bedIncludeList, bedExcludeList);
+                        firstLine.erase(0, 1);
+                        
+                        h = std::string(strtok(strdup(firstLine.c_str())," ")); //process header line
+                        c = strtok(NULL,""); //read comment
+                        
+                        seqHeader = h;
+                        
+                        if (c != NULL) {
+                            
+                            seqComment = std::string(c);
+                            
+                        }
                         
                     }
                     
-                    while (getline(*stream, newLine)) {
+                    while (getFasta(*stream, inSequence)) {
                         
-                        parseFasta(newLine, inSequences, seqHeader, seqComment, inSequence, idx, bedIncludeList, bedExcludeList);
+                        verbose("Individual fasta sequence read");
+                        
+                        includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                        
+                        getline(*stream, newLine);
+                        
+                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+                        c = strtok(NULL,""); //read comment
+                        
+                        seqHeader = h;
+                        
+                        if (c != NULL) {
+                            
+                            seqComment = std::string(c);
+                            
+                        }
                         
                     }
                     
                     includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                     
-                    verbose(verbose_flag, "End of file");
+                    verbose("End of file");
                     
                     break;
                 }
@@ -296,29 +349,29 @@ public:
                         if (arguments[2] != "") {
                             
                             version = arguments[2];
-                            verbose(verbose_flag, "GFA version: " + version);
+                            verbose("GFA version: " + version);
                             
                         }else{
                             
-                            verbose(verbose_flag, "Failed to parse GFA version. Please check your header.");
+                            verbose("Failed to parse GFA version. Please check your header.");
                             
                         }
                     
                     }else{
                             
-                        verbose(verbose_flag, "Cannot recognize GFA version from first line. Trying to detect from content.");
+                        verbose("Cannot recognize GFA version from first line. Trying to detect from content.");
                         
                         if (arguments[0] == "S") {
                             
                             if (isInt(arguments[2]) || arguments[2] == "*") {
                                 
                                 version = '2';
-                                verbose(verbose_flag, "Proposed GFA version: " + version);
+                                verbose("Proposed GFA version: " + version);
                                 
                             }else{
                                 
                                 version = '1';
-                                verbose(verbose_flag, "Proposed GFA version: " + version);
+                                verbose("Proposed GFA version: " + version);
                                 
                             }
                             
@@ -326,7 +379,7 @@ public:
                         }else if (arguments[0] == "G") {
                             
                             version = '2';
-                            verbose(verbose_flag, "Proposed GFA version: " + version);
+                            verbose("Proposed GFA version: " + version);
                             
                         }
                             
@@ -508,7 +561,7 @@ public:
                 
                 inSequences.updateScaffoldStats();
                 
-                verbose(verbose_flag, "Updated scaffold statistics");
+                verbose("Updated scaffold statistics");
                 
             }
                 
@@ -526,7 +579,7 @@ public:
         
         if (!instructions.empty()) {
             
-            verbose(verbose_flag, "\nStarted instruction execution");
+            verbose("\nStarted instruction execution");
         
             SAK sak; // create a new swiss army knife
             
@@ -534,71 +587,20 @@ public:
                 
                 sak.executeInstruction(inSequences, instruction);
                 
-                verbose(verbose_flag, instruction.action + " instruction executed");
+                verbose(instruction.action + " instruction executed");
                 
             }
             
             inSequences.updateScaffoldStats();
             
-            verbose(verbose_flag, "Updated scaffold statistics");
+            verbose("Updated scaffold statistics");
         
         }
         
         return inSequences;
         
     }
-    
-    void parseFasta(std::string &newLine, InSequences &inSequences, std::string &seqHeader, std::string &seqComment, std::string &inSequence, unsigned int &idx, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList) {
         
-        switch (newLine[0]) {
-            case '\n':{
-                
-                break;
-            
-            }
-            case '>': {
-                
-                if (idx> 0) {
-                    
-                    verbose(verbose_flag, "Individual fasta sequence read");
-                    
-                    includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
-                    
-                    inSequence = "";
-                    
-                }
-                
-                newLine.erase(0, 1);
-                
-                h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-                c = strtok(NULL,""); //read comment
-                
-                seqHeader = h;
-                
-                if (c != NULL) {
-                    
-                    seqComment = std::string(c);
-                    
-                }
-                
-                idx++;
-                
-                break;
-            }
-            case ' ':{
-                
-                break;
-            }
-            default: {
-                
-                inSequence.append(newLine);
-                
-            }
-                
-        }
-        
-    }
-    
     void includeExcludeAppend(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL) {
  
         bedIncludeListHeaders = bedIncludeList.getSeqHeaders();
@@ -672,7 +674,7 @@ public:
             
             }else {
                 
-                verbose(verbose_flag, "Scaffold entirely removed as a result of include: " + *seqHeader);
+                verbose("Scaffold entirely removed as a result of include: " + *seqHeader);
                 
             }
                 
@@ -728,7 +730,7 @@ public:
             
             }else {
                 
-                verbose(verbose_flag, "Scaffold entirely removed as a result of exclude: " + *seqHeader);
+                verbose("Scaffold entirely removed as a result of exclude: " + *seqHeader);
                 
             }
                     
@@ -817,7 +819,7 @@ public:
             
             }else {
                 
-                verbose(verbose_flag, "Scaffold entirely removed as a result of include: " + *seqHeader);
+                verbose("Scaffold entirely removed as a result of include: " + *seqHeader);
                 
             }
                 
@@ -872,7 +874,7 @@ public:
             
             }else {
                 
-                verbose(verbose_flag, "Scaffold entirely removed as a result of exclude: " + *seqHeader);
+                verbose("Scaffold entirely removed as a result of exclude: " + *seqHeader);
                 
             }
                     

@@ -32,7 +32,7 @@ double elapsedTime(){ // compute runtime in verbose mode
     
 }
 
-void verbose(int &verbose_flag, std::string msg) { // verbose decorated output
+void verbose(std::string msg) { // verbose decorated output
     
     if(verbose_flag) {
         

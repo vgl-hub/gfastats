@@ -403,43 +403,43 @@ public:
             
         }
         
-        verbose(verbose_flag, "Processing segment: " + seqHeader);
+        verbose("Processing segment: " + seqHeader);
         
         inSegment.setInSequence(sequence);
         
-        verbose(verbose_flag, "Sequence set");
+        verbose("Sequence set");
         
         if (sequenceQuality != NULL) {
             
             inSegment.setInSequenceQuality(sequenceQuality);
             
-            verbose(verbose_flag, "Sequence quality set");
+            verbose("Sequence quality set");
             
         }
         
         inSegment.setACGT(A, C, G, T);
         
-        verbose(verbose_flag, "Increased ACGT counts");
+        verbose("Increased ACGT counts");
         
         inSegment.setLowerCount(lowerCount);
         
-        verbose(verbose_flag, "Increased count of lower bases");
+        verbose("Increased count of lower bases");
         
         inSegments.push_back(inSegment); // adding segment to segment set
         
         // operations of the segment set
         
-        verbose(verbose_flag, "Segment added to sequence vector");
+        verbose("Segment added to sequence vector");
         
         unsigned int seqSize = sequence->size();
         
         contigLens.push_back(seqSize);
         
-        verbose(verbose_flag, "Recorded length of sequence");
+        verbose("Recorded length of sequence");
         
         changeTotSegmentLen(seqSize);
         
-        verbose(verbose_flag, "Increased total segment length");
+        verbose("Increased total segment length");
         
     }
     
@@ -632,7 +632,7 @@ public:
         
         recordScaffLen(seqLen+1);
         
-        verbose(verbose_flag, "Recorded length of sequence");
+        verbose("Recorded length of sequence");
         
     }
     
@@ -707,15 +707,15 @@ public:
     
     void appendSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence from a fasta
         
-        verbose(verbose_flag, "Header, comment, sequence and (optionally) quality read");
+        verbose("Header, comment, sequence and (optionally) quality read");
         
         traverseInSequence(seqHeader, seqComment, sequence, sequenceQuality);
         
-        verbose(verbose_flag, "Sequence traversed");
+        verbose("Sequence traversed");
         
         scaffN++;
         
-        verbose(verbose_flag, "Increased total scaffold N");
+        verbose("Increased total scaffold N");
         
         if(verbose_flag) {std::cout<<"\n";};
         
@@ -723,11 +723,11 @@ public:
     
     void appendSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new segment from a gfa
         
-        verbose(verbose_flag, "Header, comment, sequence and (optionally) quality read");
+        verbose("Header, comment, sequence and (optionally) quality read");
         
         traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality);
         
-        verbose(verbose_flag, "Segment traversed");
+        verbose("Segment traversed");
         
         if(verbose_flag) {std::cout<<"\n";};
         
@@ -1167,19 +1167,19 @@ public:
     //gfa methods
     bool appendGap(InGap inGap) {
         
-        verbose(verbose_flag, "Added nodes to hash table");
+        verbose("Added nodes to hash table");
         
         recordGapLen(inGap.dist);
         
-        verbose(verbose_flag, "Recorded length of gaps in sequence");
+        verbose("Recorded length of gaps in sequence");
         
         changeTotGapLen(inGap.dist);
         
-        verbose(verbose_flag, "Increased total gap length");
+        verbose("Increased total gap length");
         
         inGaps.push_back(inGap);
 
-        verbose(verbose_flag, "Gap added to gap vector");
+        verbose("Gap added to gap vector");
         
         return true;
         
@@ -1232,7 +1232,7 @@ public:
     void buildGraph(std::vector<InGap> const& edges) // graph Constructor
     {
         
-        verbose(verbose_flag, "Started graph construction");
+        verbose("Started graph construction");
         
         adjListFW.clear();
         adjListBW.clear();
@@ -1243,17 +1243,17 @@ public:
         for (auto &edge: edges) // add edges to the graph
         {
             
-            verbose(verbose_flag, "Adding forward node: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            verbose("Adding forward node: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
             
             adjListFW.at(edge.sId1).push_back(std::make_tuple(edge.sId1Or, edge.sId2, edge.sId2Or, edge.dist)); // insert at gap start gap destination, orientations and weight (gap size)
 
-            verbose(verbose_flag, "Adding reverse node: " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            verbose("Adding reverse node: " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
             
             adjListBW.at(edge.sId2).push_back(std::make_tuple(edge.sId2Or, edge.sId1, edge.sId1Or, edge.dist)); // undirected graph
             
         }
         
-        verbose(verbose_flag, "Graph built");
+        verbose("Graph built");
         
         visited.clear();
         
@@ -1283,7 +1283,7 @@ public:
         
         visited.clear();
         
-        verbose(verbose_flag, "Assigned node IDs");
+        verbose("Assigned node IDs");
         
     }
     
@@ -1295,35 +1295,35 @@ public:
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
             
             backward = false;
             
         }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
             
             backward = true; // reached the end
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
             backward = true; // reached the end
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
             
             backward = true;
             
         }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case e: disconnected component");
+            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
             
             visited.clear();
             
@@ -1337,7 +1337,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
             
             visited.clear();
             
@@ -1351,7 +1351,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
             
             backward = false;
             
@@ -1359,7 +1359,7 @@ public:
         
         inSegments[v].setsId(*sId); // set the sId for the node
         
-        verbose(verbose_flag, "Assigned node internal id: " + std::to_string(*sId));
+        verbose("Assigned node internal id: " + std::to_string(*sId));
         
         for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
             
@@ -1399,7 +1399,7 @@ public:
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
             
             inSequence = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSequence : revCom(inSequence); // check if sequence should be in forward orientation, if not reverse-complement
             
@@ -1421,7 +1421,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
             
             inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
             
@@ -1439,7 +1439,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
             if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
             
@@ -1485,7 +1485,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
             
             inSequenceNext = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
             
@@ -1503,7 +1503,7 @@ public:
             
         }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case e: disconnected component");
+            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
             
             inSequence += inSegments[idx].getInSequence();
             
@@ -1515,7 +1515,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
             
             inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
             
@@ -1533,7 +1533,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
             
             inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
             
@@ -1555,7 +1555,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
             
             inSequenceNext = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? inSegments[idx].getInSequence() : revCom(inSegments[idx].getInSequence());
             
@@ -1628,7 +1628,7 @@ public:
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
             
             if (first) {
             
@@ -1646,7 +1646,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
             
             if (first) {
             
@@ -1664,7 +1664,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
             if (first) {
             
@@ -1688,13 +1688,13 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction, doing nothing");
+            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction, doing nothing");
             
             backward = true;
             
         }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case e: disconnected component");
+            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
             
             agpNext = seqHeader+"\t1\t"+std::to_string(inSegments[idx].getInSequence().size())+"\t1\tW\t"+inSegments[idx].getSeqHeader()+"\t1\t"+std::to_string(inSegments[idx].getInSequence().size())+"\t+\n";
             
@@ -1702,7 +1702,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
             
             cStart = 1;
             
@@ -1724,7 +1724,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a start gap
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
             
             cStart = 1;
             
@@ -1754,7 +1754,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
             
             std::get<2>(adjListFW.at(v).at(0)) == '-' ? // if negative gap (-)
             cStart = 1 :
@@ -1832,7 +1832,7 @@ public:
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
             
             seqRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true; // check if sequence should be in forward orientation, if not reverse-complement
             
@@ -1853,7 +1853,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
             
             segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
             
@@ -1861,7 +1861,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
             if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
             
@@ -1881,7 +1881,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
             
             segRevCom = (std::get<0>(adjListBW.at(v).at(0)) == '+') ? false : true;
             
@@ -1889,11 +1889,11 @@ public:
             
         }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case e: disconnected component");
+            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
             
             segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
             
@@ -1901,7 +1901,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
             
             segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
             
@@ -1911,7 +1911,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
             
-            verbose(verbose_flag, "node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
             
             segRevCom = (std::get<0>(adjListFW.at(v).at(0)) == '+') ? false : true;
             
@@ -2012,11 +2012,11 @@ public:
              
                 scaffN++;
                 
-                verbose(verbose_flag, "Increased total scaffold N");
+                verbose("Increased total scaffold N");
                 
                 recordScaffLen(scaffSize);
                 
-                verbose(verbose_flag, "Recorded length of sequence: " + std::to_string(scaffSize));
+                verbose("Recorded length of sequence: " + std::to_string(scaffSize));
                 
                 scaffSize = 0;
                 
@@ -2025,13 +2025,13 @@ public:
                 totG += G;
                 totT += T;
                 
-                verbose(verbose_flag, "Increased ACGT counts");
+                verbose("Increased ACGT counts");
                 
                 A = 0, C = 0, G = 0, T = 0;
                 
                 totLowerCount += lowerCount;
 
-                verbose(verbose_flag, "Increased count of lower bases");
+                verbose("Increased count of lower bases");
                 
                 lowerCount = 0;
                 
@@ -2056,7 +2056,7 @@ public:
             
         }
         
-        verbose(verbose_flag, "Updated list of gap lengths");
+        verbose("Updated list of gap lengths");
         
         return true;
         
@@ -2089,7 +2089,7 @@ public:
         
             recordGapLen(inGaps[i].getDist());
             
-            verbose(verbose_flag, "Recorded length of gaps in sequence");
+            verbose("Recorded length of gaps in sequence");
             
         }
         
@@ -2211,7 +2211,7 @@ public:
             
         }else{
             
-            verbose(verbose_flag, "Cannot detect node: " + *contig1);
+            verbose("Cannot detect node: " + *contig1);
             
         }
         
