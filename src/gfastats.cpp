@@ -6,7 +6,7 @@
 
 #include <gfastats.h>
 
-std::string version = "1.0";
+std::string version = "1.1";
 
 int main(int argc, char **argv) {
     
@@ -283,7 +283,7 @@ int main(int argc, char **argv) {
                 exit(0);
         }
         
-        if   (argc == 2 || // handle various cases in which the output should include summary stats
+        if    (argc == 2 || // handle various cases in which the output should include summary stats
               (argc == 3 && pos_op == 2) ||
               (argc == 4 && pos_op == 3) ||
               nstarReport_flag) {

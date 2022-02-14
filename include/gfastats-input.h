@@ -240,8 +240,6 @@ public:
                     
                     includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                     
-                    verbose("End of file");
-                    
                     break;
                 }
                 case '@': {
@@ -376,7 +374,6 @@ public:
                                 verbose("Proposed GFA version: " + version);
                                 
                             }
-                            
                             
                         }else if (arguments[0] == "G") {
                             
@@ -559,6 +556,8 @@ public:
                 
             }
             
+            verbose("End of file");
+            
             if (instructions.empty()) { // it only makes sense to update the stats if we are not manipulating the sequence
                 
                 inSequences.updateScaffoldStats();
@@ -570,6 +569,7 @@ public:
         }else{
 
             printf("Stream not successful: %s", iSeqFileArg.c_str());
+            exit(1);
 
         }
         

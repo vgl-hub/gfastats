@@ -274,12 +274,12 @@ public:
     void setgId(unsigned int i) { // temporary id, internal to scaffold
         gId = i;
     }
-    
-    void setsId1(unsigned int i) { // temporary id, internal to scaffold
+
+    void setsId1(unsigned int i) {
         sId1 = i;
     }
     
-    void setsId2(unsigned int i) { // temporary id, internal to scaffold
+    void setsId2(unsigned int i) {
         sId2 = i;
     }
     
