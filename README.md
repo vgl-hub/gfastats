@@ -27,7 +27,7 @@ Additionally, input can be filtered using scaffold lists or `bed` coordinate fil
 Importantly, the filtered input can be outputted in any \*fa\* (fasta, fastq, gfa [.gz]) format.
 
 ## Installation
-Either download one of the releases or `git clone https://github.com/vgl-hub/gfastats.git` and `make`.
+Either download one of the releases or `git clone https://github.com/vgl-hub/gfastats.git` and `make` in `gfastats` folder.
 
 ## Usage
 `gfastats input.[fasta|fastq|gfa][.gz] [expected genome size] [header[:start-end]]`
