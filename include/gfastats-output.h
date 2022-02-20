@@ -11,14 +11,15 @@
 //classes
 class Report {
 private:
-    unsigned int counter = 0;
+    unsigned int counter = 0, segN = 0;
     
 public:
     bool seqReport(InSequences &inSequences, InSegment &inSegment, int &outSequence_flag) { // method to output the summary statistics for each sequence
         
         counter = 0;
+        segN = inSequences.getSegmentN();
 
-        while (counter < inSequences.getSegmentN()) {
+        while (counter < segN) {
 
             inSegment = inSequences.getInSegment(counter);
 
@@ -149,7 +150,9 @@ public:
                 
                 verbose("Graph DFS");
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all node edges
+                segN = inSequences.getSegmentN();
+                
+                for (unsigned int i = 0; i < segN; ++i) { // loop through all nodes
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
                         
@@ -185,7 +188,9 @@ public:
                 
                 verbose("Graph DFS");
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all node edges
+                segN = inSequences.getSegmentN();
+                
+                for (unsigned int i = 0; i < segN; ++i) { // loop through all node edges
 
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
@@ -310,7 +315,9 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
+                segN = inSequences.getSegmentN();
+                
+                for (unsigned int i = 0; i < segN; ++i) { // loop through all nodes
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
@@ -382,7 +389,9 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
+                segN = inSequences.getSegmentN();
+                
+                for (unsigned int i = 0; i < segN; ++i) { // loop through all nodes
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
@@ -468,7 +477,9 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
+                segN = inSequences.getSegmentN();
+                
+                for (unsigned int i = 0; i < segN; ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
@@ -552,7 +563,9 @@ public:
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
-                for (unsigned int i = 0; i != inSequences.getAdjListFW().size(); ++i) { // loop through all edges
+                segN = inSequences.getSegmentN();
+                
+                for (unsigned int i = 0; i < segN; ++i) { // loop through all edges
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 

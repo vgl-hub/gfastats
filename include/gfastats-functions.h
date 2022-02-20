@@ -9,7 +9,7 @@
 #define GFASTATS_FUNCTIONS_H
 
 //typedef
-typedef std::tuple<char, unsigned long long int, char, unsigned long long int> Tuple;
+typedef std::tuple<char, unsigned int, char, unsigned int> Tuple;
 
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
