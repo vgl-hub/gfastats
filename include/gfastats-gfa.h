@@ -1229,7 +1229,7 @@ public:
 
     }
     
-    void buildGraph(std::vector<InGap> const& edges) // graph Constructor
+    void buildGraph(std::vector<InGap> const& edges) // graph constructor
     {
         
         verbose("Started graph construction");
@@ -1237,17 +1237,17 @@ public:
         adjListFW.clear();
         adjListBW.clear();
         
-        adjListFW.resize(inSegments.size()); // resize the segment vector to hold all edges
-        adjListBW.resize(inSegments.size()); // resize the segment vector to hold all edges
+        adjListFW.resize(inSegments.size()); // resize the adjaciency list to hold all edges
+        adjListBW.resize(inSegments.size()); // resize the adjaciency list to hold all edges
         
         for (auto &edge: edges) // add edges to the graph
         {
             
-            verbose("Adding forward node: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            verbose("Adding forward edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
             
             adjListFW.at(edge.sId1).push_back(std::make_tuple(edge.sId1Or, edge.sId2, edge.sId2Or, edge.dist)); // insert at gap start gap destination, orientations and weight (gap size)
 
-            verbose("Adding reverse node: " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            verbose("Adding reverse edge: " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
             
             adjListBW.at(edge.sId2).push_back(std::make_tuple(edge.sId2Or, edge.sId1, edge.sId1Or, edge.dist)); // undirected graph
             

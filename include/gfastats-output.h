@@ -565,7 +565,7 @@ public:
                 
                 segN = inSequences.getSegmentN();
                 
-                for (unsigned int i = 0; i < segN; ++i) { // loop through all edges
+                for (unsigned int i = 0; i < segN; ++i) { // loop through all nodes
                     
                     InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
                 
