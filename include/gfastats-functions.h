@@ -8,6 +8,13 @@
 #ifndef GFASTATS_FUNCTIONS_H
 #define GFASTATS_FUNCTIONS_H
 
+#include <gfastats-global.h>
+#include <memory>
+#include <chrono>
+#include <cstring>
+#include <sstream>
+#include <algorithm>
+
 //typedef
 typedef std::tuple<char, unsigned int, char, unsigned int> Tuple;
 
