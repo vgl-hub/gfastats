@@ -8,6 +8,8 @@
 #ifndef GFASTATS_GLOBAL_H
 #define GFASTATS_GLOBAL_H
 
+#include <chrono>
+
 //global
 static auto start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
 
