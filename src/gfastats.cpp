@@ -270,6 +270,7 @@ int main(int argc, char **argv) {
                 printf("-b --out-coord a|c|g generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined (no coordinates).\n");
+                printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
                 printf("-h --help print help and exit.\n");
