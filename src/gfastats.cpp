@@ -262,14 +262,15 @@ int main(int argc, char **argv) {
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("\nOptions:\n");
-                printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
+                printf("-f --fasta <file> input file (fasta, fastq, gfa [.gz]). Also as first positional argument.\n");
                 printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
                 printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 
                 printf("-s --out-size s|c|g  generates bed coordinates of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
-                printf("-b a|c|g --out-coord generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
+                printf("-b --out-coord a|c|g generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined (no coordinates).\n");
+                printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
                 printf("-h --help print help and exit.\n");
