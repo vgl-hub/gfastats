@@ -17,7 +17,9 @@ SPLIT contig1+ contig2+
 ```
 
 ## EXCISE
+
 The EXCISE instruction removes contig1 from its scaffold, leading to the following potential outcomes:
+
 - If the length of a new gap is set, it excises contig1 from the scaffold leaving it unplaced and adding a gap of the given size with optional id gap1 between the original sequences
 - if the length is not set, it effectively splits the scaffold in two
 
@@ -26,6 +28,7 @@ EXCISE contig1 [50] [gap1] // new 50 bp gap
 ```
 
 ## REMOVE
+
 The REMOVE instruction removes contig1 from the segment set, effectively splitting the scaffold in two if the contig is part of a scaffold.
 
 ```
@@ -33,6 +36,7 @@ REMOVE contig1
 ```
 
 ## ERASE
+
 The ERASE instruction trims off the sequence range specified from the given segment.
 
 ```
@@ -40,6 +44,7 @@ ERASE contig1:10-100 // deletes contig1 sequence between the coordinates provide
 ```
 
 ## RVCP
+
 The RVCP instruction reverse-complements contig1 sequence in place
 
 ```
@@ -47,6 +52,7 @@ RVCP contig1
 ```
 
 ## INVERT
+
 The INVERT instruction inverts contig1 sequence in place
 
 ```
