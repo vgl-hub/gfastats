@@ -1,6 +1,7 @@
-CC = g++
+CC ?= g++
+INCLUDE_DIR ?= -I./include
 
-CFLAGS  = -g -Wall -std=c++11 -O3 -I./include
+CFLAGS  = $(CFLAGS) -g -Wall -std=c++11 -O3 $(INCLUDE_DIR)
 
 TARGET = gfastats
 BUILD_PATH = build/bin
