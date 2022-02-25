@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("\nOptions:\n");
-                printf("-f --fasta <file> fasta input. Also as first positional argument.\n");
+                printf("-f --fasta <file> input file (fasta, fastq, gfa [.gz]). Also as first positional argument.\n");
                 printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
                 printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 
