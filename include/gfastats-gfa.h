@@ -326,9 +326,90 @@ public:
     }
     
 };
-class InEdges {};
-class InOlines {};
-class InUlines {};
+class InEdge {
+    private:
+//    unsigned long long int lineN; // useful if we wish to sort as is the original input
+    std::string cigar;
+    char sId1Or, sId2Or;
+    unsigned int eUId, eId, sId1, sId2;
+    
+    friend class SAK;
+    friend class InSequences;
+    
+public:
+    void newEdge(unsigned int eUid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, std::string c = "") {
+        
+        eUId = eUid;
+        sId1 = sid1;
+        sId2 = sid2;
+        sId1Or = sid1or;
+        sId2Or = sid2or;
+        cigar = c;
+        
+    }
+
+    void seteUId(unsigned int i) { // absolute id
+        eUId = i;
+    }
+    
+    void seteId(unsigned int i) { // temporary id, internal to scaffold
+        eId = i;
+    }
+
+    void setsId1(unsigned int i) {
+        sId1 = i;
+    }
+    
+    void setsId2(unsigned int i) {
+        sId2 = i;
+    }
+    
+    std::string getCigar() {
+        
+        return cigar;
+        
+    }
+    
+    unsigned int geteUId() {
+        
+        return eUId;
+        
+    }
+
+    unsigned int geteId() {
+        
+        return eId;
+        
+    }
+    
+    unsigned int getsId1() {
+        
+        return sId1;
+        
+    }
+    
+    char getsId1Or() {
+        
+        return sId1Or;
+        
+    }
+    
+    unsigned int getsId2() {
+        
+        return sId2;
+        
+    }
+    
+    char getsId2Or() {
+        
+        return sId2Or;
+        
+    }
+    
+};
+
+class InOline {};
+class InUline {};
 
 class InSequences { //collection of InSegment and inGap objects and their summary statistics
     
@@ -337,15 +418,15 @@ private:
     //gfa variables
     std::vector<InSegment> inSegments;
     std::vector<InGap> inGaps;
+    std::vector<InEdge> inEdges;
     std::vector<std::vector<Tuple>> adjListFW;
     std::vector<std::vector<Tuple>> adjListBW;
     std::unordered_map<std::string, unsigned int> headersToIds;
     std::unordered_map<unsigned int, std::string> idsToHeaders;
     std::unordered_map<int, bool> visited, deleted;
     bool backward = false, first = false;
-    //InEdges inEdges;
-    //InOlines inOlines;
-    //InUlines inUlines;
+    //InOlines inOline;
+    //InUlines inUline;
     
     std::vector<unsigned int> scaffLens;
     std::vector<unsigned int> contigLens;
@@ -368,6 +449,7 @@ private:
     
     InSegment inSegment;
     InGap gap;
+    InEdge edge;
     
     unsigned long long int totSegmentLen = 0;
     
@@ -1166,9 +1248,7 @@ public:
     
     //gfa methods
     bool appendGap(InGap inGap) {
-        
-        verbose("Added nodes to hash table");
-        
+        // 
         recordGapLen(inGap.dist);
         
         verbose("Recorded length of gaps in sequence");
@@ -1191,14 +1271,31 @@ public:
         
     }
     
-    //gfa methods
+    bool appendEdge(InEdge edge) {
+        
+    //    recordGapLen(inGap.dist);
+        
+        // verbose("Recorded length of gaps in sequence");
+        
+    //    changeTotGapLen(inGap.dist);
+        
+    //    verbose("Increased total gap length");
+        
+        inEdges.push_back(edge);
+
+        verbose("Edge added to edge vector");
+        
+        return true;
+        
+    }
+    
+    
     void insertHash1(std::string segHeader, unsigned int i) {
 
         headersToIds.insert({segHeader, i});
 
     }
 
-    //gfa methods
     void insertHash2(unsigned int i, std::string segHeader) {
 
         idsToHeaders.insert({i, segHeader});
