@@ -52,6 +52,7 @@ bool hasValidTestFileExtension(const std::string &file) {
 }
 
 std::vector<std::string> list_dir(const char *path) {
+    printf("%s\n", path);
     std::vector<std::string> list;
     struct dirent *entry;
     DIR *dir = opendir(path);
