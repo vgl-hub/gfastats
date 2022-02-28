@@ -1,6 +1,6 @@
 +++Summary+++: 
 # scaffolds: 5
-Total scaffold length: 50
+Total scaffold length: 49
 Average scaffold length: 10.00
 Scaffold N50: 15
 Scaffold auN: 12.00
