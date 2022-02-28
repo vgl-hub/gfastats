@@ -52,7 +52,6 @@ bool hasValidTestFileExtension(const std::string &file) {
 }
 
 std::vector<std::string> list_dir(const char *path) {
-    printf("%s\n", path);
     std::vector<std::string> list;
     struct dirent *entry;
     DIR *dir = opendir(path);
@@ -68,7 +67,10 @@ std::vector<std::string> list_dir(const char *path) {
     return list;
 }
 
+std::map<std::string, std::pair<std::string, std::string>> diffs;
+
 bool test(const std::string &testFile) {
+    diffs.clear();
     const std::string expectedOutputPath = testFile+".tst";
 
     std::ifstream istreamActual, istreamExpected;
@@ -88,12 +90,24 @@ bool test(const std::string &testFile) {
     while(std::getline(istreamActual, line)) {
         colonIndex = line.find(':');
         if(colonIndex == std::string::npos) continue;
-        if(expected[line.substr(0, colonIndex)] != line.substr(colonIndex+1)) {
-            return false;
+        std::string key = line.substr(0, colonIndex);
+        std::string actual = line.substr(colonIndex+1);
+        if(expected[key] != actual) {
+            diffs[key] = {expected[key], actual};
         }
     }
 
-    return true;
+    return diffs.size() == 0;
+}
+
+void printFile(const char *fname) {
+    std::ifstream istream;
+    istream.open(fname);
+    if(!istream) return;
+    for(std::string line; std::getline(istream, line);) {
+        printf("    %s\n", line.c_str());
+    }
+    istream.close();
 }
 
 int main(int argc, char **argv) {
@@ -129,21 +143,35 @@ int main(int argc, char **argv) {
 
     char cmd[100];
 
-    auto l = [&cmd, &tested](std::string file) {
+    auto lambda = [&cmd, &tested](std::string file) {
         if(tested.count(file)) return;
         tested.insert(file);
         sprintf(cmd, "%s %s > %s 2>%s", exePath.c_str(), file.c_str(), tmp, err);
-        // printf("%s\n", cmd); // for testing, could add verbose mode
-        printf("%s %s\n", (system(cmd) == EXIT_SUCCESS && test(file) ? "PASS" : "FAIL"), file.c_str());
+        if(veryVerbose) printf("%s\n", cmd);
+        bool exitSuccess = system(cmd) == EXIT_SUCCESS;
+        bool pass = (exitSuccess && test(file));
+        printf("%s %s\n", pass ? "PASS" : "FAIL", file.c_str());
+        if(veryVerbose || (!pass && verbose)) {
+            if(!exitSuccess) {
+                printFile(err);
+            }
+            else if(diffs.size() != 0) {
+                for(auto const &diff : diffs)
+                    printf("    key: %s; expected: %s; actual: %s\n", diff.first.c_str(), diff.second.first.c_str(), diff.second.second.c_str());
+            }
+            else if(!pass) {
+                printf("    failed to open expected output file and/or tmp file");
+            }
+        }
     };
 
     for(const auto &i : input) {
         if(i.second) {
             for (const auto &file : list_dir(i.first.c_str())) {
-                l(i.first+"/"+file);
+                lambda(i.first+"/"+file);
             }
         } else {
-            l(i.first);
+            lambda(i.first);
         }
     }
 
