@@ -1,3 +1,14 @@
+/*
+USAGE:
+test <path to test folder or files>
+
+EXAMPLE:
+build/bin/test testFiles
+build/bin/test testFiles/random1.fasta testFiles/random2.gfa2.gfa.gz
+
+
+*/
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -7,11 +18,30 @@
 #include <unistd.h>
 #include <limits.h>
 #include <map>
-#include <gfastats-functions.h>
+#include <set>
 
+bool verbose = false, veryVerbose = false;
 const char *tmp = "tmp.txt";
 const char *err = "err.txt";
-std::string curPath, exePath, tstPath, expPath;
+std::string curPath, exePath;
+
+std::string rmFileExt(const std::string& path) { // utility to strip file extension from file
+    if (path == "." || path == "..")
+        return path;
+
+    size_t pos = path.find_last_of("\\/.");
+    if (pos != std::string::npos && path[pos] == '.')
+        return path.substr(0, pos);
+
+    return path;
+}
+
+std::string getFileExt(const std::string& FileName) // utility to get file extension
+{
+    if(FileName.find_last_of(".") != std::string::npos)
+        return FileName.substr(FileName.find_last_of(".")+1);
+    return "";
+}
 
 bool hasValidTestFileExtension(const std::string &file) {
     std::string ext = getFileExt(file);
@@ -22,6 +52,7 @@ bool hasValidTestFileExtension(const std::string &file) {
 }
 
 std::vector<std::string> list_dir(const char *path) {
+    printf("%s\n", path);
     std::vector<std::string> list;
     struct dirent *entry;
     DIR *dir = opendir(path);
@@ -38,7 +69,7 @@ std::vector<std::string> list_dir(const char *path) {
 }
 
 bool test(const std::string &testFile) {
-    const std::string expectedOutputPath = tstPath+testFile+".tst";
+    const std::string expectedOutputPath = testFile+".tst";
 
     std::ifstream istreamActual, istreamExpected;
     istreamExpected.open(expectedOutputPath);
@@ -47,7 +78,7 @@ bool test(const std::string &testFile) {
 
     std::map<std::string, std::string> expected;
     std::string line;
-    int colonIndex;
+    size_t colonIndex;
     while(std::getline(istreamExpected, line)) {
         colonIndex = line.find(':');
         if(colonIndex == std::string::npos) continue;
@@ -66,34 +97,54 @@ bool test(const std::string &testFile) {
 }
 
 int main(int argc, char **argv) {
-    if (argc == 1 || argc > 4) { // test with no arguments
-        printf("test <path to gfastats.exe> <path to test folder> <optional explicit extra tests file>\n");
+    if (argc == 1) { // test with no arguments
+        printf("test <path to test folder and/or files>\n");
         exit(0);
     }
 
-    exePath = std::string(argv[1]);
-    tstPath = std::string(argv[2])+'/';
-    expPath = std::string(argc == 4 ? argv[3] : "");
-
-    std::ifstream istreamTst, istreamOut;
-
-    char cmd[100];
-    for (const auto &file : list_dir(tstPath.c_str())) {
-        sprintf(cmd, "%s %s%s > %s 2>%s", exePath.c_str(), tstPath.c_str(), file.c_str(), tmp, err);
-        // uncomment to print the commands before running them
-        // std::cout << cmd << std::endl;
-        if(system(cmd) == EXIT_SUCCESS) {
-            printf("%s %s\n", (test(file) ? "PASS" : "FAIL"), file.c_str());
+    int opt;
+    while((opt = getopt(argc, argv, "vV")) != -1) 
+    {
+        switch(opt) 
+        {
+        case 'V':
+            veryVerbose = true;
+        case 'v':
+            verbose = true;
+            break;
         }
     }
 
-    if(expPath != "") {
-        std::ifstream istreamExtra;
-        istreamExtra.open(expPath);
-        if(istreamExtra) {
-            
+    std::map<std::string, bool> input;
+    std::set<std::string> tested;
+
+    for(int i=1; i<argc; ++i) {
+        DIR *dir = opendir(argv[i]);
+        if(dir != NULL || hasValidTestFileExtension(std::string(argv[i]))) input[argv[i]] = (dir != NULL);
+        closedir(dir);
+    }
+
+    std::string argv0 = std::string(argv[0]);
+    exePath = argv0.substr(0, argv0.find_last_of('\\')+1)+"gfastats.exe";
+
+    char cmd[100];
+
+    auto l = [&cmd, &tested](std::string file) {
+        if(tested.count(file)) return;
+        tested.insert(file);
+        sprintf(cmd, "%s %s > %s 2>%s", exePath.c_str(), file.c_str(), tmp, err);
+        // printf("%s\n", cmd); // for testing, could add verbose mode
+        printf("%s %s\n", (system(cmd) == EXIT_SUCCESS && test(file) ? "PASS" : "FAIL"), file.c_str());
+    };
+
+    for(const auto &i : input) {
+        if(i.second) {
+            for (const auto &file : list_dir(i.first.c_str())) {
+                l(i.first+"/"+file);
+            }
+        } else {
+            l(i.first);
         }
-        istreamExtra.close();
     }
 
     if(remove(tmp) != 0) {
