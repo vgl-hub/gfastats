@@ -20,7 +20,7 @@ build/bin/test testFiles/random1.fasta testFiles/random2.gfa2.gfa.gz
 #include <map>
 #include <set>
 
-bool verbose = false, veryVerbose = false;
+bool verbose = false, veryVerbose = false, printCommand = false;
 const char *tmp = "tmp.txt";
 const char *err = "err.txt";
 std::string curPath, exePath;
@@ -87,17 +87,21 @@ bool test(const std::string &testFile) {
         expected[line.substr(0, colonIndex)] = line.substr(colonIndex+1);
     }
 
+    bool retval=true;
+    bool fail;
     while(std::getline(istreamActual, line)) {
         colonIndex = line.find(':');
         if(colonIndex == std::string::npos) continue;
         std::string key = line.substr(0, colonIndex);
         std::string actual = line.substr(colonIndex+1);
-        if(expected[key] != actual) {
+        fail = expected[key] != actual;
+        retval = retval && !fail;
+        if(veryVerbose || fail) {
             diffs[key] = {expected[key], actual};
         }
     }
 
-    return diffs.size() == 0;
+    return retval;
 }
 
 void printFile(const char *fname) {
@@ -117,7 +121,7 @@ int main(int argc, char **argv) {
     }
 
     int opt;
-    while((opt = getopt(argc, argv, "vV")) != -1) 
+    while((opt = getopt(argc, argv, "vVc")) != -1) 
     {
         switch(opt) 
         {
@@ -125,6 +129,9 @@ int main(int argc, char **argv) {
             veryVerbose = true;
         case 'v':
             verbose = true;
+            break;
+        case 'c':
+            printCommand = true;
             break;
         }
     }
@@ -147,20 +154,20 @@ int main(int argc, char **argv) {
         if(tested.count(file)) return;
         tested.insert(file);
         sprintf(cmd, "%s %s > %s 2>%s", exePath.c_str(), file.c_str(), tmp, err);
-        if(veryVerbose) printf("%s\n", cmd);
+        if(printCommand) printf("%s\n", cmd);
         bool exitSuccess = system(cmd) == EXIT_SUCCESS;
         bool pass = (exitSuccess && test(file));
-        printf("%s %s\n", pass ? "PASS" : "FAIL", file.c_str());
-        if(veryVerbose || (!pass && verbose)) {
+        printf("%s\033[0m %s\n", pass ? "\033[0;32mPASS" : "\033[1;31mFAIL", file.c_str());
+        if((!pass && verbose) || veryVerbose) {
             if(!exitSuccess) {
                 printFile(err);
             }
             else if(diffs.size() != 0) {
                 for(auto const &diff : diffs)
-                    printf("    key: %s; expected: %s; actual: %s\n", diff.first.c_str(), diff.second.first.c_str(), diff.second.second.c_str());
+                    printf("    %skey: %s; expected: %s; actual: %s\033[0m\n", diff.second.first == diff.second.second ? "\033[0m" : "\033[1;31m", diff.first.c_str(), diff.second.first.c_str(), diff.second.second.c_str());
             }
             else if(!pass) {
-                printf("    failed to open expected output file and/or tmp file");
+                printf("    failed to open expected output file and/or tmp file\n");
             }
         }
     };
