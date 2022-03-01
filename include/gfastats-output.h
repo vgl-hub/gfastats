@@ -113,6 +113,8 @@ public:
         if (gzip && outFile) { // if the requested output is gzip compressed and should be outputted to a file
             
             stream = make_unique<std::ostream>(zfout.rdbuf()); // then we use the stream for gzip compressed file outputs
+            
+            zfout.addHeader();
                         
         }else if (!gzip && outFile){ // else if no compression is requested
             
@@ -127,6 +129,8 @@ public:
             if (gzip) { // if the output to stdout needs to be compressed we use the appropriate stream
                 
                 stream = make_unique<std::ostream>(zout.rdbuf());
+                
+                zout.addHeader();
             
             }else{ // else we use a regular cout stream
                 
@@ -141,26 +145,62 @@ public:
                 
             case 1: { // fasta[.gz]
                 
-                std::string seqHeader;
-                
-                std::string inSeq; // the new sequence being built recursively
-                
-                // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGaps());
-                
-                verbose("Graph DFS");
-                
+                std::string seqHeader, pHeader;
+                std::string inSeq; // the new sequence being built
+                std::vector<InPath> inPaths = inSequences.getInPaths();
                 std::vector<InSegment> inSegments = inSequences.getInSegments();
+                std::vector<InGap> inGaps = inSequences.getInGaps();
+                std::vector<PathTuple> pathComponents;
                 
-                for (InSegment inSegment : inSegments) { // loop through all nodes
+                unsigned int uId = 0, sIdx = 0, gIdx = 0;
                     
-                    if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
+                for (InPath inPath : inSequences.getInPaths()) {
+                    
+                    if (inPath.getHeader() == "") {
                         
-                        inSequences.dfsSeq(inSegment.getuId(), inSeq); // if not, visit all connected components recursively
+                        pHeader = inPath.getpUId();
                         
-                        seqHeader = inSegment.getSeqHeader();
+                    }else{
                         
-                        *stream<<">"<<seqHeader<<" "<<inSegment.getSeqComment()<<"\n";
+                        pHeader = inPath.getHeader();
+                        
+                    }
+                    
+                    *stream <<">"
+                            <<pHeader;
+                    
+                    if (inPath.getComment() != "") {
+                    
+                    *stream <<" "
+                            <<inPath.getComment();
+                        
+                    }
+                    
+                    *stream <<"\n";
+                    
+                    pathComponents = inPath.getComponents();
+                    
+                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                        
+                        uId = std::get<1>(*component);
+                        
+                        if (std::get<0>(*component) == 'S') {
+                        
+                            auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            
+                            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                            
+                            inSeq += inSegments[sIdx].getInSequence();
+                            
+                        }else{
+                            
+                            auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            
+                            if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                            
+                            inSeq += std::string(inGaps[gIdx].getDist(), 'N');
+                            
+                        }
                         
                         if (splitLength != 0) {
                             
@@ -168,10 +208,12 @@ public:
                             
                         }
                         
-                        *stream<<inSeq<<"\n";
-                        inSeq = "";
-                        
                     }
+                    
+                    *stream<<inSeq<<"\n";
+                    inSeq = "";
+                        
+                    (*stream).flush();
                     
                 }
                 
@@ -181,28 +223,81 @@ public:
                 
             case 2: { // fastq[.gz]
                 
-                std::string inSeq, inSeqQual; // the new sequence being built recursively and its quality
+                std::string seqHeader, pHeader;
+                std::string inSeq, inSeqQual; // the new sequence being built and its quality
+                std::vector<InPath> inPaths = inSequences.getInPaths();
+                std::vector<InSegment> inSegments = inSequences.getInSegments();
+                std::vector<InGap> inGaps = inSequences.getInGaps();
+                std::vector<PathTuple> pathComponents;
                 
-                // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGaps());
-                
-                verbose("Graph DFS");
-                
-                segN = inSequences.getSegmentN();
-                
-                for (unsigned int i = 0; i < segN; ++i) { // loop through all node edges
-
+                unsigned int uId = 0, sIdx = 0, gIdx = 0;
                     
-                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
+                for (InPath inPath : inSequences.getInPaths()) {
+                    
+                    if (inPath.getHeader() == "") {
                         
-                        inSequences.dfsSeq(i, inSeq, &inSeqQual); // if not, visit all connected components recursively
+                        pHeader = inPath.getpUId();
                         
-                        *stream<<"@"<<inSequences.getInSegment(i).getSeqHeader()<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n"<<inSeq<<"\n+\n"<<inSeqQual<<"\n";
+                    }else{
                         
-                        inSeq = "";
-                        inSeqQual = "";
+                        pHeader = inPath.getHeader();
                         
                     }
+                    
+                    *stream <<"@"
+                            <<pHeader;
+                    
+                    if (inPath.getComment() != "") {
+                    
+                    *stream <<" "
+                            <<inPath.getComment();
+                        
+                    }
+                    
+                    *stream <<"\n";
+                    
+                    pathComponents = inPath.getComponents();
+                    
+                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                        
+                        uId = std::get<1>(*component);
+                        
+                        if (std::get<0>(*component) == 'S') {
+                        
+                            auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            
+                            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                            
+                            inSeq += inSegments[sIdx].getInSequence();
+                            
+                            if (inSegments[sIdx].getInSequenceQuality() != "") {
+                            
+                                inSeqQual += inSegments[sIdx].getInSequenceQuality();
+                                
+                            }else{
+                                
+                                inSeqQual += std::string(inSegments[sIdx].getInSequence().size(), '!');
+                                
+                            }
+                            
+                        }else{
+                            
+                            auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            
+                            if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                            
+                            inSeq += std::string(inGaps[gIdx].getDist(), 'N');
+                            inSeqQual += std::string(inGaps[gIdx].getDist(), '!');
+                            
+                        }
+                        
+                        
+                    }
+                    
+                    *stream<<inSeq<<"\n+\n"<<inSeqQual<<"\n";
+                    
+                    inSeq = "";
+                    inSeqQual = "";
                     
                 }
                 
@@ -268,15 +363,15 @@ public:
                 
                 std::vector<PathTuple> pathComponents;
                 
-                for (InPath inPath : inSequences.getPaths()) {
+                for (InPath inPath : inSequences.getInPaths()) {
                     
-                    if (inPath.getpHeader() == "") {
+                    if (inPath.getHeader() == "") {
                         
                         pHeader = inPath.getpUId();
                         
                     }else{
                         
-                        pHeader = inPath.getpHeader();
+                        pHeader = inPath.getHeader();
                         
                     }
                     
@@ -298,7 +393,14 @@ public:
                         
                     }
                     
-                    *stream <<"\n"; // size
+                    if (inPath.getComment() != "") {
+                    
+                    *stream <<"\t"
+                            <<inPath.getComment();
+                        
+                    }
+                    
+                    *stream <<"\n";
                     
                 }
                 
@@ -315,14 +417,14 @@ public:
             }
                 
         }
-
-        if(gzip && outFile) { // if we wrote to file as gzip, we flush the buffer
+        
+        if(gzip && outFile) { // if we wrote to file as gzip, we add the footer and close
             
-            zfout.stream();
+            zfout.close();
             
-        }else if(gzip && !outFile) { // if we streamed as gzip, we flush the buffer
+        }else if(gzip && !outFile) { // if we streamed as gzip, we add the footer and close
             
-            zout.stream();
+            zout.close();
             
         }
         
@@ -345,33 +447,6 @@ public:
  
             default:
             case 's': { // scaffolds
-                
-                std::string seqHeader, seqComment, inSeq; // header, comment and the new sequence being built recursively
-                
-                // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGaps());
-                
-                segN = inSequences.getSegmentN();
-                
-                for (unsigned int i = 0; i < segN; ++i) { // loop through all nodes
-                    
-                    InSegment inSegment; // a new inSequence object, the result of concatenating by gaps
-                
-                    seqHeader = inSequences.getInSegment(i).getSeqHeader();
-                    seqComment = inSequences.getInSegment(i).getSeqComment();
-                    
-                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
-                        
-                        verbose("Graph DFS");
-                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
-                        
-                        std::cout<<seqHeader<<"\t"<<inSeq.size()<<"\n";
-                        
-                        inSeq = "";
-                        
-                    }
-                    
-                }
                 
                 break;
             }
@@ -435,9 +510,7 @@ public:
                     seqComment = inSequences.getInSegment(i).getSeqComment();
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
-                        
-                        verbose("Graph DFS");
-                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
+
                         
                         for (char &base : inSeq) {
 
@@ -523,9 +596,6 @@ public:
                     seqComment = inSequences.getInSegment(i).getSeqComment();
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
-                        
-                        verbose("Graph DFS");
-                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         for (char &base : inSeq) {
 

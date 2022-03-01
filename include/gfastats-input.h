@@ -190,28 +190,28 @@ public:
             firstChar = newLine[0];
             
 //            if ((!isPipe || pipeType != 's') && !determineGzip(iSeqFileArg)) {
-//                
+//
 //                stream->clear();
 //                stream->seekg(0, stream->beg);
-//                
+//
 //            }
             
             switch (firstChar) {
                     
                 case '>': {
                         
-                        firstLine.erase(0, 1);
+                    firstLine.erase(0, 1);
+                    
+                    h = std::string(strtok(strdup(firstLine.c_str())," ")); //process header line
+                    c = strtok(NULL,""); //read comment
+                    
+                    seqHeader = h;
+                    
+                    if (c != NULL) {
                         
-                        h = std::string(strtok(strdup(firstLine.c_str())," ")); //process header line
-                        c = strtok(NULL,""); //read comment
+                        seqComment = std::string(c);
                         
-                        seqHeader = h;
-                        
-                        if (c != NULL) {
-                            
-                            seqComment = std::string(c);
-                            
-                        }
+                    }
                     
                     while (getFasta(*stream, inSequence)) {
                         
@@ -239,33 +239,29 @@ public:
                     break;
                 }
                 case '@': {
+                        
+                    firstLine.erase(0, 1);
                     
-                    if ((isPipe && pipeType == 's') || determineGzip(iSeqFileArg)) { // pipe input
+                    h = std::string(strtok(strdup(firstLine.c_str())," ")); //process header line
+                    c = strtok(NULL,""); //read comment
+                    
+                    seqHeader = h;
+                    
+                    if (c != NULL) {
                         
-                        firstLine.erase(0, 1);
-                        
-                        h = std::string(strtok(strdup(firstLine.c_str())," ")); //process header line
-                        c = strtok(NULL,""); //read comment
-                        
-                        seqHeader = h;
-                        
-                        if (c != NULL) {
-                            
-                            seqComment = std::string(c);
-                            
-                        }
-                        
-                        getline(*stream, newLine);
-                        inSequence = newLine;
-                        
-                        getline(*stream, newLine);
-                        
-                        getline(*stream, newLine);
-                        inSequenceQuality = newLine;
-                        
-                        includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
+                        seqComment = std::string(c);
                         
                     }
+                    
+                    getline(*stream, newLine);
+                    inSequence = newLine;
+                    
+                    getline(*stream, newLine);
+                    
+                    getline(*stream, newLine);
+                    inSequenceQuality = newLine;
+                    
+                    includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
                     
                     while (getline(*stream, newLine)) { // file input
                         

@@ -213,18 +213,22 @@ public:
 //		add_header(); // GF: this needs to be commented out otherwise we immediately append the header
 	}
 
-//	~basic_gzip_ostream() { // GF: commented out, so that we do not start the output witht he constructor
+//	~basic_gzip_ostream() { // GF: commented out, so that we do not start the output with the constructor
 //		close();
 //	}
 
-	void stream() {
+    void addHeader() {
+        if (m_closed)
+            return;
+        add_header(); // only add the header when flushing
+    }
+            
+	void close() {
 		if (m_closed)
 			return;
-        add_header(); // only add the header when flushing
-		this->flush();
-		this->rdbuf()->zfinish();
-		add_footer();
-		m_closed = true;
+        this->rdbuf()->zfinish();
+        add_footer();
+        m_closed = true;
 	}
 
 private:
