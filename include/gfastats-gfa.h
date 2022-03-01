@@ -710,6 +710,8 @@ public:
             insertHash1(*seqHeader, uId); // header to hash table
             insertHash2(uId, *seqHeader); // header to hash table
             
+            sUId = uId;
+            
             uId++;
             
         }else{
@@ -718,7 +720,7 @@ public:
             
         }
                 
-        addSegment(sUId, sUId, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
+        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
             
         A = 0, C = 0, G = 0, T = 0;
         
@@ -1290,125 +1292,125 @@ public:
         
     }
     
-    void assignIds() { // (re)assignment, whenever the graph is built or modified
-        
-        unsigned int i = 0, uId = 0;
-        
-        for (InSegment inSegment : inSegments) {// loop through all nodes
-            
-            if (!visited[i] && !deleted[i]) { // if the node was not visited yet
-                
-                dfsPos(i, &uId); // start from the first node and try to assign sId = 0
-            
-                uId = 0;
-                
-            }
-            
-            i++;
-            
-        }
-        
-        backward = false;
-        
-        visited.clear();
-        
-        verbose("Assigned node IDs");
-        
-    }
+//    void assignIds() { // (re)assignment, whenever the graph is built or modified
+//
+//        unsigned int i = 0, uId = 0;
+//
+//        for (InSegment inSegment : inSegments) {// loop through all nodes
+//
+//            if (!visited[i] && !deleted[i]) { // if the node was not visited yet
+//
+//                dfsPos(i, &uId); // start from the first node and try to assign sId = 0
+//
+//                uId = 0;
+//
+//            }
+//
+//            i++;
+//
+//        }
+//
+//        backward = false;
+//
+//        visited.clear();
+//
+//        verbose("Assigned node IDs");
+//
+//    }
     
-    void dfsPos(int v, unsigned int* uId) { // Depth First Search to assign sequential sIds to each feature in the graph. It finds the first node then walks to the end node assigning progressive uIds
-        
-        visited[v] = true; // mark the current node as visited
-        
-        (*uId)++; // increase the segment sId counter
-        
-        if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
-            
-            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
-            
-            backward = false;
-            
-        }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
-            
-            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
-            
-            backward = true; // reached the end
-            
-        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
-            
-            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
-            
-            backward = true; // reached the end
-            
-        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
-            
-            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
-            
-            backward = true;
-            
-        }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
-            
-            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
-            
-        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
-            
-            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
-            
-            visited.clear();
-            
-            *uId = 1; // we have just found the start node, count features from here
-            
-            visited[v] = true; // we have just visited the start node
-            
-            backward = false;
-            
-        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
-            
-            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
-            
-            visited.clear();
-            
-            *uId = 1; // we have just found the start node, count nodes from here
-            
-            visited[v] = true; // we have just visited the start node
-            
-            backward = false;
-            
-        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
-            
-            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
-            
-            backward = false;
-            
-        }
-        
-        inSegments[v].setuId(*uId); // set the uId for the node
-        
-        verbose("Assigned node internal id: " + std::to_string(*uId));
-        
-        for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
-            
-            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
-                
-                inGaps[v].setuId(*uId); // set the uId for the edge
-                
-                (*uId)++; // increase the edge Id counter
-                
-                dfsPos(std::get<1>(i), uId); // recurse
-                
-            }
-        }
-        
-        for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
-            
-            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
-                
-                dfsPos(std::get<1>(i), uId); // recurse
-                
-            }
-        }
-        
-    }
+//    void dfsPos(int v, unsigned int* uId) { // Depth First Search to assign sequential sIds to each feature in the graph. It finds the first node then walks to the end node assigning progressive uIds
+//
+//        visited[v] = true; // mark the current node as visited
+//
+//        (*uId)++; // increase the segment sId counter
+//
+//        if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+//
+//            backward = false;
+//
+//        }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+//
+//            backward = true; // reached the end
+//
+//        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+//
+//            backward = true; // reached the end
+//
+//        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+//
+//            backward = true;
+//
+//        }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
+//
+//        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+//
+//            visited.clear();
+//
+//            *uId = 1; // we have just found the start node, count features from here
+//
+//            visited[v] = true; // we have just visited the start node
+//
+//            backward = false;
+//
+//        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+//
+//            visited.clear();
+//
+//            *uId = 1; // we have just found the start node, count nodes from here
+//
+//            visited[v] = true; // we have just visited the start node
+//
+//            backward = false;
+//
+//        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+//
+//            backward = false;
+//
+//        }
+//
+//        inSegments[v].setuId(*uId); // set the uId for the node
+//
+//        verbose("Assigned node internal id: " + std::to_string(*uId));
+//
+//        for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
+//
+//            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
+//
+//                inGaps[v].setuId(*uId); // set the uId for the edge
+//
+//                (*uId)++; // increase the edge Id counter
+//
+//                dfsPos(std::get<1>(i), uId); // recurse
+//
+//            }
+//        }
+//
+//        for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
+//
+//            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
+//
+//                dfsPos(std::get<1>(i), uId); // recurse
+//
+//            }
+//        }
+//
+//    }
     
     void dfsSeq(unsigned int v, std::string &inSequence, std::string* inSequenceQuality = NULL) // Depth First Search to build fast* sequence
     {

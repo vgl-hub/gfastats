@@ -495,6 +495,8 @@ public:
                                     
                                     dist = stoi(arguments[4]);
                                     
+                                    verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
+                                    
                                     gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
                                     
                                     inSequences.addGap(gap);
