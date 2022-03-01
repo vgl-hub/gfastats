@@ -241,11 +241,11 @@ public:
         
         InGap gap;
                 
-        gap.newGap(inSequences.gapUniqN+1, inSequences.headersToIds[instruction.contig1], inSequences.headersToIds[instruction.contig2], instruction.sId1Or, instruction.sId2Or, instruction.dist, instruction.gHeader); // define the new gap
+        gap.newGap(inSequences.uId+1, inSequences.headersToIds[instruction.contig1], inSequences.headersToIds[instruction.contig2], instruction.sId1Or, instruction.sId2Or, instruction.dist, instruction.gHeader); // define the new gap
             
-        inSequences.gapUniqN++;
+        inSequences.uId++;
         
-        inSequences.appendGap(gap); // introduce the new gap
+        inSequences.addGap(gap); // introduce the new gap
         
         return true;
         
@@ -269,11 +269,11 @@ public:
         
             InGap gap;
         
-            gap.newGap(inSequences.gapUniqN+1, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
+            gap.newGap(inSequences.uId+1, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
             
-            inSequences.gapUniqN++;
+            inSequences.uId++;
             
-            inSequences.appendGap(gap); // introduce the new gap
+            inSequences.addGap(gap); // introduce the new gap
         
         }
         
