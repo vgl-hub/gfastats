@@ -199,8 +199,6 @@ public:
             switch (firstChar) {
                     
                 case '>': {
-                    
-                    if ((isPipe && pipeType == 's') || determineGzip(iSeqFileArg)) {
                         
                         firstLine.erase(0, 1);
                         
@@ -214,8 +212,6 @@ public:
                             seqComment = std::string(c);
                             
                         }
-                        
-                    }
                     
                     while (getFasta(*stream, inSequence)) {
                         
