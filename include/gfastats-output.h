@@ -150,17 +150,17 @@ public:
                 
                 verbose("Graph DFS");
                 
-                segN = inSequences.getSegmentN();
+                std::vector<InSegment> inSegments = inSequences.getInSegments();
                 
-                for (unsigned int i = 0; i < segN; ++i) { // loop through all nodes
+                for (InSegment inSegment : inSegments) { // loop through all nodes
                     
-                    if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
+                    if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
                         
-                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
+                        inSequences.dfsSeq(inSegment.getuId(), inSeq); // if not, visit all connected components recursively
                         
-                        seqHeader = inSequences.getInSegment(i).getSeqHeader();
+                        seqHeader = inSegment.getSeqHeader();
                         
-                        *stream<<">"<<seqHeader<<" "<<inSequences.getInSegment(i).getSeqComment()<<"\n";
+                        *stream<<">"<<seqHeader<<" "<<inSegment.getSeqComment()<<"\n";
                         
                         if (splitLength != 0) {
                             
@@ -212,7 +212,7 @@ public:
                 
             case 3: { // gfa[.gz]
                 
-                std::string seqHeader, gHeader;
+                std::string seqHeader, gHeader, pHeader;
                 
                 std::unordered_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
                 
@@ -250,7 +250,7 @@ public:
                     
                     if (inGap.getgHeader() == "") {
                         
-                        gHeader = inGap.getgId();
+                        gHeader = inGap.getuId();
                         
                     }else{
                         
@@ -263,6 +263,42 @@ public:
                             <<idsToHeaders[inGap.getsId1()]<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
                             <<idsToHeaders[inGap.getsId2()]<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
                             <<inGap.getDist()<<"\n"; // size
+                    
+                }
+                
+                std::vector<std::pair <char,unsigned int>> pathComponents;
+                
+                for (InPath inPath : inSequences.getPaths()) {
+                    
+                    if (inPath.getpHeader() == "") {
+                        
+                        pHeader = inPath.getpUId();
+                        
+                    }else{
+                        
+                        pHeader = inPath.getpHeader();
+                        
+                    }
+                    
+                    *stream <<"O\t" // line type
+                            <<pHeader<<"\t"; // id
+                    
+                    
+                    pathComponents = inPath.getComponents();
+                    
+                    for (std::vector<std::pair <char,unsigned int>>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                            
+                        *stream << idsToHeaders[component->second];
+                        
+                        if (component != std::prev(pathComponents.end())) {
+                            
+                            *stream <<" "; // space
+                            
+                        }
+                        
+                    }
+                    
+                    *stream <<"\n"; // size
                     
                 }
                 
@@ -356,7 +392,7 @@ public:
                 
                 for (InGap inGap : inSequences.getInGaps()) {
 
-                    std::cout<<inGap.getgId()<<"\t"<<inGap.getDist()<<"\n";
+                    std::cout<<inGap.getuId()<<"\t"<<inGap.getDist()<<"\n";
 
                 }
                 
