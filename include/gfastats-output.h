@@ -145,7 +145,7 @@ public:
                 
             case 1: { // fasta[.gz]
                 
-                std::string seqHeader, pHeader;
+                std::string pHeader;
                 std::string inSeq; // the new sequence being built
                 std::vector<InPath> inPaths = inSequences.getInPaths();
                 std::vector<InSegment> inSegments = inSequences.getInSegments();
@@ -202,15 +202,18 @@ public:
                             
                         }
                         
-                        if (splitLength != 0) {
-                            
-                            textWrap(inSeq, *stream, splitLength); // wrapping text at user-specified line length
-                            
-                        }
+                    }
+                    
+                    if (splitLength != 0) {
+                        
+                        textWrap(inSeq, *stream, splitLength); // wrapping text at user-specified line length
+                        
+                    }else{
+                        
+                        *stream<<inSeq<<"\n";
                         
                     }
                     
-                    *stream<<inSeq<<"\n";
                     inSeq = "";
                         
                     (*stream).flush();
@@ -223,7 +226,7 @@ public:
                 
             case 2: { // fastq[.gz]
                 
-                std::string seqHeader, pHeader;
+                std::string pHeader;
                 std::string inSeq, inSeqQual; // the new sequence being built and its quality
                 std::vector<InPath> inPaths = inSequences.getInPaths();
                 std::vector<InSegment> inSegments = inSequences.getInSegments();
@@ -440,13 +443,64 @@ public:
     
     bool outSize(InSequences &inSequences, InSegment &inSegment, char &sizeOutType) { // method to output only the size of the sequences
         
-        std::string seqHeader;
-        std::vector<unsigned int> seqBoundaries;
-        
         switch (sizeOutType) {
  
             default:
             case 's': { // scaffolds
+                
+                std::string pHeader;
+                std::vector<InPath> inPaths = inSequences.getInPaths();
+                std::vector<InSegment> inSegments = inSequences.getInSegments();
+                std::vector<InGap> inGaps = inSequences.getInGaps();
+                std::vector<PathTuple> pathComponents;
+                
+                unsigned int uId = 0, sIdx = 0, gIdx = 0, size = 0;
+                    
+                for (InPath inPath : inSequences.getInPaths()) {
+                    
+                    if (inPath.getHeader() == "") {
+                        
+                        pHeader = inPath.getpUId();
+                        
+                    }else{
+                        
+                        pHeader = inPath.getHeader();
+                        
+                    }
+                    
+                    std::cout<<pHeader<<"\t";
+                    
+                    pathComponents = inPath.getComponents();
+                    
+                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                        
+                        uId = std::get<1>(*component);
+                        
+                        if (std::get<0>(*component) == 'S') {
+                        
+                            auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            
+                            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                            
+                            size += inSegments[sIdx].getInSequence().size();
+                            
+                        }else{
+                            
+                            auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            
+                            if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                            
+                            size += inGaps[gIdx].getDist();
+                            
+                        }
+                        
+                        
+                    }
+                    
+                    std::cout<<size<<"\n";
+                    size = 0;
+                    
+                }
                 
                 break;
             }
@@ -467,7 +521,7 @@ public:
                 
                 for (InGap inGap : inSequences.getInGaps()) {
 
-                    std::cout<<inGap.getuId()<<"\t"<<inGap.getDist()<<"\n";
+                    std::cout<<inGap.getgHeader()<<"\t"<<inGap.getDist()<<"\n";
 
                 }
                 
@@ -510,7 +564,9 @@ public:
                     seqComment = inSequences.getInSegment(i).getSeqComment();
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
-
+                        
+                        verbose("Graph DFS");
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         for (char &base : inSeq) {
 
@@ -596,6 +652,9 @@ public:
                     seqComment = inSequences.getInSegment(i).getSeqComment();
                     
                     if (!inSequences.getVisited(i) && !inSequences.getDeleted(i)) { // check if the node was already visited
+                        
+                        verbose("Graph DFS");
+                        inSequences.dfsSeq(i, inSeq); // if not, visit all connected components recursively
                         
                         for (char &base : inSeq) {
 

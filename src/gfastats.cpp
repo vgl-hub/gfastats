@@ -20,6 +20,8 @@ int main(int argc, char **argv) {
     std::string iBedIncludeFileArg; // input bed file of coordinates to include
     std::string iBedExcludeFileArg; // input bed file of coordinates to exclude
     
+    std::string sortType; // type of sorting
+    
     std::string outSeq = "fasta"; // default output type
     
     char sizeOutType = 's'; // default output type with size flag (scaffold)
@@ -41,7 +43,8 @@ int main(int argc, char **argv) {
         {"input-sequence", required_argument, 0, 'f'},
         
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
-        {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1},
+        {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
+        {"sort", required_argument, 0, 0},
         
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},
@@ -167,6 +170,18 @@ int main(int argc, char **argv) {
                 
                 if (strcmp(long_options[option_index].name,"line-length") == 0)
                   splitLength = atoi(optarg);
+                
+                if (strcmp(long_options[option_index].name,"sort") == 0) {
+                    
+                    std::vector<std::string> options {"name", "size"};
+                            
+                    if (std::find(options.begin(), options.end(), optarg) != options.end()){
+                        
+                        sortType = optarg;
+                        
+                    }else{printf("Error: unrecognized sorting option (%s).\n", optarg); exit(1);}
+                    
+                }
                 
                 break;
                 

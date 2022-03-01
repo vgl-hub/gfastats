@@ -153,7 +153,7 @@ void textWrap(std::string input, std::ostream& output, int width) { // generic t
         
     }
     
-    output << tmp;
+    output << tmp << '\n';
     tmp.clear();
     
 }
