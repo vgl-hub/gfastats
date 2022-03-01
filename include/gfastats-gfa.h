@@ -874,6 +874,12 @@ public:
         return inGaps.size();
         
     }
+
+    unsigned int getEdgeN() {
+        
+        return inEdges.size();
+        
+    }
     
     void recordScaffLen(unsigned int seqLen) {
         
