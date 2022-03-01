@@ -20,6 +20,7 @@ Typical fast\* metrics include:
 Typical gfa metrics include:
 
 - Number of nodes and edges
+- Edges lenght
 
 Metrics for each scaffold/contig can be generated with the `--seq-report` flag.
 

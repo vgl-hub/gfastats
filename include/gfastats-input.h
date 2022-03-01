@@ -303,16 +303,17 @@ public:
                 }
                 default: {
                     
-                    std::string h_col1, h_col2, h_col3, s, version, gHeader;
+                    std::string h_col1, h_col2, h_col3, s, version, gHeader, cigar;
                     char sId1Or, sId2Or;
                     
                     InGap gap;
+                    InEdge edge;
                     unsigned int sId1 = 0, sId2 = 0, dist = 0;
                     std::unordered_map<std::string, unsigned int> hash;
                     std::unordered_map<std::string, unsigned int>::const_iterator got;
                     
                     unsigned int lineN = 1;
-                    unsigned int uId = 0, guId = 0;
+                    unsigned int uId = 0, guId = 0, edgeN = 0;
                     
                     std::string delimiter = "\t";
                     std::vector<std::string> arguments; // process the columns of each row
@@ -418,6 +419,7 @@ public:
                                 case 'G': {
                                     
                                     delimiter = "\t";
+
                                     arguments.clear();
                                     
                                     while ((pos = newLine.find(delimiter)) != std::string::npos) {
@@ -544,6 +546,91 @@ public:
                                     break;
                                     
                                 }
+
+                                case 'L': {
+                                    
+                                    delimiter = "\t";
+                                    
+                                    arguments.clear();
+                                    
+                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
+                                        
+                                        arguments.push_back(newLine.substr(0, pos));
+                                        
+                                        newLine.erase(0, pos + delimiter.length());
+                                    
+                                    }
+                                    
+                                    arguments.push_back(newLine); // last column
+
+                                    
+                                    sId1Or = arguments[2][0]; // get sequence orientation in the edge
+                                    
+                                    seqHeader = arguments[1];
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        uId = inSequences.getuId();
+                                        
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                    
+                                        sId1 = uId;
+                                        
+                                        uId++;
+                                        
+                                        inSequences.setuId(uId); // we have touched a segment need to increase the unique segment counter
+                                        
+                                    }else{
+                                        
+                                        sId1 = got->second;
+                                        
+                                    }
+                                    
+                                    sId2Or = arguments[4][0]; // get sequence orientation in the edge
+                                    
+                                    seqHeader = arguments[3];
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        uId = inSequences.getuId();
+                                        
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                    
+                                        sId2 = uId;
+                                        
+                                        uId++;
+                                        
+                                        inSequences.setuId(uId); // we have touched a segment need to increase the unique segment counter
+                                        
+                                    }else{
+                                        
+                                        sId2 = got->second;
+                                        
+                                    }
+                                    
+                                    cigar = arguments[5];  
+                                    
+                                    edge.newEdge(edgeN, sId1, sId2, sId1Or, sId2Or, cigar);
+                                    
+                                    inSequences.appendEdge(edge);
+                                    
+                                    edgeN++;
+                                    lineN++;
+                                                 
+                                    break;
+                                    
+                                }
+
                                 default: {
                                     
                                     break;

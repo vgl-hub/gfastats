@@ -633,7 +633,7 @@ public:
         
     }
     
-    bool reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType) { // method to output all summary statistic for the entire sequence set
+    bool reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType) { // method to output all summary statistics for the entire sequence set
         
         if (!tabular_flag) {
         
@@ -702,6 +702,9 @@ public:
         
         counter = 0;
      
+        std::cout<<output("# edges")<<inSequences.getEdgeN()<<"\n";
+        std::cout<<output("Average degree")<<(double)inSequences.getEdgeN()/inSequences.getSegmentN()<<"\n";
+
         return true;
         
     }
