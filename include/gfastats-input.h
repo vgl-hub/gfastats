@@ -189,12 +189,12 @@ public:
             firstLine = newLine;
             firstChar = newLine[0];
             
-            if ((!isPipe || pipeType != 's') && !determineGzip(iSeqFileArg)) {
-                
-                stream->clear();
-                stream->seekg(0, stream->beg);
-                
-            }
+//            if ((!isPipe || pipeType != 's') && !determineGzip(iSeqFileArg)) {
+//                
+//                stream->clear();
+//                stream->seekg(0, stream->beg);
+//                
+//            }
             
             switch (firstChar) {
                     

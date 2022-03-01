@@ -412,7 +412,7 @@ class InPath {
 private:
 //    unsigned long long int lineN; // useful if we wish to sort as is the original input
     std::string pHeader;
-    std::vector<std::pair <char,unsigned int>> pathComponents;
+    std::vector<PathTuple> pathComponents;
     unsigned int pUId;
 
 public:
@@ -423,9 +423,9 @@ public:
     
     }
     
-    void addToPath(char type, unsigned int UId) {
+    void addToPath(char type, unsigned int UId, char sign) {
         
-        pathComponents.push_back(std::make_pair(type, UId));
+        pathComponents.push_back(std::make_tuple(type, UId, sign));
         
     }
     
@@ -435,7 +435,7 @@ public:
         
     }
     
-    std::vector<std::pair <char,unsigned int>> getComponents() {
+    std::vector<PathTuple> getComponents() {
         
         return pathComponents;
         
@@ -584,7 +584,7 @@ public:
         insertHash1(*seqHeader+"."+std::to_string(*iId), *uId); // header to hash table
         insertHash2(*uId, *seqHeader+"."+std::to_string(*iId)); // uID to hash table
         
-        path.addToPath('G', *uId);
+        path.addToPath('G', *uId, '+');
         
         *dist=0;
         
@@ -610,7 +610,7 @@ public:
         insertHash1(*seqHeader+"."+std::to_string(*iId), *uId); // header to hash table
         insertHash2(*uId, *seqHeader+"."+std::to_string(*iId)); // uID to hash table
         
-        path.addToPath('S', *uId);
+        path.addToPath('S', *uId, '+');
         
         *A = 0, *C = 0, *G = 0, *T = 0;
         

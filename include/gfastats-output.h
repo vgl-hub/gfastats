@@ -266,7 +266,7 @@ public:
                     
                 }
                 
-                std::vector<std::pair <char,unsigned int>> pathComponents;
+                std::vector<PathTuple> pathComponents;
                 
                 for (InPath inPath : inSequences.getPaths()) {
                     
@@ -286,9 +286,9 @@ public:
                     
                     pathComponents = inPath.getComponents();
                     
-                    for (std::vector<std::pair <char,unsigned int>>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                             
-                        *stream << idsToHeaders[component->second];
+                        *stream << idsToHeaders[std::get<1>(*component)] << std::get<2>(*component);
                         
                         if (component != std::prev(pathComponents.end())) {
                             
@@ -705,24 +705,28 @@ public:
         std::cout<<output("# edges")<<inSequences.getEdgeN()<<"\n";
         std::cout<<output("Average degree")<<(double)inSequences.getEdgeN()/inSequences.getSegmentN()<<"\n";
 
-        inSequences.buildEdgeGraph(inSequences.getEdges());
+        if (inSequences.getEdges().size() > 0) {
+        
+            inSequences.buildEdgeGraph(inSequences.getEdges());
 
-        verbose("Graph DFS");
-        
-        std::vector<InSegment> inSegments = inSequences.getInSegments();
-        
-        for (InSegment inSegment : inSegments) { // loop through all nodes
+            verbose("Graph DFS");
             
-            if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
+            std::vector<InSegment> inSegments = inSequences.getInSegments();
+            
+            for (InSegment inSegment : inSegments) { // loop through all nodes
                 
-                inSequences.dfsEdges(inSegment.getuId()); // if not, visit all connected components recursively
+                if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
+                    
+                    inSequences.dfsEdges(inSegment.getuId()); // if not, visit all connected components recursively
+                    
+                }
                 
             }
+
+            std::cout<<output("# dead ends")<<inSequences.getDeadEnds()<<"\n";
+            std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
             
         }
-
-        std::cout<<output("# dead ends")<<inSequences.getDeadEnds()<<"\n";
-        std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
 
         return true;
         
