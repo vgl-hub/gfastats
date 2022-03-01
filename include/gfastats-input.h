@@ -312,7 +312,7 @@ public:
                     std::unordered_map<std::string, unsigned int>::const_iterator got;
                     
                     unsigned int lineN = 1;
-                    unsigned int seqN = 0, gapN = 0;
+                    unsigned int uId = 0, guId = 0;
                     
                     std::string delimiter = "\t";
                     std::vector<std::string> arguments; // process the columns of each row
@@ -432,6 +432,15 @@ public:
                                     
                                     gHeader = arguments[1];
                                     
+                                    uId = inSequences.getuId();
+                                    
+                                    inSequences.insertHash1(gHeader, uId); // header to hash table
+                                    inSequences.insertHash2(uId, gHeader); // uID to hash table
+                                    
+                                    guId = uId; // since I am still reading segments I need to keep this fixed
+                                    
+                                    inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                    
                                     sId1Or = arguments[2].back(); // get sequence orientation in the gap
                                     
                                     seqHeader = std::string(arguments[2]);
@@ -443,16 +452,14 @@ public:
                                     
                                     if (got == hash.end()) { // this is the first time we see this segment
                                         
-                                        seqN = inSequences.getSegUniqN();
+                                        uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, seqN); // header to hash table
-                                        inSequences.insertHash2(seqN, seqHeader); // header to hash table
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
                                     
-                                        sId1 = seqN;
+                                        sId1 = uId;
                                         
-                                        seqN++;
-                                        
-                                        inSequences.setSegUniqN(seqN); // we have touched a segment need to increase the unique segment counter
+                                        inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
                                         
                                     }else{
                                         
@@ -471,16 +478,14 @@ public:
                                     
                                     if (got == hash.end()) { // this is the first time we see this segment
                                         
-                                        seqN = inSequences.getSegUniqN();
+                                        uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, seqN); // header to hash table
-                                        inSequences.insertHash2(seqN, seqHeader); // header to hash table
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
                                     
-                                        sId2 = seqN;
+                                        sId2 = uId;
                                         
-                                        seqN++;
-                                        
-                                        inSequences.setSegUniqN(seqN); // we have touched a segment need to increase the unique segment counter
+                                        inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
                                         
                                     }else{
                                         
@@ -490,11 +495,10 @@ public:
                                     
                                     dist = stoi(arguments[4]);
                                     
-                                    gap.newGap(gapN, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
+                                    gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
                                     
-                                    inSequences.appendGap(gap);
+                                    inSequences.addGap(gap);
                                     
-                                    gapN++;
                                     lineN++;
                                                  
                                     break;
@@ -528,11 +532,11 @@ public:
                                         
                                     }
                                     
-                                    inSequences.insertHash1(seqHeader, seqN); // header to hash table
-                                    inSequences.insertHash2(seqN, seqHeader); // header to hash table
+                                    inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                    inSequences.insertHash2(uId, seqHeader); // header to hash table
                                     
                                     includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
-                                    seqN++;
+                                    uId++;
                                     lineN++;
                                     
                                     break;
@@ -611,6 +615,8 @@ public:
         
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
+            
+            verbose("Processing sequence: " + *seqHeader);
             
             inSequences->appendSequence(seqHeader, seqComment, inSequence, inSequenceQuality);
             

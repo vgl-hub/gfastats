@@ -9,7 +9,7 @@
 #define GFASTATS_FUNCTIONS_H
 
 //typedef
-typedef std::tuple<char, unsigned int, char, unsigned int> Tuple;
+typedef std::tuple<char, unsigned int, char, unsigned int> Tuple; // tuple for gap edges orientation|id|orientation|dist
 
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
