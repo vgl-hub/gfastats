@@ -574,16 +574,16 @@ public:
                                     
                                     if (got == hash.end()) { // this is the first time we see this segment
                                         
-                                        seqN = inSequences.getSegUniqN();
+                                        uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, seqN); // header to hash table
-                                        inSequences.insertHash2(seqN, seqHeader); // header to hash table
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
                                     
-                                        sId1 = seqN;
+                                        sId1 = uId;
                                         
-                                        seqN++;
+                                        uId++;
                                         
-                                        inSequences.setSegUniqN(seqN); // we have touched a segment need to increase the unique segment counter
+                                        inSequences.setuId(uId); // we have touched a segment need to increase the unique segment counter
                                         
                                     }else{
                                         
@@ -601,16 +601,16 @@ public:
                                     
                                     if (got == hash.end()) { // this is the first time we see this segment
                                         
-                                        seqN = inSequences.getSegUniqN();
+                                        uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, seqN); // header to hash table
-                                        inSequences.insertHash2(seqN, seqHeader); // header to hash table
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
                                     
-                                        sId2 = seqN;
+                                        sId2 = uId;
                                         
-                                        seqN++;
+                                        uId++;
                                         
-                                        inSequences.setSegUniqN(seqN); // we have touched a segment need to increase the unique segment counter
+                                        inSequences.setuId(uId); // we have touched a segment need to increase the unique segment counter
                                         
                                     }else{
                                         
