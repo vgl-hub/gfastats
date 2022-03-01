@@ -313,7 +313,7 @@ public:
                     std::unordered_map<std::string, unsigned int>::const_iterator got;
                     
                     unsigned int lineN = 1;
-                    unsigned int uId = 0, guId = 0, edgeN = 0;
+                    unsigned int uId = 0, guId = 0, euId = 0;
                     
                     std::string delimiter = "\t";
                     std::vector<std::string> arguments; // process the columns of each row
@@ -560,9 +560,14 @@ public:
                                         newLine.erase(0, pos + delimiter.length());
                                     
                                     }
+
+                                    uId = inSequences.getuId();
+                                    
+                                    euId = uId; // since I am still reading segments I need to keep this fixed
+                                    
+                                    inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
                                     
                                     arguments.push_back(newLine); // last column
-
                                     
                                     sId1Or = arguments[2][0]; // get sequence orientation in the edge
                                     
@@ -620,11 +625,10 @@ public:
                                     
                                     cigar = arguments[5];  
                                     
-                                    edge.newEdge(edgeN, sId1, sId2, sId1Or, sId2Or, cigar);
+                                    edge.newEdge(euId, sId1, sId2, sId1Or, sId2Or, cigar);
                                     
                                     inSequences.appendEdge(edge);
-                                    
-                                    edgeN++;
+ 
                                     lineN++;
                                                  
                                     break;

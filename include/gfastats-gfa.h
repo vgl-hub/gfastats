@@ -466,6 +466,7 @@ private:
     std::vector<InPath> inPaths;
     std::vector<std::vector<Tuple>> adjListFW;
     std::vector<std::vector<Tuple>> adjListBW;
+    std::vector<std::vector<EdgeTuple>> adjEdgeListFW;
     std::unordered_map<std::string, unsigned int> headersToIds;
     std::unordered_map<unsigned int, std::string> idsToHeaders;
     std::unordered_map<int, bool> visited, deleted;
@@ -507,6 +508,10 @@ private:
     unsigned long int totG = 0;
     unsigned long int totT = 0;
     unsigned long int totLowerCount = 0;
+
+    //connectivity
+    unsigned int deadEnds = 0;
+    unsigned int disconnectedComponents = 0;
     
     friend class SAK;
     
@@ -1298,6 +1303,12 @@ public:
         return inGaps;
         
     }
+
+    std::vector<InEdge> getEdges() { // return gfa edge vector
+        
+        return inEdges;
+        
+    }
     
     bool appendEdge(InEdge edge) {
         
@@ -1352,16 +1363,15 @@ public:
 
     }
     
-    void buildGraph(std::vector<InGap> const& edges) // graph constructor
-    {
+    void buildGraph(std::vector<InGap> const& edges) { // graph constructor
         
         verbose("Started graph construction");
         
         adjListFW.clear();
         adjListBW.clear();
         
-        adjListFW.resize(inSegments.size()+inGaps.size()); // resize the adjaciency list to hold all nodes
-        adjListBW.resize(inSegments.size()+inGaps.size()); // resize the adjaciency list to hold all nodes
+        adjListFW.resize(inSegments.size()+inGaps.size()+inEdges.size()); // resize the adjaciency list to hold all nodes
+        adjListBW.resize(inSegments.size()+inGaps.size()+inEdges.size()); // resize the adjaciency list to hold all nodes
         
         for (auto &edge: edges) // add edges to the graph
         {
@@ -1409,6 +1419,92 @@ public:
 //        verbose("Assigned node IDs");
 //
 //    }
+
+    void buildEdgeGraph(std::vector<InEdge> const& edges) { // graph constructor
+        
+        verbose("Started edge graph construction");
+        
+        adjEdgeListFW.clear();
+        
+        adjEdgeListFW.resize(inSegments.size()+inGaps.size()+inEdges.size()); // resize the adjaciency list to hold all nodes
+        
+        for (auto &edge: edges) // add edges to the graph
+        {
+            
+            verbose("Adding forward edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or);
+            
+            adjEdgeListFW.at(edge.sId1).push_back(std::make_tuple(edge.sId1Or, edge.sId2, edge.sId2Or)); // insert at edge start gap destination and orientations
+            
+        }
+        
+        verbose("Graph built");
+        
+        visited.clear();
+        
+//        assignIds(); // this is not used at present, and seems outdated (segfault on some templates)
+        
+    }
+
+   void dfsEdges(int v) { // Depth First Search to find graph connectivity
+
+       visited[v] = true; // mark the current node as visited
+
+       if (adjEdgeListFW.at(v).size() > 1) { // if the vertex has more than one edge
+
+        char sign = std::get<0>(adjEdgeListFW.at(v).at(0));
+        unsigned int i = 0;
+
+        for(EdgeTuple edge : adjEdgeListFW.at(v)) {
+
+                    verbose("hello!");
+
+            if(std::get<0>(edge) != sign){
+
+                verbose("node: " + idsToHeaders[v] + " --> case a: internal node, multiple edges");
+
+                break;
+
+            }
+
+            if (i == adjEdgeListFW.size()) {
+
+                verbose("node: " + idsToHeaders[v] + " --> case b: single dead end, multiple edges");
+
+                deadEnds += 1;
+
+            }
+
+            sign = std::get<0>(edge);
+            i++;
+
+        }
+
+       }else if (adjEdgeListFW.at(v).size() == 1){ // this is a single dead end
+
+            deadEnds += 1;
+
+           verbose("node: " + idsToHeaders[v] + " --> case c: single dead end, single edge");
+
+       }else if(adjEdgeListFW.at(v).size() == 0){ // disconnected component (double dead end)
+
+            deadEnds += 2;
+
+            disconnectedComponents++;
+
+            verbose("node: " + idsToHeaders[v] + " --> case d: disconnected component");
+
+       }
+
+       for (EdgeTuple i: adjEdgeListFW[v]) { // recur for all forward vertices adjacent to this vertex
+
+           if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
+
+               dfsEdges(std::get<1>(i)); // recurse
+
+           }
+       }
+
+   }
     
 //    void dfsPos(int v, unsigned int* uId) { // Depth First Search to assign sequential sIds to each feature in the graph. It finds the first node then walks to the end node assigning progressive uIds
 //
@@ -2214,6 +2310,18 @@ public:
         
         return true;
         
+    }
+
+    unsigned int getDeadEnds() {
+
+        return deadEnds;
+
+    }
+
+    unsigned int getDisconnectedComponents() {
+
+        return disconnectedComponents;
+
     }
     
     // instruction methods
