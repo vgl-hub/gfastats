@@ -705,6 +705,25 @@ public:
         std::cout<<output("# edges")<<inSequences.getEdgeN()<<"\n";
         std::cout<<output("Average degree")<<(double)inSequences.getEdgeN()/inSequences.getSegmentN()<<"\n";
 
+        inSequences.buildEdgeGraph(inSequences.getEdges());
+
+        verbose("Graph DFS");
+        
+        std::vector<InSegment> inSegments = inSequences.getInSegments();
+        
+        for (InSegment inSegment : inSegments) { // loop through all nodes
+            
+            if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
+                
+                inSequences.dfsEdges(inSegment.getuId()); // if not, visit all connected components recursively
+                
+            }
+            
+        }
+
+        std::cout<<output("# dead ends")<<inSequences.getDeadEnds()<<"\n";
+        std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
+
         return true;
         
     }
