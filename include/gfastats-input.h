@@ -655,7 +655,7 @@ public:
             
             verbose("End of file");
             
-            if (instructions.empty()) { // it only makes sense to update the stats if we are not manipulating the sequence
+            if (instructions.empty() && inSequences.getGaps().size() > 0) { // it only makes sense to update the stats if we are not manipulating the sequence and there are gaps
                 
                 inSequences.updateScaffoldStats();
                 

@@ -1455,8 +1455,8 @@ public:
         unsigned int i = 0;
 
         for(EdgeTuple edge : adjEdgeListFW.at(v)) {
-
-                    verbose("hello!");
+            
+            i++;
 
             if(std::get<0>(edge) != sign){
 
@@ -1464,9 +1464,7 @@ public:
 
                 break;
 
-            }
-
-            if (i == adjEdgeListFW.size()) {
+            }else if (i == adjEdgeListFW.at(v).size()) {
 
                 verbose("node: " + idsToHeaders[v] + " --> case b: single dead end, multiple edges");
 
@@ -1475,7 +1473,6 @@ public:
             }
 
             sign = std::get<0>(edge);
-            i++;
 
         }
 
