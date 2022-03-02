@@ -47,7 +47,7 @@ public:
 
     }
     
-    InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType) {
+    InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
         
@@ -686,6 +686,18 @@ public:
             
             verbose("Updated scaffold statistics");
         
+        }
+            
+        std::vector<std::string> options {"name", "size"}; // sequence sorting if user input
+        
+        if(sortType != "none"){
+            
+            if (std::find(options.begin(), options.end(), sortType) != options.end()){
+            
+            }else if (ifFileExists(sortType.c_str())) {
+                
+            }
+            
         }
         
         return inSequences;

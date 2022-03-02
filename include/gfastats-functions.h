@@ -88,7 +88,7 @@ bool isDash(char * optarg) { // check if user input is dash (substitute of input
     
 }
 
-bool ifFileExists(char * optarg) { // check if file exists
+bool ifFileExists(const char * optarg) { // check if file exists
     
     if (!access (optarg, F_OK)) {
         

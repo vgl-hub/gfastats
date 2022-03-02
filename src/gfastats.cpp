@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     std::string iBedIncludeFileArg; // input bed file of coordinates to include
     std::string iBedExcludeFileArg; // input bed file of coordinates to exclude
     
-    std::string sortType; // type of sorting
+    std::string sortType = "none"; // type of sorting (default: none)
     
     std::string outSeq = "fasta"; // default output type
     
@@ -173,9 +173,9 @@ int main(int argc, char **argv) {
                 
                 if (strcmp(long_options[option_index].name,"sort") == 0) {
                     
-                    std::vector<std::string> options {"name", "size"};
+                    std::vector<std::string> options {"none", "name", "size"};
                             
-                    if (std::find(options.begin(), options.end(), optarg) != options.end()){
+                    if (std::find(options.begin(), options.end(), optarg) != options.end() || ifFileExists(optarg)){
                         
                         sortType = optarg;
                         
@@ -289,9 +289,10 @@ int main(int argc, char **argv) {
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
                 printf("-h --help print help and exit.\n");
+                printf("--sort name|size|file sort sequences according to input.\n");
                 printf("--stats report summary statistics (default).\n");
                 printf("--seq-report report statistics for each sequence.\n");
-                printf("\t--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
+                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--verbose verbose output.\n");
                 printf("--cmd print $0 to stdout.\n");
@@ -326,7 +327,7 @@ int main(int argc, char **argv) {
     
     verbose("Sequence object generated");
     
-    inSequences = inFile.readFiles(iSeqFileArg, iSakFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType); // read the sequence input file object into the sequence collection object
+    inSequences = inFile.readFiles(iSeqFileArg, iSakFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
     
     verbose("Finished reading sequences from file to sequence object");
     
