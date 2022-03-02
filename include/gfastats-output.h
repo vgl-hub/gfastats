@@ -830,11 +830,12 @@ public:
         std::cout<<output("# soft-masked bases")<<inSequences.getTotLowerCount()<<"\n";
         
         counter = 0;
-     
-        std::cout<<output("# edges")<<inSequences.getEdgeN()<<"\n";
-        std::cout<<output("Average degree")<<(double)inSequences.getEdgeN()/inSequences.getSegmentN()<<"\n";
+        unsigned int connectedComponents = 0;
 
         if (inSequences.getEdges().size() > 0) {
+            
+            std::cout<<output("# edges")<<inSequences.getEdgeN()<<"\n";
+            std::cout<<output("Average degree")<<(double)inSequences.getEdgeN()/inSequences.getSegmentN()<<"\n";
         
             inSequences.buildEdgeGraph(inSequences.getEdges());
 
@@ -847,13 +848,14 @@ public:
                 if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
                     
                     inSequences.dfsEdges(inSegment.getuId()); // if not, visit all connected components recursively
-                    
+                    connectedComponents++;
                 }
                 
             }
 
             std::cout<<output("# dead ends")<<inSequences.getDeadEnds()<<"\n";
             std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
+            std::cout<<output("# connected components")<<connectedComponents<<"\n";
             
         }
 
