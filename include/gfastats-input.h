@@ -22,26 +22,29 @@ public:
     {
         s.clear();
         
-        int i = 0, buffer_s = 500000000;
+//        int i = 0;
+//        
+//        size_t buffer_s = 500000000; // large input buffer
         
-        char* str = (char*) malloc(buffer_s * sizeof(char));
-        char* str_new = (char*) malloc(buffer_s * sizeof(char));
+        getline(is, s, '>');
         
-        is.getline(str, buffer_s, '>');
+        s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
         
-        for(char* c = str; *c != '\0'; c++) {
+//        char* str_new = (char*) malloc(buffer_s * sizeof(char));
+//
+//        for(char* c = str; *c != '\0'; c++) { // for each character
+//
+//            if (*c != '\n') { // remove newline characters
+//
+//                str_new[i] = *c; i++;
+//
+//            }
+//
+//        }
 
-            if (*c != '\n') {
-
-                str_new[i] = *c; i++;
-
-            }
-
-        }
-
-        s = str_new;
-        free(str);
-        free(str_new);
+//        s = str_new;
+//        free(str);
+//        free(str_new);
 
         return is.eof() ? false : true;
 
