@@ -688,18 +688,42 @@ public:
         
         }
             
-        std::vector<std::string> options {"name", "size"}; // sequence sorting if user input
-        
-        if(sortType != "none"){
+        if (sortType == "ascending") {
             
-            if (std::find(options.begin(), options.end(), sortType) != options.end()){
+            inSequences.sortPathsByNameAscending();
             
-            }else if (ifFileExists(sortType.c_str())) {
+        }else if (sortType == "descending") {
+            
+            inSequences.sortPathsByNameDescending();
+            
+        }else if (sortType == "largest") {
+            
+            inSequences.sortPathsBySize(0);
+
+        }else if (sortType == "smallest") {
+            
+            inSequences.sortPathsBySize(1);
+            
+        }else if (sortType != "none" && ifFileExists(sortType.c_str())){
+                
+            stream = make_unique<std::ifstream>(std::ifstream(sortType));
+            
+            std::string header;
+            std::vector<std::string> headerList;
+            
+            while (getline(*stream, line)) { // read the file to vector
+                
+                std::istringstream iss(line);
+                iss >> header;
+                
+                headerList.push_back(header);
                 
             }
             
+            inSequences.sortPathsByList(headerList);
+            
         }
-        
+
         return inSequences;
         
     }

@@ -465,6 +465,7 @@ public:
     
 };
 
+
 class InSequences { //collection of InSegment and inGap objects and their summary statistics
     
 private:
@@ -1340,7 +1341,138 @@ public:
         
         return true;
         
-    }  
+    }
+    
+    //sorting methods
+    
+    void sortPathsByNameAscending(){
+        
+        sort(inPaths.begin(), inPaths.end(), [](InPath& one, InPath& two){return one.getHeader() < two.getHeader();});
+        
+    }
+    
+    void sortPathsByNameDescending(){
+        
+        sort(inPaths.begin(), inPaths.end(), [](InPath& one, InPath& two){return one.getHeader() > two.getHeader();});
+        
+    }
+    
+    void sortPathsByList(std::vector<std::string> headerList){
+        
+        int index1 = 0, index2 = 0;
+        
+        auto comp = [&](InPath& one, InPath& two)-> bool { // lambda function for custom sorting
+        
+        auto it = find(headerList.begin(), headerList.end(), one.getHeader());
+      
+        if (it != headerList.end()) { // if element one was found
+
+            index1 = it - headerList.begin(); // calculating the index
+
+        }else {
+
+            std::cout<<"Error: sequence missing from sort list (" << one.getHeader() << ")\n";
+            exit(1);
+
+        }
+            
+        it = find(headerList.begin(), headerList.end(), two.getHeader());
+      
+        if (it != headerList.end()) { // if element two was found
+
+            index2 = it - headerList.begin(); // calculating the index
+
+        }else {
+
+            std::cout<<"Error: sequence missing from sort list ("<<two.getHeader()<<")\n";
+            exit(1);
+
+        }
+
+            return index1<index2;
+            
+        };
+        
+        sort(inPaths.begin(), inPaths.end(), comp);
+        
+    }
+    
+    void sortPathsBySize(bool largest){
+        
+        auto comp = [&](InPath& one, InPath& two)-> bool { // lambda function for custom sorting
+        
+            std::vector<PathTuple> pathComponents;
+            
+            unsigned int uId = 0, sIdx = 0, gIdx = 0, size1 = 0, size2 = 0;
+                
+            pathComponents = one.getComponents();
+            
+            for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                
+                uId = std::get<1>(*component);
+                
+                if (std::get<0>(*component) == 'S') {
+                
+                    auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                    
+                    if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                    
+                    size1 += inSegments[sIdx].getInSequence().size();
+                    
+                }else{
+                    
+                    auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                    
+                    if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                    
+                    size1 += inGaps[gIdx].getDist();
+                    
+                }
+                
+            }
+                
+            pathComponents = two.getComponents();
+            
+            for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                
+                uId = std::get<1>(*component);
+                
+                if (std::get<0>(*component) == 'S') {
+                
+                    auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                    
+                    if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                    
+                    size2 += inSegments[sIdx].getInSequence().size();
+                    
+                }else{
+                    
+                    auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                    
+                    if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                    
+                    size2 += inGaps[gIdx].getDist();
+                    
+                }
+            
+            
+            }
+                
+            if(largest) {
+            
+                return size1<size2;
+                
+            }else{
+                
+                return size1>size2;
+                
+            }
+                
+        };
+            
+        sort(inPaths.begin(), inPaths.end(), comp);
+        
+    }
     
     //gfa methods
     void insertHash1(std::string segHeader, unsigned int i) {

@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
                 
                 if (strcmp(long_options[option_index].name,"sort") == 0) {
                     
-                    std::vector<std::string> options {"none", "name", "size"};
+                    std::vector<std::string> options {"none", "ascending", "descending", "largest", "smallest"};
                             
                     if (std::find(options.begin(), options.end(), optarg) != options.end() || ifFileExists(optarg)){
                         
@@ -289,8 +289,8 @@ int main(int argc, char **argv) {
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
                 printf("-h --help print help and exit.\n");
-                printf("--sort name|size|file sort sequences according to input.\n");
-                printf("--stats report summary statistics (default).\n");
+                printf("--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
+//                printf("--stats report summary statistics (default).\n");
                 printf("--seq-report report statistics for each sequence.\n");
                 printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
