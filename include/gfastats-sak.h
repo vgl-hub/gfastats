@@ -247,6 +247,12 @@ public:
         
         inSequences.addGap(gap); // introduce the new gap
         
+        inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
+        
+        inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig2]); // remove the path involving contig2
+        
+//        inSequences.dfsPath(inSequences.headersToIds[instruction.contig1]); // dfs to generate the resulting path
+        
         return true;
         
     }

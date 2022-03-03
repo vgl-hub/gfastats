@@ -2576,7 +2576,7 @@ public:
             
             unsigned int sIdx = 0, sUId = headersToIds[*contig1];
         
-            auto sId = find_if(inSegments.begin(), inSegments.end(), [sUId](InSegment& obj) {return obj.getuId() == sUId;}); // given a node Uid, find it
+            auto sId = find_if(inSegments.begin(), inSegments.end(), [sUId](InSegment& obj) {return obj.getuId() == sUId;}); // given a node uId, find it
         
             if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
         
@@ -2591,6 +2591,36 @@ public:
         }
         
         return true;
+        
+    }
+    
+    void removePath(unsigned int i) {
+        
+        inPaths.erase(inPaths.begin()+i);
+        
+    }
+    
+    void removePathFromSegment(unsigned int uId) {
+        
+        int i = 0;
+        
+        for (InPath inPath : inPaths) {
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto sId = find_if(pathComponents.begin(), pathComponents.end(), [uId](PathTuple& obj) {return std::get<1>(obj) == uId;}); // given a node uId, find if present in the given path
+            
+            if (sId != pathComponents.end()) {
+            
+                removePath(i);
+            
+                break;
+                
+            }
+            
+            ++i;
+            
+        }
         
     }
     
