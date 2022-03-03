@@ -439,6 +439,12 @@ public:
         
     }
     
+    void setComponents(std::vector<PathTuple> newComponents) {
+
+        pathComponents = newComponents;
+        
+    }
+    
     std::vector<PathTuple> getComponents() {
         
         return pathComponents;
@@ -2608,9 +2614,9 @@ public:
             
             std::vector<PathTuple> pathComponents = inPath.getComponents();
             
-            auto sId = find_if(pathComponents.begin(), pathComponents.end(), [uId](PathTuple& obj) {return std::get<1>(obj) == uId;}); // given a node uId, find if present in the given path
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId](PathTuple& obj) {return std::get<1>(obj) == uId;}); // given a node uId, find if present in the given path
             
-            if (sId != pathComponents.end()) {
+            if (pathIt != pathComponents.end()) {
             
                 removePath(i);
             
@@ -2621,6 +2627,59 @@ public:
             ++i;
             
         }
+        
+    }
+    
+    InPath joinPaths(std::string seqHeader, unsigned int uId1, unsigned int uId2, unsigned int uId3) {
+        
+        int i = 0;
+        
+        InPath newPath;
+        newPath.setHeader(seqHeader);
+        
+        std::vector<PathTuple> newComponents;
+        
+        for (InPath inPath : inPaths) { // add first path
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId1](PathTuple& obj) {return std::get<1>(obj) == uId1;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+            
+                newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
+            
+                break;
+                
+            }
+            
+            ++i;
+            
+        }
+        
+        newComponents.push_back(std::make_tuple('G', uId2, '+'));
+        
+        for (InPath inPath : inPaths) { // add second path
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId3](PathTuple& obj) {return std::get<1>(obj) == uId3;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+            
+                newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
+            
+                break;
+                
+            }
+            
+            ++i;
+            
+        }
+        
+        newPath.setComponents(newComponents);
+        
+        return newPath;
         
     }
     

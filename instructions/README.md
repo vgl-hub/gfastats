@@ -2,10 +2,10 @@
 
 ## JOIN
 
-The JOIN instruction introduces a new gap of 50 bp between scaffold1 and scaffold2 with optional id gap1, effectively joining the two sequences into a new sequences named scaffold1 with an optional comment.
+The JOIN instruction introduces a new gap of 50 bp between scaffold1 and scaffold2 with id gap1, effectively joining the two sequences into a new sequences named scaffold1 with an optional comment.
 
 ```
-JOIN contig1+ contig2+ 50 [gap1] [scaffold1] [this is a new scaffold]
+JOIN contig1+ contig2+ 50 gap1 scaffold1 [this is a new scaffold]
 ```
 
 ## SPLIT

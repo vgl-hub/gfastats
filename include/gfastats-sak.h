@@ -247,13 +247,11 @@ public:
         
         inSequences.addGap(gap); // introduce the new gap
         
+        InPath newPath = inSequences.joinPaths(instruction.scaffold1, inSequences.headersToIds[instruction.contig1], inSequences.uId, inSequences.headersToIds[instruction.contig2]); // generate a new path by joining the paths that contain the two segments
+        
         inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
         
         inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig2]); // remove the path involving contig2
-        
-        InPath newPath;
-        
-        inSequences.dfsPath(inSequences.headersToIds[instruction.contig1], newPath); // dfs to generate the resulting path
         
         inSequences.addPath(newPath);
         
