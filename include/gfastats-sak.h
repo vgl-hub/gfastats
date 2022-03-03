@@ -251,7 +251,11 @@ public:
         
         inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig2]); // remove the path involving contig2
         
-//        inSequences.dfsPath(inSequences.headersToIds[instruction.contig1]); // dfs to generate the resulting path
+        InPath newPath;
+        
+        inSequences.dfsPath(inSequences.headersToIds[instruction.contig1], newPath); // dfs to generate the resulting path
+        
+        inSequences.addPath(newPath);
         
         return true;
         
