@@ -630,6 +630,32 @@ public:
         
     }
     
+    std::string homopolymerCompress(const std::string &sequence, std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths) {
+        std::string csequence;
+        csequence.reserve(sequence.length());
+        
+        unsigned int index=0, length;
+        
+        auto lambda = [&length, &index, &compressionIndices, &compressionLengths, &csequence, &sequence](int i){
+            length = i-index;
+            if(length > 1) {
+                compressionIndices.push_back(csequence.length());
+                compressionLengths.push_back(length);
+            }
+            csequence += sequence[index];
+        };
+
+        for(unsigned int i=1; i<sequence.length(); i++) {
+            if(sequence[i] == sequence[index]) continue;
+            lambda(i);
+            index = i;
+        }
+        lambda(sequence.length());
+
+        csequence.shrink_to_fit();
+        return csequence;
+    }
+    
     void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
         unsigned int pos = 0, // current position in sequence
