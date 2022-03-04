@@ -414,6 +414,9 @@ private:
     std::string pHeader, pComment;
     std::vector<PathTuple> pathComponents;
     unsigned int pUId;
+    
+    friend class SAK;
+    friend class InSequences;
 
 public:
     
@@ -2433,34 +2436,58 @@ public:
     
     bool removeTerminalGaps() { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
         
-        std::vector<InGap>::iterator it = inGaps.begin();
+        std::vector<InPath>::iterator pathIt = inPaths.begin(); // first, remove the gaps from the paths they occur in
+        std::vector<PathTuple> pathComponents;
         
-        while (it != end(inGaps)) {
+        unsigned int uId = 0, gIdx = 0;
         
-            if (it->getsId1() == it->getsId2()) {
+        while (pathIt != end(inPaths)) {
             
-                inGaps.erase(it); // remove the element by position, considering elements that were already removed in the loop
+            pathComponents = pathIt->getComponents();
+            
+            for (std::vector<PathTuple>::iterator componentIt = pathComponents.begin(); componentIt != pathComponents.end();) {
                 
-                changeTotGapLen(-it->getDist()); // update length of gaps
+                if (std::get<0>(*componentIt) == 'G') {
+                    
+                    uId = std::get<1>(*componentIt);
+                    
+                    auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a gap Uid, find it
+                    
+                    if (gId->getsId1() == gId->getsId2()) {
+                        
+                        gIdx = std::distance(pathComponents.begin(), componentIt); // gives us the gap index
+                    
+                        pathIt->pathComponents.erase(pathIt->pathComponents.begin()+gIdx); // remove the gap component from the path
+                        
+                        verbose("Removed gap from paths");
+                        
+                        inGaps.erase(gId); // remove the element by position, considering elements that were already removed in the loop
+
+                        changeTotGapLen(-gId->getDist()); // update length of gaps
+                        
+                        verbose("Removed gap from gap vector");
+                        
+                    }
+                    
+                }
                 
-                it--; // the iterator is now one gap short
+                componentIt++;
                 
             }
-    
-        it++; // check the new gap
+            
+            pathIt++;
             
         }
-        
         
         gapLens.clear();
         
-        for (unsigned int i = 0; i != inGaps.size(); ++i) { // loop through all edges
+        for (unsigned int i = 0; i != inGaps.size(); ++i) { // update statistics to reflect the removal
         
             recordGapLen(inGaps[i].getDist());
             
-            verbose("Recorded length of gaps in sequence");
-            
         }
+        
+        verbose("Recorded length of gaps in sequence");
         
         return true;
         
