@@ -629,7 +629,7 @@ public:
         
         path.addToPath('S', *uId, '+');
         
-        *A = 0, *C = 0, *G = 0, *T = 0;
+        *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
         
         (*iId)++; // number of gaps in the current scaffold
         (*uId)++; // unique numeric identifier
@@ -2685,101 +2685,101 @@ public:
     
 //    void dfsPath(unsigned int v, InPath& newPath) // Depth First Search to build a new path given a vertex
 //    {
-//        
+//
 //        visited[v] = true; // mark the current node as visited
-//        
+//
 //        auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getuId() == v;}); // given a vertex id, search it in the segment vector
-//        
+//
 //        if (it != inSegments.end()) {idx = std::distance(inSegments.begin(), it);} // if found, get its index
-//        
+//
 //        if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
-//            
+//
 //            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
-//            
+//
 //            backward = false;
-//            
+//
 //        }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
-//            
+//
 //            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
-//            
 //
-//            
+//
+//
 //            backward = true; // reached the end
-//            
+//
 //        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
-//            
-//            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
-//            
-//            if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
-//            
 //
-//                
+//            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+//
+//            if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
+//
+//
+//
 //            }else{
-//                
+//
 //            }
-//            
+//
 //            backward = true; // reached the end
-//            
+//
 //        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
-//            
+//
 //            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
-//            
+//
 //            backward = true;
-//            
+//
 //        }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
-//            
+//
 //            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
-//            
+//
 //        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
-//            
+//
 //            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
-//            
+//
 //            backward = false;
-//            
+//
 //        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
-//            
+//
 //            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
-//            
+//
 //            newPath.addToPath('S', v, '+');
 //
 //            visited.clear();
 //
 //            visited[v] = true; // we have just visited the start node
-//            
+//
 //            backward = false;
-//            
+//
 //        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
-//            
+//
 //            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
-//            
+//
 ////            *scaffSize += std::get<3>(adjListFW.at(v).at(0));
-//            
+//
 //            backward = false;
-//            
+//
 //        }
-//        
+//
 //        for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
-//            
+//
 //            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
-//                
+//
 ////                *scaffSize += std::get<3>(i);
-//                
+//
 //                dfsPath(std::get<1>(i), newPath); // recurse
-//                
+//
 //            }
 //        }
-//        
+//
 //        for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
-//            
+//
 //            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
-//                
+//
 ////                *scaffSize += std::get<3>(i);
-//                
+//
 //                dfsPath(std::get<1>(i), newPath); // recurse
-//                
+//
 //            }
 //        }
-//        
+//
 //    }
     
     void addPath(InPath path) {
