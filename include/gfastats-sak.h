@@ -98,6 +98,14 @@ public:
                 
                 instruction.contig2 = arguments[2];
                 
+                instruction.scaffold1 = arguments[3];
+                
+                instruction.scaffold2 = arguments[4];
+                
+                instruction.comment1 = arguments[5];
+                
+                instruction.comment2 = arguments[6];
+                
                 break;
             }
 
@@ -261,7 +269,13 @@ public:
     
     bool split(InSequences& inSequences, Instruction instruction) { // splits two sequences removing the gap in between based on instruction
         
-        inSequences.removeGaps(&instruction.contig1, &instruction.contig2); // remove the gap
+        std::vector<unsigned int> guIds = inSequences.removeGaps(&instruction.contig1, &instruction.contig2); // remove the gap
+        
+        std::cout<<guIds.size()<<" "<<guIds[0]<<std::endl;
+        
+        inSequences.splitPath(guIds[0], instruction.scaffold1, instruction.scaffold2); // generate two new the paths splitting the original path
+        
+        inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
         
         return true;
         

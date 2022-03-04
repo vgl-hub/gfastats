@@ -2523,7 +2523,9 @@ public:
         
     }
     
-    bool removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+    std::vector<unsigned int> removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+        
+        std::vector<unsigned int> guIds;
  
         unsigned int sUId1 = headersToIds[*contig1], gIdx = 0;
         
@@ -2541,6 +2543,8 @@ public:
             if (gId != inGaps.end()) {
                 
                 gIdx = std::distance(inGaps.begin(), gId); // gives us the gap index
+                
+                guIds.push_back((*gId).getuId());
             
                 inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
                 
@@ -2559,6 +2563,8 @@ public:
                 if (gId != inGaps.end()) {
                     
                     gIdx = std::distance(inGaps.begin(), gId); // gives us the gap index
+                    
+                    guIds.push_back((*gId).getuId());
             
                     inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
                     
@@ -2572,7 +2578,7 @@ public:
             
         }
         
-        return true;
+        return guIds;
         
     }
     
@@ -2667,7 +2673,7 @@ public:
             
             if (pathIt != pathComponents.end()) {
             
-                newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
+                newComponents.insert(std::end(newComponents), std::begin(pathComponents), pathIt-1);
             
                 break;
                 
@@ -2680,6 +2686,48 @@ public:
         newPath.setComponents(newComponents);
         
         return newPath;
+        
+    }
+    
+    void splitPath(unsigned int guId, std::string header1, std::string header2) {
+        
+        int i = 0;
+        
+        InPath newPath1;
+        newPath1.setHeader(header1);
+        std::vector<PathTuple> newComponents1;
+        
+        InPath newPath2;
+        newPath2.setHeader(header2);
+        std::vector<PathTuple> newComponents2;
+        
+        for (InPath inPath : inPaths) { // add first path
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [guId](PathTuple& obj) {return std::get<1>(obj) == guId;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+            
+                newComponents1.insert(std::end(newComponents1), std::begin(pathComponents), pathIt);
+                
+                newPath1.setComponents(newComponents1);
+                
+                addPath(newPath1);
+                
+                newComponents2.insert(std::end(newComponents2), pathIt+1, std::end(pathComponents));
+                
+                newPath2.setComponents(newComponents2);
+                
+                addPath(newPath2);
+            
+                break;
+                
+            }
+            
+            ++i;
+            
+        }
         
     }
     
