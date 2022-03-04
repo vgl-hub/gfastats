@@ -629,7 +629,7 @@ public:
         (*uId)++; // unique numeric identifier
         
     }
-    
+
     std::string homopolymerCompress(const std::string &sequence, std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths) {
         std::string csequence;
         csequence.reserve(sequence.length());
@@ -658,7 +658,13 @@ public:
     
     void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
+        std::vector<unsigned int> compressionIndices, compressionLengths;
+        if(hc_compress_flag) {
+            *sequence = homopolymerCompress(*sequence, compressionIndices, compressionLengths);
+        }
+
         unsigned int pos = 0, // current position in sequence
+        hc_index=0, // used with homopolymer compression
         A = 0, C = 0, G = 0, T = 0,
         lowerCount = 0,
         dist = 0, // gap size
@@ -677,7 +683,6 @@ public:
         }
         
         unsigned int seqLen = sequence->length()-1;
-        
         for (char &base : *sequence) {
             
             if (islower(base)) {
@@ -716,32 +721,34 @@ public:
                 }
                 default: {
                     
+                    unsigned int count = hc_compress_flag && hc_index < compressionIndices.size() && pos == compressionIndices[hc_index] ? compressionLengths[hc_index++] : 1;
+
                     switch (base) {
                         case 'A':
                         case 'a':{
                             
-                            A++;
+                            A+=count;
                             break;
                             
                         }
                         case 'C':
                         case 'c':{
                             
-                            C++;
+                            C+=count;
                             break;
                             
                         }
                         case 'G':
                         case 'g': {
                             
-                            G++;
+                            G+=count;
                             break;
                             
                         }
                         case 'T':
                         case 't': {
                             
-                            T++;
+                            T+=count;
                             break;
                             
                         }

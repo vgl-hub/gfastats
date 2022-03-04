@@ -44,6 +44,7 @@ int main(int argc, char **argv) {
         
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
         {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
+        {"homopolymer-compress", no_argument, &hc_compress_flag, 0},
         {"sort", required_argument, 0, 0},
         
         {"include-bed", required_argument, 0, 'i'},

@@ -23,5 +23,6 @@ static int outFile_flag;
 static int stats_flag;
 static int cmd_flag;
 static int rmGaps_flag;
+static int hc_compress_flag;
 
 #endif /* GFASTATS_GLOBAL_H */
