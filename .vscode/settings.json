@@ -1,5 +1,9 @@
 {
     "files.associations": {
+        "*.cpp": "cpp",
+        "*.hpp": "cpp",
+        "*.c": "c",
+        "*.h": "c",
         "__split_buffer": "cpp",
         "deque": "cpp",
         "string": "cpp",
@@ -65,6 +69,14 @@
         "type_traits": "cpp",
         "typeinfo": "cpp",
         "unordered_map": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "*.tcc": "cpp",
+        "codecvt": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "cinttypes": "cpp"
     }
 }
