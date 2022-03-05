@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
         
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
         {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
-        {"homopolymer-compress", no_argument, &hc_compress_flag, 0},
+        {"homopolymer-compress", no_argument, &hc_compress_flag, 1},
         {"sort", required_argument, 0, 0},
         
         {"include-bed", required_argument, 0, 'i'},
@@ -291,6 +291,7 @@ int main(int argc, char **argv) {
                 printf("-v --version software version.\n");
                 printf("-h --help print help and exit.\n");
                 printf("--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
+                printf("--homopolymer-compress compress all the homopolymers in the input.\n");
 //                printf("--stats report summary statistics (default).\n");
                 printf("--seq-report report statistics for each sequence.\n");
                 printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
