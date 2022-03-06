@@ -862,8 +862,6 @@ public:
         }
                 
         addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
-            
-        A = 0, C = 0, G = 0, T = 0;
         
     }
     
