@@ -531,12 +531,8 @@ public:
                                         
                                     }
                                     
-                                    inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                    inSequences.insertHash2(uId, seqHeader); // header to hash table
-                                    
                                     includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                                     
-                                    uId++;
                                     lineN++;
                                     
                                     break;
