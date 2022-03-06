@@ -86,6 +86,7 @@ fastlane/test_output
 ### Visual Studio Code ###
 
 ## Settings
-.vscode/
+*.vscode
+*.vscode/*
 
 # End of https://www.gitignore.io/api/swift,xcode,vscode
