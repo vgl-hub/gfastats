@@ -303,6 +303,7 @@ public:
                     
                     InGap gap;
                     InEdge edge;
+                    InPath path;
                     unsigned int sId1 = 0, sId2 = 0, dist = 0;
                     std::unordered_map<std::string, unsigned int> hash;
                     std::unordered_map<std::string, unsigned int>::const_iterator got;
@@ -389,9 +390,7 @@ public:
                                 case 'S': {
                                     
                                     strtok(strdup(newLine.c_str()),"\t"); //process first line
-                                    h = strtok(NULL,"\t");
-                                    
-                                    seqHeader = h;
+                                    seqHeader = strtok(NULL,"\t");
                                     
                                     strtok(NULL,"\t");
                                     s = strtok(NULL,"\t");
@@ -500,6 +499,43 @@ public:
                                     
                                     lineN++;
                                                  
+                                    break;
+                                    
+                                }
+                                    
+                                case 'O': {
+                                    
+                                    strtok(strdup(newLine.c_str()),"\t"); // process first line
+                                    
+                                    seqHeader = strtok(NULL,"\t");
+                                    path.setHeader(seqHeader);
+                                    
+                                    s = strtok(NULL,"\t");
+                                    
+                                    delimiter = ",";
+                                    
+                                    while ((pos = s.find(delimiter)) != std::string::npos) {
+                                        
+                                        arguments.push_back(s.substr(0, pos));
+                                        
+                                        s.erase(0, pos + delimiter.length());
+                                    
+                                    }
+                                    
+                                    arguments.push_back(s); // last column
+                                    
+                                    c = strtok(NULL,"\t");
+                                    if (c != NULL) {
+                                        
+                                        seqComment = std::string(c);
+                                        path.setComment(seqComment);
+                                        
+                                    }
+                                    
+                                    inSequences.addPath(path);
+                                    
+                                    lineN++;
+                                    
                                     break;
                                     
                                 }

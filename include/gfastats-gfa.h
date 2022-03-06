@@ -520,6 +520,7 @@ private:
     
     unsigned int
     scaffN = 0,
+    pathN = 0,
     totGapLen = 0,
     uId = 0; // unique numeric identifier for each feature
     
@@ -989,6 +990,12 @@ public:
         
     }
     
+    unsigned int getPathN() {
+        
+        return inPaths.size();
+        
+    }
+    
     void recordScaffLen(unsigned int seqLen) {
         
         scaffLens.push_back(seqLen);
@@ -1363,8 +1370,6 @@ public:
     //gfa methods
     bool addGap(InGap inGap) {
         
-        verbose("Added nodes to hash table");
-        
         recordGapLen(inGap.dist);
         
         verbose("Recorded length of gaps in sequence");
@@ -1376,6 +1381,20 @@ public:
         inGaps.push_back(inGap);
 
         verbose("Gap added to gap vector");
+        
+        return true;
+        
+    }
+    
+    bool addPath(InPath path) {
+        
+        inPaths.push_back(path);
+
+        verbose("Path added to path vector");
+        
+        pathN++;
+        
+        verbose("Increased path counter");
         
         return true;
         
@@ -2967,12 +2986,6 @@ public:
 //        }
 //
 //    }
-    
-    void addPath(InPath path) {
-        
-        inPaths.push_back(path);
-        
-    }
     
     // end of gfa methods
     

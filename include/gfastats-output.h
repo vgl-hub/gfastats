@@ -831,10 +831,12 @@ public:
         
         counter = 0;
         unsigned int connectedComponents = 0;
+        
+        unsigned int edgeN = inSequences.getPathN();
 
-        if (inSequences.getEdges().size() > 0) {
+        if (edgeN > 0) {
             
-            std::cout<<output("# edges")<<inSequences.getEdgeN()<<"\n";
+            std::cout<<output("# edges")<<edgeN<<"\n";
             std::cout<<output("Average degree")<<(double)inSequences.getEdgeN()/inSequences.getSegmentN()<<"\n";
         
             inSequences.buildEdgeGraph(inSequences.getEdges());
@@ -866,6 +868,14 @@ public:
             std::cout<<output("# dead ends")<<inSequences.getDeadEnds()<<"\n";
             std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
             std::cout<<output("Total length disconnected components")<<inSequences.getLengthDisconnectedComponents()<<"\n";
+        }
+        
+        unsigned int pathN = inSequences.getPathN();
+        
+        if (pathN > 0) {
+            
+            std::cout<<output("# paths")<<pathN<<"\n";
+            
         }
 
         return true;
