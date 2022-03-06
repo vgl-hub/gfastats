@@ -856,7 +856,7 @@ public:
                 
         }
         
-        std::unordered_map<std::string, unsigned int>::const_iterator got = headersToIds.find (*seqHeader); // get the headers to uIds table a look for the header
+        std::unordered_map<std::string, unsigned int>::const_iterator got = headersToIds.find (*seqHeader); // get the headers to uIds table to look for the header
         
         if (got == headersToIds.end()) { // this is the first time we see this segment
             
@@ -874,6 +874,10 @@ public:
         }
                 
         addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
+        
+        recordScaffLen(sequence->size());
+        
+        verbose("Recorded length of sequence");
         
     }
     
@@ -904,6 +908,10 @@ public:
         traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality);
         
         verbose("Segment traversed");
+        
+        scaffN++;
+        
+        verbose("Increased total scaffold N");
         
         if(verbose_flag) {std::cout<<"\n";};
         
