@@ -842,21 +842,30 @@ public:
             verbose("Graph DFS");
             
             std::vector<InSegment> inSegments = inSequences.getInSegments();
+            std::vector<unsigned int> componentLengths;
+            unsigned int componentLength = 0;
             
             for (InSegment inSegment : inSegments) { // loop through all nodes
                 
                 if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
                     
-                    inSequences.dfsEdges(inSegment.getuId()); // if not, visit all connected components recursively
+                    inSequences.dfsEdges(inSegment.getuId(), &componentLength); // if not, visit all connected components recursively
                     connectedComponents++;
+                    componentLengths.push_back(componentLength);
+                    componentLength = 0;
+
                 }
                 
             }
 
+            sort(componentLengths.begin(), componentLengths.end(), std::greater<unsigned int>());
+
+
+            std::cout<<output("# connected components")<<connectedComponents<<"\n";
+            std::cout<<output("Largest connected component length")<<componentLengths[0]<<"\n";
             std::cout<<output("# dead ends")<<inSequences.getDeadEnds()<<"\n";
             std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
-            std::cout<<output("# connected components")<<connectedComponents<<"\n";
-            
+            std::cout<<output("Total length disconnected components")<<inSequences.getLengthDisconnectedComponents()<<"\n";
         }
 
         return true;

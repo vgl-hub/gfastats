@@ -1,0 +1,20 @@
+H	VN:Z:2.0
+S	Header1.1	5	CGacT	C:5bp sequence with no gaps and 2 lowercase bases
+S	Header2.1	3	CGA	C:5bp sequence with internal 1bp non-canonical gap
+S	Header2.3	1	T	C:5bp sequence with internal 1bp non-canonical gap
+S	Header3.1	3	TGA	C:10bp sequence with internal 4bp and 1bp terminal canonical gap
+S	Header3.3	2	AT	C:10bp sequence with internal 4bp and 1bp terminal canonical gap
+S	Header3.5	2	CT	C:10bp sequence with internal 4bp and 1bp terminal canonical gap
+S	Header4.2	12	TTCCTcgCACtC	C:15bp sequence with start 3bp canonical gap and 3 lowercase bases
+S	Header5.1	12	AACTCGATCACG	C:15bp sequence with terminal 3bp canonical gap
+G	Header2.2	Header2.1+	Header2.3+	1
+G	Header3.2	Header3.1+	Header3.3+	1
+G	Header3.4	Header3.3+	Header3.5+	1
+G	Header3.6	Header3.5+	Header3.5-	1
+G	Header4.1	Header4.2+	Header4.2+	3
+G	Header5.2	Header5.1+	Header5.1-	3
+O	Header1	Header1.1+	5bp sequence with no gaps and 2 lowercase bases
+O	Header2	Header2.1+ Header2.2+ Header2.3+	5bp sequence with internal 1bp non-canonical gap
+O	Header3	Header3.1+ Header3.2+ Header3.3+ Header3.4+ Header3.5+ Header3.6+	10bp sequence with internal 4bp and 1bp terminal canonical gap
+O	Header4	Header4.1+ Header4.2+	15bp sequence with start 3bp canonical gap and 3 lowercase bases
+O	Header5	Header5.1+ Header5.2+	15bp sequence with terminal 3bp canonical gap
