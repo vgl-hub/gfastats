@@ -1626,7 +1626,7 @@ public:
         
         adjEdgeListFW.clear();
         
-        adjEdgeListFW.resize(inSegments.size()+inGaps.size()+inEdges.size()); // resize the adjaciency list to hold all nodes
+        adjEdgeListFW.resize(uId); // resize the adjaciency list to hold all nodes
         
         for (auto &edge: edges) // add edges to the graph
         {
