@@ -572,9 +572,20 @@ public:
         
         verbose("Increased ACGT counts");
         
+        totA += *A;
+        totC += *C;
+        totG += *G;
+        totT += *T;
+        
+        verbose("Increased total ACGT counts");
+        
         inSegment.setLowerCount(lowerCount);
         
         verbose("Increased count of lower bases");
+        
+        totLowerCount += *lowerCount;
+
+        verbose("Increased total count of lower bases");
         
         inSegments.push_back(inSegment); // adding segment to segment set
         
@@ -2437,13 +2448,13 @@ public:
                 totG += G;
                 totT += T;
                 
-                verbose("Increased ACGT counts");
+                verbose("Increased total ACGT counts");
                 
                 A = 0, C = 0, G = 0, T = 0;
                 
                 totLowerCount += lowerCount;
 
-                verbose("Increased count of lower bases");
+                verbose("Increased total count of lower bases");
                 
                 lowerCount = 0;
                 
