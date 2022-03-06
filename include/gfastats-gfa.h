@@ -532,6 +532,7 @@ private:
     //connectivity
     unsigned int deadEnds = 0;
     unsigned int disconnectedComponents = 0;
+    unsigned int lengthDisconnectedComponents = 0;
     
     friend class SAK;
     
@@ -1633,63 +1634,71 @@ public:
         
     }
 
-   void dfsEdges(int v) { // Depth First Search to find graph connectivity
+   void dfsEdges(int v, unsigned int* componentLength) { // Depth First Search to find graph connectivity
 
        visited[v] = true; // mark the current node as visited
 
+       unsigned int sIdx = 0;
+
+       auto sId = find_if(inSegments.begin(), inSegments.end(), [v](InSegment& obj) {return obj.getuId() == v;}); // given a node Uid, find it
+        
+       if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+
        if (adjEdgeListFW.at(v).size() > 1) { // if the vertex has more than one edge
 
-        char sign = std::get<0>(adjEdgeListFW.at(v).at(0));
-        unsigned int i = 0;
+            *componentLength += inSegments[sIdx].getSegmentLen(); 
 
-        for(EdgeTuple edge : adjEdgeListFW.at(v)) {
+            char sign = std::get<0>(adjEdgeListFW.at(v).at(0));
+            unsigned int i = 0;
+
+            for(EdgeTuple edge : adjEdgeListFW.at(v)) {
             
-            i++;
+                i++;
 
-            if(std::get<0>(edge) != sign){
+                if(std::get<0>(edge) != sign){
 
-                verbose("node: " + idsToHeaders[v] + " --> case a: internal node, multiple edges");
+                    verbose("node: " + idsToHeaders[v] + " --> case a: internal node, multiple edges");
 
-                break;
+                    break;
 
-            }else if (i == adjEdgeListFW.at(v).size()) {
+                }else if (i == adjEdgeListFW.at(v).size()) {
 
-                verbose("node: " + idsToHeaders[v] + " --> case b: single dead end, multiple edges");
+                    verbose("node: " + idsToHeaders[v] + " --> case b: single dead end, multiple edges");
 
-                deadEnds += 1;
-
-            }
+                    deadEnds += 1;
+                }
 
             sign = std::get<0>(edge);
 
-        }
+            }
 
-       }else if (adjEdgeListFW.at(v).size() == 1){ // this is a single dead end
+        }else if (adjEdgeListFW.at(v).size() == 1){ // this is a single dead end
 
             deadEnds += 1;
+            *componentLength += inSegments[sIdx].getSegmentLen(); 
 
-           verbose("node: " + idsToHeaders[v] + " --> case c: single dead end, single edge");
+            verbose("node: " + idsToHeaders[v] + " --> case c: single dead end, single edge");
 
-       }else if(adjEdgeListFW.at(v).size() == 0){ // disconnected component (double dead end)
+        }else if(adjEdgeListFW.at(v).size() == 0){ // disconnected component (double dead end)
 
             deadEnds += 2;
 
             disconnectedComponents++;
+            lengthDisconnectedComponents += inSegments[sIdx].getSegmentLen(); 
 
             verbose("node: " + idsToHeaders[v] + " --> case d: disconnected component");
 
-       }
+        }
 
-       for (EdgeTuple i: adjEdgeListFW[v]) { // recur for all forward vertices adjacent to this vertex
+        for (EdgeTuple i: adjEdgeListFW[v]) { // recur for all forward vertices adjacent to this vertex
 
            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
 
-               dfsEdges(std::get<1>(i)); // recurse
+               dfsEdges(std::get<1>(i), componentLength); // recurse
 
            }
-       }
-
-   }
+        }
+    }
     
 //    void dfsPos(int v, unsigned int* uId) { // Depth First Search to assign sequential sIds to each feature in the graph. It finds the first node then walks to the end node assigning progressive uIds
 //
@@ -2536,6 +2545,12 @@ public:
 
     }
     
+    unsigned int getLengthDisconnectedComponents() {
+
+        return lengthDisconnectedComponents;
+
+    }
+
     // instruction methods
     
     std::vector<InGap> getGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, returns all edges connecting them, if only one contig is provided returns all edges where it appears

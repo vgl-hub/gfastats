@@ -21,6 +21,10 @@ Typical gfa metrics include:
 
 - Number of nodes and edges
 - Edges lenght
+- Average degree
+- Number of connected components, and length of the largets connected component
+- Number of dead ends
+- Number of disconnected components, and their total length 
 
 Metrics for each scaffold/contig can be generated with the `--seq-report` flag.
 
