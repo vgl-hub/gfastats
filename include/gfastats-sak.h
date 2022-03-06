@@ -328,9 +328,13 @@ public:
     
     bool rvcp(InSequences& inSequences, Instruction instruction) { // reverse complement sequence
         
-        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].rvcpSegment(); // rvcp segment
+        unsigned int uId = inSequences.headersToIds[instruction.contig1], sIdx = 0;
         
-        inSequences.changeTotSegmentLen(instruction.start-instruction.end);
+        auto sId = find_if(inSequences.inSegments.begin(), inSequences.inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node uId, find it
+    
+        if (sId != inSequences.inSegments.end()) {sIdx = std::distance(inSequences.inSegments.begin(), sId);} // gives us the segment index
+        
+        inSequences.inSegments[sIdx].rvcpSegment(); // rvcp segment
         
         return true;
         
@@ -338,9 +342,13 @@ public:
     
     bool invert(InSequences& inSequences, Instruction instruction) { // invert sequence
         
-        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].invertSegment(); // invert segment
+        unsigned int uId = inSequences.headersToIds[instruction.contig1], sIdx = 0;
         
-        inSequences.changeTotSegmentLen(instruction.start-instruction.end);
+        auto sId = find_if(inSequences.inSegments.begin(), inSequences.inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node uId, find it
+    
+        if (sId != inSequences.inSegments.end()) {sIdx = std::distance(inSequences.inSegments.begin(), sId);} // gives us the segment index
+        
+        inSequences.inSegments[sIdx].invertSegment(); // invert segment
         
         return true;
         
