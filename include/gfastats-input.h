@@ -192,13 +192,6 @@ public:
             firstLine = newLine;
             firstChar = newLine[0];
             
-//            if ((!isPipe || pipeType != 's') && !determineGzip(iSeqFileArg)) {
-//
-//                stream->clear();
-//                stream->seekg(0, stream->beg);
-//
-//            }
-            
             switch (firstChar) {
                     
                 case '>': {
@@ -297,6 +290,13 @@ public:
                     
                 }
                 default: {
+                    
+                    if ((!isPipe || pipeType != 's') && !determineGzip(iSeqFileArg)) {
+
+                        stream->clear();
+                        stream->seekg(0, stream->beg);
+
+                    }
                     
                     std::string h_col1, h_col2, h_col3, s, version, gHeader, cigar;
                     char sId1Or, sId2Or;
@@ -531,11 +531,8 @@ public:
                                         
                                     }
                                     
-                                    inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                    inSequences.insertHash2(uId, seqHeader); // header to hash table
-                                    
                                     includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
-                                    uId++;
+                                    
                                     lineN++;
                                     
                                     break;

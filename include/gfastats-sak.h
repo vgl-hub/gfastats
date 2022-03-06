@@ -98,6 +98,14 @@ public:
                 
                 instruction.contig2 = arguments[2];
                 
+                instruction.scaffold1 = arguments[3];
+                
+                instruction.scaffold2 = arguments[4];
+                
+                instruction.comment1 = arguments[5];
+                
+                instruction.comment2 = arguments[6];
+                
                 break;
             }
 
@@ -247,45 +255,58 @@ public:
         
         inSequences.addGap(gap); // introduce the new gap
         
+        InPath newPath = inSequences.joinPaths(instruction.scaffold1, inSequences.headersToIds[instruction.contig1], inSequences.uId, inSequences.headersToIds[instruction.contig2]); // generate a new path by joining the paths that contain the two segments
+        
+        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
+        
+        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig2]); // remove the path involving contig2
+        
+        inSequences.addPath(newPath);
+        
         return true;
         
     }
     
     bool split(InSequences& inSequences, Instruction instruction) { // splits two sequences removing the gap in between based on instruction
         
-        inSequences.removeGaps(&instruction.contig1, &instruction.contig2); // remove the gap
+        std::vector<unsigned int> guIds = inSequences.removeGaps(&instruction.contig1, &instruction.contig2); // remove the gap
+        
+        std::cout<<guIds.size()<<" "<<guIds[0]<<std::endl;
+        
+        inSequences.splitPath(guIds[0], instruction.scaffold1, instruction.scaffold2); // generate two new the paths splitting the original path
+        
+        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
         
         return true;
         
     }
 
     bool excise(InSequences& inSequences, Instruction instruction) { // excises a sequence, removing also edges if present and optionally adding a gap
-        
-        std::vector<InGap> oldGaps = inSequences.getGap(&instruction.contig1); // get neighbour gaps
-        
-        inSequences.removeGaps(&instruction.contig1); // remove the gaps associated with the excised contig
-        
-        if (instruction.dist > 0 && oldGaps[0].getsId1() != oldGaps[0].getsId2() && oldGaps[1].getsId1() != oldGaps[1].getsId2()) { // terminal gaps are not allowed to create new gaps when excised
-        
-            InGap gap;
-        
-            gap.newGap(inSequences.uId+1, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
+
+        std::vector<InGap> oldGaps = inSequences.getGap(&instruction.contig1); // get the gaps associated with contig1
             
-            inSequences.uId++;
+        InGap gap;
+        
+        inSequences.uId++;
+    
+        gap.newGap(inSequences.uId, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
+        
+        inSequences.insertHash1(instruction.gHeader, inSequences.uId); // header to hash table
+        inSequences.insertHash2(inSequences.uId, instruction.gHeader); // header to hash table
+        
+        inSequences.addGap(gap); // introduce the new gap
+        
+        inSequences.removeGaps(&instruction.contig1);
             
-            inSequences.addGap(gap); // introduce the new gap
-        
-        }
-        
-        inSequences.updateGapLens();
+        inSequences.removeSegmentInPath(inSequences.headersToIds[instruction.contig1], gap); // removes the segment from the path
             
         return true;
         
     }
     
-    bool remove(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
+    bool remove(InSequences& inSequences, Instruction instruction) { // removes a segment
         
-        inSequences.removeGaps(&instruction.contig1); // remove the gaps associated with contig1
+        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the paths involving contig1
         
         inSequences.removeSegment(&instruction.contig1); // remove the segment
         
@@ -307,9 +328,13 @@ public:
     
     bool rvcp(InSequences& inSequences, Instruction instruction) { // reverse complement sequence
         
-        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].rvcpSegment(); // rvcp segment
+        unsigned int uId = inSequences.headersToIds[instruction.contig1], sIdx = 0;
         
-        inSequences.changeTotSegmentLen(instruction.start-instruction.end);
+        auto sId = find_if(inSequences.inSegments.begin(), inSequences.inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node uId, find it
+    
+        if (sId != inSequences.inSegments.end()) {sIdx = std::distance(inSequences.inSegments.begin(), sId);} // gives us the segment index
+        
+        inSequences.inSegments[sIdx].rvcpSegment(); // rvcp segment
         
         return true;
         
@@ -317,9 +342,13 @@ public:
     
     bool invert(InSequences& inSequences, Instruction instruction) { // invert sequence
         
-        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].invertSegment(); // invert segment
+        unsigned int uId = inSequences.headersToIds[instruction.contig1], sIdx = 0;
         
-        inSequences.changeTotSegmentLen(instruction.start-instruction.end);
+        auto sId = find_if(inSequences.inSegments.begin(), inSequences.inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node uId, find it
+    
+        if (sId != inSequences.inSegments.end()) {sIdx = std::distance(inSequences.inSegments.begin(), sId);} // gives us the segment index
+        
+        inSequences.inSegments[sIdx].invertSegment(); // invert segment
         
         return true;
         
