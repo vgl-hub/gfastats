@@ -292,7 +292,7 @@ int main(int argc, char **argv) {
                 printf("-h --help print help and exit.\n");
                 printf("--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
                 printf("--homopolymer-compress compress all the homopolymers in the input.\n");
-//                printf("--stats report summary statistics (default).\n");
+                printf("--stats report summary statistics (default).\n");
                 printf("--seq-report report statistics for each sequence.\n");
                 printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");

@@ -257,9 +257,9 @@ public:
         
         InPath newPath = inSequences.joinPaths(instruction.scaffold1, inSequences.headersToIds[instruction.contig1], inSequences.uId, inSequences.headersToIds[instruction.contig2]); // generate a new path by joining the paths that contain the two segments
         
-        inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
+        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
         
-        inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig2]); // remove the path involving contig2
+        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig2]); // remove the path involving contig2
         
         inSequences.addPath(newPath);
         
@@ -275,39 +275,38 @@ public:
         
         inSequences.splitPath(guIds[0], instruction.scaffold1, instruction.scaffold2); // generate two new the paths splitting the original path
         
-        inSequences.removePathFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
+        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
         
         return true;
         
     }
 
     bool excise(InSequences& inSequences, Instruction instruction) { // excises a sequence, removing also edges if present and optionally adding a gap
-        
-        std::vector<InGap> oldGaps = inSequences.getGap(&instruction.contig1); // get neighbour gaps
-        
-        inSequences.removeGaps(&instruction.contig1); // remove the gaps associated with the excised contig
-        
-        if (instruction.dist > 0 && oldGaps[0].getsId1() != oldGaps[0].getsId2() && oldGaps[1].getsId1() != oldGaps[1].getsId2()) { // terminal gaps are not allowed to create new gaps when excised
-        
-            InGap gap;
-        
-            gap.newGap(inSequences.uId+1, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
+
+        std::vector<InGap> oldGaps = inSequences.getGap(&instruction.contig1); // get the gaps associated with contig1
             
-            inSequences.uId++;
+        InGap gap;
+        
+        inSequences.uId++;
+    
+        gap.newGap(inSequences.uId, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
+        
+        inSequences.insertHash1(instruction.gHeader, inSequences.uId); // header to hash table
+        inSequences.insertHash2(inSequences.uId, instruction.gHeader); // header to hash table
+        
+        inSequences.addGap(gap); // introduce the new gap
+        
+        inSequences.removeGaps(&instruction.contig1);
             
-            inSequences.addGap(gap); // introduce the new gap
-        
-        }
-        
-        inSequences.updateGapLens();
+        inSequences.removeSegmentInPath(inSequences.headersToIds[instruction.contig1], gap); // removes the segment from the path
             
         return true;
         
     }
     
-    bool remove(InSequences& inSequences, Instruction instruction) { // removes a sequence, removing also edges if present
+    bool remove(InSequences& inSequences, Instruction instruction) { // removes a segment
         
-        inSequences.removeGaps(&instruction.contig1); // remove the gaps associated with contig1
+        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the paths involving contig1
         
         inSequences.removeSegment(&instruction.contig1); // remove the segment
         

@@ -1560,8 +1560,8 @@ public:
         adjListFW.clear();
         adjListBW.clear();
         
-        adjListFW.resize(inSegments.size()+inGaps.size()+inEdges.size()); // resize the adjaciency list to hold all nodes
-        adjListBW.resize(inSegments.size()+inGaps.size()+inEdges.size()); // resize the adjaciency list to hold all nodes
+        adjListFW.resize(uId); // resize the adjaciency list to hold all nodes
+        adjListBW.resize(uId); // resize the adjaciency list to hold all nodes
         
         for (auto &edge: edges) // add edges to the graph
         {
@@ -2672,7 +2672,7 @@ public:
         
     }
     
-    void removePathFromSegment(unsigned int uId) {
+    void removePathsFromSegment(unsigned int uId) {
         
         int i = 0;
         
@@ -2685,9 +2685,47 @@ public:
             if (pathIt != pathComponents.end()) {
             
                 removePath(i);
-            
-                break;
                 
+            }
+            
+            ++i;
+            
+        }
+        
+    }
+    
+    void removeSegmentInPath(unsigned int uId, InGap gap) {
+        
+        int i = 0;
+        
+        InPath newPath;
+        
+        std::vector<PathTuple> newComponents;
+        
+        for (InPath inPath : inPaths) {
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId](PathTuple& obj) {return std::get<1>(obj) == uId;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+                
+                newPath.setHeader(inPath.getHeader());
+                
+                newComponents.insert(std::end(newComponents), std::begin(pathComponents), pathIt-1);
+                
+                newComponents.push_back(std::make_tuple('G', gap.getuId(), '+'));
+                
+                newComponents.insert(std::end(newComponents), pathIt+2, std::end(pathComponents));
+                
+                newPath.setComponents(newComponents);
+                
+                addPath(newPath);
+                
+                removePath(i);
+                
+                break;
+                    
             }
             
             ++i;
@@ -2773,13 +2811,21 @@ public:
                 
                 newPath1.setComponents(newComponents1);
                 
-                addPath(newPath1);
+                if (newComponents1.size() > 0) {
+                
+                    addPath(newPath1);
+                    
+                }
                 
                 newComponents2.insert(std::end(newComponents2), pathIt+1, std::end(pathComponents));
                 
                 newPath2.setComponents(newComponents2);
                 
-                addPath(newPath2);
+                if (newComponents2.size() > 0) {
+                
+                    addPath(newPath2);
+                    
+                }
             
                 break;
                 
