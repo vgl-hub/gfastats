@@ -8,6 +8,13 @@
 #ifndef GFASTATS_FUNCTIONS_H
 #define GFASTATS_FUNCTIONS_H
 
+#include <gfastats-global.h>
+#include <memory>
+#include <chrono>
+#include <cstring>
+#include <sstream>
+#include <algorithm>
+
 //typedef
 typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> Tuple; // tuple for gap edges orientation|segment_id|orientation|dist|edge_id
 typedef std::tuple<char, unsigned int, char> EdgeTuple; // tuple for gap edges orientation|id|orientation
