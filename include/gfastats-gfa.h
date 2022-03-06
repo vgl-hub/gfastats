@@ -414,6 +414,9 @@ private:
     std::string pHeader, pComment;
     std::vector<PathTuple> pathComponents;
     unsigned int pUId;
+    
+    friend class SAK;
+    friend class InSequences;
 
 public:
     
@@ -436,6 +439,12 @@ public:
     void clearPath() {
         
         pathComponents.clear();
+        
+    }
+    
+    void setComponents(std::vector<PathTuple> newComponents) {
+
+        pathComponents = newComponents;
         
     }
     
@@ -464,6 +473,7 @@ public:
     }
     
 };
+
 
 class InSequences { //collection of InSegment and inGap objects and their summary statistics
     
@@ -623,16 +633,48 @@ public:
         
         path.addToPath('S', *uId, '+');
         
-        *A = 0, *C = 0, *G = 0, *T = 0;
+        *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
         
         (*iId)++; // number of gaps in the current scaffold
         (*uId)++; // unique numeric identifier
         
     }
+
+    std::string homopolymerCompress(const std::string &sequence, std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths) {
+        std::string csequence;
+        csequence.reserve(sequence.length());
+        
+        unsigned int index=0, length;
+        
+        auto lambda = [&length, &index, &compressionIndices, &compressionLengths, &csequence, &sequence](int i){
+            length = i-index;
+            if(length > 1) {
+                compressionIndices.push_back(csequence.length());
+                compressionLengths.push_back(length);
+            }
+            csequence += sequence[index];
+        };
+
+        for(unsigned int i=1; i<sequence.length(); i++) {
+            if(sequence[i] == sequence[index]) continue;
+            lambda(i);
+            index = i;
+        }
+        lambda(sequence.length());
+
+        csequence.shrink_to_fit();
+        return csequence;
+    }
     
     void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
+        std::vector<unsigned int> compressionIndices, compressionLengths;
+        if(hc_compress_flag) {
+            *sequence = homopolymerCompress(*sequence, compressionIndices, compressionLengths);
+        }
+
         unsigned int pos = 0, // current position in sequence
+        hc_index=0, // used with homopolymer compression
         A = 0, C = 0, G = 0, T = 0,
         lowerCount = 0,
         dist = 0, // gap size
@@ -651,7 +693,6 @@ public:
         }
         
         unsigned int seqLen = sequence->length()-1;
-        
         for (char &base : *sequence) {
             
             if (islower(base)) {
@@ -690,32 +731,34 @@ public:
                 }
                 default: {
                     
+                    unsigned int count = hc_compress_flag && hc_index < compressionIndices.size() && pos == compressionIndices[hc_index] ? compressionLengths[hc_index++] : 1;
+
                     switch (base) {
                         case 'A':
                         case 'a':{
                             
-                            A++;
+                            A+=count;
                             break;
                             
                         }
                         case 'C':
                         case 'c':{
                             
-                            C++;
+                            C+=count;
                             break;
                             
                         }
                         case 'G':
                         case 'g': {
                             
-                            G++;
+                            G+=count;
                             break;
                             
                         }
                         case 'T':
                         case 't': {
                             
-                            T++;
+                            T+=count;
                             break;
                             
                         }
@@ -1341,7 +1384,138 @@ public:
         
         return true;
         
-    }  
+    }
+    
+    //sorting methods
+    
+    void sortPathsByNameAscending(){
+        
+        sort(inPaths.begin(), inPaths.end(), [](InPath& one, InPath& two){return one.getHeader() < two.getHeader();});
+        
+    }
+    
+    void sortPathsByNameDescending(){
+        
+        sort(inPaths.begin(), inPaths.end(), [](InPath& one, InPath& two){return one.getHeader() > two.getHeader();});
+        
+    }
+    
+    void sortPathsByList(std::vector<std::string> headerList){
+        
+        int index1 = 0, index2 = 0;
+        
+        auto comp = [&](InPath& one, InPath& two)-> bool { // lambda function for custom sorting
+        
+        auto it = find(headerList.begin(), headerList.end(), one.getHeader());
+      
+        if (it != headerList.end()) { // if element one was found
+
+            index1 = it - headerList.begin(); // calculating the index
+
+        }else {
+
+            std::cout<<"Error: sequence missing from sort list (" << one.getHeader() << ")\n";
+            exit(1);
+
+        }
+            
+        it = find(headerList.begin(), headerList.end(), two.getHeader());
+      
+        if (it != headerList.end()) { // if element two was found
+
+            index2 = it - headerList.begin(); // calculating the index
+
+        }else {
+
+            std::cout<<"Error: sequence missing from sort list ("<<two.getHeader()<<")\n";
+            exit(1);
+
+        }
+
+            return index1<index2;
+            
+        };
+        
+        sort(inPaths.begin(), inPaths.end(), comp);
+        
+    }
+    
+    void sortPathsBySize(bool largest){
+        
+        auto comp = [&](InPath& one, InPath& two)-> bool { // lambda function for custom sorting
+        
+            std::vector<PathTuple> pathComponents;
+            
+            unsigned int uId = 0, sIdx = 0, gIdx = 0, size1 = 0, size2 = 0;
+                
+            pathComponents = one.getComponents();
+            
+            for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                
+                uId = std::get<1>(*component);
+                
+                if (std::get<0>(*component) == 'S') {
+                
+                    auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                    
+                    if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                    
+                    size1 += inSegments[sIdx].getInSequence().size();
+                    
+                }else{
+                    
+                    auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                    
+                    if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                    
+                    size1 += inGaps[gIdx].getDist();
+                    
+                }
+                
+            }
+                
+            pathComponents = two.getComponents();
+            
+            for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                
+                uId = std::get<1>(*component);
+                
+                if (std::get<0>(*component) == 'S') {
+                
+                    auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                    
+                    if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                    
+                    size2 += inSegments[sIdx].getInSequence().size();
+                    
+                }else{
+                    
+                    auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                    
+                    if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                    
+                    size2 += inGaps[gIdx].getDist();
+                    
+                }
+            
+            
+            }
+                
+            if(largest) {
+            
+                return size1<size2;
+                
+            }else{
+                
+                return size1>size2;
+                
+            }
+                
+        };
+            
+        sort(inPaths.begin(), inPaths.end(), comp);
+        
+    }
     
     //gfa methods
     void insertHash1(std::string segHeader, unsigned int i) {
@@ -1393,13 +1567,13 @@ public:
         for (auto &edge: edges) // add edges to the graph
         {
             
-            verbose("Adding forward edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            verbose("Adding forward edge" + std::to_string(edge.uId) + ": " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
             
-            adjListFW.at(edge.sId1).push_back(std::make_tuple(edge.sId1Or, edge.sId2, edge.sId2Or, edge.dist)); // insert at gap start gap destination, orientations and weight (gap size)
+            adjListFW.at(edge.sId1).push_back(std::make_tuple(edge.sId1Or, edge.sId2, edge.sId2Or, edge.dist, edge.uId)); // insert at gap start gap destination, orientations and weight (gap size)
 
-            verbose("Adding reverse edge: " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            verbose("Adding reverse edge" + std::to_string(edge.uId) + ": " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
             
-            adjListBW.at(edge.sId2).push_back(std::make_tuple(edge.sId2Or, edge.sId1, edge.sId1Or, edge.dist)); // undirected graph
+            adjListBW.at(edge.sId2).push_back(std::make_tuple(edge.sId2Or, edge.sId1, edge.sId1Or, edge.dist, edge.uId)); // undirected graph
             
         }
         
@@ -2304,34 +2478,58 @@ public:
     
     bool removeTerminalGaps() { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
         
-        std::vector<InGap>::iterator it = inGaps.begin();
+        std::vector<InPath>::iterator pathIt = inPaths.begin(); // first, remove the gaps from the paths they occur in
+        std::vector<PathTuple> pathComponents;
         
-        while (it != end(inGaps)) {
+        unsigned int uId = 0, gIdx = 0;
         
-            if (it->getsId1() == it->getsId2()) {
+        while (pathIt != end(inPaths)) {
             
-                inGaps.erase(it); // remove the element by position, considering elements that were already removed in the loop
+            pathComponents = pathIt->getComponents();
+            
+            for (std::vector<PathTuple>::iterator componentIt = pathComponents.begin(); componentIt != pathComponents.end();) {
                 
-                changeTotGapLen(-it->getDist()); // update length of gaps
+                if (std::get<0>(*componentIt) == 'G') {
+                    
+                    uId = std::get<1>(*componentIt);
+                    
+                    auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a gap Uid, find it
+                    
+                    if (gId->getsId1() == gId->getsId2()) {
+                        
+                        gIdx = std::distance(pathComponents.begin(), componentIt); // gives us the gap index
+                    
+                        pathIt->pathComponents.erase(pathIt->pathComponents.begin()+gIdx); // remove the gap component from the path
+                        
+                        verbose("Removed gap from paths");
+                        
+                        inGaps.erase(gId); // remove the element by position, considering elements that were already removed in the loop
+
+                        changeTotGapLen(-gId->getDist()); // update length of gaps
+                        
+                        verbose("Removed gap from gap vector");
+                        
+                    }
+                    
+                }
                 
-                it--; // the iterator is now one gap short
+                componentIt++;
                 
             }
-    
-        it++; // check the new gap
+            
+            pathIt++;
             
         }
-        
         
         gapLens.clear();
         
-        for (unsigned int i = 0; i != inGaps.size(); ++i) { // loop through all edges
+        for (unsigned int i = 0; i != inGaps.size(); ++i) { // update statistics to reflect the removal
         
             recordGapLen(inGaps[i].getDist());
             
-            verbose("Recorded length of gaps in sequence");
-            
         }
+        
+        verbose("Recorded length of gaps in sequence");
         
         return true;
         
@@ -2400,7 +2598,9 @@ public:
         
     }
     
-    bool removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+    std::vector<unsigned int> removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+        
+        std::vector<unsigned int> guIds;
  
         unsigned int sUId1 = headersToIds[*contig1], gIdx = 0;
         
@@ -2418,6 +2618,8 @@ public:
             if (gId != inGaps.end()) {
                 
                 gIdx = std::distance(inGaps.begin(), gId); // gives us the gap index
+                
+                guIds.push_back((*gId).getuId());
             
                 inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
                 
@@ -2436,6 +2638,8 @@ public:
                 if (gId != inGaps.end()) {
                     
                     gIdx = std::distance(inGaps.begin(), gId); // gives us the gap index
+                    
+                    guIds.push_back((*gId).getuId());
             
                     inGaps.erase(inGaps.begin()+gIdx); // remove the element by position, considering elements that were already removed in the loop
                     
@@ -2449,7 +2653,7 @@ public:
             
         }
         
-        return true;
+        return guIds;
         
     }
     
@@ -2459,7 +2663,7 @@ public:
             
             unsigned int sIdx = 0, sUId = headersToIds[*contig1];
         
-            auto sId = find_if(inSegments.begin(), inSegments.end(), [sUId](InSegment& obj) {return obj.getuId() == sUId;}); // given a node Uid, find it
+            auto sId = find_if(inSegments.begin(), inSegments.end(), [sUId](InSegment& obj) {return obj.getuId() == sUId;}); // given a node uId, find it
         
             if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
         
@@ -2474,6 +2678,236 @@ public:
         }
         
         return true;
+        
+    }
+    
+    void removePath(unsigned int i) {
+        
+        inPaths.erase(inPaths.begin()+i);
+        
+    }
+    
+    void removePathFromSegment(unsigned int uId) {
+        
+        int i = 0;
+        
+        for (InPath inPath : inPaths) {
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId](PathTuple& obj) {return std::get<1>(obj) == uId;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+            
+                removePath(i);
+            
+                break;
+                
+            }
+            
+            ++i;
+            
+        }
+        
+    }
+    
+    InPath joinPaths(std::string seqHeader, unsigned int uId1, unsigned int uId2, unsigned int uId3) {
+        
+        int i = 0;
+        
+        InPath newPath;
+        newPath.setHeader(seqHeader);
+        
+        std::vector<PathTuple> newComponents;
+        
+        for (InPath inPath : inPaths) { // add first path
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId1](PathTuple& obj) {return std::get<1>(obj) == uId1;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+            
+                newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
+            
+                break;
+                
+            }
+            
+            ++i;
+            
+        }
+        
+        newComponents.push_back(std::make_tuple('G', uId2, '+'));
+        
+        for (InPath inPath : inPaths) { // add second path
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId3](PathTuple& obj) {return std::get<1>(obj) == uId3;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+            
+                newComponents.insert(std::end(newComponents), std::begin(pathComponents), pathIt-1);
+            
+                break;
+                
+            }
+            
+            ++i;
+            
+        }
+        
+        newPath.setComponents(newComponents);
+        
+        return newPath;
+        
+    }
+    
+    void splitPath(unsigned int guId, std::string header1, std::string header2) {
+        
+        int i = 0;
+        
+        InPath newPath1;
+        newPath1.setHeader(header1);
+        std::vector<PathTuple> newComponents1;
+        
+        InPath newPath2;
+        newPath2.setHeader(header2);
+        std::vector<PathTuple> newComponents2;
+        
+        for (InPath inPath : inPaths) { // add first path
+            
+            std::vector<PathTuple> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [guId](PathTuple& obj) {return std::get<1>(obj) == guId;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+            
+                newComponents1.insert(std::end(newComponents1), std::begin(pathComponents), pathIt);
+                
+                newPath1.setComponents(newComponents1);
+                
+                addPath(newPath1);
+                
+                newComponents2.insert(std::end(newComponents2), pathIt+1, std::end(pathComponents));
+                
+                newPath2.setComponents(newComponents2);
+                
+                addPath(newPath2);
+            
+                break;
+                
+            }
+            
+            ++i;
+            
+        }
+        
+    }
+    
+//    void dfsPath(unsigned int v, InPath& newPath) // Depth First Search to build a new path given a vertex
+//    {
+//
+//        visited[v] = true; // mark the current node as visited
+//
+//        auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getuId() == v;}); // given a vertex id, search it in the segment vector
+//
+//        if (it != inSegments.end()) {idx = std::distance(inSegments.begin(), it);} // if found, get its index
+//
+//        if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+//
+//            backward = false;
+//
+//        }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+//
+//
+//
+//            backward = true; // reached the end
+//
+//        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+//
+//            if (std::get<1>(adjListBW.at(v).at(0)) != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
+//
+//
+//
+//            }else{
+//
+//            }
+//
+//            backward = true; // reached the end
+//
+//        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) && backward){ // this is an intermediate vertex, only walking back
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+//
+//            backward = true;
+//
+//        }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
+//
+//        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+//
+//            backward = false;
+//
+//        }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+//
+//            newPath.addToPath('S', v, '+');
+//
+//            visited.clear();
+//
+//            visited[v] = true; // we have just visited the start node
+//
+//            backward = false;
+//
+//        }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && std::get<1>(adjListFW.at(v).at(0)) == std::get<1>(adjListBW.at(v).at(0))) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
+//
+//            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+//
+////            *scaffSize += std::get<3>(adjListFW.at(v).at(0));
+//
+//            backward = false;
+//
+//        }
+//
+//        for (Tuple i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
+//
+//            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
+//
+////                *scaffSize += std::get<3>(i);
+//
+//                dfsPath(std::get<1>(i), newPath); // recurse
+//
+//            }
+//        }
+//
+//        for (Tuple i: adjListBW[v]) { // recur for all backward vertices adjacent to this vertex
+//
+//            if (!visited[std::get<1>(i)] && !deleted[std::get<1>(i)]) {
+//
+////                *scaffSize += std::get<3>(i);
+//
+//                dfsPath(std::get<1>(i), newPath); // recurse
+//
+//            }
+//        }
+//
+//    }
+    
+    void addPath(InPath path) {
+        
+        inPaths.push_back(path);
         
     }
     
