@@ -514,6 +514,8 @@ public:
                                     
                                     delimiter = ",";
                                     
+                                    arguments.clear();
+                                    
                                     while ((pos = s.find(delimiter)) != std::string::npos) {
                                         
                                         arguments.push_back(s.substr(0, pos));
@@ -523,6 +525,37 @@ public:
                                     }
                                     
                                     arguments.push_back(s); // last column
+                                    
+                                    for (std::string component : arguments) {
+                                        
+                                        sId1Or = component.back(); // get sequence orientation
+                                        
+                                        component.pop_back();
+                                    
+                                        hash = inSequences.getHash1();
+                                        
+                                        got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                        
+                                        if (got == hash.end()) { // this is the first time we see this segment
+                                            
+                                            uId = inSequences.getuId();
+                                            
+                                            inSequences.insertHash1(component, uId); // header to hash table
+                                            inSequences.insertHash2(uId, component); // header to hash table
+                                        
+                                            sId1 = uId;
+                                            
+                                            inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                            
+                                        }else{
+                                            
+                                            sId1 = got->second;
+                                            
+                                        }
+                                        
+                                        path.addToPath('S', sId1, sId1Or);
+                                        
+                                    }
                                     
                                     c = strtok(NULL,"\t");
                                     if (c != NULL) {
