@@ -3,8 +3,8 @@ USAGE:
 test <path to test folder or files>
 
 EXAMPLE:
-build/bin/test testFiles
-build/bin/test testFiles/random1.fasta testFiles/random2.gfa2.gfa.gz
+build/bin/gfastats-validate testFiles
+build/bin/gfastats-validate testFiles/random1.fasta testFiles/random2.gfa2.gfa.gz
 
 
 */
@@ -116,7 +116,7 @@ void printFile(const char *fname) {
 
 int main(int argc, char **argv) {
     if (argc == 1) { // test with no arguments
-        printf("test <path to test folder and/or files>\n");
+        printf("gfastats-validate <path to test folder and/or files>\n");
         exit(0);
     }
 
