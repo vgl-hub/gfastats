@@ -329,7 +329,7 @@ public:
 class InEdge {
     private:
 //    unsigned long long int lineN; // useful if we wish to sort as is the original input
-    std::string cigar;
+    std::string cigar, eHeader;
     char sId1Or, sId2Or;
     unsigned int eUId, eId, sId1, sId2;
     
@@ -337,7 +337,7 @@ class InEdge {
     friend class InSequences;
     
 public:
-    void newEdge(unsigned int eUid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, std::string c = "") {
+    void newEdge(unsigned int eUid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, std::string c = "", std::string h = "") {
         
         eUId = eUid;
         sId1 = sid1;
@@ -345,6 +345,7 @@ public:
         sId1Or = sid1or;
         sId2Or = sid2or;
         cigar = c;
+        eHeader = h;
         
     }
 
@@ -1603,11 +1604,11 @@ public:
         for (auto &edge: edges) // add edges to the graph
         {
             
-            verbose("Adding forward edge" + std::to_string(edge.uId) + ": " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            verbose("Adding forward gap " + std::to_string(edge.uId) + ": " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
             
             adjListFW.at(edge.sId1).push_back(std::make_tuple(edge.sId1Or, edge.sId2, edge.sId2Or, edge.dist, edge.uId)); // insert at gap start gap destination, orientations and weight (gap size)
 
-            verbose("Adding reverse edge" + std::to_string(edge.uId) + ": " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
+            verbose("Adding reverse gap " + std::to_string(edge.uId) + ": " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId2Or + " " + std::to_string(edge.dist));
             
             adjListBW.at(edge.sId2).push_back(std::make_tuple(edge.sId2Or, edge.sId1, edge.sId1Or, edge.dist, edge.uId)); // undirected graph
             

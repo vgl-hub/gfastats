@@ -832,7 +832,7 @@ public:
         counter = 0;
         unsigned int connectedComponents = 0;
         
-        unsigned int edgeN = inSequences.getPathN();
+        unsigned int edgeN = inSequences.getEdgeN();
 
         if (edgeN > 0) {
             
@@ -862,12 +862,12 @@ public:
 
             sort(componentLengths.begin(), componentLengths.end(), std::greater<unsigned int>());
 
-
-            std::cout<<output("# connected components")<<connectedComponents<<"\n";
+            std::cout<<output("# connected components")<<connectedComponents-inSequences.getDisconnectedComponents()<<"\n";
             std::cout<<output("Largest connected component length")<<componentLengths[0]<<"\n";
             std::cout<<output("# dead ends")<<inSequences.getDeadEnds()<<"\n";
             std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
             std::cout<<output("Total length disconnected components")<<inSequences.getLengthDisconnectedComponents()<<"\n";
+            std::cout<<output("# separated components")<<connectedComponents<<"\n";
         }
         
         unsigned int pathN = inSequences.getPathN();
