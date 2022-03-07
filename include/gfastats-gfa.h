@@ -2618,7 +2618,7 @@ public:
             
             while (it != end(inGaps)) {
 
-                auto gId = find_if(it+1, inGaps.end(), [sUId1](InGap& obj) {return obj.getsId1() == sUId1 || obj.getsId2() == sUId1;}); // check whether an edge containing the node was found
+                auto gId = find_if(it, inGaps.end(), [sUId1](InGap& obj) {return obj.getsId1() == sUId1 || obj.getsId2() == sUId1;}); // check whether an edge containing the node was found
                 
                 if (gId != inGaps.end()) {
                 
@@ -2626,7 +2626,7 @@ public:
                     
                 }
                 
-                it = gId;
+                it++;
                 
             }
             
@@ -2824,7 +2824,7 @@ public:
             
             if (pathIt != pathComponents.end()) {
             
-                newComponents.insert(std::end(newComponents), std::begin(pathComponents), pathIt-1);
+                newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
             
                 break;
                 
@@ -2879,6 +2879,8 @@ public:
                     addPath(newPath2);
                     
                 }
+                
+                removePath(i);
             
                 break;
                 

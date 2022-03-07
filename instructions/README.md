@@ -10,7 +10,7 @@ JOIN    contig1+    contig2+    50  gap1    scaffold1   [this is a new scaffold]
 
 ## SPLIT
 
-The SPLIT instruction splits the scaffold containing contig1 and contig2, effectively removing the existing gap between them.
+The SPLIT instruction splits the scaffold containing contig1 and contig2, effectively removing the existing gap between them. Two optional comments can be provided.
 
 ```
 SPLIT   contig1+    contig2+    scaffold1   scaffold2 [this is a new scaffold1] [this is a new scaffold2]

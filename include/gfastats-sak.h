@@ -248,10 +248,13 @@ public:
     bool join(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction
         
         InGap gap;
-                
-        gap.newGap(inSequences.uId+1, inSequences.headersToIds[instruction.contig1], inSequences.headersToIds[instruction.contig2], instruction.sId1Or, instruction.sId2Or, instruction.dist, instruction.gHeader); // define the new gap
-            
+        
         inSequences.uId++;
+        
+        inSequences.insertHash1(instruction.gHeader, inSequences.uId); // header to hash table
+        inSequences.insertHash2(inSequences.uId, instruction.gHeader); // header to hash table
+                
+        gap.newGap(inSequences.uId, inSequences.headersToIds[instruction.contig1], inSequences.headersToIds[instruction.contig2], instruction.sId1Or, instruction.sId2Or, instruction.dist, instruction.gHeader); // define the new gap
         
         inSequences.addGap(gap); // introduce the new gap
         
@@ -272,8 +275,6 @@ public:
         std::vector<unsigned int> guIds = inSequences.removeGaps(&instruction.contig1, &instruction.contig2); // remove the gap
         
         inSequences.splitPath(guIds[0], instruction.scaffold1, instruction.scaffold2); // generate two new the paths splitting the original path
-        
-        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
         
         return true;
         
@@ -297,6 +298,18 @@ public:
         inSequences.removeGaps(&instruction.contig1);
             
         inSequences.removeSegmentInPath(inSequences.headersToIds[instruction.contig1], gap); // removes the segment from the path
+        
+        InPath path;
+        
+        path.setHeader(instruction.contig1);
+        
+        std::vector<PathTuple> newComponents;
+        
+        newComponents.push_back(std::make_tuple('S', inSequences.headersToIds[instruction.contig1], '+'));
+        
+        path.setComponents(newComponents);
+        
+        inSequences.addPath(path);
             
         return true;
         
