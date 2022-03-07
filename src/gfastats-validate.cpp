@@ -140,6 +140,14 @@ int main(int argc, char **argv) {
     std::set<std::string> tested;
 
     for(int i=1; i<argc; ++i) {
+        std::ifstream istream;
+        istream.open(argv[i]);
+        if(istream) {
+            input[argv[i]] = false;
+            istream.close();
+            continue;
+        }
+        istream.close();
         DIR *dir = opendir(argv[i]);
         if(dir != NULL || hasValidTestFileExtension(std::string(argv[i]))) input[argv[i]] = (dir != NULL);
         closedir(dir);
