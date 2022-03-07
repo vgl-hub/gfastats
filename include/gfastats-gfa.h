@@ -1674,7 +1674,7 @@ public:
         
     }
 
-   void dfsEdges(int v, unsigned int* componentLength) { // Depth First Search to find graph connectivity
+   void dfsEdges(unsigned int v, unsigned int* componentLength) { // Depth First Search to find graph connectivity
 
        visited[v] = true; // mark the current node as visited
 
