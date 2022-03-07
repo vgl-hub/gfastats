@@ -271,8 +271,6 @@ public:
         
         std::vector<unsigned int> guIds = inSequences.removeGaps(&instruction.contig1, &instruction.contig2); // remove the gap
         
-        std::cout<<guIds.size()<<" "<<guIds[0]<<std::endl;
-        
         inSequences.splitPath(guIds[0], instruction.scaffold1, instruction.scaffold2); // generate two new the paths splitting the original path
         
         inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1

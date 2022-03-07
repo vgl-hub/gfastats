@@ -806,7 +806,92 @@ public:
                                     
                                 }
 
-                                default: {
+                                case 'P': {
+                                    
+                                    strtok(strdup(newLine.c_str()),"\t"); // process first line
+                                    
+                                    seqHeader = strtok(NULL,"\t");
+                                    path.setHeader(seqHeader);
+                                    
+                                    s = strtok(NULL,"\t");
+                                    
+                                    delimiter = ",";
+                                    
+                                    arguments.clear();
+                                    
+                                    while ((pos = s.find(delimiter)) != std::string::npos) {
+                                        
+                                        arguments.push_back(s.substr(0, pos));
+                                        
+                                        s.erase(0, pos + delimiter.length());
+                                    
+                                    }
+                                    
+                                    arguments.push_back(s); // last column
+                                    
+                                    for (std::string component : arguments) {
+                                        
+                                        sId1Or = component.back(); // get sequence orientation
+                                        
+                                        component.pop_back();
+                                    
+                                        hash = inSequences.getHash1();
+                                        
+                                        got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                        
+                                        if (got == hash.end()) { // this is the first time we see this segment
+                                            
+                                            uId = inSequences.getuId();
+                                            
+                                            inSequences.insertHash1(component, uId); // header to hash table
+                                            inSequences.insertHash2(uId, component); // header to hash table
+                                        
+                                            sId1 = uId;
+                                            
+                                            inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                            
+                                        }else{
+                                            
+                                            sId1 = got->second;
+                                            
+                                        }
+                                        
+                                        std::vector<InSegment> inSegments = inSequences.getInSegments();
+                                        std::vector<InGap> inGaps = inSequences.getInGaps();
+                                        
+                                        auto sId = find_if(inSegments.begin(), inSegments.end(), [sId1](InSegment& obj) {return obj.getuId() == sId1;}); // given a uId, find it in nodes
+                                    
+                                        if (sId != inSegments.end()) {
+                                            
+                                            path.addToPath('S', sId1, sId1Or);
+                                             
+                                        }else{
+                                            
+                                            auto gId = find_if(inGaps.begin(), inGaps.end(), [sId1](InGap& obj) {return obj.getuId() == sId1;}); // given a uId, find it in gaps
+                                            
+                                            if (gId != inGaps.end()) {
+                                            
+                                                path.addToPath('G', sId1, sId1Or);
+                                            
+                                            }
+                                            
+                                        }
+                                        
+                                    }
+                                    strtok(NULL,"\t");
+                                    
+                                    c = strtok(NULL,"\t");
+                                    
+                                    if (c != NULL) {
+                                        
+                                        seqComment = std::string(c);
+                                        path.setComment(seqComment);
+                                        
+                                    }
+                                    
+                                    inSequences.addPath(path);
+                                    
+                                    lineN++;
                                     
                                     break;
                                     

@@ -13,7 +13,7 @@ TGANATNCTN
 @Header4 15bp sequence with start 3bp canonical gap
 NNNTTCCTcgCACtC
 +
-12345:;<=>?5678
+!!!45:;<=>?5678
 @Header5 15bp sequence with terminal 3bp canonical gap
 AACTCGATCACGNNN
 +

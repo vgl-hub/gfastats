@@ -190,7 +190,15 @@ public:
                             
                             if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
                             
-                            inSeq += inSegments[sIdx].getInSequence();
+                            if (std::get<2>(*component) == '+') {
+                            
+                                inSeq += inSegments[sIdx].getInSequence();
+                                
+                            }else{
+                                
+                                inSeq += revCom(inSegments[sIdx].getInSequence());
+                                
+                            }
                             
                         }else{
                             
@@ -271,7 +279,16 @@ public:
                             
                             if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
                             
-                            inSeq += inSegments[sIdx].getInSequence();
+                            if (std::get<2>(*component) == '+') {
+                            
+                                inSeq += inSegments[sIdx].getInSequence();
+                                
+                            }else{
+                                
+                                inSeq += revCom(inSegments[sIdx].getInSequence());
+                                inSegments[sIdx].invertSegment();
+                                
+                            }
                             
                             if (inSegments[sIdx].getInSequenceQuality() != "") {
                             

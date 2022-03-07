@@ -237,6 +237,7 @@ public:
     bool invertSegment() {
     
         inSequence = rev(inSequence);
+        inSequenceQuality = rev(inSequenceQuality);
     
         return true;
         
