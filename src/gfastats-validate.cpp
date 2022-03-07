@@ -146,7 +146,8 @@ int main(int argc, char **argv) {
     }
 
     std::string argv0 = std::string(argv[0]);
-    exePath = argv0.substr(0, argv0.find_last_of('\\')+1)+"gfastats.exe";
+    std::cout << argv0 << std::endl;
+    exePath = argv0.substr(0, argv0.find_last_of("/\\")+1)+"gfastats";
 
     char cmd[100];
 

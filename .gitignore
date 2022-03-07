@@ -89,4 +89,6 @@ fastlane/test_output
 *.vscode
 *.vscode/*
 
+err.txt
+
 # End of https://www.gitignore.io/api/swift,xcode,vscode

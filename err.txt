@@ -1,1 +1,0 @@
-sh: gfastats.exe: command not found
