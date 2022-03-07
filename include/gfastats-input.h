@@ -298,7 +298,7 @@ public:
 
                     }
                     
-                    std::string h_col1, h_col2, h_col3, s, version, gHeader, cigar;
+                    std::string h_col1, h_col2, h_col3, s, version, gHeader, eHeader, cigar;
                     char sId1Or, sId2Or;
                     
                     InGap gap;
@@ -497,6 +497,97 @@ public:
                                     
                                     inSequences.addGap(gap);
                                     
+                                    lineN++;
+                                                 
+                                    break;
+                                    
+                                }
+
+                                case 'E': {
+                             
+                                    delimiter = "\t";
+
+                                    arguments.clear();
+                                    
+                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
+                                        
+                                        arguments.push_back(newLine.substr(0, pos));
+                                        
+                                        newLine.erase(0, pos + delimiter.length());
+                                    
+                                    }
+                                    
+                                    arguments.push_back(newLine); // last column
+                                    
+                                    eHeader = arguments[1];
+                                    
+                                    uId = inSequences.getuId();
+                                    
+                                    inSequences.insertHash1(eHeader, uId); // header to hash table
+                                    inSequences.insertHash2(uId, eHeader); // uID to hash table
+                                    
+                                    euId = uId; // since I am still reading segments I need to keep this fixed
+                                    
+                                    inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                    
+                                    sId1Or = arguments[2].back(); // get sequence orientation in the edge
+                                    
+                                    seqHeader = std::string(arguments[2]);
+                                    seqHeader.pop_back();
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        uId = inSequences.getuId();
+                                        
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                    
+                                        sId1 = uId;
+                                        
+                                        inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                        
+                                    }else{
+                                        
+                                        sId1 = got->second;
+                                        
+                                    }
+                                    
+                                    sId2Or = arguments[3].back(); // get sequence orientation in the edge
+                                    
+                                    seqHeader = arguments[3];
+                                    seqHeader.pop_back();
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        uId = inSequences.getuId();
+                                        
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                    
+                                        sId2 = uId;
+                                        
+                                        inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                        
+                                    }else{
+                                        
+                                        sId2 = got->second;
+                                        
+                                    }                            
+      
+                                    cigar = arguments[8];  
+                                    
+                                    edge.newEdge(euId, sId1, sId2, sId1Or, sId2Or, cigar, eHeader);
+                                    
+                                    inSequences.appendEdge(edge);
+ 
                                     lineN++;
                                                  
                                     break;
