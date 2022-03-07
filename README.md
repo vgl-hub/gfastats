@@ -20,7 +20,6 @@ Typical fast\* metrics include:
 Typical gfa metrics include:
 
 - Number of nodes and edges
-- Edges lenght
 - Average degree
 - Number of connected components, and length of the largets connected component
 - Number of dead ends
