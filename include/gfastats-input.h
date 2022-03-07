@@ -603,7 +603,7 @@ public:
                                     
                                     s = strtok(NULL,"\t");
                                     
-                                    delimiter = ",";
+                                    delimiter = " ";
                                     
                                     arguments.clear();
                                     
@@ -644,7 +644,26 @@ public:
                                             
                                         }
                                         
-                                        path.addToPath('S', sId1, sId1Or);
+                                        std::vector<InSegment> inSegments = inSequences.getInSegments();
+                                        std::vector<InGap> inGaps = inSequences.getInGaps();
+                                        
+                                        auto sId = find_if(inSegments.begin(), inSegments.end(), [sId1](InSegment& obj) {return obj.getuId() == sId1;}); // given a uId, find it in nodes
+                                    
+                                        if (sId != inSegments.end()) {
+                                            
+                                            path.addToPath('S', sId1, sId1Or);
+                                             
+                                        }else{
+                                            
+                                            auto gId = find_if(inGaps.begin(), inGaps.end(), [sId1](InGap& obj) {return obj.getuId() == sId1;}); // given a uId, find it in gaps
+                                            
+                                            if (gId != inGaps.end()) {
+                                            
+                                                path.addToPath('G', sId1, sId1Or);
+                                            
+                                            }
+                                            
+                                        }
                                         
                                     }
                                     
