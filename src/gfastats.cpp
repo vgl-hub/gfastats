@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
         
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
         {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
-        {"homopolymer-compress", no_argument, &hc_compress_flag, 1},
+        {"homopolymer-compress", required_argument, &hc_flag, 1},
         {"sort", required_argument, 0, 0},
         
         {"include-bed", required_argument, 0, 'i'},
@@ -173,7 +173,7 @@ int main(int argc, char **argv) {
                   splitLength = atoi(optarg);
                 
                 if (strcmp(long_options[option_index].name,"sort") == 0) {
-                    
+
                     std::vector<std::string> options {"none", "ascending", "descending", "largest", "smallest"};
                             
                     if (std::find(options.begin(), options.end(), optarg) != options.end() || ifFileExists(optarg)){
@@ -183,9 +183,12 @@ int main(int argc, char **argv) {
                     }else{printf("Error: unrecognized sorting option (%s).\n", optarg); exit(1);}
                     
                 }
+
+                if(strcmp(long_options[option_index].name,"homopolymer-compress") == 0)
+                    hc_cutoff = atoi(optarg);
                 
                 break;
-                
+            
             case 'b': // output bed type (agp, contig, gaps)
                 bedOutType = *optarg;
                 outCoord_flag = 1;
