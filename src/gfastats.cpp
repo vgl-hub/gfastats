@@ -283,7 +283,7 @@ int main(int argc, char **argv) {
                 printf("\nOptions:\n");
                 printf("-f --fasta <file> input file (fasta, fastq, gfa [.gz]). Also as first positional argument.\n");
                 printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
-                printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
+                printf("\t--line-length <n> specifies line length when output format is fasta. Default has no line breaks.\n");
                 
                 printf("-s --out-size s|c|g  generates size list of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-b --out-coord a|c|g generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
@@ -293,7 +293,7 @@ int main(int argc, char **argv) {
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
                 printf("-h --help print help and exit.\n");
-                printf("--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
+                printf("--sort ascending|descending|largest|smallest|none sort sequences according to input. Ascending/descending used the sequence/path header.\n");
                 printf("--homopolymer-compress compress all the homopolymers in the input.\n");
                 printf("--stats report summary statistics (default).\n");
                 printf("--seq-report report statistics for each sequence.\n");
