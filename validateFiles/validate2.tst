@@ -1,5 +1,5 @@
-
 testFiles/random1.fasta
+embedded
 +++Summary+++: 
 # scaffolds: 5
 Total scaffold length: 50
