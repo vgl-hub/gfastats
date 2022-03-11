@@ -25,6 +25,7 @@ build/bin/gfastats-validate testFiles/random1.fasta testFiles/random2.gfa2.gfa.g
 bool verbose = false, veryVerbose = false, printCommand = false;
 const std::string tmp = "tmp.txt";
 const std::string err = "err.txt";
+bool pass = true;
 
 std::string getFileExt(const std::string& FileName) // utility to get file extension
 {
@@ -101,6 +102,7 @@ bool test(const std::string &testFile) {
 }
 
 void printFAIL(const char *m1="", const char *m2="", const char *m3="", const char *m4="\n") {
+    pass = false;
     printf("\033[0;31mFAIL\033[0m %s %s %s %s", m1, m2, m3, m4);
 }
 
@@ -211,5 +213,5 @@ int main(int argc, char **argv) {
         fprintf(stderr, "error deleting temp file <%s>\n", tmp.c_str());
     }
 
-    exit(EXIT_SUCCESS);
+    exit(pass ? EXIT_SUCCESS : EXIT_FAILURE);
 }
