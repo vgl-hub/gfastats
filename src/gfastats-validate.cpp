@@ -207,7 +207,7 @@ int main(int argc, char **argv) {
         }
 
         printPASS(input_file.c_str());
-    }
+    } 
 
     if(remove(tmp.c_str()) != 0) {
         fprintf(stderr, "error deleting temp file <%s>\n", tmp.c_str());
