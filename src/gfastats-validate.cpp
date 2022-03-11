@@ -9,6 +9,7 @@ build/bin/gfastats-validate testFiles/random1.fasta testFiles/random2.gfa2.gfa.g
 
 */
 
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -19,36 +20,18 @@ build/bin/gfastats-validate testFiles/random1.fasta testFiles/random2.gfa2.gfa.g
 #include <limits.h>
 #include <map>
 #include <set>
+#include <regex>
 
 bool verbose = false, veryVerbose = false, printCommand = false;
-const char *tmp = "tmp.txt";
-const char *err = "err.txt";
-std::string curPath, exePath;
-
-std::string rmFileExt(const std::string& path) { // utility to strip file extension from file
-    if (path == "." || path == "..")
-        return path;
-
-    size_t pos = path.find_last_of("\\/.");
-    if (pos != std::string::npos && path[pos] == '.')
-        return path.substr(0, pos);
-
-    return path;
-}
+const std::string tmp = "tmp.txt";
+const std::string err = "err.txt";
+bool pass = true;
 
 std::string getFileExt(const std::string& FileName) // utility to get file extension
 {
     if(FileName.find_last_of(".") != std::string::npos)
         return FileName.substr(FileName.find_last_of(".")+1);
     return "";
-}
-
-bool hasValidTestFileExtension(const std::string &file) {
-    std::string ext = getFileExt(file);
-    if(ext == "gz") {
-        return hasValidTestFileExtension(rmFileExt(file));
-    }
-    return (ext == "fasta" || ext == "fastq" || ext == "gfa");
 }
 
 std::vector<std::string> list_dir(const char *path) {
@@ -61,10 +44,24 @@ std::vector<std::string> list_dir(const char *path) {
         exit(0);
     }
     while ((entry = readdir(dir)) != NULL) {
-        if(entry->d_type == DT_REG && hasValidTestFileExtension(entry->d_name)) list.push_back(std::string(entry->d_name));
+        if(entry->d_type == DT_REG) list.push_back(std::string(entry->d_name));
     }
     closedir(dir);
     return list;
+}
+
+void get_recursive(const std::string &path, std::set<std::string> &paths) {
+    if(getFileExt(path) == "tst") {
+        paths.insert(path);
+    } else {
+        DIR *dir = opendir(path.c_str());
+        if(dir != NULL) {
+            for(const auto &file : list_dir(path.c_str())) {
+                get_recursive((path+"/"+file).c_str(), paths);
+            }
+        }
+        closedir(dir);
+    }
 }
 
 std::map<std::string, std::pair<std::string, std::string>> diffs;
@@ -104,14 +101,13 @@ bool test(const std::string &testFile) {
     return retval;
 }
 
-void printFile(const char *fname) {
-    std::ifstream istream;
-    istream.open(fname);
-    if(!istream) return;
-    for(std::string line; std::getline(istream, line);) {
-        printf("    %s\n", line.c_str());
-    }
-    istream.close();
+void printFAIL(const char *m1="", const char *m2="", const char *m3="", const char *m4="\n") {
+    pass = false;
+    printf("\033[0;31mFAIL\033[0m %s %s %s %s", m1, m2, m3, m4);
+}
+
+void printPASS(const char *m1="", const char *m2="", const char *m3="", const char *m4="\n") {
+    printf("\033[0;32mPASS\033[0m %s %s %s %s", m1, m2, m3, m4);
 }
 
 int main(int argc, char **argv) {
@@ -136,64 +132,86 @@ int main(int argc, char **argv) {
         }
     }
 
-    std::map<std::string, bool> input;
-    std::set<std::string> tested;
+    std::set<std::string> input_files;
 
     for(int i=1; i<argc; ++i) {
-        std::ifstream istream;
-        istream.open(argv[i]);
-        if(istream) {
-            input[argv[i]] = false;
-            istream.close();
-            continue;
-        }
-        istream.close();
-        DIR *dir = opendir(argv[i]);
-        if(dir != NULL || hasValidTestFileExtension(std::string(argv[i]))) input[argv[i]] = (dir != NULL);
-        closedir(dir);
+        get_recursive(argv[i], input_files);
     }
 
     std::string argv0 = std::string(argv[0]);
-    std::cout << argv0 << std::endl;
-    exePath = argv0.substr(0, argv0.find_last_of("/\\")+1)+"gfastats";
+    std::string exePath = argv0.substr(0, argv0.find_last_of("/\\")+1);
+    std::replace(exePath.begin(), exePath.end(), '\\', '/');
 
-    char cmd[100];
+    exePath += "gfastats";
 
-    auto lambda = [&cmd, &tested](std::string file) {
-        if(tested.count(file)) return;
-        tested.insert(file);
-        sprintf(cmd, "%s %s > %s 2>%s", exePath.c_str(), file.c_str(), tmp, err);
-        if(printCommand) printf("%s\n", cmd);
-        bool exitSuccess = system(cmd) == EXIT_SUCCESS;
-        bool pass = (exitSuccess && test(file));
-        printf("%s\033[0m %s\n", pass ? "\033[0;32mPASS" : "\033[1;31mFAIL", file.c_str());
-        if((!pass && verbose) || veryVerbose) {
-            if(!exitSuccess) {
-                printFile(err);
-            }
-            else if(diffs.size() != 0) {
-                for(auto const &diff : diffs)
-                    printf("    %skey: %s; expected: %s; actual: %s\033[0m\n", diff.second.first == diff.second.second ? "\033[0m" : "\033[1;31m", diff.first.c_str(), diff.second.first.c_str(), diff.second.second.c_str());
-            }
-            else if(!pass) {
-                printf("    failed to open expected output file and/or tmp file\n");
-            }
+    std::string line;
+    std::ifstream istream, exp, actOutput, *expOutput;
+    for(const auto &input_file : input_files) {
+        istream.open(input_file);
+        if(!istream) {
+            printFAIL(input_file.c_str(), "couldn't open test file");
+            continue;
         }
-    };
+        std::getline(istream, line);
+        line.erase(remove(line.begin(), line.end(), '\r'), line.end());
+        line.erase(remove(line.begin(), line.end(), '\n'), line.end());
+        std::string cmd = exePath+line+" > "+tmp+" 2>"+err;
+        if(printCommand) printf("%s\n", cmd.c_str());
 
-    for(const auto &i : input) {
-        if(i.second) {
-            for (const auto &file : list_dir(i.first.c_str())) {
-                lambda(i.first+"/"+file);
+        if(system(cmd.c_str()) != EXIT_SUCCESS) {
+            printFAIL(input_file.c_str(), "runtime error");
+            std::ifstream errfstream;
+            errfstream.open(err);
+            if(!errfstream) printf("    error: couldn't open err.txt\n");
+            for(std::string line; std::getline(errfstream, line);) {
+                printf("    %s\n", line.c_str());
             }
+            errfstream.close();
+            istream.close();
+            continue;
+        }
+
+
+        std::getline(istream, line);
+        exp.open(line);
+        if(exp) {
+            expOutput = &exp; // seperate expected output file
+        } else if(line == "embedded") {
+            expOutput = &istream;
         } else {
-            lambda(i.first);
+            printf("%d;;;%s;;;\n", line.length(), "");
+            printFAIL("couldn't open expected output");
+            continue;
         }
+
+        actOutput.open(tmp);
+        std::vector<std::pair<std::string, std::string>> diffs;
+        while(!actOutput.eof() || !expOutput->eof()) {
+            std::string l1, l2;
+            std::getline(actOutput, l1);
+            std::getline(*expOutput, l2);
+            if(l1 != l2) diffs.push_back(std::pair<std::string, std::string>(l1, l2));
+        }
+        actOutput.close();
+
+        exp.close();
+        istream.close();
+
+        if(diffs.size() > 0) {
+            printFAIL(input_file.c_str(), "expected output did not match actual output");
+            if(verbose)
+            for(const auto &pair : diffs) {
+                printf("    expected: %s\n      actual: %s\n", pair.second.c_str(), pair.first.c_str());
+            }
+            continue;
+        }
+
+        printPASS(input_file.c_str());
+    } 
+
+    if(remove(tmp.c_str()) != 0) {
+        fprintf(stderr, "error deleting temp file <%s>\n", tmp.c_str());
     }
 
-    if(remove(tmp) != 0) {
-        fprintf(stderr, "error deleting temp file <%s>\n", tmp);
-    }
-
-    exit(EXIT_SUCCESS);
+    exit(pass ? EXIT_SUCCESS : EXIT_FAILURE);
 }

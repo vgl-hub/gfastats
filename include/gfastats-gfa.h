@@ -654,37 +654,46 @@ public:
         
     }
 
-    std::string homopolymerCompress(const std::string &sequence, std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths) {
-        std::string csequence;
-        csequence.reserve(sequence.length());
-        
-        unsigned int index=0, length;
-        
-        auto lambda = [&length, &index, &compressionIndices, &compressionLengths, &csequence, &sequence](int i){
+    void homopolymerCompress(std::string *sequence, std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths, unsigned int cutoff) {
+        unsigned int index=0, length, new_length=0;
+
+        auto lambda = [&length, &index, &compressionIndices, &compressionLengths, &sequence, &new_length, &cutoff](int i){
             length = i-index;
-            if(length > 1) {
-                compressionIndices.push_back(csequence.length());
+            if(length > cutoff) {
+                compressionIndices.push_back(new_length);
                 compressionLengths.push_back(length);
             }
-            csequence += sequence[index];
+            int num = length > cutoff ? 1 : length;
+            memset(&((*sequence)[new_length]), (*sequence)[index], num);
+            new_length += num;
         };
 
-        for(unsigned int i=1; i<sequence.length(); i++) {
-            if(sequence[i] == sequence[index]) continue;
+        for(unsigned int i=1; i<sequence->length(); ++i) {
+            if((*sequence)[i] == (*sequence)[index]) continue;
             lambda(i);
             index = i;
         }
-        lambda(sequence.length());
+        lambda(sequence->length());
 
-        csequence.shrink_to_fit();
-        return csequence;
+        sequence->resize(new_length);
+    }
+
+    std::string homopolymerDecompress(std::string *sequence, const std::vector<unsigned int> &compressionIndices, const std::vector<unsigned int> &compressionLengths) {
+        std::string ret="";
+        ret.reserve(sequence->length()*2); // random guess for final sequence length
+        for(unsigned int i=0, ci=0, len; i<sequence->length(); ++i) {
+            len = ((ci<compressionIndices.size() && i==compressionIndices[ci]) ? compressionLengths[ci++] : 1);
+            ret += std::string(len, (*sequence)[i]);
+        }
+        ret.shrink_to_fit();
+        return ret;
     }
     
     void traverseInSequence(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
         std::vector<unsigned int> compressionIndices, compressionLengths;
-        if(hc_compress_flag) {
-            *sequence = homopolymerCompress(*sequence, compressionIndices, compressionLengths);
+        if(hc_flag) {
+            homopolymerCompress(sequence, compressionIndices, compressionLengths, hc_cutoff);
         }
 
         unsigned int pos = 0, // current position in sequence
@@ -745,7 +754,7 @@ public:
                 }
                 default: {
                     
-                    unsigned int count = hc_compress_flag && hc_index < compressionIndices.size() && pos == compressionIndices[hc_index] ? compressionLengths[hc_index++] : 1;
+                    unsigned int count = hc_flag && hc_index < compressionIndices.size() && pos == compressionIndices[hc_index] ? compressionLengths[hc_index++] : 1;
 
                     switch (base) {
                         case 'A':
