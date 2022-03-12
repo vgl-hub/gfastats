@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
         std::getline(istream, line);
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         line.erase(remove(line.begin(), line.end(), '\n'), line.end());
-        std::string cmd = exePath+line+" > "+tmp+" 2>"+err;
+        std::string cmd = exePath+" "+line+" > "+tmp+" 2>"+err;
         if(printCommand) printf("%s\n", cmd.c_str());
 
         if(system(cmd.c_str()) != EXIT_SUCCESS) {
