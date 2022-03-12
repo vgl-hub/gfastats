@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
         } else if(line == "embedded") {
             expOutput = &istream;
         } else {
-            printf("%d;;;%s;;;\n", line.length(), "");
+            printf("%lu;;;%s;;;\n", line.length(), "");
             printFAIL("couldn't open expected output");
             continue;
         }

@@ -60,6 +60,7 @@ int main(int argc, char **argv) {
         {"seq-report", no_argument, &seqReport_flag, 1},
         {"nstar-report", no_argument, &nstarReport_flag, 1},
         {"tabular", no_argument, 0, 't'},
+        {"locale", required_argument, 0, 0},
         
         {"verbose", no_argument, &verbose_flag, 1},
         {"cmd", no_argument, &cmd_flag, 1},
@@ -186,6 +187,16 @@ int main(int argc, char **argv) {
 
                 if(strcmp(long_options[option_index].name,"homopolymer-compress") == 0)
                     hc_cutoff = atoi(optarg);
+                    stats_flag = true;
+                
+                if (strcmp(long_options[option_index].name,"locale") == 0) {
+                    
+                    setlocale(LC_ALL, optarg);
+                    std::cout.imbue(std::locale(optarg));
+                    std::locale::global(std::locale(optarg));
+                    stats_flag = true;
+                    
+                }
                 
                 break;
             
@@ -291,6 +302,7 @@ int main(int argc, char **argv) {
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined (no coordinates).\n");
                 printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
                 printf("-t --tabular output in tabular format.\n");
+                printf("-l --locale set a different locale, for instance to use , for thousand separators use en_US.UTF-8.\n");
                 printf("-v --version software version.\n");
                 printf("-h --help print help and exit.\n");
                 printf("--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
