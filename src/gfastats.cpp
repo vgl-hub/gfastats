@@ -185,9 +185,10 @@ int main(int argc, char **argv) {
                     
                 }
 
-                if(strcmp(long_options[option_index].name,"homopolymer-compress") == 0)
+                if(strcmp(long_options[option_index].name,"homopolymer-compress") == 0) {
                     hc_cutoff = atoi(optarg);
                     stats_flag = true;
+                }
                 
                 if (strcmp(long_options[option_index].name,"locale") == 0) {
                     

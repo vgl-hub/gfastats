@@ -64,43 +64,6 @@ void get_recursive(const std::string &path, std::set<std::string> &paths) {
     }
 }
 
-std::map<std::string, std::pair<std::string, std::string>> diffs;
-
-bool test(const std::string &testFile) {
-    diffs.clear();
-    const std::string expectedOutputPath = testFile+".tst";
-
-    std::ifstream istreamActual, istreamExpected;
-    istreamExpected.open(expectedOutputPath);
-    istreamActual.open(tmp);
-    if(!istreamActual || !istreamExpected) return false;
-
-    std::map<std::string, std::string> expected;
-    std::string line;
-    size_t colonIndex;
-    while(std::getline(istreamExpected, line)) {
-        colonIndex = line.find(':');
-        if(colonIndex == std::string::npos) continue;
-        expected[line.substr(0, colonIndex)] = line.substr(colonIndex+1);
-    }
-
-    bool retval=true;
-    bool fail;
-    while(std::getline(istreamActual, line)) {
-        colonIndex = line.find(':');
-        if(colonIndex == std::string::npos) continue;
-        std::string key = line.substr(0, colonIndex);
-        std::string actual = line.substr(colonIndex+1);
-        fail = expected[key] != actual;
-        retval = retval && !fail;
-        if(veryVerbose || fail) {
-            diffs[key] = {expected[key], actual};
-        }
-    }
-
-    return retval;
-}
-
 void printFAIL(const char *m1="", const char *m2="", const char *m3="", const char *m4="\n") {
     pass = false;
     printf("\033[0;31mFAIL\033[0m %s %s %s %s", m1, m2, m3, m4);
@@ -179,7 +142,6 @@ int main(int argc, char **argv) {
         } else if(line == "embedded") {
             expOutput = &istream;
         } else {
-            printf("%lu;;;%s;;;\n", line.length(), "");
             printFAIL("couldn't open expected output");
             continue;
         }
@@ -209,7 +171,7 @@ int main(int argc, char **argv) {
         printPASS(input_file.c_str());
     } 
 
-    if(remove(tmp.c_str()) != 0) {
+    if(input_files.size() != 0 && remove(tmp.c_str()) != 0) {
         fprintf(stderr, "error deleting temp file <%s>\n", tmp.c_str());
     }
 
