@@ -13,7 +13,8 @@
             ],
             "cStandard": "gnu11",
             "cppStandard": "gnu++11",
-            "intelliSenseMode": "windows-gcc-x86"
+            "intelliSenseMode": "windows-gcc-x86",
+            "compilerArgs": ["-g", "-Wall", "-std=gnu++11"]
         }
     ],
     "version": 4
