@@ -83,12 +83,6 @@ fastlane/test_output
 *.xcworkspacedata
 *.plist
 
-### Visual Studio Code ###
-
-## Settings
-*.vscode
-*.vscode/*
-
 err.txt
 
 # End of https://www.gitignore.io/api/swift,xcode,vscode
