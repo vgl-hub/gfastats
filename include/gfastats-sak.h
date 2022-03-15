@@ -9,7 +9,7 @@
 #define GFASTATS_SAK_H
 
 // unordered map to handle out correspondence in following switch statement
-const static std::unordered_map<std::string,int> string_to_case{
+const static phmap::flat_hash_map<std::string,int> string_to_case{
     {"JOIN", 1},
     {"SPLIT", 2},
     {"EXCISE", 3},

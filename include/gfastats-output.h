@@ -57,7 +57,7 @@ public:
     bool outFile(InSequences &inSequences, InSegment &inSegment, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
         
         // unordered map to handle out correspondence in following switch statement
-        const static std::unordered_map<std::string,int> string_to_case{
+        const static phmap::flat_hash_map<std::string,int> string_to_case{
             {"fasta",1},
             {"fa",1},
             {"fasta.gz",1},
@@ -329,7 +329,7 @@ public:
                 
                 std::string seqHeader, gHeader, pHeader;
                 
-                std::unordered_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
+                phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
                 
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());

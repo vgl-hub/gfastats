@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <unordered_map>
+#include <parallel_hashmap/phmap.h>
 
 #include <vector>  //required for zstream
 #include <string.h>

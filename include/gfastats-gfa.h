@@ -489,9 +489,9 @@ private:
     std::vector<std::vector<Tuple>> adjListFW;
     std::vector<std::vector<Tuple>> adjListBW;
     std::vector<std::vector<EdgeTuple>> adjEdgeListFW;
-    std::unordered_map<std::string, unsigned int> headersToIds;
-    std::unordered_map<unsigned int, std::string> idsToHeaders;
-    std::unordered_map<int, bool> visited, deleted;
+    phmap::flat_hash_map<std::string, unsigned int> headersToIds;
+    phmap::flat_hash_map<unsigned int, std::string> idsToHeaders;
+    phmap::flat_hash_map<int, bool> visited, deleted;
     bool backward = false, first = false;
     
     std::vector<unsigned int> scaffLens;
@@ -868,7 +868,7 @@ public:
                 
         }
         
-        std::unordered_map<std::string, unsigned int>::const_iterator got = headersToIds.find (*seqHeader); // get the headers to uIds table to look for the header
+        phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (*seqHeader); // get the headers to uIds table to look for the header
         
         if (got == headersToIds.end()) { // this is the first time we see this segment
             
@@ -1589,13 +1589,13 @@ public:
 
     }
     
-    std::unordered_map<std::string, unsigned int> getHash1() {
+    phmap::flat_hash_map<std::string, unsigned int> getHash1() {
 
         return headersToIds;
 
     }
 
-    std::unordered_map<unsigned int, std::string> getHash2() {
+    phmap::flat_hash_map<unsigned int, std::string> getHash2() {
 
         return idsToHeaders;
 

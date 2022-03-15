@@ -305,8 +305,8 @@ public:
                     InEdge edge;
                     InPath path;
                     unsigned int sId1 = 0, sId2 = 0, dist = 0;
-                    std::unordered_map<std::string, unsigned int> hash;
-                    std::unordered_map<std::string, unsigned int>::const_iterator got;
+                    phmap::flat_hash_map<std::string, unsigned int> hash;
+                    phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
                     
                     unsigned int lineN = 1;
                     unsigned int uId = 0, guId = 0, euId = 0;
