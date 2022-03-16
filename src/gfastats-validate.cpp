@@ -15,7 +15,6 @@ build/bin/gfastats-validate testFiles/random1.fasta testFiles/random2.gfa2.gfa.g
 #include <string>
 #include <dirent.h>
 #include <vector>
-#include <stdio.h>
 #include <unistd.h>
 #include <limits.h>
 #include <map>
@@ -40,7 +39,7 @@ std::vector<std::string> list_dir(const char *path) {
     DIR *dir = opendir(path);
 
     if (dir == NULL) {
-        fprintf(stderr, "error: unable to access <%s>\n", path);
+        std::cerr << "error: unable to access " << path << std::endl;
         exit(0);
     }
     while ((entry = readdir(dir)) != NULL) {
@@ -64,19 +63,19 @@ void get_recursive(const std::string &path, std::set<std::string> &paths) {
     }
 }
 
-void printFAIL(const char *m1="", const char *m2="", const char *m3="", const char *m4="\n") {
+void printFAIL(const char *m1="", const char *m2="", const char *m3="", const char *m4="") {
     pass = false;
-    printf("\033[0;31mFAIL\033[0m %s %s %s %s", m1, m2, m3, m4);
+    std::cout << "\033[0;31mFAIL\033[0m " << m1 << " " << m2 << " " << m3 << " " << m4 << std::endl;
 }
 
-void printPASS(const char *m1="", const char *m2="", const char *m3="", const char *m4="\n") {
-    printf("\033[0;32mPASS\033[0m %s %s %s %s", m1, m2, m3, m4);
+void printPASS(const char *m1="", const char *m2="", const char *m3="", const char *m4="") {
+    std::cout << "\033[0;32mPASS\033[0m " << m1 << " " << m2 << " " << m3 << " " << m4 << std::endl;
 }
 
 int main(int argc, char **argv) {
     if (argc == 1) { // test with no arguments
-        printf("gfastats-validate <path to test folder and/or files>\n");
-        exit(0);
+        std::cout << "gfastats-validate <path to test folder and/or files>" << std::endl;
+        exit(EXIT_SUCCESS);
     }
 
     int opt;
@@ -119,18 +118,21 @@ int main(int argc, char **argv) {
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         line.erase(remove(line.begin(), line.end(), '\n'), line.end());
         std::string cmd = exePath+" "+line+" > "+tmp+" 2>"+err;
-        if(printCommand) printf("%s\n", cmd.c_str());
+        if(printCommand) std::cout << cmd.c_str() << std::endl;
 
         if(system(cmd.c_str()) != EXIT_SUCCESS) {
             printFAIL(input_file.c_str(), "runtime error");
+            istream.close();
             std::ifstream errfstream;
             errfstream.open(err);
-            if(!errfstream) printf("    error: couldn't open err.txt\n");
+            if(!errfstream) {
+                std::cout << "    error: couldn't open err.txt" << std::endl;
+                continue;
+            }
             for(std::string line; std::getline(errfstream, line);) {
-                printf("    %s\n", line.c_str());
+                std::cout << "    " << line.c_str() << std::endl;
             }
             errfstream.close();
-            istream.close();
             continue;
         }
 
@@ -163,7 +165,7 @@ int main(int argc, char **argv) {
             printFAIL(input_file.c_str(), "expected output did not match actual output");
             if(verbose)
             for(const auto &pair : diffs) {
-                printf("    expected: %s\n      actual: %s\n", pair.second.c_str(), pair.first.c_str());
+                std::cout << "    expected: " << pair.second.c_str() << std::endl << "      actual: " << pair.first.c_str() << std::endl;
             }
             continue;
         }
@@ -172,7 +174,7 @@ int main(int argc, char **argv) {
     } 
 
     if(input_files.size() != 0 && remove(tmp.c_str()) != 0) {
-        fprintf(stderr, "error deleting temp file <%s>\n", tmp.c_str());
+        std::cerr << "error deleting temp file " << tmp.c_str() << std::endl;
     }
 
     exit(pass ? EXIT_SUCCESS : EXIT_FAILURE);
