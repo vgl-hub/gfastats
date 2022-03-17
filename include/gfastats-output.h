@@ -148,8 +148,8 @@ public:
                 std::string pHeader;
                 std::string inSeq; // the new sequence being built
                 std::vector<InPath> inPaths = inSequences.getInPaths();
-                std::vector<InSegment> inSegments = inSequences.getInSegments();
-                std::vector<InGap> inGaps = inSequences.getInGaps();
+                std::vector<InSegment>* inSegments = inSequences.getInSegments();
+                std::vector<InGap>* inGaps = inSequences.getInGaps();
                 std::vector<PathTuple> pathComponents;
                 
                 unsigned int uId = 0, sIdx = 0, gIdx = 0;
@@ -186,27 +186,27 @@ public:
                         
                         if (std::get<0>(*component) == 'S') {
                         
-                            auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                            if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                             
                             if (std::get<2>(*component) == '+') {
                             
-                                inSeq += inSegments[sIdx].getInSequence();
+                                inSeq += (*inSegments)[sIdx].getInSequence();
                                 
                             }else{
                                 
-                                inSeq += revCom(inSegments[sIdx].getInSequence());
+                                inSeq += revCom((*inSegments)[sIdx].getInSequence());
                                 
                             }
                             
                         }else{
                             
-                            auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
                             
-                            inSeq += std::string(inGaps[gIdx].getDist(), 'N');
+                            inSeq += std::string((*inGaps)[gIdx].getDist(), 'N');
                             
                         }
                         
@@ -237,8 +237,8 @@ public:
                 std::string pHeader;
                 std::string inSeq, inSeqQual; // the new sequence being built and its quality
                 std::vector<InPath> inPaths = inSequences.getInPaths();
-                std::vector<InSegment> inSegments = inSequences.getInSegments();
-                std::vector<InGap> inGaps = inSequences.getInGaps();
+                std::vector<InSegment>* inSegments = inSequences.getInSegments();
+                std::vector<InGap>* inGaps = inSequences.getInGaps();
                 std::vector<PathTuple> pathComponents;
                 
                 unsigned int uId = 0, sIdx = 0, gIdx = 0;
@@ -275,39 +275,39 @@ public:
                         
                         if (std::get<0>(*component) == 'S') {
                         
-                            auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                            if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                             
                             if (std::get<2>(*component) == '+') {
                             
-                                inSeq += inSegments[sIdx].getInSequence();
+                                inSeq += (*inSegments)[sIdx].getInSequence();
                                 
                             }else{
                                 
-                                inSeq += revCom(inSegments[sIdx].getInSequence());
-                                inSegments[sIdx].invertSegment();
+                                inSeq += revCom((*inSegments)[sIdx].getInSequence());
+                                (*inSegments)[sIdx].invertSegment();
                                 
                             }
                             
-                            if (inSegments[sIdx].getInSequenceQuality() != "") {
+                            if ((*inSegments)[sIdx].getInSequenceQuality() != "") {
                             
-                                inSeqQual += inSegments[sIdx].getInSequenceQuality();
+                                inSeqQual += (*inSegments)[sIdx].getInSequenceQuality();
                                 
                             }else{
                                 
-                                inSeqQual += std::string(inSegments[sIdx].getInSequence().size(), '!');
+                                inSeqQual += std::string((*inSegments)[sIdx].getInSequence().size(), '!');
                                 
                             }
                             
                         }else{
                             
-                            auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
                             
-                            inSeq += std::string(inGaps[gIdx].getDist(), 'N');
-                            inSeqQual += std::string(inGaps[gIdx].getDist(), '!');
+                            inSeq += std::string((*inGaps)[gIdx].getDist(), 'N');
+                            inSeqQual += std::string((*inGaps)[gIdx].getDist(), '!');
                             
                         }
                         
@@ -331,12 +331,14 @@ public:
                 
                 phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
                 
+                std::vector<InSegment>* inSegments = inSequences.getInSegments();
+                
                 // generate adjacency list representation of a graph
                 inSequences.buildGraph(inSequences.getGaps());
                 
                 *stream<<"H\tVN:Z:2.0\n";
                 
-                for (InSegment inSegment : inSequences.getInSegments()) {
+                for (InSegment inSegment : *inSegments) {
                     
                     seqHeader = inSegment.getSeqHeader();
                     
@@ -467,8 +469,8 @@ public:
                 
                 std::string pHeader;
                 std::vector<InPath> inPaths = inSequences.getInPaths();
-                std::vector<InSegment> inSegments = inSequences.getInSegments();
-                std::vector<InGap> inGaps = inSequences.getInGaps();
+                std::vector<InSegment>* inSegments = inSequences.getInSegments();
+                std::vector<InGap>* inGaps = inSequences.getInGaps();
                 std::vector<PathTuple> pathComponents;
                 
                 unsigned int uId = 0, sIdx = 0, gIdx = 0, size = 0;
@@ -495,19 +497,19 @@ public:
                         
                         if (std::get<0>(*component) == 'S') {
                         
-                            auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+                            if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                             
-                            size += inSegments[sIdx].getInSequence().size();
+                            size += (*inSegments)[sIdx].getInSequence().size();
                             
                         }else{
                             
-                            auto gId = find_if(inGaps.begin(), inGaps.end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (gId != inGaps.end()) {gIdx = std::distance(inGaps.begin(), gId);} // gives us the segment index
+                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
                             
-                            size += inGaps[gIdx].getDist();
+                            size += (*inGaps)[gIdx].getDist();
                             
                         }
                         
@@ -524,7 +526,9 @@ public:
                 
             case 'c': { // contigs
                 
-                for (InSegment inSegment : inSequences.getInSegments()) {
+                std::vector<InSegment>* inSegments = inSequences.getInSegments();
+                
+                for (InSegment inSegment : *inSegments) {
                     
                     std::cout<<inSegment.getSeqHeader()<<"\t"<<inSegment.getInSequence().size()<<"\n";
 
@@ -536,7 +540,9 @@ public:
                 
             case 'g': { // gaps
                 
-                for (InGap inGap : inSequences.getInGaps()) {
+                std::vector<InGap>* inGaps = inSequences.getInGaps();
+                
+                for (InGap inGap : *inGaps) {
 
                     std::cout<<inGap.getgHeader()<<"\t"<<inGap.getDist()<<"\n";
 
@@ -870,11 +876,11 @@ public:
 
             verbose("Graph DFS");
             
-            std::vector<InSegment> inSegments = inSequences.getInSegments();
+            std::vector<InSegment>* inSegments = inSequences.getInSegments();
             std::vector<unsigned int> componentLengths;
             unsigned int componentLength = 0;
             
-            for (InSegment inSegment : inSegments) { // loop through all nodes
+            for (InSegment inSegment : *inSegments) { // loop through all nodes
                 
                 if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
                     

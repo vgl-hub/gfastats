@@ -941,15 +941,15 @@ public:
         
     }
     
-    std::vector<InSegment> getInSegments() {
+    std::vector<InSegment>* getInSegments() {
         
-        return inSegments;
+        return &inSegments;
         
     }
     
-    std::vector<InGap> getInGaps() {
+    std::vector<InGap>* getInGaps() {
         
-        return inGaps;
+        return &inGaps;
         
     }
     
