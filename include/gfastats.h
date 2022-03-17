@@ -17,8 +17,6 @@
 
 #include <unistd.h>
 #include <getopt.h>
-#include <unordered_map>
-#include <parallel_hashmap/phmap.h>
 
 #include <vector>  //required for zstream
 #include <string.h>
@@ -29,6 +27,8 @@
 
 #include <chrono>
 #include <memory>
+
+#include <parallel_hashmap/phmap.h>
 
 #include "zlib/zlib/zlib.h"
 #include "zstream/zstream_common.hpp"

@@ -795,17 +795,20 @@ public:
         
         std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<"\n";
         std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<"\n";
-        std::cout<<output("Average scaffold length")<<printf("%'.2f",inSequences.computeAverageScaffLen())<<"\n";
+        std::cout<<output("Average scaffold length");
+        printf("%.2f\n",inSequences.computeAverageScaffLen());
         inSequences.evalNstars('s', gSize); // scaffold N* statistics
         std::cout<<output("Scaffold N50")<<inSequences.getScaffN50()<<"\n";
         inSequences.evalAuN('s', gSize); // scaffold auN
-        std::cout<<output("Scaffold auN")<<printf("%'.2f",inSequences.getScaffauN())<<"\n";
+        std::cout<<output("Scaffold auN");
+        printf("%.2f\n",inSequences.getScaffauN());
         std::cout<<output("Scaffold L50")<<inSequences.getScaffL50()<<"\n";
         
         if (gSize > 0) {
             
             std::cout<<output("Scaffold NG50")<<inSequences.getScaffNG50()<<"\n";
-            std::cout<<output("Scaffold auNG")<<printf("%'.2f",inSequences.getScaffauNG())<<"\n";
+            std::cout<<output("Scaffold auNG");
+            printf("%.2f\n",inSequences.getScaffauNG());
             std::cout<<output("Scaffold LG50")<<inSequences.getScaffLG50()<<"\n";
             
         }
@@ -813,17 +816,20 @@ public:
         
         std::cout<<output("# contigs")<<inSequences.getSegmentN()<<"\n";
         std::cout<<output("Total contig length")<<inSequences.getTotSegmentLen()<<"\n";
-        std::cout<<output("Average contig length")<<printf("%'.2f",inSequences.computeAverageSegmentLen())<<"\n";
+        std::cout<<output("Average contig length");
+        printf("%.2f\n",inSequences.computeAverageSegmentLen());
         inSequences.evalNstars('c', gSize); // contig N* statistics
         std::cout<<output("Contig N50")<<inSequences.getContigN50()<<"\n";
         inSequences.evalAuN('c', gSize); // contig auN
-        std::cout<<output("Contig auN")<<printf("%'.2f",inSequences.getContigauN())<<"\n";
+        std::cout<<output("Contig auN");
+        printf("%.2f\n",inSequences.getContigauN());
         std::cout<<output("Contig L50")<<inSequences.getContigL50()<<"\n";
         
         if (gSize > 0) {
             
             std::cout<<output("Contig NG50")<<inSequences.getContigNG50()<<"\n";
-            std::cout<<output("Contig auNG")<<printf("%'.2f",inSequences.getContigauNG())<<"\n";
+            std::cout<<output("Contig auNG");
+            printf("%.2f\n",inSequences.getContigauNG());
             std::cout<<output("Contig LG50")<<inSequences.getContigLG50()<<"\n";
             
         }
@@ -831,20 +837,23 @@ public:
         
         std::cout<<output("# gaps")<<inSequences.getGapN()<<"\n";
         std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<"\n";
-        std::cout<<output("Average gap length")<<printf("%'.2f",inSequences.computeAverageGapLen())<<"\n";
+        std::cout<<output("Average gap length");
+        printf("%.2f\n",inSequences.computeAverageGapLen());
         inSequences.evalNstars('g'); // gap N* statistics
         std::cout<<output("Gap N50")<<inSequences.getGapN50()<<"\n";
         inSequences.evalAuN('g'); // gap auN
-        std::cout<<output("Gap auN")<<printf("%'.2f",inSequences.getGapauN())<<"\n";
+        std::cout<<output("Gap auN");
+        printf("%.2f\n",inSequences.getGapauN());
         std::cout<<output("Gap L50")<<inSequences.getGapL50()<<"\n";
         std::cout<<output("Largest gap")<<inSequences.getLargestGap()<<"\n";
         
         std::cout<<output("Base composition (A:C:G:T)");
-        printf("%'lu:%'lu:%'lu:%'lu\n",inSequences.getTotA(),
+        printf("%lu:%lu:%lu:%lu\n",inSequences.getTotA(),
                inSequences.getTotC(),
                inSequences.getTotG(),
                inSequences.getTotT());
-        std::cout<<output("GC content %")<<printf("%'.2f",inSequences.computeGCcontent())<<"\n";
+        std::cout<<output("GC content %");
+        printf("%.2f\n",inSequences.computeGCcontent());
         std::cout<<output("# soft-masked bases")<<inSequences.getTotLowerCount()<<"\n";
         
         counter = 0;
