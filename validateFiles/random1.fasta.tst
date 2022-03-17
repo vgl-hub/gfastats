@@ -1,4 +1,4 @@
- testFiles/random1.fasta
+testFiles/random1.fasta
 embedded
 +++Summary+++: 
 # scaffolds: 5
