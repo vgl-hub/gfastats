@@ -2459,7 +2459,7 @@ public:
         
         scaffLens.clear();
         
-        scaffN = 0, totA = 0, totC = 0, totG = 0, totT = 0;
+        scaffN = 0, totA = 0, totC = 0, totG = 0, totT = 0, totLowerCount = 0;
         
         unsigned int scaffSize = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
         
