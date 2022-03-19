@@ -28,12 +28,13 @@ public:
             std::cout<<output("Comment")<<inSegment.getSeqComment()<<"\n";
             std::cout<<output("Total segment length")<<inSegment.getSegmentLen()<<"\n";
 
-            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), inSegment.getA(),
-                   inSegment.getC(),
-                   inSegment.getG(),
-                   inSegment.getT());
-            printf("%s%.2f\n",output("GC content %").c_str(), inSegment.computeGCcontent());
-            std::cout<<output("# soft-masked bases")<<inSegment.getLowerCount()<<"\n";
+            std::cout << output("Base composition (ACGT)")
+                << inSegment.getA() << ", "
+                << inSegment.getC() << ", "
+                << inSegment.getG() << ", "
+                << inSegment.getT() << "\n";
+            std::cout << output("GC content %") << gfa_round(inSegment.computeGCcontent()) << "\n";
+            std::cout << output("# soft-masked bases") << inSegment.getLowerCount() << "\n";
 
 
             if (outSequence_flag) {
@@ -801,20 +802,17 @@ public:
         
         std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<"\n";
         std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<"\n";
-        std::cout<<output("Average scaffold length");
-        printf("%.2f\n",inSequences.computeAverageScaffLen());
+        std::cout<<output("Average scaffold length") << gfa_round(inSequences.computeAverageScaffLen()) << "\n";
         inSequences.evalNstars('s', gSize); // scaffold N* statistics
         std::cout<<output("Scaffold N50")<<inSequences.getScaffN50()<<"\n";
         inSequences.evalAuN('s', gSize); // scaffold auN
-        std::cout<<output("Scaffold auN");
-        printf("%.2f\n",inSequences.getScaffauN());
+        std::cout<<output("Scaffold auN") << gfa_round(inSequences.getScaffauN()) << "\n";
         std::cout<<output("Scaffold L50")<<inSequences.getScaffL50()<<"\n";
         
         if (gSize > 0) {
             
             std::cout<<output("Scaffold NG50")<<inSequences.getScaffNG50()<<"\n";
-            std::cout<<output("Scaffold auNG");
-            printf("%.2f\n",inSequences.getScaffauNG());
+            std::cout<<output("Scaffold auNG") << gfa_round(inSequences.getScaffauNG()) << "\n";
             std::cout<<output("Scaffold LG50")<<inSequences.getScaffLG50()<<"\n";
             
         }
@@ -822,20 +820,17 @@ public:
         
         std::cout<<output("# contigs")<<inSequences.getSegmentN()<<"\n";
         std::cout<<output("Total contig length")<<inSequences.getTotSegmentLen()<<"\n";
-        std::cout<<output("Average contig length");
-        printf("%.2f\n",inSequences.computeAverageSegmentLen());
+        std::cout<<output("Average contig length") << gfa_round(inSequences.computeAverageSegmentLen()) << "\n";
         inSequences.evalNstars('c', gSize); // contig N* statistics
         std::cout<<output("Contig N50")<<inSequences.getContigN50()<<"\n";
         inSequences.evalAuN('c', gSize); // contig auN
-        std::cout<<output("Contig auN");
-        printf("%.2f\n",inSequences.getContigauN());
+        std::cout<<output("Contig auN") << gfa_round(inSequences.getContigauN()) << "\n";
         std::cout<<output("Contig L50")<<inSequences.getContigL50()<<"\n";
         
         if (gSize > 0) {
             
             std::cout<<output("Contig NG50")<<inSequences.getContigNG50()<<"\n";
-            std::cout<<output("Contig auNG");
-            printf("%.2f\n",inSequences.getContigauNG());
+            std::cout<<output("Contig auNG") << gfa_round(inSequences.getContigauNG()) << "\n";
             std::cout<<output("Contig LG50")<<inSequences.getContigLG50()<<"\n";
             
         }
@@ -843,23 +838,20 @@ public:
         
         std::cout<<output("# gaps")<<inSequences.getGapN()<<"\n";
         std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<"\n";
-        std::cout<<output("Average gap length");
-        printf("%.2f\n",inSequences.computeAverageGapLen());
+        std::cout<<output("Average gap length") << gfa_round(inSequences.computeAverageGapLen()) << "\n";
         inSequences.evalNstars('g'); // gap N* statistics
         std::cout<<output("Gap N50")<<inSequences.getGapN50()<<"\n";
         inSequences.evalAuN('g'); // gap auN
-        std::cout<<output("Gap auN");
-        printf("%.2f\n",inSequences.getGapauN());
+        std::cout<<output("Gap auN") << gfa_round(inSequences.getGapauN()) << "\n";
         std::cout<<output("Gap L50")<<inSequences.getGapL50()<<"\n";
         std::cout<<output("Largest gap")<<inSequences.getLargestGap()<<"\n";
         
         std::cout<<output("Base composition (A:C:G:T)");
-        printf("%lu:%lu:%lu:%lu\n",inSequences.getTotA(),
-               inSequences.getTotC(),
-               inSequences.getTotG(),
-               inSequences.getTotT());
-        std::cout<<output("GC content %");
-        printf("%.2f\n",inSequences.computeGCcontent());
+        std::cout << inSequences.getTotA() << ":"
+                  << inSequences.getTotC() << ":"
+                  << inSequences.getTotG() << ":"
+                  << inSequences.getTotT() << "\n";
+        std::cout<<output("GC content %") << gfa_round(inSequences.computeGCcontent()) << "\n";
         std::cout<<output("# soft-masked bases")<<inSequences.getTotLowerCount()<<"\n";
         
         counter = 0;

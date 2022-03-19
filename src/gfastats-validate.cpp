@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         line.erase(remove(line.begin(), line.end(), '\n'), line.end());
         std::string cmd = exePath+" "+line+" > "+tmp+" 2>"+err;
-        if(printCommand) std::cout << cmd.c_str() << std::endl;
+        if(printCommand) std::cout << cmd << std::endl;
 
         if(system(cmd.c_str()) != EXIT_SUCCESS) {
             printFAIL(input_file.c_str(), "runtime error");

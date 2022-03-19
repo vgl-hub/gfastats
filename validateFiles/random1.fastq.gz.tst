@@ -10,16 +10,16 @@ Scaffold L50: 2
 Largest scaffold: 15
 # contigs: 6
 Total contig length: 33
-Average contig length: 5.50
+Average contig length: 5.5
 Contig N50: 12
 Contig auN: 9.42
 Contig L50: 2
 Largest contig: 12
 # gaps: 5
 Total gap length: 12
-Average gap length: 2.40
+Average gap length: 2.4
 Gap N50: 3
-Gap auN: 3.00
+Gap auN: 3
 Gap L50: 2
 Largest gap: 4
 Base composition (A:C:G:T): 7:12:5:9
