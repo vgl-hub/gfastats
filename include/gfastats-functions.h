@@ -14,6 +14,7 @@
 #include <cstring>
 #include <sstream>
 #include <algorithm>
+#include <cmath>
 
 //typedef
 typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> Tuple; // tuple for gap edges orientation|segment_id|orientation|dist|edge_id
@@ -31,10 +32,11 @@ bool isInt(const std::string &str) {
     return !str.empty() && str.find_first_not_of("0123456789") == std::string::npos;
 }
 
-double round(double d, uint32_t to) {
-    unsigned int n;
-    for(n=1; to>0; to--) n *= 10;
-    return round(d*n)/n;
+double gfa_round(double d, uint32_t to=2) {
+    if(std::isnan(d)) return NAN;
+    unsigned int n=1;
+    for(; to>0; to--) n *= 10;
+    return std::round(d*n)/n;
 }
 
 double elapsedTime(){ // compute runtime in verbose mode
