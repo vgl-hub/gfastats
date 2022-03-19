@@ -17,36 +17,41 @@ public:
     bool seqReport(InSequences &inSequences, InSegment &inSegment, int &outSequence_flag) { // method to output the summary statistics for each sequence
         
         counter = 0;
-        segN = inSequences.getSegmentN();
+        std::vector<InSegment>* inSegments = inSequences.getInSegments();
+        
+        std::cout<<output("Seq\tHeader\tComment\tTotal segment length\tA\tC\tG\tT\tGC content %\t# soft-masked bases");
+        
+        if (outSequence_flag) {
 
-        while (counter < segN) {
+            std::cout<<output("Sequence\tQuality");
 
-            inSegment = inSequences.getInSegment(counter);
-
-            std::cout<<output("Seq")<<counter+1<<"\n";
-            std::cout<<output("Header")<<inSegment.getSeqHeader()<<"\n";
-            std::cout<<output("Comment")<<inSegment.getSeqComment()<<"\n";
-            std::cout<<output("Total segment length")<<inSegment.getSegmentLen()<<"\n";
-
-            printf("%s%u, %u, %u, %u\n",output("Base composition (ACGT)").c_str(), inSegment.getA(),
-                   inSegment.getC(),
-                   inSegment.getG(),
-                   inSegment.getT());
-            printf("%s%.2f\n",output("GC content %").c_str(), inSegment.computeGCcontent());
-            std::cout<<output("# soft-masked bases")<<inSegment.getLowerCount()<<"\n";
+        }
+        
+        for (InSegment inSegment : *inSegments) {
+            
+            std::cout   <<"\n"<<counter+1<<"\t"
+                        <<inSegment.getSeqHeader()<<"\t"
+                        <<inSegment.getSeqComment()<<"\t"
+                        <<inSegment.getSegmentLen()<<"\t"
+                        <<inSegment.getA()<<"\t"
+                        <<inSegment.getC()<<"\t"
+                        <<inSegment.getG()<<"\t"
+                        <<inSegment.getT()<<"\t"
+                        <<inSegment.computeGCcontent()<<"\t"
+                        <<inSegment.getLowerCount();
 
 
             if (outSequence_flag) {
 
-                std::cout<<output("Sequence")<<inSegment.getInSequence()<<"\n";
-                std::cout<<output("Quality")<<inSegment.getInSequenceQuality()<<"\n";
+                std::cout<<inSegment.getInSequence()<<"\t"<<inSegment.getInSequenceQuality()<<"\n";
 
             }
-
-            std::cout<<"\n";
+            
             counter++;
 
         }
+        
+        std::cout<<"\n";
 
         counter = 0;
         

@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
     
     if (seqReport_flag || outSequence_flag) { // report results for each sequence
         
-        stats_flag = true;
+        stats_flag = false;
         
         report.seqReport(inSequences, inSegment, outSequence_flag);
         
