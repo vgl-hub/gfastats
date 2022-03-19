@@ -24,5 +24,5 @@ Gap L50: 2
 Largest gap: 3
 Base composition (A:C:G:T): 9:14:6:11
 GC content %: 50
-# soft-masked bases: 10
+# soft-masked bases: 5
 # paths: 5
