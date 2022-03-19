@@ -298,7 +298,7 @@ int main(int argc, char **argv) {
                 printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 
                 printf("-s --out-size s|c|g  generates size list of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
-                printf("-b --out-coord a|c|g generates bed coordinates of given feature (agp|contigs|gaps default:agp).\n");
+                printf("-b --out-coord a|s|c|g generates bed coordinates of given feature (agp|scaffolds|contigs|gaps default:agp).\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined (no coordinates).\n");
                 printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
