@@ -1302,13 +1302,13 @@ public:
     
     unsigned int getLargestScaffold() {
         
-        return scaffLens[0]; // sorted during N/L* computation
+        return scaffLens.size() == 0 ? 0 : scaffLens[0]; // sorted during N/L* computation
         
     }
     
     unsigned int getLargestContig() {
         
-        return contigLens[0]; // sorted during N/L* computation
+        return contigLens.size() == 0 ? 0 : contigLens[0]; // sorted during N/L* computation
         
     }
     

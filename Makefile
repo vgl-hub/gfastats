@@ -1,5 +1,5 @@
 CC = g++
-INCLUDE_DIR = -I./include -I./zlib
+INCLUDE_DIR = -I./include -I./include/zlib
 
 CFLAGS += -g -Wall -std=gnu++11 -O3 $(INCLUDE_DIR)
 
