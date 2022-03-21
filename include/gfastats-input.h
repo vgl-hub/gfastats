@@ -1014,8 +1014,6 @@ public:
                     
                     prevsHeader = arguments[0];
                     
-                    std::cout<<arguments[0];
-                    
                 }
 
                 if (arguments[4] == "W") {
@@ -1068,6 +1066,8 @@ public:
                     
                     inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
                     
+                    std::streampos oldpos = stream->tellg();  // stores the position before we read another line
+                    
                     getline(*stream, line);
                     
                     arguments = readDelimited(line, "\t"); // read the next sequence
@@ -1079,6 +1079,8 @@ public:
                         inSequences.addGap(gap);
                         
                         path.addToPath('G', guId); // add the gap
+                        
+                        stream->seekg(oldpos); // reset stream to previous line
                     
                         continue;
                         

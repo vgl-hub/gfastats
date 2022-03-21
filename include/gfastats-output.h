@@ -351,12 +351,6 @@ public:
                             <<inSegment.getSegmentLen()<<"\t" // seq length
                             <<inSegment.getInSequence(); // sequence
                     
-                    if (inSegment.getSeqComment() != "") {
-                        
-                        *stream <<"\tC:"<<inSegment.getSeqComment(); // optional comment
-                        
-                    }
-                    
                     if (inSegment.getInSequenceQuality() != "") {
                         
                         *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional quality
