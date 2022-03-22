@@ -16,6 +16,7 @@ private:
 public:
     bool seqReport(InSequences &inSequences, InSegment &inSegment, int &outSequence_flag) { // method to output the summary statistics for each sequence
         std::cout << std::fixed; // disables scientific notation
+        std::cout << std::setprecision(2); // 2 decimal poinst
         counter = 0;
         std::vector<InSegment>* inSegments = inSequences.getInSegments();
         
@@ -60,6 +61,7 @@ public:
     
     bool outFile(InSequences &inSequences, InSegment &inSegment, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
         std::cout << std::fixed; // disables scientific notation
+        std::cout << std::setprecision(2); // 2 decimal poinst
 
         // unordered map to handle out correspondence in following switch statement
         const static phmap::flat_hash_map<std::string,int> string_to_case{
@@ -462,6 +464,7 @@ public:
     bool outSize(InSequences &inSequences, InSegment &inSegment, char &sizeOutType) { // method to output only the size of the sequences
         
         std::cout << std::fixed; // disables scientific notation
+        std::cout << std::setprecision(2); // 2 decimal poinst
         switch (sizeOutType) {
  
             default:
@@ -560,6 +563,7 @@ public:
     
     bool outCoord(InSequences &inSequences, InSegment &inSegment, char bedOutType) { // method to output the coordinates of each feature
         std::cout << std::fixed; // disables scientific notation
+        std::cout << std::setprecision(2); // 2 decimal poinst
 
         counter = 0;
         
@@ -825,6 +829,7 @@ public:
     
     bool reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType) { // method to output all summary statistics for the entire sequence set
         std::cout << std::fixed; // disables scientific notation
+        std::cout << std::setprecision(2); // 2 decimal poinst
 
         if (!tabular_flag) {
         
@@ -947,7 +952,8 @@ public:
     
     bool nstarReport(InSequences &inSequences, unsigned long long int gSize) { // method to generate all N** reports
         std::cout << std::fixed; // disables scientific notation
-        
+        std::cout << std::setprecision(2); // 2 decimal poinst
+
         int pos = 1;
         std::vector <unsigned int> scaffNstars = inSequences.getScaffNstars();
         for (unsigned int val : scaffNstars) {

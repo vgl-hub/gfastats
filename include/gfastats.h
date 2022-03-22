@@ -24,6 +24,7 @@
 #include <cstring> //required for zstream
 #include <tuple> // for graph manipulation
 #include <cctype> // toupper()
+#include <iomanip>
 
 #include <chrono>
 #include <memory>
