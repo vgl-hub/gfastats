@@ -89,3 +89,4 @@ fastlane/test_output
 err.txt
 testFiles/fAloSap1.p_utg.gfa
 testFiles/fAloSap1.pri.asm.20210222.fasta.gz
+out
