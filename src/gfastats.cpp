@@ -17,6 +17,7 @@ int main(int argc, char **argv) {
     
     std::string iSeqFileArg; // input file to evaluate
     std::string iSakFileArg; // input of instructions for the swiss army knife
+    std::string iAgpFileArg; // input agp
     std::string iBedIncludeFileArg; // input bed file of coordinates to include
     std::string iBedExcludeFileArg; // input bed file of coordinates to exclude
     
@@ -42,6 +43,7 @@ int main(int argc, char **argv) {
     static struct option long_options[] = { // struct mapping long options
         {"input-sequence", required_argument, 0, 'f'},
         
+        {"agp-to-path", required_argument, 0, 'a'}, // agp to path conversion
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
         {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
         {"homopolymer-compress", required_argument, &hc_flag, 1},
@@ -74,7 +76,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:k:b:e:f:i:o:s:tvh",
+        c = getopt_long(argc, argv, "-:a:b:e:f:i:k:o:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) { // if pipe wasn't assigned already
@@ -200,6 +202,22 @@ int main(int argc, char **argv) {
                 }
                 
                 break;
+                
+            case 'a': // agp to paths
+                
+                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                
+                    pipeType = 'a'; // pipe input is agp
+                
+                }else{ // input is a regular file
+                    
+                    ifFileExists(optarg);
+                    iAgpFileArg = optarg;
+                    
+                }
+                    
+                stats_flag = 1;
+                break;
             
             case 'b': // output bed type (agp, contig, gaps)
                 bedOutType = *optarg;
@@ -269,6 +287,7 @@ int main(int argc, char **argv) {
                     
                 stats_flag = 1;
                 break;
+                
             case 'o': // handle output (file or stdout)
                 outSeq = optarg;
                 outFile_flag = 1;
@@ -293,27 +312,27 @@ int main(int argc, char **argv) {
                 printf("genome size: estimated genome size for NG* statistics (optional).\n");
                 printf("header: target specific sequence by header, optionally with coordinates (optional).\n");
                 printf("\nOptions:\n");
-                printf("-f --fasta <file> input file (fasta, fastq, gfa [.gz]). Also as first positional argument.\n");
-                printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
-                printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
-                
-                printf("-s --out-size s|c|g  generates size list of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
+                printf("-a --agp-to-path <file> converts input agp to path and replaces existing paths.\n");
                 printf("-b --out-coord a|s|c|g generates bed coordinates of given feature (agp|scaffolds|contigs|gaps default:agp).\n");
-                printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined (no coordinates).\n");
-                printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
-                printf("-t --tabular output in tabular format.\n");
-                printf("-l --locale set a different locale, for instance to use , for thousand separators use en_US.UTF-8.\n");
-                printf("-v --version software version.\n");
+                printf("-f --fasta <file> input file (fasta, fastq, gfa [.gz]). Also as first positional argument.\n");
                 printf("-h --help print help and exit.\n");
-                printf("--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
-                printf("--homopolymer-compress compress all the homopolymers in the input.\n");
-                printf("--stats report summary statistics (default).\n");
-                printf("--seq-report report statistics for each sequence.\n");
-                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
-                printf("--nstar-report generates full N* and L* statistics.\n");
-                printf("--verbose verbose output.\n");
+                printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
+                printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
+                printf("-l --locale set a different locale, for instance to use , for thousand separators use en_US.UTF-8.\n");
+                printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
+                printf("-s --out-size s|c|g  generates size list of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
+                printf("-t --tabular output in tabular format.\n");
+                printf("-v --version software version.\n");
                 printf("--cmd print $0 to stdout.\n");
+                printf("--homopolymer-compress compress all the homopolymers in the input.\n");
+                printf("--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
+                printf("--nstar-report generates full N* and L* statistics.\n");
+                printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
+                printf("--seq-report report statistics for each sequence.\n");
+                printf("--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
+                printf("--stats report summary statistics (default).\n");
+                printf("--verbose verbose output.\n");
                 printf("\nAll input files can be piped from stdin using '-'.\n");
                 exit(0);
         }
@@ -345,7 +364,7 @@ int main(int argc, char **argv) {
     
     verbose("Sequence object generated");
     
-    inSequences = inFile.readFiles(iSeqFileArg, iSakFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
+    inSequences = inFile.readFiles(iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
     
     verbose("Finished reading sequences from file to sequence object");
     

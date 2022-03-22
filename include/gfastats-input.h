@@ -50,7 +50,7 @@ public:
 
     }
     
-    InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
+    InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
         
@@ -599,7 +599,11 @@ public:
                                     strtok(strdup(newLine.c_str()),"\t"); // process first line
                                     
                                     seqHeader = strtok(NULL,"\t");
-                                    path.setHeader(seqHeader);
+                                    
+                                    uId = inSequences.getuId();
+                                    inSequences.setuId(uId+1);
+                                    
+                                    path.newPath(uId, seqHeader);
                                     
                                     s = strtok(NULL,"\t");
                                     
@@ -659,7 +663,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.addToPath('G', sId1, sId1Or);
+                                                path.addToPath('G', sId1);
                                             
                                             }
                                             
@@ -811,7 +815,11 @@ public:
                                     strtok(strdup(newLine.c_str()),"\t"); // process first line
                                     
                                     seqHeader = strtok(NULL,"\t");
-                                    path.setHeader(seqHeader);
+
+                                    uId = inSequences.getuId();
+                                    inSequences.setuId(uId+1);
+                                    
+                                    path.newPath(uId, seqHeader);
                                     
                                     s = strtok(NULL,"\t");
                                     
@@ -871,7 +879,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.addToPath('G', sId1, sId1Or);
+                                                path.addToPath('G', sId1);
                                             
                                             }
                                             
@@ -950,6 +958,178 @@ public:
             
             verbose("Updated scaffold statistics");
         
+        }
+
+        if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
+            
+            inSequences.clearPaths();
+            verbose("Existing paths removed");
+            
+            inSequences.clearGaps();
+            verbose("Existing gaps removed");
+            
+            std::string sHeader, prevsHeader = "", gHeader;
+            char sId1Or, sId2Or;
+            
+            InGap gap;
+            InPath path;
+            unsigned int uId = 0, sId1 = 0, sId2 = 0, guId = 0, dist = 0;
+            phmap::flat_hash_map<std::string, unsigned int> hash;
+            phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
+            
+            std::vector<std::string> arguments; // line arguments
+            
+            if (isPipe && (pipeType == 'a')) {
+                
+                stream = make_unique<std::istream>(std::cin.rdbuf());
+                
+            }else{
+                
+                stream = make_unique<std::ifstream>(std::ifstream(iAgpFileArg));
+                
+            }
+            
+            while (getline(*stream, line)) {
+                
+                std::istringstream iss(line); // line to string
+                
+                arguments = readDelimited(line, "\t"); // read the columns in the line
+                
+                if (arguments[0] != prevsHeader) {
+                    
+                    if(prevsHeader != ""){
+                    
+                        inSequences.addPath(path);
+                    
+                    }
+                        
+                    uId = inSequences.getuId();
+                    
+                    inSequences.insertHash1(arguments[0], uId); // header to hash table
+                    inSequences.insertHash2(uId, arguments[0]); // uid to hash table
+                    
+                    inSequences.setuId(uId+1);
+                    
+                    path.newPath(uId, arguments[0]); // set uid and header of the new path
+                    
+                    prevsHeader = arguments[0];
+                    
+                }
+
+                if (arguments[4] == "W") {
+                    
+                    sHeader = arguments[5];
+                    sId1Or = arguments[8][0];
+                    
+                    hash = inSequences.getHash1();
+                    
+                    got = hash.find(sHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                    
+                    if (got != hash.end()) { // this is the first time we see this segment
+                        
+                        sId1 = got->second;
+                        
+                    }else{
+                        
+                        printf("Error: contig missing from the segment set (%s).\n", sHeader.c_str()); exit(1);
+                        
+                    }
+                    
+                    if(stoi(arguments[7]) != inSequences.getInSegment(sId1).getSegmentLength()) {
+                        
+                        printf("Error: contig length differs from segment length (%s).\n", sHeader.c_str()); exit(1);
+                        
+                    }
+                    
+                    path.addToPath('S', sId1, sId1Or);
+                    
+                }else if(arguments[4] == "N"){
+                    
+                    uId = inSequences.getuId();
+                    
+                    if (arguments[6] == "scaffold") {
+                    
+                        gHeader = "gap"+std::to_string(uId);
+                    
+                    }else{
+                        
+                        gHeader = arguments[6];
+                        
+                    }
+                        
+                    inSequences.insertHash1(gHeader, uId); // header to hash table
+                    inSequences.insertHash2(uId, gHeader); // uId to hash table
+                    
+                    guId = uId; // since I am still reading segments I need to keep this fixed
+                    
+                    dist = stoi(arguments[5]);
+                    
+                    inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                    
+                    std::streampos oldpos = stream->tellg();  // stores the position before we read another line
+                    
+                    getline(*stream, line);
+                    
+                    arguments = readDelimited(line, "\t"); // read the next sequence
+                    
+                    if (arguments[0] != prevsHeader) { // this path ends with a gap
+                        
+                        gap.newGap(guId, sId1, sId1, '+', '+', dist, gHeader); // now that we have all the information, create the gap
+                        
+                        inSequences.addGap(gap);
+                        
+                        path.addToPath('G', guId); // add the gap
+                        
+                        stream->seekg(oldpos); // reset stream to previous line
+                    
+                        continue;
+                        
+                    }
+                    
+                    sHeader = arguments[5];
+                    sId2Or = arguments[8][0];
+                    
+                    hash = inSequences.getHash1();
+                    
+                    got = hash.find(sHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                    
+                    if (got != hash.end()) { // this is the first time we see this segment
+                        
+                        sId2 = got->second;
+                        
+                    }else{
+                        
+                        printf("Error: contig missing from the segment set (%s).\n", sHeader.c_str()); exit(1);
+                        
+                    }
+                    
+                    if(stoi(arguments[7]) != inSequences.getInSegment(sId2).getSegmentLength()) {
+                        
+                        printf("Error: contig length differs from segment length (%s).\n", sHeader.c_str()); exit(1);
+                        
+                    }
+                    
+                    gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader); // now that we have all the information, create the gap
+                    
+                    inSequences.addGap(gap);
+                    
+                    path.addToPath('G', guId); // add the gap
+                    
+                    path.addToPath('S', sId2, sId2Or); // now add the segment it leads to
+                    
+                    sId1Or = sId2Or;
+                    sId1 = sId2;
+                    
+                }
+                
+            }
+            
+            inSequences.addPath(path); // push the last path
+            
+            inSequences.updateScaffoldStats();
+            
+            verbose("Updated scaffold statistics");
+            
         }
             
         if (sortType == "ascending") {
