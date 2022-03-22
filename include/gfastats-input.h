@@ -1136,6 +1136,65 @@ public:
             
             inSequences.addPath(path); // push the last path
             
+            // recover orphan segments
+            
+            std::vector<InSegment>* inSegments = inSequences.getInSegments();
+            
+            for (InSegment inSegment : *inSegments) {
+                
+                unsigned int suId = inSegment.getuId();
+            
+                std::vector<PathTuple> pathComponents;
+                
+                bool found = false;
+                
+                for (InPath inPath : inSequences.getInPaths()) {
+                    
+                    pathComponents = inPath.getComponents();
+                    
+                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                        
+                        if (suId == std::get<1>(*component)) {
+                            
+                            found = true;
+                            
+                            break;
+                            
+                        }
+                        
+                    }
+                    
+                    if (found) {break;}
+                    
+                }
+                
+                if (!found) {
+                    
+                    sHeader = inSegment.getSeqHeader();
+                    
+                    InPath path;
+                    
+                    uId = inSequences.getuId();
+                    
+                    inSequences.insertHash1(sHeader + "_path", uId); // header to hash table
+                    inSequences.insertHash2(uId, sHeader + "_path"); // uId to hash table
+                    
+                    path.newPath(uId, sHeader + "_path"); // set uid and header of the new path
+                    
+                    uId++;
+                    
+                    path.addToPath('S', suId, '+');
+                    
+                    inSequences.addPath(path);
+                    
+                    verbose("recovered orphan component to paths (" + inSegment.getSeqHeader() + ")");
+                    
+                }
+                
+            }
+            
+            verbose("orphan components recovered");
+            
             inSequences.updateScaffoldStats();
             
             verbose("Updated scaffold statistics");
