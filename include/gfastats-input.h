@@ -993,7 +993,9 @@ public:
                 
                 std::istringstream iss(line); // line to string
                 
-                arguments = readDelimited(line, "\t"); // read the columns in the line
+                arguments = readDelimited(line, "\t", "#"); // read the columns in the line
+                
+                if (arguments.size() == 0) {continue;}
                 
                 if (arguments[0] != prevsHeader) {
                     
@@ -1031,7 +1033,11 @@ public:
                         
                     }else{
                         
-                        printf("Error: contig missing from the segment set (%s).\n", sHeader.c_str()); exit(1);
+                        printf("Warning: contig missing from the segment set (%s). Skipping.\n", sHeader.c_str());
+                        
+                        prevsHeader = "";
+                        
+                        continue;
                         
                     }
                     
@@ -1070,7 +1076,9 @@ public:
                     
                     getline(*stream, line);
                     
-                    arguments = readDelimited(line, "\t"); // read the next sequence
+                    arguments = readDelimited(line, "\t", "#"); // read the next sequence
+                    
+                    if (arguments.size() == 0) {continue;}
                     
                     if (arguments[0] != prevsHeader) { // this path ends with a gap
                         
@@ -1099,7 +1107,9 @@ public:
                         
                     }else{
                         
-                        printf("Error: contig missing from the segment set (%s).\n", sHeader.c_str()); exit(1);
+                        printf("Warning: contig missing from the segment set (%s). Skipping.\n", sHeader.c_str());
+                        
+                        continue;
                         
                     }
                     

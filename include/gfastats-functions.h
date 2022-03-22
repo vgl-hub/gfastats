@@ -233,19 +233,19 @@ std::string rev(std::string seq) { // reverse string
     
 }
 
-std::vector<std::string> readDelimited(std::string line, std::string delimiter, char skipChar = '\0') { // read line delimited by specific character, optionally skip lines starting with specific character
+std::vector<std::string> readDelimited(std::string line, std::string delimiter, std::string skipLine = "") { // read line delimited by specific character, optionally skip lines starting with specific string
 
     std::vector<std::string> arguments;
 
     size_t pos = 0;
+    
+    if (line.substr(0, skipLine.size()) == skipLine) {
+        
+        return arguments;
+        
+    }
 
     while ((pos = line.find(delimiter)) != std::string::npos) {
-        
-        if (line[0] == skipChar) {
-            
-            return arguments;
-            
-        }
         
         arguments.push_back(line.substr(0, pos));
         
