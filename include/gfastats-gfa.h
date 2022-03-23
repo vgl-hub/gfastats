@@ -31,6 +31,12 @@ public:
         
     }
     
+    unsigned int size() {
+        
+        return seqHeaders.size(); // check if no coordinates are present
+        
+    }
+    
     std::vector<std::string> getSeqHeaders() { // get all the headers
         
         return seqHeaders;
@@ -966,6 +972,20 @@ public:
     std::vector<InGap>* getInGaps() {
         
         return &inGaps;
+        
+    }
+    
+    InPath getInPath(unsigned int pId) {
+        
+        auto inPath = find_if(inPaths.begin(), inPaths.end(), [pId](InPath& obj) {return obj.getpUId() == pId;}); // given a uId, find it in nodes
+        
+        if (inPath == inPaths.end()) {
+        
+            printf("Error: could not find path (pId: %i).\n", pId); exit(1);
+            
+        }
+            
+        return *inPath;
         
     }
     
