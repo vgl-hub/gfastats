@@ -285,7 +285,9 @@ public:
                         getline(*stream, newLine);
                         inSequenceQuality = newLine;
 
-                        includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
+                        stopStream = includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
+                        
+                        if (stopStream) {break;}
                         
                     }
                     
@@ -388,6 +390,8 @@ public:
                     
                         while (getline(*stream, newLine)) {
                             
+                            if (stopStream) {break;}
+                            
                             switch (newLine[0]) {
                                     
                                 case 'S': {
@@ -406,7 +410,7 @@ public:
                                         
                                     }
                                     
-                                    includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                                     
                                     lineN++;
                                     
@@ -698,11 +702,13 @@ public:
                     
                         while (getline(*stream, newLine)) {
                             
+                            if (stopStream) {break;}
+                            
                             switch (newLine[0]) {
                                     
                                 case 'S': {
                                     
-                                    strtok(strdup(newLine.c_str()),"\t"); //process first line
+                                    strtok(strdup(newLine.c_str()),"\t"); // process first line
                                     h = strtok(NULL,"\t");
                                     
                                     seqHeader = h;
@@ -717,7 +723,7 @@ public:
                                         
                                     }
                                     
-                                    includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                                     
                                     lineN++;
                                     
