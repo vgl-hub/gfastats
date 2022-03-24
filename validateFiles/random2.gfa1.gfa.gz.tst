@@ -17,7 +17,7 @@ Contig L50: 2
 Largest contig: 7
 # gaps: 0
 Total gap length: 0
-Average gap length: nan
+Average gap length: 0.00
 Gap N50: 0
 Gap auN: 0.00
 Gap L50: 0
