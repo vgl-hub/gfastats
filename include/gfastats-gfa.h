@@ -1398,7 +1398,7 @@ public:
     
     double computeAverageGapLen() {
         
-        return (double) totGapLen == 0 ? 0 : totGapLen/gapLens.size();
+        return totGapLen == 0 ? 0 : (double) totGapLen/gapLens.size();
         
     }
     
