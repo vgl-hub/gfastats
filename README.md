@@ -65,7 +65,14 @@ JOIN contig1+ contig2+ 50 [gap1] [scaffold1] [this is a new scaffold] // introdu
 SPLIT contig1+ contig2+ // splits the scaffold containing contig1 and contig2, effectively removing the existing gap between them
 ```
 
-The _instructions_ directly provide the list of edits that were introduced. The _instructions_ could be from an automated tool or from manual annotation. See the <a href="instructions/">instruction wiki</a> for a full list of _instructions_.
+The _instructions_ directly provide the list of edits that were introduced. The _instructions_ could be from an automated tool or from manual annotation.
+
+A prime example of manipulations using input from an automated tool is overlaying AGP coordinates on top of the graph to generate new scaffolds, which can be achieved with:
+```
+gfastats my.fasta|my.gfa -a my.agp
+```
+
+See the <a href="instructions/">instruction wiki</a> for a full list of _instructions_.
 
 ## Description
 
