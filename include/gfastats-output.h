@@ -99,6 +99,8 @@ public:
             
             outFile = true;
             
+            stats_flag = true; // since we write to file, let's output the stats
+            
         }else{
             
             ext = outSeq;
@@ -406,7 +408,13 @@ public:
                     
                     for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                             
-                        *stream << idsToHeaders[std::get<1>(*component)] << std::get<2>(*component);
+                        *stream << idsToHeaders[std::get<1>(*component)];
+                        
+                        if(std::get<2>(*component) != '0') {
+                        
+                            *stream << std::get<2>(*component);
+                            
+                        }
                         
                         if (component != std::prev(pathComponents.end())) {
                             

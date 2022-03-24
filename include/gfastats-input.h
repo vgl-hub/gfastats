@@ -608,9 +608,25 @@ public:
                                     seqHeader = strtok(NULL,"\t");
                                     
                                     uId = inSequences.getuId();
-                                    inSequences.setuId(uId+1);
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table to look for the header
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this header
+                                        
+                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
+                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                        
+                                    }else{
+                                        
+                                        printf("Error: path name already exists (%s). Terminating.\n", seqHeader.c_str()); exit(1);
+                                        
+                                    }
                                     
                                     path.newPath(uId, seqHeader);
+                                    
+                                    inSequences.setuId(uId+1);
                                     
                                     s = strtok(NULL,"\t");
                                     
@@ -643,7 +659,7 @@ public:
                                             uId = inSequences.getuId();
                                             
                                             inSequences.insertHash1(component, uId); // header to hash table
-                                            inSequences.insertHash2(uId, component); // header to hash table
+                                            inSequences.insertHash2(uId, component); // uId to hash table
                                         
                                             sId1 = uId;
                                             
@@ -927,14 +943,6 @@ public:
             }
             
             verbose("End of file");
-            
-            if (instructions.empty() && inSequences.getGaps().size() > 0) { // it only makes sense to update the stats if we are not manipulating the sequence and there are gaps
-                
-                inSequences.updateScaffoldStats();
-                
-                verbose("Updated scaffold statistics");
-                
-            }
                 
         }else{
 
@@ -962,216 +970,179 @@ public:
                 verbose(instruction.action + " instruction executed");
                 
             }
-            
-            inSequences.updateScaffoldStats();
-            
-            verbose("Updated scaffold statistics");
         
         }
 
-//        if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
-//            
-//            std::string sHeader, prevsHeader = "", gHeader;
-//            char sId1Or, sId2Or;
-//            
-//            InGap gap;
-//            InPath path;
-//            unsigned int uId = 0, sId1 = 0, sId2 = 0, guId = 0, dist = 0;
-//            phmap::flat_hash_map<std::string, unsigned int> hash;
-//            phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
-//            
-//            std::vector<std::string> arguments; // line arguments
-//            
-//            if (isPipe && (pipeType == 'a')) {
-//                
-//                stream = make_unique<std::istream>(std::cin.rdbuf());
-//                
-//            }else{
-//                
-//                stream = make_unique<std::ifstream>(std::ifstream(iAgpFileArg));
-//                
-//            }
-//            
-//            while (getline(*stream, line)) {
-//                
-//                std::istringstream iss(line); // line to string
-//                
-//                arguments = readDelimited(line, "\t", "#"); // read the columns in the line
-//                
-//                if (arguments.size() == 0) {continue;}
-//                
-//                if (arguments[0] != prevsHeader) { // a new path starts here
-//                    
-//                    uId = inSequences.getuId();
-//                    
-//                    inSequences.insertHash1(arguments[0], uId); // header to hash table
-//                    inSequences.insertHash2(uId, arguments[0]); // uid to hash table
-//                    
-//                    inSequences.setuId(uId+1);
-//                    
-//                    path.newPath(uId, arguments[0]); // set uid and header of the new path
-//                    
-//                    prevsHeader = arguments[0]; // store the header of the new path
-//                    
-//                }
+        if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
+            
+            std::string pHeaderNew, pHeader1, pHeader2, pHeaderPrev = "", gHeader, instruction;
+            char pId1Or, pId2Or;
+            
+            unsigned int pUId1 = 0, pUId2 = 0, gUId = 0, dist = 0;
+            phmap::flat_hash_map<std::string, unsigned int> hash;
+            phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
+            
+            std::vector<std::string> arguments; // line arguments
+            
+            if (isPipe && (pipeType == 'a')) {
+                
+                stream = make_unique<std::istream>(std::cin.rdbuf());
+                
+            }else{
+                
+                stream = make_unique<std::ifstream>(std::ifstream(iAgpFileArg));
+                
+            }
+            
+            while (getline(*stream, line)) {
+                
+                std::istringstream iss(line); // line to string
+                
+                arguments = readDelimited(line, "\t", "#"); // read the columns in the line
+                
+                if (arguments.size() == 0) {continue;}
+                
+                pHeaderNew = arguments[0];
+                
+                if (pHeaderNew != pHeaderPrev) { // a new path starts here
+                    
+                    pHeaderPrev = pHeaderNew; // store the header of the new path
+                    
+                }
+
+                if (arguments[4] == "W") { // this is an old path
+                    
+                    pHeader1 = arguments[5];
+                    pId1Or = arguments[8][0];
+                    
+                    hash = inSequences.getHash1();
+                    
+                    got = hash.find(pHeader1); // get the headers to uIds table
+                    
+                    if (got != hash.end()) { // this is not the first time we see this path
+                        
+                        pUId1 = got->second;
+                        
+                    }else{
+                        
+                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader1.c_str());
+                        
+                        pHeaderPrev = pHeaderNew; // store the header of the new path
+                        
+                        continue;
+                        
+                    }
+                    
+//                    if(stoi(arguments[7]) != inSequences.getInPath(sId1).getSegmentLength()) {
 //
-//                if (arguments[4] == "W") { // this is an old path
-//                    
-//                    sHeader = arguments[5];
-//                    sId1Or = arguments[8][0];
-//                    
-//                    hash = inSequences.getHash1();
-//                    
-//                    got = hash.find(sHeader); // get the headers to uIds table
-//                    
-//                    if (got != hash.end()) { // this is not the first time we see this path
-//                        
-//                        sId1 = got->second;
-//                        
-//                    }else{
-//                        
-//                        printf("Warning: sequence missing from the path set (%s). Skipping.\n", sHeader.c_str());
-//                        
-//                        prevsHeader = "";
-//                        
-//                        continue;
-//                        
+//                        printf("Error: contig length differs from segment length (%s).\n", sHeader.c_str()); exit(1);
+//
 //                    }
-//                    
-////                    if(stoi(arguments[7]) != inSequences.getInPath(sId1).getSegmentLength()) {
-////
-////                        printf("Error: contig length differs from segment length (%s).\n", sHeader.c_str()); exit(1);
-////
-////                    }
-//                    
-//                }else if(arguments[4] == "N"){
-//                    
-//                    getline(*stream, line);
-//                    
-//                    arguments = readDelimited(line, "\t", "#"); // read the next sequence
-//                    
-//                    if (arguments.size() == 0) {continue;}
-//                    
-//                    if (arguments[0] != prevsHeader) { // this path ends with a gap
-//                        
-////                        gap.newGap(guId, sId1, sId1, '+', '+', dist, gHeader); // now that we have all the information, create the gap
-////
-////                        inSequences.addGap(gap);
-////
-////                        path.addToPath('G', guId); // add the gap
-////
-////                        stream->seekg(oldpos); // reset stream to previous line
-////
-////                        continue;
-//                        
+                    
+                    std::streampos oldpos = stream->tellg();  // stores the position before we read another line
+                    
+                    getline(*stream, line);
+                    
+                    arguments = readDelimited(line, "\t", "#"); // read the next sequence
+                    
+                    if(pHeaderNew != arguments[0]) { // if this path does not need to be joined, we simply rename it
+                        
+                        inSequences.renamePath(pUId1, pHeaderNew);
+                        
+                    }
+                    
+                    stream->seekg(oldpos); // reset stream to previous line
+                    
+                    pHeaderPrev = pHeaderNew; // store the header of the new path
+                    
+                }else if(arguments[4] == "N"){
+                    
+                    hash = inSequences.getHash1();
+                    
+                    got = hash.find(pHeader1); // get the headers to uIds table (remove sequence orientation in the gap first)
+                    
+                    if (got != hash.end()) { // this is the first time we see this segment
+                        
+                        pUId2 = got->second;
+                        
+                    }else{
+                        
+                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader2.c_str());
+                        
+                        continue;
+                        
+                    }
+                    
+                    gUId = inSequences.getuId();
+                    
+                    if (arguments[6] == "scaffold") {
+                    
+                        gHeader = "gap"+std::to_string(gUId);
+                    
+                    }else{
+                        
+                        gHeader = arguments[6];
+                        
+                    }
+                    
+                    inSequences.insertHash1(gHeader, gUId); // header to hash table
+                    inSequences.insertHash2(gUId, gHeader); // uId to hash table
+                    
+                    inSequences.setuId(gUId+1);
+                    
+                    dist = stoi(arguments[5]);
+                    
+                    getline(*stream, line);
+                    
+                    arguments = readDelimited(line, "\t", "#"); // read the next sequence
+                    
+                    if (arguments.size() == 0) {continue;}
+                    
+                    pHeader2 = arguments[5];
+                    pId2Or = arguments[8][0];
+                    
+                    hash = inSequences.getHash1();
+                    
+                    got = hash.find(pHeader2); // get the headers to uIds table (remove sequence orientation in the gap first)
+                    
+                    if (got != hash.end()) { // this is the first time we see this segment
+                        
+                        pUId2 = got->second;
+                        
+                    }else{
+                        
+                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader2.c_str());
+                        
+                        continue;
+                        
+                    }
+                    
+//                    if(stoi(arguments[7]) != inSequences.getInSegment(sId2).getSegmentLength()) {
+//
+//                        printf("Error: contig length differs from segment length (%s).\n", sHeader.c_str()); exit(1);
+//
 //                    }
-//                    
-//                    sHeader = arguments[5];
-//                    sId2Or = arguments[8][0];
-//                    
-//                    hash = inSequences.getHash1();
-//                    
-//                    got = hash.find(sHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
-//                    
-//                    if (got != hash.end()) { // this is the first time we see this segment
-//                        
-//                        sId2 = got->second;
-//                        
-//                    }else{
-//                        
-//                        printf("Warning: contig missing from the segment set (%s). Skipping.\n", sHeader.c_str());
-//                        
-//                        continue;
-//                        
-//                    }
-//                    
-////                    if(stoi(arguments[7]) != inSequences.getInSegment(sId2).getSegmentLength()) {
-////
-////                        printf("Error: contig length differs from segment length (%s).\n", sHeader.c_str()); exit(1);
-////
-////                    }
-//                    
-//                    SAK sak;
-//                    
-//                    std::string instruction = "JOIN\t" +;
-//                    
-//                    verbose(instruction)
-//                    
-//                    sak.executeInstruction(sak.readInstruction(instruction));
-//                    
-//                    sId1Or = '+';
-//                    sId1 = ;
-//                    
-//                }
-//                
-//            }
-//            
-//            inSequences.addPath(path); // push the last path
-//            
-//            // recover orphan segments
-//            
-//            std::vector<InSegment>* inSegments = inSequences.getInSegments();
-//            
-//            for (InSegment inSegment : *inSegments) {
-//                
-//                unsigned int suId = inSegment.getuId();
-//            
-//                std::vector<PathTuple> pathComponents;
-//                
-//                bool found = false;
-//                
-//                for (InPath inPath : inSequences.getInPaths()) {
-//                    
-//                    pathComponents = inPath.getComponents();
-//                    
-//                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
-//                        
-//                        if (suId == std::get<1>(*component)) {
-//                            
-//                            found = true;
-//                            
-//                            break;
-//                            
-//                        }
-//                        
-//                    }
-//                    
-//                    if (found) {break;}
-//                    
-//                }
-//                
-//                if (!found) {
-//                    
-//                    sHeader = inSegment.getSeqHeader();
-//                    
-//                    InPath path;
-//                    
-//                    uId = inSequences.getuId();
-//                    
-//                    inSequences.insertHash1(sHeader + "_path", uId); // header to hash table
-//                    inSequences.insertHash2(uId, sHeader + "_path"); // uId to hash table
-//                    
-//                    path.newPath(uId, sHeader + "_path"); // set uid and header of the new path
-//                    
-//                    uId++;
-//                    
-//                    path.addToPath('S', suId, '+');
-//                    
-//                    inSequences.addPath(path);
-//                    
-//                    verbose("recovered orphan component to paths (" + inSegment.getSeqHeader() + ")");
-//                    
-//                }
-//                
-//            }
-//            
-//            verbose("orphan components recovered");
-//            
-//            inSequences.updateScaffoldStats();
-//            
-//            verbose("Updated scaffold statistics");
-//            
-//        }
+                    
+                    SAK sak;
+                    
+                    instruction = "JOIN\t" + pHeader1 + pId1Or + "\t" + pHeader2 + pId2Or + "\t" + std::to_string(dist) + "\t" + gHeader + "\t" + pHeaderNew + "\t" + std::to_string(gUId);
+                    
+                    fprintf(stderr, "%s\n", instruction.c_str());
+                    
+                    sak.executeInstruction(inSequences, sak.readInstruction(instruction));
+                    
+                    pHeader1 = pHeaderNew;
+                    pId1Or = '+';
+                    
+                }
+                
+            }
+            
+        }
+            
+        inSequences.updateScaffoldStats();
+        
+        verbose("Updated scaffold statistics");
             
         if (sortType == "ascending") {
             
@@ -1219,10 +1190,10 @@ public:
         bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
         bool outSeq;
         
+        verbose("Processing sequence: " + *seqHeader);
+        
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
-            
-            verbose("Processing sequence: " + *seqHeader);
             
             inSequences->appendSequence(seqHeader, seqComment, inSequence, inSequenceQuality);
             

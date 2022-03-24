@@ -22,17 +22,18 @@ const static phmap::flat_hash_map<std::string,int> string_to_case{
 struct Instruction {
     
     std::string action;
-    std::string scaffold1;
-    std::string scaffold2;
+    std::string path1;
+    std::string path2;
+    std::string path3;
     std::string contig1;
     std::string contig2;
     std::string comment1;
     std::string comment2;
     std::string gHeader = "";
     
-    char sId1Or, sId2Or;
+    char pId1Or, pId2Or, sId1Or, sId2Or;
     
-    unsigned int dist, start, end;
+    unsigned int gUId = 0, dist, start, end;
     
 };
 
@@ -69,25 +70,29 @@ public:
             
             case 1: { // JOIN
                 
-                instruction.sId1Or = arguments[1].back(); // get sequence orientation in the gap
+                instruction.pId1Or = arguments[1].back(); // get sequence orientation in the gap
                 
                 arguments[1].pop_back(); // remove sequence orientation in the gap
                 
-                instruction.contig1 = arguments[1];
+                instruction.path1 = arguments[1];
                 
-                instruction.sId2Or = arguments[2].back(); // get sequence orientation in the gap
+                instruction.pId2Or = arguments[2].back(); // get sequence orientation in the gap
                 
                 arguments[2].pop_back(); // remove sequence orientation in the gap
                 
-                instruction.contig2 = arguments[2];
+                instruction.path2 = arguments[2];
                 
                 instruction.dist = stoi(arguments[3]);
                 
                 instruction.gHeader = arguments[4];
                 
-                instruction.scaffold1 = arguments[5];
+                instruction.path3 = arguments[5];
                 
-                instruction.comment1 = arguments[6];
+                if (arguments[6] != "") {
+                
+                    instruction.gUId = stoi(arguments[6]);
+                    
+                }
                 
                 break;
             }
@@ -98,9 +103,9 @@ public:
                 
                 instruction.contig2 = arguments[2];
                 
-                instruction.scaffold1 = arguments[3];
+                instruction.path1 = arguments[3];
                 
-                instruction.scaffold2 = arguments[4];
+                instruction.path2 = arguments[4];
                 
                 instruction.comment1 = arguments[5];
                 
@@ -247,24 +252,7 @@ public:
     
     bool join(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction
         
-        InGap gap;
-        
-        inSequences.uId++;
-        
-        inSequences.insertHash1(instruction.gHeader, inSequences.uId); // header to hash table
-        inSequences.insertHash2(inSequences.uId, instruction.gHeader); // header to hash table
-                
-        gap.newGap(inSequences.uId, inSequences.headersToIds[instruction.contig1], inSequences.headersToIds[instruction.contig2], instruction.sId1Or, instruction.sId2Or, instruction.dist, instruction.gHeader); // define the new gap
-        
-        inSequences.addGap(gap); // introduce the new gap
-        
-        InPath newPath = inSequences.joinPaths(instruction.scaffold1, inSequences.headersToIds[instruction.contig1], inSequences.uId, inSequences.headersToIds[instruction.contig2]); // generate a new path by joining the paths that contain the two segments
-        
-        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the path involving contig1
-        
-        inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig2]); // remove the path involving contig2
-        
-        inSequences.addPath(newPath);
+        inSequences.joinPaths(instruction.path3, inSequences.headersToIds[instruction.path1], inSequences.headersToIds[instruction.path2], instruction.gHeader, instruction.gUId, instruction.pId1Or, instruction.pId2Or, instruction.dist); // generate a new path by joining the paths that contain the two segments
         
         return true;
         
@@ -274,7 +262,7 @@ public:
         
         std::vector<unsigned int> guIds = inSequences.removeGaps(&instruction.contig1, &instruction.contig2); // remove the gap
         
-        inSequences.splitPath(guIds[0], instruction.scaffold1, instruction.scaffold2); // generate two new the paths splitting the original path
+        inSequences.splitPath(guIds[0], instruction.path1, instruction.path2); // generate two new the paths splitting the original path
         
         return true;
         
