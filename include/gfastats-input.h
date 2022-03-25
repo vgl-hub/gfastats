@@ -983,10 +983,10 @@ public:
 
         if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
             
-            std::string pHeaderNew, pHeader1, pHeader2, pHeaderPrev = "", gHeader, instruction;
+            std::string pHeaderNew, pHeader1, pHeader2, gHeader, instruction;
             char pId1Or, pId2Or;
             
-            unsigned int pUId1 = 0, pUId2 = 0, gUId = 0, dist = 0;
+            unsigned int pUId1 = 0, gUId = 0, dist = 0;
             phmap::flat_hash_map<std::string, unsigned int> hash;
             phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
             
@@ -1010,14 +1010,8 @@ public:
                 
                 if (arguments.size() == 0) {continue;}
                 
-                pHeaderNew = arguments[0];
+                pHeaderNew = arguments[0]; // this is the current header
                 
-                if (pHeaderNew != pHeaderPrev) { // a new path starts here
-                    
-                    pHeaderPrev = pHeaderNew; // store the header of the new path
-                    
-                }
-
                 if (arguments[4] == "W") { // this is an old path
                     
                     pHeader1 = arguments[5];
@@ -1035,8 +1029,6 @@ public:
                         
                         fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader1.c_str());
                         
-                        pHeaderPrev = pHeaderNew; // store the header of the new path
-                        
                         continue;
                         
                     }
@@ -1053,7 +1045,7 @@ public:
                     
                     arguments = readDelimited(line, "\t", "#"); // read the next sequence
                     
-                    if(pHeaderNew != arguments[0]) { // if this path does not need to be joined, we simply rename it
+                    if(pHeaderNew != arguments[0]) { // if this path does not need to be joined to anything that follows, we simply rename it
                         
                         inSequences.renamePath(pUId1, pHeaderNew);
                         
@@ -1061,21 +1053,15 @@ public:
                     
                     stream->seekg(oldpos); // reset stream to previous line
                     
-                    pHeaderPrev = pHeaderNew; // store the header of the new path
-                    
                 }else if(arguments[4] == "N"){
-                    
+
                     hash = inSequences.getHash1();
                     
                     got = hash.find(pHeader1); // get the headers to uIds table (remove sequence orientation in the gap first)
                     
-                    if (got != hash.end()) { // this is the first time we see this segment
+                    if (got == hash.end()) { // this is the first time we see this segment
                         
-                        pUId2 = got->second;
-                        
-                    }else{
-                        
-                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader2.c_str());
+                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader1.c_str());
                         
                         continue;
                         
@@ -1113,11 +1099,7 @@ public:
                     
                     got = hash.find(pHeader2); // get the headers to uIds table (remove sequence orientation in the gap first)
                     
-                    if (got != hash.end()) { // this is the first time we see this segment
-                        
-                        pUId2 = got->second;
-                        
-                    }else{
+                    if (got == hash.end()) { // this is the first time we see this segment
                         
                         fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader2.c_str());
                         
@@ -1141,7 +1123,7 @@ public:
                     
                     pHeader1 = pHeaderNew;
                     pId1Or = '+';
-                    
+
                 }
                 
             }
