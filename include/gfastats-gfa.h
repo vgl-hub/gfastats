@@ -495,7 +495,11 @@ public:
         
         for (PathTuple& component : pathComponents) {
             
+            if (std::get<2>(component) != '0') {
+            
             std::get<2>(component) = std::get<2>(component) == '+' ? '-' : '+';
+            
+            }
             
         }
         
@@ -2349,7 +2353,7 @@ public:
         
             newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
             
-            component1 = *(std::end(pathComponents)-1);
+            component1 = *std::prev(std::end(pathComponents));
             
         }
         

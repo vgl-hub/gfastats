@@ -648,7 +648,11 @@ public:
                                         
                                         sId1Or = component.back(); // get sequence orientation
                                         
-                                        component.pop_back();
+                                        if (sId1Or == '+' || sId1Or == '-') { // only segments have orientation
+                                        
+                                            component.pop_back();
+                                            
+                                        }
                                     
                                         hash = inSequences.getHash1();
                                         
@@ -866,7 +870,11 @@ public:
                                         
                                         sId1Or = component.back(); // get sequence orientation
                                         
-                                        component.pop_back();
+                                        if (sId1Or == '+' || sId1Or == '-') { // only segments have orientation
+                                        
+                                            component.pop_back();
+                                            
+                                        }
                                     
                                         hash = inSequences.getHash1();
                                         
