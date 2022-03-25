@@ -690,7 +690,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.addToPath('G', sId1);
+                                                path.addToPath('G', sId1, '0');
                                             
                                             }
                                             
@@ -912,7 +912,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.addToPath('G', sId1);
+                                                path.addToPath('G', sId1, '0');
                                             
                                             }
                                             
