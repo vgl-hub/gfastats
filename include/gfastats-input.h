@@ -644,10 +644,10 @@ public:
                                         
                                         if (component.find("(") != std::string::npos && component.find(":") != std::string::npos && component.find(")") != std::string::npos) {
                                             
-                                            start = stoi(component.substr(component.find("(") + 1, component.find(":") - component.find("(") - 1));
-                                            end = stoi(component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1));
-                                            
-                                            component = component.substr(0, component.find("("));
+//                                            start = stoi(component.substr(component.find("(") + 1, component.find(":") - component.find("(") - 1));
+//                                            end = stoi(component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1));
+//                                            
+//                                            component = component.substr(0, component.find("("));
                                             
                                         }else{
                                             
