@@ -1310,8 +1310,6 @@ public:
                 pos++;
                 
             }
-            
-            std::cout<<inSequence->size()<<std::endl;
                 
             if (outSeq && inSequence->size()>0) {
                 
