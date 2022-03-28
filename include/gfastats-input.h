@@ -303,7 +303,7 @@ public:
 
                     }
                     
-                    std::string h_col1, h_col2, h_col3, s, version, gHeader, eHeader, cigar;
+                    std::string h_col1, h_col2, h_col3, s, version, gHeader, eHeader, cigar, startS, endS;
                     char sId1Or, sId2Or;
                     
                     InGap gap;
@@ -644,10 +644,13 @@ public:
                                         
                                         if (component.find("(") != std::string::npos && component.find(":") != std::string::npos && component.find(")") != std::string::npos) {
                                             
-//                                            start = stoi(component.substr(component.find("(") + 1, component.find(":") - component.find("(") - 1));
-//                                            end = stoi(component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1));
-//                                            
-//                                            component = component.substr(0, component.find("("));
+                                            startS = component.substr(component.find("(") + 1, component.find(":") - component.find("(") - 1);
+                                            endS = component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1);
+                                            
+                                            start = std::stoi(startS) - 1;
+                                            end = std::stoi(endS);
+
+                                            component = component.substr(0, component.find("("));
                                             
                                         }else{
                                             
