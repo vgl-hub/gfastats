@@ -19,7 +19,7 @@
 //typedef
 typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> Tuple; // tuple for gap edges orientation|segment_id|orientation|dist|edge_id
 typedef std::tuple<char, unsigned int, char> EdgeTuple; // tuple for gap edges orientation|id|orientation
-typedef std::tuple<char, unsigned int, char> PathTuple; // tuple for paths type|id|orientation
+typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> PathTuple; // tuple for paths type|id|orientation|start|end
 
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams

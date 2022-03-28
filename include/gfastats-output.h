@@ -342,9 +342,6 @@ public:
                 
                 std::vector<InSegment>* inSegments = inSequences.getInSegments();
                 
-                // generate adjacency list representation of a graph
-                inSequences.buildGraph(inSequences.getGaps());
-                
                 *stream<<"H\tVN:Z:2.0\n";
                 
                 for (InSegment inSegment : *inSegments) {
@@ -408,7 +405,13 @@ public:
                     
                     for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                             
-                        *stream << idsToHeaders[std::get<1>(*component)];
+                        *stream << idsToHeaders[std::get<1>(*component)] << ":" <<std::get<1>(*component);
+                        
+                        if(std::get<3>(*component) != 0) {
+                        
+                            *stream << "(" << std::to_string(std::get<3>(*component)) << ":" << std::to_string(std::get<4>(*component)) << ")";
+                            
+                        }
                         
                         if(std::get<2>(*component) != '0') {
                         

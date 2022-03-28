@@ -620,7 +620,7 @@ public:
                                         
                                     }else{
                                         
-                                        printf("Error: path name already exists (%s). Terminating.\n", seqHeader.c_str()); exit(1);
+                                        fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", seqHeader.c_str()); exit(1);
                                         
                                     }
                                     
@@ -682,7 +682,7 @@ public:
                                     
                                         if (sId != inSegments->end()) {
                                             
-                                            path.addToPath('S', sId1, sId1Or);
+                                            path.add('S', sId1, sId1Or);
                                              
                                         }else{
                                             
@@ -690,7 +690,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.addToPath('G', sId1, '0');
+                                                path.add('G', sId1, '0');
                                             
                                             }
                                             
@@ -904,7 +904,7 @@ public:
                                     
                                         if (sId != inSegments->end()) {
                                             
-                                            path.addToPath('S', sId1, sId1Or);
+                                            path.add('S', sId1, sId1Or);
                                              
                                         }else{
                                             
@@ -912,7 +912,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.addToPath('G', sId1, '0');
+                                                path.add('G', sId1, '0');
                                             
                                             }
                                             
@@ -954,7 +954,7 @@ public:
                 
         }else{
 
-            printf("Stream not successful: %s", iSeqFileArg.c_str());
+            fprintf(stderr, "Stream not successful: %s", iSeqFileArg.c_str());
             exit(1);
 
         }
@@ -983,14 +983,15 @@ public:
 
         if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
             
-            std::string pHeaderNew, pHeader1, pHeader2, gHeader, instruction;
+            std::string pHeaderNew, pHeader1, pHeader2, gHeader, instruction, coord1, coord2;
             char pId1Or, pId2Or;
             
-            unsigned int pUId1 = 0, gUId = 0, dist = 0;
+            unsigned int pUId1 = 0, pUId2 = 0, gUId = 0, dist = 0, seqLen, pathLen, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
             phmap::flat_hash_map<std::string, unsigned int> hash;
             phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
             
             std::vector<std::string> arguments; // line arguments
+            std::vector<unsigned int> subsetted; // vector of paths flagged to be removed only at the end
             
             if (isPipe && (pipeType == 'a')) {
                 
@@ -1027,17 +1028,29 @@ public:
                         
                     }else{
                         
-                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader1.c_str());
+                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader1.c_str()); // sequence not found
                         
                         continue;
                         
                     }
                     
-//                    if(stoi(arguments[7]) != inSequences.getInPath(sId1).getSegmentLength()) {
-//
-//                        printf("Error: contig length differs from segment length (%s).\n", sHeader.c_str()); exit(1);
-//
-//                    }
+                    pathLen = inSequences.pathLength(pUId1);
+                    
+                    start1 = stoi(arguments[6]);
+                    end1 = stoi(arguments[7]);
+                    
+                    seqLen = end1 - start1 + 1;
+                    
+                    if(seqLen != pathLen) {
+
+                        fprintf(stderr, "Warning: sequence length (%u) differs from path length (%u). Subsetting (%s).\n", seqLen, pathLen, pHeader1.c_str());
+
+                    }else{
+                        
+                        start1 = 0;
+                        end1 = 0;
+                        
+                    }
                     
                     std::streampos oldpos = stream->tellg();  // stores the position before we read another line
                     
@@ -1049,6 +1062,16 @@ public:
                         
                         inSequences.renamePath(pUId1, pHeaderNew);
                         
+                        if(seqLen != pathLen) { // if it also needs to be trimmed
+                            
+                            inSequences.trimPath(pUId1, start1, end1);
+                            
+                        }
+                        
+                    }else if (seqLen != pathLen){ // if the path needs to be joined to something and is subsetted
+                        
+//                        subsetted.push_back(pUId1);
+                        
                     }
                     
                     stream->seekg(oldpos); // reset stream to previous line
@@ -1059,9 +1082,9 @@ public:
                     
                     got = hash.find(pHeader1); // get the headers to uIds table (remove sequence orientation in the gap first)
                     
-                    if (got == hash.end()) { // this is the first time we see this segment
+                    if (got == hash.end()) { // this is the first time we see this path
                         
-                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader1.c_str());
+                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader1.c_str()); // if the preceding sequence was not found we do not introduce a gap
                         
                         continue;
                         
@@ -1099,31 +1122,68 @@ public:
                     
                     got = hash.find(pHeader2); // get the headers to uIds table (remove sequence orientation in the gap first)
                     
-                    if (got == hash.end()) { // this is the first time we see this segment
+                    if (got != hash.end()) { // this is not the first time we see this path
                         
-                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader2.c_str());
+                        pUId2 = got->second;
+                        
+                    }else{
+                        
+                        fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader2.c_str()); // sequence not found
                         
                         continue;
                         
                     }
                     
-//                    if(stoi(arguments[7]) != inSequences.getInSegment(sId2).getSegmentLength()) {
-//
-//                        printf("Error: contig length differs from segment length (%s).\n", sHeader.c_str()); exit(1);
-//
-//                    }
+                    pathLen = inSequences.pathLength(pUId2);
+                    
+                    start2 = stoi(arguments[6]);
+                    end2 = stoi(arguments[7]);
+                    
+                    seqLen = end2 - start2 + 1;
+                    
+                    if(seqLen != pathLen) {
+
+                        fprintf(stderr, "Warning: sequence length (%u) differs from path length (%u). Subsetting (%s).\n", seqLen, pathLen, pHeader2.c_str());
+
+                    }else{
+                        
+                        start2 = 0;
+                        end2 = 0;
+                        
+                    }
                     
                     SAK sak;
                     
-                    instruction = "JOIN\t" + pHeader1 + pId1Or + "\t" + pHeader2 + pId2Or + "\t" + std::to_string(dist) + "\t" + gHeader + "\t" + pHeaderNew + "\t" + std::to_string(gUId);
+                    coord1 = start1 != 0 ? "(" + std::to_string(start1) + ":" + std::to_string(end1) + ")" : "";
+                    coord2 = start2 != 0 ? "(" + std::to_string(start2) + ":" + std::to_string(end2) + ")" : "";
+                    
+                    instruction = "JOIN\t" + pHeader1 + coord1 + pId1Or + "\t" + pHeader2 + coord2 + pId2Or + "\t" + std::to_string(dist) + "\t" + gHeader + "\t" + pHeaderNew + "\t" + std::to_string(gUId);
                     
                     fprintf(stderr, "%s\n", instruction.c_str());
                     
                     sak.executeInstruction(inSequences, sak.readInstruction(instruction));
                     
                     pHeader1 = pHeaderNew;
+                    start1 = 0;
+                    end1 = 0;
                     pId1Or = '+';
 
+                }
+                
+            }
+            
+            if (subsetted.size() > 0) { // if sequences were subsetted, remove the original paths
+                
+                // avoid duplicates
+                std::vector<unsigned int>::iterator ip;
+                sort(subsetted.begin(), subsetted.end());
+                ip = std::unique(subsetted.begin(), subsetted.end());
+                subsetted.resize(std::distance(subsetted.begin(), ip));
+                
+                for (unsigned int pUId : subsetted) {
+                    
+                    inSequences.removePath(pUId);
+                    
                 }
                 
             }

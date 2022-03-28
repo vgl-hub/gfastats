@@ -33,7 +33,7 @@ struct Instruction {
     
     char pId1Or, pId2Or, sId1Or, sId2Or;
     
-    unsigned int gUId = 0, dist, start, end;
+    unsigned int gUId = 0, dist = 0, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
     
 };
 
@@ -50,7 +50,7 @@ public:
         std::string delimiter = "\t";
         std::vector<std::string> arguments;
         
-        size_t pos = 0;
+        size_t pos = 0, pos2 = 0, pos3 = 0;
         
         while ((pos = line.find(delimiter)) != std::string::npos) {
             
@@ -74,13 +74,41 @@ public:
                 
                 arguments[1].pop_back(); // remove sequence orientation in the gap
                 
-                instruction.path1 = arguments[1];
+                if(arguments[1].back() == ')') {
+                    
+                    pos = arguments[1].find('(');
+                    pos2 = arguments[1].find(':');
+                    pos3 = arguments[1].find(')');
+                    
+                    instruction.path1 = arguments[1].substr(0, pos);
+                    instruction.start1 = stoi(arguments[1].substr(pos + 1, pos2 - pos - 1));
+                    instruction.end1 = stoi(arguments[1].substr(pos2 + 1, pos3 - pos2 - 1));
+                    
+                }else{
                 
+                    instruction.path1 = arguments[1];
+                
+                }
+                    
                 instruction.pId2Or = arguments[2].back(); // get sequence orientation in the gap
                 
                 arguments[2].pop_back(); // remove sequence orientation in the gap
                 
-                instruction.path2 = arguments[2];
+                if(arguments[2].back() == ')') {
+                    
+                    pos = arguments[2].find('(');
+                    pos2 = arguments[2].find(':');
+                    pos3 = arguments[2].find(')');
+                    
+                    instruction.path2 = arguments[2].substr(0, pos);
+                    instruction.start2 = stoi(arguments[2].substr(pos + 1, pos2 - pos - 1));
+                    instruction.end2 = stoi(arguments[2].substr(pos2 + 1, pos3 - pos2 - 1));
+                    
+                }else{
+                
+                    instruction.path2 = arguments[2];
+                
+                }
                 
                 instruction.dist = stoi(arguments[3]);
                 
@@ -150,9 +178,9 @@ public:
                 
                 instruction.contig1 = arguments[1].substr(0, pos1);
                 
-                instruction.start = stoi(arguments[1].substr(pos1+1, pos2));
+                instruction.start1 = stoi(arguments[1].substr(pos1+1, pos2));
                 
-                instruction.end = stoi(arguments[1].substr(pos2+1, arguments[1].size()+1));
+                instruction.end1 = stoi(arguments[1].substr(pos2+1, arguments[1].size()+1));
                 
                 break;
             }
@@ -252,7 +280,7 @@ public:
     
     bool join(InSequences& inSequences, Instruction instruction) { // joins two sequences via a gap based on instruction
         
-        inSequences.joinPaths(instruction.path3, inSequences.headersToIds[instruction.path1], inSequences.headersToIds[instruction.path2], instruction.gHeader, instruction.gUId, instruction.pId1Or, instruction.pId2Or, instruction.dist); // generate a new path by joining the paths that contain the two segments
+        inSequences.joinPaths(instruction.path3, inSequences.headersToIds[instruction.path1], inSequences.headersToIds[instruction.path2], instruction.gHeader, instruction.gUId, instruction.pId1Or, instruction.pId2Or, instruction.dist, instruction.start1, instruction.end1, instruction.start2, instruction.end2); // generate a new path by joining the paths that contain the two segments
         
         return true;
         
@@ -291,11 +319,7 @@ public:
         
         path.setHeader(instruction.contig1);
         
-        std::vector<PathTuple> newComponents;
-        
-        newComponents.push_back(std::make_tuple('S', inSequences.headersToIds[instruction.contig1], '+'));
-        
-        path.setComponents(newComponents);
+        path.add('S', inSequences.headersToIds[instruction.contig1], '+');
         
         inSequences.addPath(path);
             
@@ -317,9 +341,9 @@ public:
     
     bool erase(InSequences& inSequences, Instruction instruction) { // erases a portion of sequence
         
-        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].trimSegment(instruction.start, instruction.end); // trim segment
+        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].trimSegment(instruction.start1, instruction.end1); // trim segment
         
-        inSequences.changeTotSegmentLen(instruction.start-instruction.end);
+        inSequences.changeTotSegmentLen(instruction.start1-instruction.end1);
         
         return true;
         

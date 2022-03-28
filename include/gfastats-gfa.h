@@ -290,6 +290,10 @@ public:
         sId2 = i;
     }
     
+    void setDist(unsigned int i) {
+        dist = i;
+    }
+    
     std::string getgHeader() {
         
         return gHeader;
@@ -449,9 +453,15 @@ public:
         pComment = c;
     }
     
-    void addToPath(char type, unsigned int UId, char sign = '+') {
+    void add(char type, unsigned int UId, char sign = '+', unsigned int start = 0, unsigned int end = 0) {
         
-        pathComponents.push_back(std::make_tuple(type, UId, sign));
+        pathComponents.push_back(std::make_tuple(type, UId, sign, start, end));
+        
+    }
+    
+    void append(std::vector<PathTuple> components) {
+    
+        pathComponents.insert(std::end(pathComponents), std::begin(components), std::end(components));
         
     }
     
@@ -470,6 +480,12 @@ public:
     std::vector<PathTuple> getComponents() {
         
         return pathComponents;
+        
+    }
+    
+    std::vector<PathTuple>* getComponentsByRef() {
+        
+        return &pathComponents;
         
     }
 
@@ -652,7 +668,7 @@ public:
         insertHash1(*seqHeader+"."+std::to_string(*iId), *uId); // header to hash table
         insertHash2(*uId, *seqHeader+"."+std::to_string(*iId)); // uID to hash table
         
-        path.addToPath('G', *uId, '0');
+        path.add('G', *uId, '0');
         
         *dist=0;
         
@@ -678,7 +694,7 @@ public:
         insertHash1(*seqHeader+"."+std::to_string(*iId), *uId); // header to hash table
         insertHash2(*uId, *seqHeader+"."+std::to_string(*iId)); // uID to hash table
         
-        path.addToPath('S', *uId, '+');
+        path.add('S', *uId, '+');
         
         *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
         
@@ -750,7 +766,7 @@ public:
             
         }else{
             
-            printf("Error: path name already exists (%s). Terminating.\n", pHeader->c_str()); exit(1);
+            fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", pHeader->c_str()); exit(1);
             
         }
         
@@ -989,7 +1005,7 @@ public:
         
         if (inSegment == inSegments.end()) {
         
-            printf("Error: could not find segment (sId: %i).\n", sId); exit(1);
+            fprintf(stderr, "Error: could not find segment (sId: %i).\n", sId); exit(1);
             
         }
             
@@ -1015,7 +1031,7 @@ public:
         
         if (inPath == inPaths.end()) {
         
-            printf("Error: could not find path (pId: %i).\n", pId); exit(1);
+            fprintf(stderr, "Error: could not find path (pId: %i).\n", pId); exit(1);
             
         }
             
@@ -2250,7 +2266,7 @@ public:
             
         }else{
             
-            printf("Warning: the path you are attempting to remove does not exist (pUId: %i). Skipping.\n", pUId);
+            fprintf(stderr, "Warning: the path you are attempting to remove does not exist (pUId: %i). Skipping.\n", pUId);
             
         }
     
@@ -2294,15 +2310,13 @@ public:
             
             if (pathIt != pathComponents.end()) {
                 
-                newPath.setHeader(inPath.getHeader());
+                newPath.setHeader(inPath.getHeader()); // set path header
                 
-                newComponents.insert(std::end(newComponents), std::begin(pathComponents), pathIt-1);
+                newPath.append({std::begin(pathComponents), pathIt-1}); // subset path excluding segment to be removed
                 
-                newComponents.push_back(std::make_tuple('G', gap.getuId(), '0'));
+                newPath.add('G', gap.getuId(), '0'); // introduce gap
                 
-                newComponents.insert(std::end(newComponents), pathIt+2, std::end(pathComponents));
-                
-                newPath.setComponents(newComponents);
+                newPath.append({pathIt+2, std::end(pathComponents)}); // add remaining components
                 
                 addPath(newPath);
                 
@@ -2318,7 +2332,9 @@ public:
         
     }
     
-    void joinPaths(std::string pHeader, unsigned int pUId1, unsigned int pUId2, std::string gHeader, unsigned int gUId, char pId1Or, char pId2Or, unsigned int dist) {
+    void joinPaths(std::string pHeader, unsigned int pUId1, unsigned int pUId2, std::string gHeader, unsigned int gUId, char pId1Or, char pId2Or, unsigned int dist, unsigned int start1, unsigned int end1, unsigned int start2, unsigned int end2) {
+        
+        unsigned int cUId = 0, size = 0;
         
         InPath path;
         
@@ -2340,7 +2356,6 @@ public:
             
         }
         
-        std::vector<PathTuple> newComponents;
         PathTuple component1, component2;
             
         auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId1](InPath& obj) {return obj.getpUId() == pUId1;}); // given a path pUId, find it
@@ -2350,12 +2365,72 @@ public:
             if (pId1Or == '-') {pathIt->revCom();}
             
             std::vector<PathTuple> pathComponents = pathIt->getComponents();
-        
-            newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
             
-            component1 = *std::prev(std::end(pathComponents));
+            if (start1 == 0) {
+        
+                path.append({std::begin(pathComponents), std::end(pathComponents)});
+                
+                component1 = *std::prev(std::end(pathComponents));
+                
+                removePath(pUId1); // remove path1
+            
+            }else if (start1 >= 1){
+                
+                unsigned int pos = 1;
+                
+                for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    
+                    cUId = std::get<1>(*component);
+                    
+                    if (std::get<0>(*component) == 'S') {
+                    
+                        auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                        
+                        size += inSegment->getSegmentLength();
+                        
+                        if (size > end1-start1) {
+                            
+                            std::get<3>(*component) = start1;
+                            
+                            std::get<4>(*component) = end1;
+                            
+                            path.append({std::begin(pathComponents), std::begin(pathComponents)+pos});
+                            
+                            component1 = *component;
+                            
+                            break;
+                            
+                        }
+                        
+                    }else{
+                        
+                        auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                        
+                        size += inGap->getDist();
+                        
+                        if (size > end1-start1) {
+                            
+                            path.append({std::begin(pathComponents), std::begin(pathComponents)+pos});
+                            
+                            inGap->setDist(size - end1);
+                            
+                            component1 = *component;
+                            
+                            break;
+                            
+                        }
+                        
+                    }
+                    
+                    pos++;
+                    
+                }
+                
+            }
             
         }
+        
+        size = 0;
         
         if (gUId == 0) {
             
@@ -2368,7 +2443,7 @@ public:
         
         }
         
-        newComponents.push_back(std::make_tuple('G', gUId, '0'));
+        path.add('G', gUId, '0');
             
         pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId2](InPath& obj) {return obj.getpUId() == pUId2;}); // given a path pUId, find it
         
@@ -2378,9 +2453,67 @@ public:
             
             std::vector<PathTuple> pathComponents = pathIt->getComponents();
         
-            newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
+            if (start2 == 0) {
+        
+                path.append({std::begin(pathComponents), std::end(pathComponents)});
+                
+                component2 = *std::begin(pathComponents);
+                
+                removePath(pUId2); // remove path2
             
-            component2 = *std::begin(pathComponents);
+            }else if (start2 >= 1) {
+                
+                unsigned int pos = 1;
+                
+                for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    
+                    cUId = std::get<1>(*component);
+                    
+                    if (std::get<0>(*component) == 'S') {
+                    
+                        auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                        
+                        size += inSegment->getSegmentLength();
+                        
+                        if (size > end2-start2) {
+                            
+                            std::get<3>(*component) = start2;
+                            
+                            std::get<4>(*component) = end2;
+                            
+                            path.append({std::begin(pathComponents), std::begin(pathComponents)+pos});
+                            
+                            component2 = *std::begin(pathComponents);
+                            
+                            break;
+                            
+                        }
+                        
+                    }else{
+                        
+                        auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                        
+                        size += inGap->getDist();
+                        
+                        if (size > end2-start2) {
+                            
+                            path.append({std::begin(pathComponents), std::begin(pathComponents)+pos});
+                            
+                            inGap->setDist(size - end2);
+                            
+                            component2 = *std::begin(pathComponents);
+                            
+                            break;
+                            
+                        }
+                        
+                    }
+                    
+                    pos++;
+                    
+                }
+                
+            }
             
         }
         
@@ -2389,12 +2522,6 @@ public:
         gap.newGap(gUId, std::get<1>(component1), std::get<1>(component2), '+', '+', dist, gHeader); // define the new gap
         
         addGap(gap); // introduce the new gap
-        
-        path.setComponents(newComponents);
-        
-        removePath(pUId1); // remove path1
-        
-        removePath(pUId2); // remove path2
         
         addPath(path);
         
@@ -2407,8 +2534,6 @@ public:
         InPath newPath;
         newPath.setHeader(seqHeader);
         
-        std::vector<PathTuple> newComponents;
-        
         for (InPath inPath : inPaths) { // add first path
             
             std::vector<PathTuple> pathComponents = inPath.getComponents();
@@ -2417,7 +2542,7 @@ public:
             
             if (pathIt != pathComponents.end()) {
             
-                newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
+                newPath.append({std::begin(pathComponents), std::end(pathComponents)});
             
                 break;
                 
@@ -2427,7 +2552,7 @@ public:
             
         }
         
-        newComponents.push_back(std::make_tuple('G', uId2, '0'));
+        newPath.add('G', uId2, '0');
         
         for (InPath inPath : inPaths) { // add second path
             
@@ -2437,7 +2562,7 @@ public:
             
             if (pathIt != pathComponents.end()) {
             
-                newComponents.insert(std::end(newComponents), std::begin(pathComponents), std::end(pathComponents));
+                newPath.append({std::begin(pathComponents), std::end(pathComponents)});
             
                 break;
                 
@@ -2446,8 +2571,6 @@ public:
             ++i;
             
         }
-        
-        newPath.setComponents(newComponents);
         
         return newPath;
         
@@ -2517,14 +2640,96 @@ public:
         
     }
     
-    void renamePath(unsigned int pUId1, std::string pHeader) {
+    void renamePath(unsigned int pUId, std::string pHeader) {
         
-        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId1](InPath& obj) {return obj.getpUId() == pUId1;}); // given a path pUId, find it
+        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
         
         pathIt->setHeader(pHeader);
         
-        insertHash1(pHeader, pUId1); // header to hash table
-        insertHash2(pUId1, pHeader); // uId to hash table
+        insertHash1(pHeader, pUId); // header to hash table
+        insertHash2(pUId, pHeader); // uId to hash table
+        
+    }
+    
+    void trimPath(unsigned int pUId, unsigned int start, unsigned int end) {
+        
+        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
+        
+        std::vector<PathTuple>* pathComponents = pathIt->getComponentsByRef();
+        
+        unsigned int pos = 1, cUId = 0, size = 0;
+        
+        for (std::vector<PathTuple>::iterator component = pathComponents->begin(); component != pathComponents->end(); component++) {
+            
+            cUId = std::get<1>(*component);
+            
+            if (std::get<0>(*component) == 'S') {
+            
+                auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                
+                size += inSegment->getSegmentLength();
+                
+                if (size > end) {
+                    
+                    std::get<3>(*component) = start;
+                    
+                    std::get<4>(*component) = end;
+                    
+                    break;
+                    
+                }
+                
+            }else{
+                
+                auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                
+                size += inGap->getDist();
+                
+                if (size > end) {
+                    
+                    inGap->setDist(size - end);
+
+                    break;
+                    
+                }
+                
+            }
+            
+            pos++;
+            
+        }
+        
+    }
+    
+    unsigned int pathLength(unsigned int pUId) {
+        
+        unsigned int size = 0, cUId = 0;
+        
+        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
+        
+        std::vector<PathTuple> pathComponents = pathIt->getComponents();
+        
+        for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+            
+            cUId = std::get<1>(*component);
+            
+            if (std::get<0>(*component) == 'S') {
+            
+                auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                
+                size += inSegment->getSegmentLength();
+                
+            }else{
+                
+                auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                
+                size += inGap->getDist();
+                
+            }
+            
+        }
+        
+        return size;
         
     }
     
@@ -2585,7 +2790,7 @@ public:
 //
 //            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
 //
-//            newPath.addToPath('S', v, '+');
+//            newPath.add('S', v, '+');
 //
 //            visited.clear();
 //

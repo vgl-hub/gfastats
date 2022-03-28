@@ -6,6 +6,7 @@ The JOIN instruction introduces a new gap of 50 bp between scaffold1 and scaffol
 
 ```
 JOIN    scaffold1+    scaffold2+    50  gap1    new_scaffold
+JOIN    scaffold1(1:100)+    scaffold2(1:100)+    50  gap1    new_scaffold // optional subsetting
 ```
 
 ## SPLIT
