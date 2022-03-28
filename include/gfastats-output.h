@@ -405,7 +405,7 @@ public:
                     
                     for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                             
-                        *stream << idsToHeaders[std::get<1>(*component)] << ":" <<std::get<1>(*component);
+                        *stream << idsToHeaders[std::get<1>(*component)];
                         
                         if(std::get<3>(*component) != 0) {
                         
