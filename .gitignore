@@ -86,6 +86,7 @@ fastlane/test_output
 
 # End of https://www.gitignore.io/api/swift,xcode,vscode
 
+tmp.txt
 err.txt
 testFiles/fAloSap1.p_utg.gfa
 testFiles/fAloSap1.pri.asm.20210222.fasta.gz
