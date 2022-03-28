@@ -309,7 +309,7 @@ public:
                     InGap gap;
                     InEdge edge;
                     InPath path;
-                    unsigned int sId1 = 0, sId2 = 0, dist = 0;
+                    unsigned int sId1 = 0, sId2 = 0, dist = 0, start = 0, end = 0;
                     phmap::flat_hash_map<std::string, unsigned int> hash;
                     phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
                     
@@ -317,7 +317,7 @@ public:
                     unsigned int uId = 0, guId = 0, euId = 0;
                     
                     std::string delimiter = "\t";
-                    std::vector<std::string> arguments; // process the columns of each row
+                    std::vector<std::string> arguments, components; // process the columns of each row
                     
                     size_t pos = 0;
                     
@@ -603,9 +603,11 @@ public:
                                     
                                 case 'O': {
                                     
-                                    strtok(strdup(newLine.c_str()),"\t"); // process first line
+                                    arguments.clear();
                                     
-                                    seqHeader = strtok(NULL,"\t");
+                                    arguments = readDelimited(newLine, "\t");
+                                    
+                                    seqHeader = arguments[1];
                                     
                                     uId = inSequences.getuId();
                                     
@@ -628,23 +630,9 @@ public:
                                     
                                     inSequences.setuId(uId+1);
                                     
-                                    s = strtok(NULL,"\t");
+                                    components = readDelimited(arguments[2], " ");
                                     
-                                    delimiter = " ";
-                                    
-                                    arguments.clear();
-                                    
-                                    while ((pos = s.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(s.substr(0, pos));
-                                        
-                                        s.erase(0, pos + delimiter.length());
-                                    
-                                    }
-                                    
-                                    arguments.push_back(s); // last column
-                                    
-                                    for (std::string component : arguments) {
+                                    for (std::string component : components) {
                                         
                                         sId1Or = component.back(); // get sequence orientation
                                         
@@ -653,6 +641,22 @@ public:
                                             component.pop_back();
                                             
                                         }
+                                        
+                                        if (component.find("(") != std::string::npos && component.find(":") != std::string::npos && component.find(")") != std::string::npos) {
+                                            
+                                            start = stoi(component.substr(component.find("(") + 1, component.find(":") - component.find("(") - 1));
+                                            end = stoi(component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1));
+                                            
+                                            component = component.substr(0, component.find("("));
+                                            
+                                        }else{
+                                            
+                                            start = 0;
+                                            end = 0;
+                                            
+                                        }
+                                        
+                                        verbose(component + " " + std::to_string(start) + " " + std::to_string(end));
                                     
                                         hash = inSequences.getHash1();
                                         
@@ -682,7 +686,7 @@ public:
                                     
                                         if (sId != inSegments->end()) {
                                             
-                                            path.add('S', sId1, sId1Or);
+                                            path.add('S', sId1, sId1Or, start, end);
                                              
                                         }else{
                                             
@@ -690,7 +694,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.add('G', sId1, '0');
+                                                path.add('G', sId1, '0', start, end);
                                             
                                             }
                                             
@@ -1062,6 +1066,12 @@ public:
                         
                         inSequences.renamePath(pUId1, pHeaderNew);
                         
+                        if(pId1Or == '-') {
+                            
+                            inSequences.revComPath(pUId1);
+                            
+                        }
+                        
                         if(seqLen != pathLen) { // if it also needs to be trimmed
                             
                             inSequences.trimPath(pUId1, start1, end1);
@@ -1297,6 +1307,8 @@ public:
                 pos++;
                 
             }
+            
+            std::cout<<inSequence->size()<<std::endl;
                 
             if (outSeq && inSequence->size()>0) {
                 

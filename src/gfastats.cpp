@@ -143,27 +143,31 @@ int main(int argc, char **argv) {
                         
                     }else{ // else it is an include argument
                         
-                        std::string header = std::string(strtok(strdup(optarg),":")); // the header for coordinates provided as positional argument
-                        unsigned int cBegin = 0; // start coordinate provided as positional argument
-                        unsigned int cEnd = 0; // end coordinate provided as positional argument
+                        std::string header = optarg, cBegin, cEnd; // the header for coordinates provided as positional argument
                         
-                        char* coord = strtok(NULL,"-"); // process coordinates
+                        reverse(header.begin(), header.end()); // we work our way from the end
                         
-                        if (coord != NULL) {
+                        cBegin = header.substr(header.find('-') + 1, header.find(':') - header.find('-') - 1);
+                        cEnd = header.substr(0, header.find('-'));
+                        
+                        if(isNumber(cEnd) &&
+                           isNumber(cBegin)) { // prevent headers with : - characters to break the extraction
                             
-                            cBegin = atoi(coord);
+                            header = header.substr(header.find(':') + 1, header.size());
+                            reverse(header.begin(), header.end());
                             
-                            coord = strtok(NULL,"-");
+                            reverse(cBegin.begin(), cBegin.end());
+                            reverse(cEnd.begin(), cEnd.end());
                             
-                            if (coord != NULL) {
-                                
-                                cEnd = atoi(coord);
-                                
-                            }else{printf("Error: missing end coordinate (%s).\n", header.c_str()); exit(1);}
+                        }else{
+                            
+                            reverse(header.begin(), header.end());
+                            cBegin = "0";
+                            cEnd = "0";
                             
                         }
                         
-                        bedInclude.pushCoordinates(header, cBegin, cEnd); pos_op++;
+                        bedInclude.pushCoordinates(header, stoi(cBegin), stoi(cEnd)); pos_op++;
                         
                     }
                     

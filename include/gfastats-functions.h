@@ -239,7 +239,7 @@ std::vector<std::string> readDelimited(std::string line, std::string delimiter, 
 
     size_t pos = 0;
     
-    if (line.substr(0, skipLine.size()) == skipLine) {
+    if (skipLine != "" && line.substr(0, skipLine.size()) == skipLine) {
         
         return arguments;
         
@@ -257,6 +257,14 @@ std::vector<std::string> readDelimited(std::string line, std::string delimiter, 
             
     return arguments;
     
+}
+
+bool isNumber(const std::string& str)
+{
+    for (char const &c : str) {
+        if (std::isdigit(c) == 0) return false;
+    }
+    return true;
 }
 
 #endif /* GFASTATS_FUNCTIONS_H */

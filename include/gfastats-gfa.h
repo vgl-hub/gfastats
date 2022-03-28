@@ -108,13 +108,16 @@ public:
         return seqComment;
     }
     
-    std::string getInSequence() {
-        return inSequence;
+    std::string getInSequence(unsigned int start = 0, unsigned int end = 0) {
+        
+        return start != 0 || end != 0 ? inSequence.substr(start, end-start) : inSequence;
+        
     }
     
-    std::string getInSequenceQuality() {
+    std::string getInSequenceQuality(unsigned int start = 0, unsigned int end = 0) {
         
-        return inSequenceQuality;
+        return start != 0 || end != 0 ? inSequenceQuality.substr(start, end-start) : inSequenceQuality;
+        
     }
     
     unsigned int getSegmentLen() {
@@ -2648,6 +2651,14 @@ public:
         
         insertHash1(pHeader, pUId); // header to hash table
         insertHash2(pUId, pHeader); // uId to hash table
+        
+    }
+    
+    void revComPath(unsigned int pUId) {
+        
+        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
+        
+        pathIt->revCom();
         
     }
     

@@ -201,11 +201,11 @@ public:
                             
                             if (std::get<2>(*component) == '+') {
                             
-                                inSeq += (*inSegments)[sIdx].getInSequence();
+                                inSeq += (*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component));
                                 
                             }else{
                                 
-                                inSeq += revCom((*inSegments)[sIdx].getInSequence());
+                                inSeq += revCom((*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component)));
                                 
                             }
                             
@@ -290,18 +290,17 @@ public:
                             
                             if (std::get<2>(*component) == '+') {
                             
-                                inSeq += (*inSegments)[sIdx].getInSequence();
+                                inSeq += (*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component));
                                 
                             }else{
                                 
-                                inSeq += revCom((*inSegments)[sIdx].getInSequence());
-                                (*inSegments)[sIdx].invertSegment();
+                                inSeq += revCom((*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component)));
                                 
                             }
                             
                             if ((*inSegments)[sIdx].getInSequenceQuality() != "") {
                             
-                                inSeqQual += (*inSegments)[sIdx].getInSequenceQuality();
+                                inSeqQual += (*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component));
                                 
                             }else{
                                 
