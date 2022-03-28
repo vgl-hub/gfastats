@@ -328,7 +328,7 @@ int main(int argc, char **argv) {
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
                 printf("--cmd print $0 to stdout.\n");
-                printf("--homopolymer-compress compress all the homopolymers in the input.\n");
+                printf("--homopolymer-compress <threshhold> compress all the homopolymers in the input above the given threshhold.\n");
                 printf("--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");

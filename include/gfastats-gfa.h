@@ -730,7 +730,7 @@ public:
         sequence->resize(new_length);
     }
 
-    std::string homopolymerDecompress(std::string *sequence, const std::vector<unsigned int> &compressionIndices, const std::vector<unsigned int> &compressionLengths) {
+    void homopolymerDecompress(std::string *sequence, const std::vector<unsigned int> &compressionIndices, const std::vector<unsigned int> &compressionLengths) {
         std::string ret="";
         ret.reserve(sequence->length()*2); // random guess for final sequence length
         for(unsigned int i=0, ci=0, len; i<sequence->length(); ++i) {
@@ -738,7 +738,7 @@ public:
             ret += std::string(len, (*sequence)[i]);
         }
         ret.shrink_to_fit();
-        return ret;
+        *sequence = ret;
     }
     
     void traverseInSequence(std::string* pHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
@@ -785,10 +785,11 @@ public:
         
         unsigned int seqLen = sequence->length()-1;
         for (char &base : *sequence) {
+            unsigned int count = hc_flag && hc_index < compressionIndices.size() && pos == compressionIndices[hc_index] ? compressionLengths[hc_index++] : 1;
             
             if (islower(base)) {
                 
-                lowerCount++;
+                lowerCount+=count;
                 
             }
             
@@ -799,7 +800,7 @@ public:
                 case 'X':
                 case 'x': {
                     
-                    dist++;
+                    dist+=count;
                     
                     if (!wasN && pos>0) { // gap start and gap not at the start of the sequence
                             
