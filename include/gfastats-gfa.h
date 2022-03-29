@@ -2346,7 +2346,7 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this path
             
-            verbose("Path not found in keys. Creating new path (" + pHeader + ")");
+            verbose("Path already exists in keys. Joining (" + pHeader + ", pUId: " + pUId1 + ")");
             
             insertHash1(pHeader, uId); // header to hash table
             insertHash2(uId, pHeader); // header to hash table
@@ -2357,10 +2357,10 @@ public:
             
         }else{
             
-            verbose("Path already exists in keys. Joining (" + pHeader + ")");
-            
             path.setHeader(pHeader);
             pUId1 = got->second;
+            
+            verbose("Path already exists in keys. Joining (" + pHeader + ", pUId: " + pUId1 + ")");
             
         }
         
@@ -2438,13 +2438,13 @@ public:
                 
             }else{
                 
-                fprintf(stderr, "Error: cannot recognize start coordinate (%u)", start1);
+                fprintf(stderr, "Error: cannot recognize start coordinate (%u)\n", start1); exit(1);
                 
             }
             
         }else{
             
-            fprintf(stderr, "Warning: could not locate in path set (pIUd: %u)", pUId1);
+            fprintf(stderr, "Warning: could not locate in path set (pIUd: %u)\n", pUId1);
             
         }
         
