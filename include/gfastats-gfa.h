@@ -2434,12 +2434,15 @@ public:
                     
                     pos++;
                     
+                }else{
+                    
+                    fprintf(stderr, "Error: cannot recognize start coordinate (" + std::to_string(start1) + ")");
+                    
                 }
                 
             }else{
                 
-                verbose("Could not locate in path set (pIUd: " + std::to_string(pUId1) + ")");
-                exit(1);
+                fprintf(stderr, "Warning: could not locate in path set (pIUd: " + std::to_string(pUId1) + ")");
                 
             }
             
