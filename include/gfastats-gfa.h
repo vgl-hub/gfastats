@@ -445,6 +445,12 @@ public:
         verbose("Processed sequence: " + pHeader + " (uId: " + std::to_string(pUId) + ")");
     
     }
+
+    void setpUId(unsigned int pUid) {
+        
+        pUId = pUid;
+    
+    }
     
     void setHeader(std::string pheader) {
         
@@ -2359,8 +2365,9 @@ public:
             
             path.setHeader(pHeader);
             pUId1 = got->second;
+            path.setpUId(pUId1);
             
-            verbose("Path already exists in keys. Joining (" + pHeader + ", pUId: " + std::to_string(pUId1) + ")");
+            verbose("Path already exists in keys (" + pHeader + ", pUId: " + std::to_string(pUId1) + "). Joining.");
             
         }
         
@@ -2535,7 +2542,15 @@ public:
                     
                 }
                 
+            }else{
+                
+                fprintf(stderr, "Error: cannot recognize start coordinate (%u)\n", start2); exit(1);
+                
             }
+            
+        }else{
+            
+            fprintf(stderr, "Warning: could not locate in path set (pIUd: %u)\n", pUId2);
             
         }
         
