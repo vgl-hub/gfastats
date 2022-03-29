@@ -2346,7 +2346,7 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this path
             
-            verbose("Path not found in keys. Creating new path (" + pHeader + ", pUId: " + std::to_string(pUId1) + ")");
+            verbose("Path not found in keys. Creating new path (" + pHeader + ", pUId: " + std::to_string(uId) + ")");
             
             insertHash1(pHeader, uId); // header to hash table
             insertHash2(uId, pHeader); // header to hash table
@@ -2370,7 +2370,7 @@ public:
         
         if (pathIt != inPaths.end()) {
             
-            verbose("Path found in path set. Adding components to new path (pIUd: " + std::to_string(pUId1) + ")");
+            verbose("Path found in path set (pIUd: " + std::to_string(pUId1) + "). Adding components to new path.");
             
             if (pId1Or == '-') {pathIt->revCom();}
             
@@ -2469,7 +2469,7 @@ public:
         
         if (pathIt != inPaths.end()) {
             
-            verbose("Path found in path set. Adding components to new path (pIUd: " + std::to_string(pUId2) + ")");
+            verbose("Path found in path set (pIUd: " + std::to_string(pUId2) + "). Adding components to new path.");
             
             if (pId2Or == '-') {pathIt->revCom();}
             
