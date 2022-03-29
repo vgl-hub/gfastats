@@ -2346,7 +2346,7 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this path
             
-            verbose("Path already exists in keys. Joining (" + pHeader + ", pUId: " + std::to_string(pUId1) + ")");
+            verbose("Path not found in keys. Creating new path (" + pHeader + ", pUId: " + std::to_string(pUId1) + ")");
             
             insertHash1(pHeader, uId); // header to hash table
             insertHash2(uId, pHeader); // header to hash table
