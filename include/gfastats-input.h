@@ -139,7 +139,7 @@ public:
         std::string firstLine;
         char firstChar;
         unsigned char buffer[2];
-        bool stopStream;
+        bool stopStream = false;
         
         std::ifstream is(iSeqFileArg);
         
@@ -991,7 +991,7 @@ public:
         if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
             
             std::string pHeaderNew, pHeader1, pHeader2, gHeader, instruction, coord1, coord2;
-            char pId1Or, pId2Or;
+            char pId1Or = '+', pId2Or;
             
             unsigned int pUId1 = 0, pUId2 = 0, gUId = 0, dist = 0, seqLen, pathLen, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
             phmap::flat_hash_map<std::string, unsigned int> hash;
