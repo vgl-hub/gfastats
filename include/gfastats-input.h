@@ -993,12 +993,20 @@ public:
             std::string pHeaderNew, pHeader1, pHeader2, gHeader, instruction, coord1, coord2;
             char pId1Or = '+', pId2Or;
             
-            unsigned int pUId1 = 0, pUId2 = 0, gUId = 0, dist = 0, seqLen, pathLen, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
+            unsigned int pUId = 0, pUId1 = 0, pUId2 = 0, gUId = 0, dist = 0, seqLen, pathLen, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
             phmap::flat_hash_map<std::string, unsigned int> hash;
             phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
             
             std::vector<std::string> arguments; // line arguments
-            std::vector<unsigned int> subsetted; // vector of paths flagged to be removed only at the end
+            std::vector<unsigned int> oldPaths; // vector of paths flagged to be removed only at the end
+            
+            std::vector<InPath> paths = inSequences.getInPaths();
+            
+            for (InPath path : paths) {
+                
+                oldPaths.push_back(path.getpUId());
+                
+            }
             
             if (isPipe && (pipeType == 'a')) {
                 
@@ -1065,25 +1073,28 @@ public:
                     
                     arguments = readDelimited(line, "\t", "#"); // read the next sequence
                     
-                    if(pHeaderNew != arguments[0]) { // if this path does not need to be joined to anything that follows, we simply rename it
+                    if(pHeaderNew != arguments[0]) { // if this path does not need to be joined to anything that follows, we simply rename it and assign a new pUId
                         
-                        inSequences.renamePath(pUId1, pHeaderNew);
+                        pUId = inSequences.getuId();
+                        
+                        inSequences.renamePath(pUId1, pHeaderNew, &pUId);
+                        
+                        inSequences.insertHash1(pHeaderNew, pUId); // header to hash table
+                        inSequences.insertHash2(pUId, pHeaderNew); // uId to hash table
+                        
+                        inSequences.setuId(pUId+1);
                         
                         if(pId1Or == '-') {
                             
-                            inSequences.revComPath(pUId1);
+                            inSequences.revComPath(pUId);
                             
                         }
                         
                         if(seqLen != pathLen) { // if it also needs to be trimmed
                             
-                            inSequences.trimPath(pUId1, start1, end1);
+                            inSequences.trimPath(pUId, start1, end1);
                             
                         }
-                        
-                    }else if (seqLen != pathLen){ // if the path needs to be joined to something and is subsetted
-                        
-//                        subsetted.push_back(pUId1);
                         
                     }
                     
@@ -1184,20 +1195,10 @@ public:
                 }
                 
             }
-            
-            if (subsetted.size() > 0) { // if sequences were subsetted, remove the original paths
                 
-                // avoid duplicates
-                std::vector<unsigned int>::iterator ip;
-                sort(subsetted.begin(), subsetted.end());
-                ip = std::unique(subsetted.begin(), subsetted.end());
-                subsetted.resize(std::distance(subsetted.begin(), ip));
+            for (unsigned int pUId : oldPaths) { // remove paths left
                 
-                for (unsigned int pUId : subsetted) {
-                    
-                    inSequences.removePath(pUId);
-                    
-                }
+                inSequences.removePath(pUId, true); // silently remove the original paths that were not joined or duplicated
                 
             }
             

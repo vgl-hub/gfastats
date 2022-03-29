@@ -2266,7 +2266,7 @@ public:
         
     }
     
-    void removePath(unsigned int pUId) {
+    void removePath(unsigned int pUId, bool silent = false) {
         
         auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
         
@@ -2274,7 +2274,7 @@ public:
             
             inPaths.erase(pathIt);
             
-        }else{
+        }else if (!silent){
             
             fprintf(stderr, "Warning: the path you are attempting to remove does not exist (pUId: %i). Skipping.\n", pUId);
             
@@ -2391,7 +2391,7 @@ public:
                 
                 removePath(pUId1); // remove path1
             
-            }else if (start1 >= 1){
+            }else if (start1 >= 1){ // the path needs to be trimmed
                 
                 unsigned int pos = 1;
                 
@@ -2677,7 +2677,7 @@ public:
         
     }
     
-    void renamePath(unsigned int pUId, std::string pHeader) {
+    void renamePath(unsigned int pUId, std::string pHeader, unsigned int* newpUId) {
         
         auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
         
@@ -2685,6 +2685,12 @@ public:
         
         insertHash1(pHeader, pUId); // header to hash table
         insertHash2(pUId, pHeader); // uId to hash table
+        
+        if (newpUId != NULL) {
+            
+            pathIt->setpUId(*newpUId);
+            
+        }
         
     }
     
