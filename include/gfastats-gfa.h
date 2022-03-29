@@ -2370,7 +2370,7 @@ public:
         
         if (pathIt != inPaths.end()) {
             
-            verbose("Path found in path set. Adding components to new path (" + std::to_string(pUId1) + ")");
+            verbose("Path found in path set. Adding components to new path (pIUd: " + std::to_string(pUId1) + ")");
             
             if (pId1Or == '-') {pathIt->revCom();}
             
@@ -2436,6 +2436,11 @@ public:
                     
                 }
                 
+            }else{
+                
+                verbose("Could not locate in path set (pIUd: " + std::to_string(pUId1) + ")");
+                exit(1);
+                
             }
             
         }
@@ -2453,13 +2458,15 @@ public:
         
         }
         
+        verbose("Adding gap to new path (" + gHeader + ")");
+        
         path.add('G', gUId, '0');
             
         pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId2](InPath& obj) {return obj.getpUId() == pUId2;}); // given a path pUId, find it
         
         if (pathIt != inPaths.end()) {
             
-            verbose("Path found in path set. Adding components to new path (" + std::to_string(pUId2) + ")");
+            verbose("Path found in path set. Adding components to new path (pIUd: " + std::to_string(pUId2) + ")");
             
             if (pId2Or == '-') {pathIt->revCom();}
             
