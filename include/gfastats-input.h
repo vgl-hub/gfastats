@@ -1172,7 +1172,7 @@ public:
                     
                     instruction = "JOIN\t" + pHeader1 + coord1 + pId1Or + "\t" + pHeader2 + coord2 + pId2Or + "\t" + std::to_string(dist) + "\t" + gHeader + "\t" + pHeaderNew + "\t" + std::to_string(gUId);
                     
-//                    fprintf(stderr, "%s\n", instruction.c_str());
+                    fprintf(stderr, "%s\n", instruction.c_str());
                     
                     sak.executeInstruction(inSequences, sak.readInstruction(instruction));
                     

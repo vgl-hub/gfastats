@@ -2346,6 +2346,8 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this path
             
+            verbose("Path not found in keys. Creating new path (" + pHeader + ")");
+            
             insertHash1(pHeader, uId); // header to hash table
             insertHash2(uId, pHeader); // header to hash table
             
@@ -2355,18 +2357,20 @@ public:
             
         }else{
             
+            verbose("Path already exists in keys. Joining (" + pHeader + ")");
+            
             path.setHeader(pHeader);
             pUId1 = got->second;
             
         }
-        
-        
         
         PathTuple component1, component2;
             
         auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId1](InPath& obj) {return obj.getpUId() == pUId1;}); // given a path pUId, find it
         
         if (pathIt != inPaths.end()) {
+            
+            verbose("Path found in path set. Adding components to new path (" + std::to_string(pUId1) + ")");
             
             if (pId1Or == '-') {pathIt->revCom();}
             
@@ -2454,6 +2458,8 @@ public:
         pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId2](InPath& obj) {return obj.getpUId() == pUId2;}); // given a path pUId, find it
         
         if (pathIt != inPaths.end()) {
+            
+            verbose("Path found in path set. Adding components to new path (" + std::to_string(pUId2) + ")");
             
             if (pId2Or == '-') {pathIt->revCom();}
             
