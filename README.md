@@ -86,4 +86,6 @@ Please refer to **gfastats** paper for a complete description. Briefly, **gfasta
 
 If you use **gfastats** in your work, please cite:
 
-COMING SOON
+Gfastats: conversion, evaluation and manipulation of genome sequences using assembly graphs
+Giulio Formenti, Linelle Abueg, Angelo Brajuka, Nadolina Brajuka, Cristo Gallardo, Alice Giani, Olivier Fedrigo, Erich D. Jarvis
+doi: https://doi.org/10.1101/2022.03.24.485682
