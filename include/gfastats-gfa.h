@@ -2628,7 +2628,7 @@ public:
                     
                 }
                 
-                if (size > end) {
+                if (size >= end) {
                     
                     std::get<4>(*component) = end;
                     
