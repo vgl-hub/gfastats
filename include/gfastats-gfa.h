@@ -2650,7 +2650,7 @@ public:
                 
                 }
                 
-                if (size > end) {
+                if (size >= end) {
                     
                     inGap->setDist(size - end);
 
