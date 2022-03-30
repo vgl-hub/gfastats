@@ -1073,16 +1073,24 @@ public:
                     
                     arguments = readDelimited(line, "\t", "#"); // read the next sequence
                     
-                    if(pHeaderNew != arguments[0]) { // if this path does not need to be joined to anything that follows, we simply rename it and assign a new pUId
+                    if(pHeaderNew != arguments[0]) { // if this path does not need to be joined to anything that follows, we create a new path
+                        
+                        InPath path;
                         
                         pUId = inSequences.getuId();
                         
-                        inSequences.renamePath(pUId1, pHeaderNew, &pUId);
+                        path.newPath(pUId, pHeaderNew);
+                        
+                        std::vector<PathTuple> pathComponents = inSequences.getInPath(pUId1).getComponents();
+                        
+                        path.append({std::begin(pathComponents), std::end(pathComponents)});
                         
                         inSequences.insertHash1(pHeaderNew, pUId); // header to hash table
                         inSequences.insertHash2(pUId, pHeaderNew); // uId to hash table
                         
                         inSequences.setuId(pUId+1);
+                        
+                        inSequences.addPath(path);
                         
                         if(pId1Or == '-') {
                             
