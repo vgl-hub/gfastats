@@ -267,4 +267,20 @@ bool isNumber(const std::string& str)
     return true;
 }
 
+void revComPathComponents(std::vector<PathTuple>& pathComponents) {
+    
+    for (PathTuple& component : pathComponents) {
+        
+        if (std::get<2>(component) != '0') {
+        
+        std::get<2>(component) = std::get<2>(component) == '+' ? '-' : '+';
+        
+        }
+        
+    }
+    
+    std::reverse(pathComponents.begin(), pathComponents.end());
+    
+}
+
 #endif /* GFASTATS_FUNCTIONS_H */

@@ -1100,7 +1100,7 @@ public:
                         
                         if(seqLen != pathLen) { // if it also needs to be trimmed
                             
-                            inSequences.trimPath(pUId, start1, end1);
+                            inSequences.trimPathByUId(pUId, start1, end1);
                             
                         }
                         

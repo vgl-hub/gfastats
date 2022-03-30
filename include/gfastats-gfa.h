@@ -518,17 +518,7 @@ public:
     
     void revCom() {
         
-        for (PathTuple& component : pathComponents) {
-            
-            if (std::get<2>(component) != '0') {
-            
-            std::get<2>(component) = std::get<2>(component) == '+' ? '-' : '+';
-            
-            }
-            
-        }
-        
-        std::reverse(pathComponents.begin(), pathComponents.end());
+        revComPathComponents(pathComponents);
     
     }
     
@@ -2344,8 +2334,6 @@ public:
     
     void joinPaths(std::string pHeader, unsigned int pUId1, unsigned int pUId2, std::string gHeader, unsigned int gUId, char pId1Or, char pId2Or, unsigned int dist, unsigned int start1, unsigned int end1, unsigned int start2, unsigned int end2) {
         
-        unsigned int cUId = 0, size = 0;
-        
         InPath path;
         
         phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (pHeader); // get the headers to uIds table to look for the header
@@ -2379,73 +2367,23 @@ public:
             
             verbose("Path found in path set (pIUd: " + std::to_string(pUId1) + "). Adding components to new path.");
             
-            if (pId1Or == '-') {pathIt->revCom();}
-            
             std::vector<PathTuple> pathComponents = pathIt->getComponents();
             
-            if (start1 == 0) {
-        
-                path.append({std::begin(pathComponents), std::end(pathComponents)});
-                
-                component1 = *std::prev(std::end(pathComponents));
-                
-                removePath(pUId1); // remove path1
+            if (pId1Or == '-') {revComPathComponents(pathComponents);}
             
-            }else if (start1 >= 1){ // the path needs to be trimmed
+            if (start1 >= 1){ // the path needs to be trimmed
                 
-                unsigned int pos = 1;
+                trimPathByRef(pathComponents, start1, end1);
                 
-                for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
-                    
-                    cUId = std::get<1>(*component);
-                    
-                    if (std::get<0>(*component) == 'S') {
-                    
-                        auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                        
-                        size += inSegment->getSegmentLength();
-                        
-                        if (size > end1-start1) {
-                            
-                            std::get<3>(*component) = start1;
-                            
-                            std::get<4>(*component) = end1;
-                            
-                            path.append({std::begin(pathComponents), std::begin(pathComponents)+pos});
-                            
-                            component1 = *component;
-                            
-                            break;
-                            
-                        }
-                        
-                    }else{
-                        
-                        auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                        
-                        size += inGap->getDist();
-                        
-                        if (size > end1-start1) {
-                            
-                            path.append({std::begin(pathComponents), std::begin(pathComponents)+pos});
-                            
-                            inGap->setDist(size - end1);
-                            
-                            component1 = *component;
-                            
-                            break;
-                            
-                        }
-                        
-                    }
-                    
-                    pos++;
-                    
-                }
-                
-            }else{
-                
-                fprintf(stderr, "Error: cannot recognize start coordinate (%u)\n", start1); exit(1);
+            }
+            
+            path.append({std::begin(pathComponents), std::end(pathComponents)});
+            
+            component1 = *std::prev(std::end(pathComponents));
+            
+            if (start1 == 0) {
+            
+                removePath(pUId1); // remove path1
                 
             }
             
@@ -2454,8 +2392,6 @@ public:
             fprintf(stderr, "Warning: could not locate in path set (pIUd: %u)\n", pUId1);
             
         }
-        
-        size = 0;
         
         if (gUId == 0) {
             
@@ -2478,73 +2414,23 @@ public:
             
             verbose("Path found in path set (pIUd: " + std::to_string(pUId2) + "). Adding components to new path.");
             
-            if (pId2Or == '-') {pathIt->revCom();}
-            
             std::vector<PathTuple> pathComponents = pathIt->getComponents();
-        
-            if (start2 == 0) {
-        
-                path.append({std::begin(pathComponents), std::end(pathComponents)});
-                
-                component2 = *std::begin(pathComponents);
-                
-                removePath(pUId2); // remove path2
             
-            }else if (start2 >= 1) {
+            if (pId2Or == '-') {revComPathComponents(pathComponents);}
+            
+            if (start2 >= 1) {
                 
-                unsigned int pos = 1;
+                trimPathByRef(pathComponents, start2, end2);
                 
-                for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
-                    
-                    cUId = std::get<1>(*component);
-                    
-                    if (std::get<0>(*component) == 'S') {
-                    
-                        auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                        
-                        size += inSegment->getSegmentLength();
-                        
-                        if (size > end2-start2) {
-                            
-                            std::get<3>(*component) = start2;
-                            
-                            std::get<4>(*component) = end2;
-                            
-                            path.append({std::begin(pathComponents), std::begin(pathComponents)+pos});
-                            
-                            component2 = *std::begin(pathComponents);
-                            
-                            break;
-                            
-                        }
-                        
-                    }else{
-                        
-                        auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                        
-                        size += inGap->getDist();
-                        
-                        if (size > end2-start2) {
-                            
-                            path.append({std::begin(pathComponents), std::begin(pathComponents)+pos});
-                            
-                            inGap->setDist(size - end2);
-                            
-                            component2 = *std::begin(pathComponents);
-                            
-                            break;
-                            
-                        }
-                        
-                    }
-                    
-                    pos++;
-                    
-                }
-                
-            }else{
-                
-                fprintf(stderr, "Error: cannot recognize start coordinate (%u)\n", start2); exit(1);
+            }
+        
+            path.append({std::begin(pathComponents), std::end(pathComponents)});
+            
+            component2 = *std::begin(pathComponents);
+            
+            if (start2 == 0) {
+            
+                removePath(pUId2); // remove path2
                 
             }
             
@@ -2700,14 +2586,28 @@ public:
         
         pathIt->revCom();
         
+        verbose("Path reverse-complemented (" + pathIt->getHeader() + ").");
+        
     }
     
-    void trimPath(unsigned int pUId, unsigned int start, unsigned int end) {
+    void trimPathByUId(unsigned int pUId, unsigned int start, unsigned int end) {
         
         auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
         
         std::vector<PathTuple>* pathComponents = pathIt->getComponentsByRef();
         
+        trimPath(pathComponents, start, end);
+        
+    }
+
+    void trimPathByRef(std::vector<PathTuple>& pathComponents, unsigned int start, unsigned int end) {
+        
+        trimPath(&pathComponents, start, end);
+        
+    }
+
+    void trimPath (std::vector<PathTuple>* pathComponents, unsigned int start, unsigned int end) {
+    
         unsigned int pos = 1, cUId = 0, size = 0;
         
         for (std::vector<PathTuple>::iterator component = pathComponents->begin(); component != pathComponents->end(); component++) {
@@ -2720,9 +2620,15 @@ public:
                 
                 size += inSegment->getSegmentLength();
                 
-                if (size > end) {
+                if (size < start) {continue;}
+
+                if (size > start) {
                     
                     std::get<3>(*component) = start;
+                    
+                }
+                
+                if (size > end) {
                     
                     std::get<4>(*component) = end;
                     
@@ -2735,6 +2641,14 @@ public:
                 auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                 
                 size += inGap->getDist();
+                
+                if (size < start) {continue;}
+                
+                if (size > start) {
+                
+                    inGap->setDist(size - start);
+                
+                }
                 
                 if (size > end) {
                     
@@ -2749,7 +2663,7 @@ public:
             pos++;
             
         }
-        
+    
     }
     
     unsigned int pathLength(unsigned int pUId) {
