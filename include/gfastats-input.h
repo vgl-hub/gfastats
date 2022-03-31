@@ -659,7 +659,7 @@ public:
                                             
                                         }
                                         
-                                        verbose(component + " " + std::to_string(start) + " " + std::to_string(end));
+                                        verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
                                     
                                         hash = inSequences.getHash1();
                                         

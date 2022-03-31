@@ -506,26 +506,33 @@ public:
                     
                     for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                         
-                        uId = std::get<1>(*component);
-                        
-                        if (std::get<0>(*component) == 'S') {
-                        
-                            auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                        if (std::get<4>(*component) > 0) { // if we are subsetting we do not need to know the length of the segment
                             
-                            if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
-                            
-                            size += (*inSegments)[sIdx].getInSequence().size();
+                            size += std::get<4>(*component) - std::get<3>(*component);
                             
                         }else{
+                        
+                            uId = std::get<1>(*component);
                             
-                            auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            if (std::get<0>(*component) == 'S') {
                             
-                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
-                            
-                            size += (*inGaps)[gIdx].getDist();
+                                auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                                
+                                if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
+                                
+                                size += (*inSegments)[sIdx].getInSequence().size();
+                                
+                            }else{
+                                
+                                auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                                
+                                if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
+                                
+                                size += (*inGaps)[gIdx].getDist();
+                                
+                            }
                             
                         }
-                        
                         
                     }
                     

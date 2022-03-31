@@ -2272,6 +2272,22 @@ public:
     
     }
     
+    void removeGap(unsigned int gUId, bool silent = false) {
+        
+        auto gapIt = find_if(inGaps.begin(), inGaps.end(), [gUId](InGap& obj) {return obj.getuId() == gUId;}); // given a path pUId, find it
+        
+        if (gapIt != inGaps.end()) {
+            
+            inGaps.erase(gapIt);
+            
+        }else if (!silent){
+            
+            fprintf(stderr, "Warning: the gap you are attempting to remove does not exist (pUId: %i). Skipping.\n", gUId);
+            
+        }
+    
+    }
+    
     void removePathsFromSegment(unsigned int uId) {
         
         int i = 0;
@@ -2606,9 +2622,9 @@ public:
         
     }
 
-    void trimPath (std::vector<PathTuple>* pathComponents, unsigned int start, unsigned int end) {
+    void trimPath(std::vector<PathTuple>* pathComponents, unsigned int start, unsigned int end) {
     
-        unsigned int pos = 1, cUId = 0, size = 0;
+        unsigned int cUId = 0, size = 0;
         
         for (std::vector<PathTuple>::iterator component = pathComponents->begin(); component != pathComponents->end(); component++) {
             
@@ -2620,7 +2636,13 @@ public:
                 
                 size += inSegment->getSegmentLength();
                 
-                if (size < start) {continue;}
+                if (size <= start) {
+                    
+                    pathComponents->erase(component);
+                    
+                    continue;
+                    
+                }
 
                 if (size > start) {
                     
@@ -2629,6 +2651,12 @@ public:
                 }
                 
                 if (size >= end) {
+                    
+                    if (size != end) {
+                    
+                        pathComponents->erase(component + 1, pathComponents->end());
+                        
+                    }
                     
                     std::get<4>(*component) = end;
                     
@@ -2642,25 +2670,35 @@ public:
                 
                 size += inGap->getDist();
                 
-                if (size < start) {continue;}
+                if (size <= start) {
+                    
+                    pathComponents->erase(component);
+                    
+                    continue;
+                    
+                }
                 
                 if (size > start) {
                 
-                    inGap->setDist(size - start);
+                    inGap->setDist(inGap->getDist() - start);
                 
                 }
                 
                 if (size >= end) {
                     
-                    inGap->setDist(size - end);
+                    if (size != end) {
+                    
+                        pathComponents->erase(component + 1, pathComponents->end());
+                        
+                    }
+                    
+                    inGap->setDist(end + start - size + inGap->getDist());
 
                     break;
                     
                 }
                 
             }
-            
-            pos++;
             
         }
     
@@ -2676,19 +2714,27 @@ public:
         
         for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
             
-            cUId = std::get<1>(*component);
-            
-            if (std::get<0>(*component) == 'S') {
-            
-                auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+            if (std::get<4>(*component) > 0) { // if we are subsetting we do not need to know the length of the segment
                 
-                size += inSegment->getSegmentLength();
+                size += std::get<4>(*component) - std::get<3>(*component);
                 
             }else{
                 
-                auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                
-                size += inGap->getDist();
+                cUId = std::get<1>(*component);
+            
+                if (std::get<0>(*component) == 'S') {
+                    
+                    auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                    
+                    size += inSegment->getSegmentLength();
+                    
+                }else{
+                    
+                    auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                    
+                    size += inGap->getDist();
+                    
+                }
                 
             }
             
