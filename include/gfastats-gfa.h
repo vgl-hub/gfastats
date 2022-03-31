@@ -2385,13 +2385,9 @@ public:
             
             std::vector<PathTuple> pathComponents = pathIt->getComponents();
             
-            if (pId1Or == '-') {revComPathComponents(pathComponents);}
+            trimPathByRef(pathComponents, start1, end1);
             
-            if (start1 >= 1){ // the path needs to be trimmed
-                
-                trimPathByRef(pathComponents, start1, end1);
-                
-            }
+            if (pId1Or == '-') {revComPathComponents(pathComponents);}
             
             path.append({std::begin(pathComponents), std::end(pathComponents)});
             
@@ -2432,13 +2428,9 @@ public:
             
             std::vector<PathTuple> pathComponents = pathIt->getComponents();
             
-            if (pId2Or == '-') {revComPathComponents(pathComponents);}
+            trimPathByRef(pathComponents, start2, end2);
             
-            if (start2 >= 1) {
-                
-                trimPathByRef(pathComponents, start2, end2);
-                
-            }
+            if (pId2Or == '-') {revComPathComponents(pathComponents);}
         
             path.append({std::begin(pathComponents), std::end(pathComponents)});
             
@@ -2623,8 +2615,19 @@ public:
     }
 
     void trimPath(std::vector<PathTuple>* pathComponents, unsigned int start, unsigned int end) {
+        
+        if(start == 0 || end == 0) {
+            
+            verbose("Nothing to trim. Skipping.");
+            return;
+            
+        }
+        
+        verbose("Trimming path (start: " + std::to_string(start) + ", end: " + std::to_string(end) + ").");
     
         unsigned int cUId = 0, size = 0;
+        
+        bool startIdentified = false;
         
         for (std::vector<PathTuple>::iterator component = pathComponents->begin(); component != pathComponents->end(); component++) {
             
@@ -2634,9 +2637,17 @@ public:
             
                 auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                 
-                size += inSegment->getSegmentLength();
+                if (std::get<4>(*component) > 0) {
+                    
+                    size += std::get<4>(*component) - std::get<3>(*component);
+                    
+                }else{
                 
-                if (size <= start) {
+                    size += inSegment->getSegmentLength();
+                    
+                }
+                
+                if (size < start) {
                     
                     pathComponents->erase(component);
                     
@@ -2644,9 +2655,11 @@ public:
                     
                 }
 
-                if (size > start) {
+                if (start > 0 && size >= start && !startIdentified) {
                     
-                    std::get<3>(*component) = start;
+                    std::get<3>(*component) = std::get<3>(*component) + start - size + inSegment->getSegmentLength();
+                    
+                    startIdentified = true;
                     
                 }
                 
@@ -2658,7 +2671,7 @@ public:
                         
                     }
                     
-                    std::get<4>(*component) = end;
+                    std::get<4>(*component) = std::get<3>(*component) + end - size + inSegment->getSegmentLength();
                     
                     break;
                     
@@ -2668,9 +2681,17 @@ public:
                 
                 auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                 
-                size += inGap->getDist();
+                if (std::get<4>(*component) > 0) {
+                    
+                    size += std::get<4>(*component) - std::get<3>(*component);
+                    
+                }else{
+                    
+                    size += inGap->getDist();
+                    
+                }
                 
-                if (size <= start) {
+                if (size < start) {
                     
                     pathComponents->erase(component);
                     
@@ -2678,9 +2699,11 @@ public:
                     
                 }
                 
-                if (size > start) {
+                if (start > 0 && size >= start && !startIdentified) {
                 
-                    inGap->setDist(inGap->getDist() - start);
+                    inGap->setDist(std::get<3>(*component) + start - size + inGap->getDist());
+                    
+                    startIdentified = true;
                 
                 }
                 
@@ -2692,7 +2715,7 @@ public:
                         
                     }
                     
-                    inGap->setDist(end + start - size + inGap->getDist());
+                    inGap->setDist(std::get<3>(*component) + end + start - size + inGap->getDist());
 
                     break;
                     
@@ -2716,7 +2739,7 @@ public:
             
             if (std::get<4>(*component) > 0) { // if we are subsetting we do not need to know the length of the segment
                 
-                size += std::get<4>(*component) - std::get<3>(*component);
+                size += std::get<4>(*component) - std::get<3>(*component) + 1;
                 
             }else{
                 

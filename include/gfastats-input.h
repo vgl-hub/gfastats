@@ -647,7 +647,7 @@ public:
                                             startS = component.substr(component.find("(") + 1, component.find(":") - component.find("(") - 1);
                                             endS = component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1);
                                             
-                                            start = std::stoi(startS) - 1;
+                                            start = std::stoi(startS);
                                             end = std::stoi(endS);
 
                                             component = component.substr(0, component.find("("));
@@ -659,7 +659,11 @@ public:
                                             
                                         }
                                         
-                                        verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
+                                        if (end != 0) {
+                                        
+                                            verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
+                                            
+                                        }
                                     
                                         hash = inSequences.getHash1();
                                         
@@ -1092,15 +1096,15 @@ public:
                         
                         inSequences.addPath(path);
                         
-                        if(pId1Or == '-') {
-                            
-                            inSequences.revComPath(pUId);
-                            
-                        }
-                        
                         if(seqLen != pathLen) { // if it also needs to be trimmed
                             
                             inSequences.trimPathByUId(pUId, start1, end1);
+                            
+                        }
+                        
+                        if(pId1Or == '-') {
+                            
+                            inSequences.revComPath(pUId);
                             
                         }
                         
@@ -1125,6 +1129,19 @@ public:
                     gUId = inSequences.getuId();
                     
                     if (arguments[6] == "scaffold") {
+                        
+                        hash = inSequences.getHash1();
+                        
+                        got = hash.find("gap"+std::to_string(gUId)); // get the headers to uIds table
+                        
+                        while (got != hash.end()) { // this is not the first time we see this path
+                            
+                            gUId++;
+                            
+                            got = hash.find("gap"+std::to_string(gUId)); // get the headers to uIds table
+                            
+                            
+                        }
                     
                         gHeader = "gap"+std::to_string(gUId);
                     

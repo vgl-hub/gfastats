@@ -401,14 +401,26 @@ public:
                     
                     
                     pathComponents = inPath.getComponents();
+                    unsigned int start = 0;
                     
                     for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                             
                         *stream << idsToHeaders[std::get<1>(*component)];
                         
-                        if(std::get<3>(*component) != 0) {
+                        if(std::get<4>(*component) != 0) {
                         
-                            *stream << "(" << std::to_string(std::get<3>(*component)) << ":" << std::to_string(std::get<4>(*component)) << ")";
+                            if(std::get<3>(*component) == 0) {
+                                
+                                start = 1;
+                                
+                                
+                            }else{
+                                
+                                start = std::get<3>(*component);
+                                
+                            }
+                            
+                            *stream << "(" << std::to_string(start) << ":" << std::to_string(std::get<4>(*component)) << ")";
                             
                         }
                         
