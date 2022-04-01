@@ -2680,16 +2680,8 @@ public:
             }else{
                 
                 auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                
-                if (std::get<4>(*component) > 0) {
                     
-                    size += std::get<4>(*component) - std::get<3>(*component);
-                    
-                }else{
-                    
-                    size += inGap->getDist();
-                    
-                }
+                size += inGap->getDist();
                 
                 if (size < start) {
                     
@@ -2701,7 +2693,7 @@ public:
                 
                 if (start > 0 && size >= start && !startIdentified) {
                 
-                    inGap->setDist(std::get<3>(*component) + start - size + inGap->getDist());
+                    inGap->setDist(start - size + inGap->getDist());
                     
                     startIdentified = true;
                 
@@ -2715,7 +2707,7 @@ public:
                         
                     }
                     
-                    inGap->setDist(std::get<3>(*component) + end + start - size + inGap->getDist());
+                    inGap->setDist(end - size + inGap->getDist());
 
                     break;
                     
