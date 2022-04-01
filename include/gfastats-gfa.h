@@ -333,9 +333,9 @@ public:
         
     }
     
-    unsigned int getDist() {
+    unsigned int getDist(unsigned int start = 0, unsigned int end = 0) {
         
-        return dist;
+        return dist - start - end;
         
     }
     
@@ -2681,7 +2681,7 @@ public:
                 
                 auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                     
-                size += inGap->getDist();
+                size += inGap->getDist(std::get<3>(*component), std::get<4>(*component));
                 
                 if (size < start) {
                     
@@ -2693,7 +2693,7 @@ public:
                 
                 if (start > 0 && size >= start && !startIdentified) {
                 
-                    inGap->setDist(start - size + inGap->getDist());
+                    std::get<3>(*component) = start - size + inGap->getDist(std::get<3>(*component), std::get<4>(*component));
                     
                     startIdentified = true;
                 
@@ -2707,7 +2707,7 @@ public:
                         
                     }
                     
-                    inGap->setDist(end - size + inGap->getDist());
+                    std::get<4>(*component) = end - size + inGap->getDist(std::get<3>(*component), std::get<4>(*component));
 
                     break;
                     

@@ -215,7 +215,7 @@ public:
                             
                             if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
                             
-                            inSeq += std::string((*inGaps)[gIdx].getDist(), 'N');
+                            inSeq += std::string((*inGaps)[gIdx].getDist(std::get<3>(*component), std::get<4>(*component)), 'N');
                             
                         }
                         
