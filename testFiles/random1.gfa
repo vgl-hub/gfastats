@@ -13,8 +13,8 @@ G	Header3.4	Header3.3+	Header3.5+	1
 G	Header3.6	Header3.5+	Header3.5-	1
 G	Header4.1	Header4.2+	Header4.2+	3
 G	Header5.2	Header5.1+	Header5.1-	3
-O	Header1	Header1.1+	5bp sequence with no gaps and 2 lowercase bases
-O	Header2	Header2.1+ Header2.2 Header2.3+	5bp sequence with internal 1bp non-canonical gap
-O	Header3	Header3.1+ Header3.2 Header3.3+ Header3.4 Header3.5+ Header3.6	10bp sequence with internal 4bp and 1bp terminal canonical gap
-O	Header4	Header4.1 Header4.2+	15bp sequence with start 3bp canonical gap and 3 lowercase bases
-O	Header5	Header5.1+ Header5.2	15bp sequence with terminal 3bp canonical gap
+G	gap19	Header1.1+	Header2.1+	5
+G	gap21	Header2.1+	Header3.2+	5
+G	gap22	Header5.1+	Header4.1+	5
+O	newpath1	Header1.1(2:5)+ gap19 Header2.1(1:3)- gap21 Header3.2(2:0) Header3.3+ Header3.4 Header3.5+
+O	newpath2	Header5.1(3:7)- gap22 Header4.1 Header4.2+

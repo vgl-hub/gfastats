@@ -110,13 +110,13 @@ public:
     
     std::string getInSequence(unsigned int start = 0, unsigned int end = 0) {
         
-        return start != 0 || end != 0 ? inSequence.substr(start, end-start) : inSequence;
+        return start != 0 || end != 0 ? inSequence.substr(start-1, end-start+1) : inSequence;
         
     }
     
     std::string getInSequenceQuality(unsigned int start = 0, unsigned int end = 0) {
         
-        return start != 0 || end != 0 ? inSequenceQuality.substr(start, end-start) : inSequenceQuality;
+        return start != 0 || end != 0 ? inSequenceQuality.substr(start-1, end-start+1) : inSequenceQuality;
         
     }
     
@@ -335,7 +335,7 @@ public:
     
     unsigned int getDist(unsigned int start = 0, unsigned int end = 0) {
         
-        return dist - start - end;
+        return start != 0 || end != 0 ? end-start+1 : dist;
         
     }
     
@@ -2616,16 +2616,16 @@ public:
 
     void trimPath(std::vector<PathTuple>* pathComponents, unsigned int start, unsigned int end) {
         
-        if(start == 0 || end == 0) {
+        if(start == 0 && end == 0) {
             
             verbose("Nothing to trim. Skipping.");
             return;
             
         }
         
-        verbose("Trimming path (start: " + std::to_string(start) + ", end: " + std::to_string(end) + ").");
+        verbose("Trimming path (start: " + std::to_string(start) + ", end: " + std::to_string(end) + ")");
     
-        unsigned int cUId = 0, size = 0;
+        unsigned int cUId = 0, traversedSize = 0, actualSize = 0, newCompLen = 0;
         
         bool startIdentified = false;
         
@@ -2633,46 +2633,62 @@ public:
             
             cUId = std::get<1>(*component);
             
+            verbose("Path size before iteration: " + std::to_string(actualSize));
+            
+            verbose("Checking original coordinates of component (uId: " + std::to_string(std::get<1>(*component)) + ", start: " + std::to_string(std::get<4>(*component)) + ", end: " + std::to_string(std::get<3>(*component)) + ")");
+            
             if (std::get<0>(*component) == 'S') {
             
                 auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                 
                 if (std::get<4>(*component) > 0) {
                     
-                    size += std::get<4>(*component) - std::get<3>(*component);
+                    newCompLen = std::get<4>(*component) - std::get<3>(*component);
+                    
+                    verbose("Component was already trimmed (size: " + std::to_string(newCompLen) + ")");
                     
                 }else{
-                
-                    size += inSegment->getSegmentLength();
+                    
+                    newCompLen = inSegment->getSegmentLength();
+                    
+                    verbose("Component was not already trimmed (size: " + std::to_string(newCompLen) + ")");
                     
                 }
                 
-                if (size < start) {
+                if (traversedSize + newCompLen < start) {
+                    
+                    verbose("Start coordinate exceeds component, removing it");
                     
                     pathComponents->erase(component);
+                    
+                    component--;
+                    
+                    traversedSize += newCompLen;
                     
                     continue;
                     
                 }
 
-                if (start > 0 && size >= start && !startIdentified) {
+                if (traversedSize + newCompLen > start && !startIdentified) {
                     
-                    std::get<3>(*component) = std::get<3>(*component) + start - size + inSegment->getSegmentLength();
+                    std::get<3>(*component) = start - traversedSize;
                     
                     startIdentified = true;
                     
+                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
+                    
                 }
                 
-                if (size >= end) {
+                if (traversedSize + newCompLen >= end) {
                     
-                    if (size != end) {
+                    pathComponents->erase(component + 1, pathComponents->end());
                     
-                        pathComponents->erase(component + 1, pathComponents->end());
+                    std::get<4>(*component) = end - traversedSize;
+                    
+                    actualSize += newCompLen + std::get<4>(*component) - inSegment->getSegmentLength();
                         
-                    }
-                    
-                    std::get<4>(*component) = std::get<3>(*component) + end - size + inSegment->getSegmentLength();
-                    
+                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
+                        
                     break;
                     
                 }
@@ -2681,33 +2697,41 @@ public:
                 
                 auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                     
-                size += inGap->getDist(std::get<3>(*component), std::get<4>(*component));
+                newCompLen = inGap->getDist(std::get<3>(*component), std::get<4>(*component));
                 
-                if (size < start) {
+                if (traversedSize + newCompLen < start) {
+                    
+                    verbose("Start coordinate exceeds component, removing it");
                     
                     pathComponents->erase(component);
+                    
+                    component--;
+                    
+                    traversedSize += newCompLen;
                     
                     continue;
                     
                 }
                 
-                if (start > 0 && size >= start && !startIdentified) {
+                if (traversedSize + newCompLen > start && !startIdentified) {
                 
-                    std::get<3>(*component) = start - size + inGap->getDist(std::get<3>(*component), std::get<4>(*component));
+                    std::get<3>(*component) = start - traversedSize + inGap->getDist(std::get<3>(*component), std::get<4>(*component));
                     
                     startIdentified = true;
+                    
+                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
                 
                 }
                 
-                if (size >= end) {
+                if (traversedSize + newCompLen >= end) {
                     
-                    if (size != end) {
+                    pathComponents->erase(component + 1, pathComponents->end());
                     
-                        pathComponents->erase(component + 1, pathComponents->end());
+                    std::get<4>(*component) = end - traversedSize + inGap->getDist(std::get<3>(*component), std::get<4>(*component));
+                    
+                    actualSize += newCompLen + std::get<4>(*component) - inGap->getDist(std::get<3>(*component), std::get<4>(*component));
                         
-                    }
-                    
-                    std::get<4>(*component) = end - size + inGap->getDist(std::get<3>(*component), std::get<4>(*component));
+                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
 
                     break;
                     
@@ -2715,7 +2739,14 @@ public:
                 
             }
             
+            actualSize += newCompLen;
+            traversedSize += newCompLen;
+            
+            verbose("Path size after iteration: " + std::to_string(actualSize));
+            
         }
+            
+        verbose("Final path size: " + std::to_string(actualSize));
     
     }
     
@@ -2731,7 +2762,7 @@ public:
             
             if (std::get<4>(*component) > 0) { // if we are subsetting we do not need to know the length of the segment
                 
-                size += std::get<4>(*component) - std::get<3>(*component) + 1;
+                size += std::get<4>(*component) - std::get<3>(*component);
                 
             }else{
                 
