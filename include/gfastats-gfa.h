@@ -819,8 +819,6 @@ public:
                 }
                 default: {
                     
-                    unsigned int count = hc_flag && hc_index < compressionIndices.size() && pos == compressionIndices[hc_index] ? compressionLengths[hc_index++] : 1;
-
                     switch (base) {
                         case 'A':
                         case 'a':{
