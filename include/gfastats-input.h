@@ -648,6 +648,7 @@ public:
                                             endS = component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1);
                                             
                                             start = std::stoi(startS);
+                                            start--;
                                             end = std::stoi(endS);
 
                                             component = component.substr(0, component.find("("));
@@ -1188,7 +1189,7 @@ public:
                     start2 = stoi(arguments[6]);
                     end2 = stoi(arguments[7]);
                     
-                    seqLen = end2 - start2 + 1;
+                    seqLen = end2 - start2;
                     
                     if(seqLen != pathLen) {
 
@@ -1203,8 +1204,8 @@ public:
                     
                     SAK sak;
                     
-                    coord1 = start1 != 0 ? "(" + std::to_string(start1) + ":" + std::to_string(end1) + ")" : "";
-                    coord2 = start2 != 0 ? "(" + std::to_string(start2) + ":" + std::to_string(end2) + ")" : "";
+                    coord1 = start1 != 0 ? "(" + std::to_string(start1 - 1) + ":" + std::to_string(end1) + ")" : "";
+                    coord2 = start2 != 0 ? "(" + std::to_string(start2 - 1) + ":" + std::to_string(end2) + ")" : "";
                     
                     instruction = "JOIN\t" + pHeader1 + coord1 + pId1Or + "\t" + pHeader2 + coord2 + pId2Or + "\t" + std::to_string(dist) + "\t" + gHeader + "\t" + pHeaderNew + "\t" + std::to_string(gUId);
                     

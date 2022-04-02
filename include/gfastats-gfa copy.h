@@ -335,7 +335,7 @@ public:
     
     unsigned int getDist(unsigned int start = 0, unsigned int end = 0) {
         
-        return start != 0 || end != 0 ? end-start : dist;
+        return start != 0 || end != 0 ? end-start+1 : dist;
         
     }
     
@@ -2679,7 +2679,7 @@ public:
 
             if (traversedSize + newCompLen > start && !startIdentified) {
                 
-                std::get<3>(*component) = std::get<3>(*component) + start - traversedSize;
+                std::get<3>(*component) = start - traversedSize;
                 
                 startIdentified = true;
                 
@@ -2687,11 +2687,15 @@ public:
                 
             }
             
-            if (end > 0 && traversedSize + newCompLen >= end) {
+            if (traversedSize + newCompLen >= end) {
                 
                 pathComponents->erase(component + 1, pathComponents->end());
                 
                 verbose("Erasing extra components");
+                
+            }
+                
+            if (std::get<3>(*component) != 0) {
             
                 std::get<4>(*component) = end - traversedSize;
                 
@@ -2702,6 +2706,7 @@ public:
                 break;
                 
             }
+                
             
             actualSize += newCompLen;
             verbose("Path size after iteration: " + std::to_string(actualSize));
