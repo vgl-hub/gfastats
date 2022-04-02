@@ -2699,7 +2699,9 @@ public:
                 
                 verbose("Erased extra components");
             
-                std::get<4>(*component) = end - traversedSize - (traversedSize < start ? 0 : std::get<3>(*component)); // edit also to account for already trimmed component
+                std::get<4>(*component) = end - traversedSize ; // edit also to account for already trimmed component // traversedSize < start ? 0 : std::get<3>(*component)
+                
+                if (std::get<3>(*component) > std::get<4>(*component)) {std::get<4>(*component) = std::get<3>(*component) + std::get<4>(*component);}
                     
                 verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
                 
