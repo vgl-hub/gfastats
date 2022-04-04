@@ -69,7 +69,7 @@ The _instructions_ directly provide the list of edits that were introduced. The 
 
 A prime example of manipulations using input from an automated tool is overlaying AGP coordinates on top of the graph to generate new scaffolds, which can be achieved with:
 ```
-gfastats my.fasta|my.gfa -a my.agp
+gfastats input.fasta|input.gfa -a input.agp -o output.fasta|output.gfa
 ```
 
 See the <a href="instructions/">instruction wiki</a> for a full list of _instructions_.
