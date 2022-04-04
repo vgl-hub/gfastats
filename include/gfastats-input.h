@@ -991,6 +991,8 @@ public:
             }
         
         }
+        
+        inSequences.updateScaffoldStats();
 
         if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
             
@@ -1053,7 +1055,7 @@ public:
                         
                     }
                     
-                    pathLen = inSequences.pathLength(pUId1);
+                    pathLen = inSequences.pathLen(pUId1);
                     
                     start1 = stoi(arguments[6]);
                     end1 = stoi(arguments[7]);
@@ -1183,7 +1185,7 @@ public:
                         
                     }
                     
-                    pathLen = inSequences.pathLength(pUId2);
+                    pathLen = inSequences.pathLen(pUId2);
                     
                     start2 = stoi(arguments[6]);
                     end2 = stoi(arguments[7]);
@@ -1227,11 +1229,9 @@ public:
                 
             }
             
-        }
+            inSequences.updateScaffoldStats();
             
-        inSequences.updateScaffoldStats();
-        
-        verbose("Updated scaffold statistics");
+        }
             
         if (sortType == "ascending") {
             

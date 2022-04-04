@@ -862,7 +862,7 @@ public:
         
         std::cout<<output("# scaffolds")<<inSequences.getScaffN()<<"\n";
         std::cout<<output("Total scaffold length")<<inSequences.getTotScaffLen()<<"\n";
-        std::cout<<output("Average scaffold length") << gfa_round(inSequences.computeAverageScaffLen()) << "\n";
+        std::cout<<output("Average scaffold length") << gfa_round(inSequences.computeAvgScaffLen()) << "\n";
         inSequences.evalNstars('s', gSize); // scaffold N* statistics
         std::cout<<output("Scaffold N50")<<inSequences.getScaffN50()<<"\n";
         inSequences.evalAuN('s', gSize); // scaffold auN
@@ -878,9 +878,8 @@ public:
         }
         std::cout<<output("Largest scaffold")<<inSequences.getLargestScaffold()<<"\n";
         
-        std::cout<<output("# contigs")<<inSequences.getSegmentN()<<"\n";
-        std::cout<<output("Total contig length")<<inSequences.getTotSegmentLen()<<"\n";
-        std::cout<<output("Average contig length") << gfa_round(inSequences.computeAverageSegmentLen()) << "\n";
+        std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<"\n";
+        std::cout<<output("Average contig length") << gfa_round(inSequences.computeAvgContigLen()) << "\n";
         inSequences.evalNstars('c', gSize); // contig N* statistics
         std::cout<<output("Contig N50")<<inSequences.getContigN50()<<"\n";
         inSequences.evalAuN('c', gSize); // contig auN
@@ -896,15 +895,15 @@ public:
         }
         std::cout<<output("Largest contig")<<inSequences.getLargestContig()<<"\n";
         
-        std::cout<<output("# gaps")<<inSequences.getGapN()<<"\n";
-        std::cout<<output("Total gap length")<<inSequences.getTotGapLen()<<"\n";
-        std::cout<<output("Average gap length") << gfa_round(inSequences.computeAverageGapLen()) << "\n";
+        std::cout<<output("# gaps in scaffolds")<<inSequences.getGapN()<<"\n";
+        std::cout<<output("Total gap length in scaffolds")<<inSequences.getTotGapLen()<<"\n";
+        std::cout<<output("Average gap length in scaffolds") << gfa_round(inSequences.computeAverageGapLen()) << "\n";
         inSequences.evalNstars('g'); // gap N* statistics
-        std::cout<<output("Gap N50")<<inSequences.getGapN50()<<"\n";
+        std::cout<<output("Gap N50 in scaffolds")<<inSequences.getGapN50()<<"\n";
         inSequences.evalAuN('g'); // gap auN
-        std::cout<<output("Gap auN") << gfa_round(inSequences.getGapauN()) << "\n";
-        std::cout<<output("Gap L50")<<inSequences.getGapL50()<<"\n";
-        std::cout<<output("Largest gap")<<inSequences.getLargestGap()<<"\n";
+        std::cout<<output("Gap auN in scaffolds") << gfa_round(inSequences.getGapauN()) << "\n";
+        std::cout<<output("Gap L50 in scaffolds")<<inSequences.getGapL50()<<"\n";
+        std::cout<<output("Largest gap in scaffolds")<<inSequences.getLargestGap()<<"\n";
         
         std::cout<<output("Base composition (A:C:G:T)");
         std::cout << inSequences.getTotA() << ":"
@@ -913,6 +912,15 @@ public:
                   << inSequences.getTotT() << "\n";
         std::cout<<output("GC content %") << gfa_round(inSequences.computeGCcontent()) << "\n";
         std::cout<<output("# soft-masked bases")<<inSequences.getTotLowerCount()<<"\n";
+        
+        // graph statistics
+        std::cout<<output("# segments")<<inSequences.getSegmentN()<<"\n";
+        std::cout<<output("Total segment length")<<inSequences.getTotSegmentLen()<<"\n";
+        std::cout<<output("Average segment length") << gfa_round(inSequences.computeAvgSegmentLen()) << "\n";
+        
+        std::cout<<output("# gaps")<<inSequences.getGapN()<<"\n";
+        
+        std::cout<<output("# paths")<<inSequences.getPathN()<<"\n";
         
         counter = 0;
         unsigned int connectedComponents = 0;
@@ -953,14 +961,6 @@ public:
             std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
             std::cout<<output("Total length disconnected components")<<inSequences.getLengthDisconnectedComponents()<<"\n";
             std::cout<<output("# separated components")<<connectedComponents<<"\n";
-        }
-        
-        unsigned int pathN = inSequences.getPathN();
-        
-        if (pathN > 0) {
-            
-            std::cout<<output("# paths")<<pathN<<"\n";
-            
         }
 
         return true;

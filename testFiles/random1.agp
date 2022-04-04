@@ -2,7 +2,7 @@ newpath1	1	5	1	W	Header1	2	5	+
 newpath1	6	10	2	N	5	scaffold	yes
 newpath1	11	13	3	W	Header2	1	3	-
 newpath1	14	18	4	N	5	scaffold	yes
-newpath1	19	24	5	W	Header3	4	8	+
+newpath1	19	24	5	W	Header3	4	10	+
 newpath2	1	5	1	W	Header5	3	7	-
 newpath2	6	10	2	N	5	scaffold	yes
 newpath2	11	25	3	W	Header4	1	15	+

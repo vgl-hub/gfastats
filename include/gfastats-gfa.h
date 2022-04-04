@@ -169,14 +169,36 @@ public:
         return T;
     }
     
-    unsigned int getLowerCount() {
+    unsigned int getLowerCount(unsigned int start = 0, unsigned int end = 0) {
         
-        return lowerCount;
+        if (start == 0 || end == 0) {
+            
+            return lowerCount;
+            
+        }else{
+            
+            long unsigned int lowerCountSubset = 0;
+            
+            for (char base : inSequence) {
+                
+                if (islower(base)) {
+                    
+                    ++lowerCountSubset;
+                    
+                }
+                
+            }
+            
+            return lowerCountSubset;
+            
+        }
+
     }
     
-    unsigned int getSegmentLength() {
+    unsigned int getSegmentLength(unsigned int start = 0, unsigned int end = 0) {
         
-        return inSequence.size();
+        return start != 0 || end != 0 ? end-start+1 : inSequence.size();
+        
     }
     
     double computeGCcontent() {
@@ -430,6 +452,8 @@ private:
     std::vector<PathTuple> pathComponents;
     unsigned int pUId;
     
+    long unsigned int length = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
+    
     friend class SAK;
     friend class InSequences;
 
@@ -516,14 +540,85 @@ public:
     
     }
     
+    unsigned int getLen() {
+        
+        return length;
+        
+    }
+    
+    unsigned int getA() {
+        
+        return A;
+        
+    }
+    
+    unsigned int getC() {
+        
+        return C;
+        
+    }
+    
+    unsigned int getG() {
+        
+        return G;
+        
+    }
+    
+    unsigned int getT() {
+        
+        return T;
+        
+    }
+    
+    unsigned int getLowerCount() {
+        
+        return lowerCount;
+        
+    }
+    
     void revCom() {
         
         revComPathComponents(pathComponents);
     
     }
     
+    void increaseLen(unsigned int n) {
+        
+        length += n;
+    
+    }
+    
+    void increaseLowerCount(unsigned int n) {
+        
+        lowerCount += n;
+    
+    }
+    
+    void increaseA(unsigned int n) {
+        
+        A += n;
+    
+    }
+    
+    void increaseC(unsigned int n) {
+        
+        C += n;
+    
+    }
+    
+    void increaseG(unsigned int n) {
+        
+        G += n;
+    
+    }
+    
+    void increaseT(unsigned int n) {
+        
+        T += n;
+    
+    }
+    
 };
-
 
 class InSequences { //collection of InSegment and inGap objects and their summary statistics
     
@@ -566,7 +661,7 @@ private:
     InEdge edge;
     InPath path;
     
-    unsigned long long int totSegmentLen = 0;
+    unsigned long long int totScaffLen = 0, totSegmentLen = 0;
     
     unsigned int
     scaffN = 0,
@@ -1045,7 +1140,7 @@ public:
     
     unsigned long long int getTotScaffLen() {
         
-        return totSegmentLen+totGapLen;
+        return totScaffLen;
         
     }
     
@@ -1069,13 +1164,13 @@ public:
     
     unsigned int getTotGapLen() {
         
-        return totGapLen;
+        return accumulate(gapLens.begin(), gapLens.end(), 0);
         
     }
     
     unsigned int getGapN() {
         
-        return inGaps.size();
+        return gapLens.size();
         
     }
 
@@ -1402,21 +1497,33 @@ public:
         
     }
     
-    double computeAverageScaffLen() {
+    double computeAvgScaffLen() {
         
-        return (double) (totSegmentLen+totGapLen)/scaffN;
+        return (double) totScaffLen/scaffN;
         
     }
     
-    double computeAverageSegmentLen() {
+    long unsigned int getTotContigLen () {
         
-        return (double) totSegmentLen/contigLens.size();
+        return accumulate(contigLens.begin(), contigLens.end(), 0);
+        
+    }
+
+    double computeAvgContigLen() {
+        
+        return (double) accumulate(contigLens.begin(), contigLens.end(), 0)/contigLens.size();
+        
+    }
+    
+    double computeAvgSegmentLen() {
+        
+        return (double) totSegmentLen/inSegments.size();
         
     }
     
     double computeAverageGapLen() {
         
-        return totGapLen == 0 ? 0 : (double) totGapLen/gapLens.size();
+        return totGapLen == 0 ? 0 : (double) accumulate(gapLens.begin(), gapLens.end(), 0)/gapLens.size();
         
     }
     
@@ -1984,47 +2091,41 @@ public:
     bool updateScaffoldStats() {
         
         scaffLens.clear();
+        contigLens.clear();
+        gapLens.clear();
         
-        scaffN = 0, totA = 0, totC = 0, totG = 0, totT = 0, totLowerCount = 0;
+        totScaffLen = 0, scaffN = 0, totA = 0, totC = 0, totG = 0, totT = 0, totLowerCount = 0;
         
-        unsigned int scaffSize = 0, A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
-        
-        buildGraph(getGaps()); // first build the graph
-        
-        for (InSegment inSegment : inSegments) { // loop through all nodes
+        for (InPath& inPath : inPaths) { // loop through all paths
             
-            if (!getVisited(inSegment.getuId()) && !getDeleted(inSegment.getuId())) { // check if the node was already visited and not deleted
-        
-                dfsScaffolds(inSegment.getuId(), &scaffSize, &A, &C, &G, &T, &lowerCount); // then walk the scaffold to update statistics
-             
-                scaffN++;
-                
-                verbose("Increased total scaffold N");
-                
-                recordScaffLen(scaffSize);
-                
-                verbose("Recorded length of sequence: " + std::to_string(scaffSize));
-                
-                scaffSize = 0;
-                
-                totA += A;
-                totC += C;
-                totG += G;
-                totT += T;
-                
-                verbose("Increased total ACGT counts");
-                
-                A = 0, C = 0, G = 0, T = 0;
-                
-                totLowerCount += lowerCount;
+            walkPath(inPath.getpUId());
+            
+            totScaffLen += inPath.getLen();
+         
+            verbose("Increased total scaffold length");
+            
+            scaffN++;
+            
+            verbose("Increased total scaffold N");
+            
+            recordScaffLen(inPath.getLen());
+            
+            verbose("Recorded length of sequence: " + std::to_string(inPath.getLen()));
+            
+            totA += inPath.getA();
+            totC += inPath.getC();
+            totG += inPath.getG();
+            totT += inPath.getT();
+            
+            verbose("Increased total ACGT counts");
+            
+            totLowerCount += inPath.getLowerCount();
 
-                verbose("Increased total count of lower bases");
-                
-                lowerCount = 0;
-                
-            }
+            verbose("Increased total count of lower bases");
             
         }
+        
+        verbose("Updated scaffold statistics");
         
         return true;
         
@@ -2639,15 +2740,13 @@ public:
                 
                 compOriginalSize = inSegment->getSegmentLength();
                 
+                compSize = inSegment->getSegmentLength(std::get<3>(*component), std::get<4>(*component));
+                
                 if (std::get<4>(*component) > 0) {
-                    
-                    compSize = std::get<4>(*component) - std::get<3>(*component) + 1;
                     
                     verbose("Component was already trimmed (size: " + std::to_string(compSize) + ")");
                     
                 }else{
-                    
-                    compSize = compOriginalSize;
                     
                     verbose("Component was not already trimmed (size: " + std::to_string(compSize) + ")");
                     
@@ -2734,43 +2833,149 @@ public:
     
     }
     
-    unsigned int pathLength(unsigned int pUId) {
+    unsigned int pathLen(unsigned int pUId) {
         
-        unsigned int size = 0, cUId = 0;
+        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
         
-        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
+        return pathIt->getLen();
+        
+    }
+    
+    void walkPath(unsigned int pUId) {
+        
+        unsigned int cUId = 0, gapLen = 0;
+
+        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
         
         std::vector<PathTuple> pathComponents = pathIt->getComponents();
         
         for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
-            
-            if (std::get<4>(*component) > 0) { // if we are subsetting we do not need to know the length of the segment
                 
-                size += std::get<4>(*component) - std::get<3>(*component);
+            cUId = std::get<1>(*component);
+        
+            if (std::get<0>(*component) == 'S') {
                 
-            }else{
+                auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                 
-                cUId = std::get<1>(*component);
-            
-                if (std::get<0>(*component) == 'S') {
+                contigLens.push_back(inSegment->getSegmentLength(std::get<3>(*component), std::get<4>(*component)));
+                
+                pathIt->increaseLen(inSegment->getSegmentLength(std::get<3>(*component), std::get<4>(*component)));
+                
+                pathIt->increaseLowerCount(inSegment->getLowerCount(std::get<4>(*component) - std::get<3>(*component)));
+                
+                if (std::get<3>(*component) == 0 || std::get<4>(*component) == 0) {
+                
+                    pathIt->increaseA(std::get<2>(*component) == '+' ? inSegment->getA() : inSegment->getT());
                     
-                    auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                    pathIt->increaseC(std::get<2>(*component) == '+' ? inSegment->getC() : inSegment->getG());
                     
-                    size += inSegment->getSegmentLength();
+                    pathIt->increaseG(std::get<2>(*component) == '+' ? inSegment->getG() : inSegment->getC());
+                    
+                    pathIt->increaseT(std::get<2>(*component) == '+' ? inSegment->getT() : inSegment->getA());
                     
                 }else{
                     
-                    auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                    std::string sequence = inSegment->getInSequence(std::get<4>(*component) - std::get<3>(*component));
                     
-                    size += inGap->getDist();
+                    if (std::get<2>(*component) == '+') {
+                    
+                        for (char base : sequence) {
+                            
+                            switch (base) {
+                                case 'A':
+                                case 'a':{
+                                    
+                                    pathIt->increaseA(1);
+                                    break;
+                                    
+                                }
+                                case 'C':
+                                case 'c':{
+                                    
+                                    pathIt->increaseC(1);
+                                    break;
+                                    
+                                }
+                                case 'G':
+                                case 'g': {
+                                    
+                                    pathIt->increaseG(1);
+                                    break;
+                                    
+                                }
+                                case 'T':
+                                case 't': {
+                                    
+                                    pathIt->increaseT(1);
+                                    break;
+                                    
+                                }
+                        
+                            }
+                            
+                        }
+
+                    }else{
+                        
+                        for (char base : sequence) {
+                        
+                            switch (base) {
+                                case 'A':
+                                case 'a':{
+                                    
+                                    pathIt->increaseT(1);
+                                    break;
+                                    
+                                }
+                                case 'C':
+                                case 'c':{
+                                    
+                                    pathIt->increaseG(1);
+                                    break;
+                                    
+                                }
+                                case 'G':
+                                case 'g': {
+                                    
+                                    pathIt->increaseC(1);
+                                    break;
+                                    
+                                }
+                                case 'T':
+                                case 't': {
+                                    
+                                    pathIt->increaseA(1);
+                                    break;
+                                    
+                                }
+                        
+                            }
+                            
+                        }
+                        
+                    }
                     
                 }
+                
+            }else{
+                
+                auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                
+                gapLen += inGap->getDist(std::get<4>(*component) - std::get<3>(*component));
+                
+                if (!(std::get<0>(*(component + 1)) == 'G')) {
+                
+                    gapLens.push_back(gapLen);
+                    
+                    gapLen = 0;
+                    
+                }
+                
+                pathIt->increaseLen(inGap->getDist(std::get<4>(*component) - std::get<3>(*component)));
                 
             }
             
         }
-        
-        return size;
         
     }
     
