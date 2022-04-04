@@ -976,6 +976,12 @@ public:
             
         }
         
+        if (discoverPaths_flag) {
+            
+            inSequences.discoverPaths();
+            
+        }
+        
         if (!instructions.empty()) {
             
             verbose("\nStarted instruction execution");
@@ -1036,7 +1042,15 @@ public:
                 
                 if (arguments[4] == "W") { // this is an old path
                     
-                    pHeader1 = arguments[5];
+                    if (!discoverPaths_flag) {
+                    
+                        pHeader1 = arguments[5];
+                    
+                    }else{
+                        
+                        pHeader1 = arguments[5] + "_path";
+                    }
+                    
                     pId1Or = arguments[8][0];
                     
                     hash = inSequences.getHash1();
@@ -1166,7 +1180,15 @@ public:
                     
                     if (arguments.size() == 0) {continue;}
                     
-                    pHeader2 = arguments[5];
+                    if (!discoverPaths_flag) {
+                    
+                        pHeader2 = arguments[5];
+                    
+                    }else{
+                        
+                        pHeader2 = arguments[5] + "_path";
+                    }
+                        
                     pId2Or = arguments[8][0];
                     
                     hash = inSequences.getHash1();
