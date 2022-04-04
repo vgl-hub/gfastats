@@ -2875,7 +2875,7 @@ public:
                     
                 }else{
                     
-                    std::string sequence = inSegment->getInSequence(std::get<4>(*component) - std::get<3>(*component));
+                    std::string sequence = inSegment->getInSequence(std::get<3>(*component), std::get<4>(*component));
                     
                     if (std::get<2>(*component) == '+') {
                     
