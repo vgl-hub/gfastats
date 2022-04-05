@@ -47,6 +47,7 @@ int main(int argc, char **argv) {
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
         {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
         {"homopolymer-compress", required_argument, &hc_flag, 1},
+        {"discover-paths", no_argument, &discoverPaths_flag, 1},
         {"sort", required_argument, 0, 0},
         
         {"include-bed", required_argument, 0, 'i'},
@@ -328,6 +329,7 @@ int main(int argc, char **argv) {
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
                 printf("--cmd print $0 to stdout.\n");
+                printf("--discover-paths prototype to induce paths from input.\n");
                 printf("--homopolymer-compress <threshhold> compress all the homopolymers in the input above the given threshhold.\n");
                 printf("--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
@@ -344,7 +346,8 @@ int main(int argc, char **argv) {
         if    (argc == 2 || // handle various cases in which the output should include summary stats
               (argc == 3 && pos_op == 2) ||
               (argc == 4 && pos_op == 3) ||
-              nstarReport_flag) {
+               nstarReport_flag ||
+               discoverPaths_flag) {
             
             stats_flag = 1; // default mode 'stats'
             

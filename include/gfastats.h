@@ -25,6 +25,7 @@
 #include <tuple> // for graph manipulation
 #include <cctype> // toupper()
 #include <iomanip>
+#include <numeric>
 
 #include <chrono>
 #include <memory>

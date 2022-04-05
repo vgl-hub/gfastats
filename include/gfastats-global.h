@@ -25,6 +25,7 @@ static int outFile_flag;
 static int stats_flag;
 static int cmd_flag;
 static int rmGaps_flag;
+static int discoverPaths_flag;
 static int hc_flag;
 static int hc_cutoff;
 

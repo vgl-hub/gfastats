@@ -976,6 +976,12 @@ public:
             
         }
         
+        if (discoverPaths_flag) {
+            
+            inSequences.discoverPaths();
+            
+        }
+        
         if (!instructions.empty()) {
             
             verbose("\nStarted instruction execution");
@@ -991,6 +997,8 @@ public:
             }
         
         }
+        
+        inSequences.updateScaffoldStats();
 
         if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
             
@@ -1034,7 +1042,15 @@ public:
                 
                 if (arguments[4] == "W") { // this is an old path
                     
-                    pHeader1 = arguments[5];
+                    if (!discoverPaths_flag) {
+                    
+                        pHeader1 = arguments[5];
+                    
+                    }else{
+                        
+                        pHeader1 = arguments[5] + "_path";
+                    }
+                    
                     pId1Or = arguments[8][0];
                     
                     hash = inSequences.getHash1();
@@ -1053,7 +1069,7 @@ public:
                         
                     }
                     
-                    pathLen = inSequences.pathLength(pUId1);
+                    pathLen = inSequences.pathLen(pUId1);
                     
                     start1 = stoi(arguments[6]);
                     end1 = stoi(arguments[7]);
@@ -1164,7 +1180,15 @@ public:
                     
                     if (arguments.size() == 0) {continue;}
                     
-                    pHeader2 = arguments[5];
+                    if (!discoverPaths_flag) {
+                    
+                        pHeader2 = arguments[5];
+                    
+                    }else{
+                        
+                        pHeader2 = arguments[5] + "_path";
+                    }
+                        
                     pId2Or = arguments[8][0];
                     
                     hash = inSequences.getHash1();
@@ -1183,7 +1207,7 @@ public:
                         
                     }
                     
-                    pathLen = inSequences.pathLength(pUId2);
+                    pathLen = inSequences.pathLen(pUId2);
                     
                     start2 = stoi(arguments[6]);
                     end2 = stoi(arguments[7]);
@@ -1227,11 +1251,9 @@ public:
                 
             }
             
-        }
+            inSequences.updateScaffoldStats();
             
-        inSequences.updateScaffoldStats();
-        
-        verbose("Updated scaffold statistics");
+        }
             
         if (sortType == "ascending") {
             
