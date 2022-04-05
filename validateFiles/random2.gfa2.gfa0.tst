@@ -1,30 +1,34 @@
 testFiles/random2.gfa2.gfa 
 embedded
 +++Summary+++: 
-# scaffolds: 2
-Total scaffold length: 50
-Average scaffold length: 25.00
-Scaffold N50: 36
-Scaffold auN: 29.84
+# scaffolds: 1
+Total scaffold length: 20
+Average scaffold length: 20.00
+Scaffold N50: 20
+Scaffold auN: 20.00
 Scaffold L50: 1
-Largest scaffold: 36
-# contigs: 5
-Total contig length: 35
-Average contig length: 7.00
-Contig N50: 7
-Contig auN: 7.29
-Contig L50: 3
-Largest contig: 9
-# gaps: 4
-Total gap length: 15
-Average gap length: 3.75
-Gap N50: 5
-Gap auN: 4.20
-Gap L50: 2
-Largest gap: 5
-Base composition (A:C:G:T): 14:5:8:8
-GC content %: 37.14
+Largest scaffold: 20
+Total contig length: 15
+Average contig length: 5.00
+Contig N50: 5
+Contig auN: 5.53
+Contig L50: 2
+Largest contig: 7
+# gaps in scaffolds: 2
+Total gap length in scaffolds: 5
+Average gap length in scaffolds: 2.50
+Gap N50 in scaffolds: 3
+Gap auN in scaffolds: 2.60
+Gap L50 in scaffolds: 1
+Largest gap in scaffolds: 3
+Base composition (A:C:G:T): 6:4:1:4
+GC content %: 33.33
 # soft-masked bases: 0
+# segments: 5
+Total segment length: 35
+Average segment length: 7.00
+# gaps: 2
+# paths: 1
 # edges: 2
 Average degree: 0.40
 # connected components: 1
@@ -33,4 +37,3 @@ Largest connected component length: 11
 # disconnected components: 3
 Total length disconnected components: 24
 # separated components: 4
-# paths: 1
