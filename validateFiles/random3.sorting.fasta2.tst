@@ -1,4 +1,4 @@
--b c testFiles/random3.sorting.fasta
+testFiles/random3.sorting.fasta -b c
 embedded
 c.1	0	4
 d.1	0	4

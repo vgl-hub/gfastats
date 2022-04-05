@@ -1,4 +1,4 @@
--b c testFiles/random1.fastq
+testFiles/random1.fasta -b c
 embedded
 Header1.1	0	5
 Header2.1	0	3

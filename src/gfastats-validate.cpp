@@ -9,8 +9,8 @@ build/bin/gfastats-validate testFiles/random1.fasta testFiles/random2.gfa2.gfa.g
 
 */
 
+#include <gfastats-validate.h>
 #include <algorithm>
-#include <iostream>
 #include <fstream>
 #include <string>
 #include <dirent.h>
@@ -25,43 +25,6 @@ bool verbose = false, veryVerbose = false, printCommand = false;
 const std::string tmp = "tmp.txt";
 const std::string err = "err.txt";
 bool pass = true;
-
-std::string getFileExt(const std::string& FileName) // utility to get file extension
-{
-    if(FileName.find_last_of(".") != std::string::npos)
-        return FileName.substr(FileName.find_last_of(".")+1);
-    return "";
-}
-
-std::vector<std::string> list_dir(const char *path) {
-    std::vector<std::string> list;
-    struct dirent *entry;
-    DIR *dir = opendir(path);
-
-    if (dir == NULL) {
-        std::cerr << "error: unable to access " << path << std::endl;
-        exit(0);
-    }
-    while ((entry = readdir(dir)) != NULL) {
-        if(entry->d_type == DT_REG) list.push_back(std::string(entry->d_name));
-    }
-    closedir(dir);
-    return list;
-}
-
-void get_recursive(const std::string &path, std::set<std::string> &paths) {
-    if(getFileExt(path) == "tst") {
-        paths.insert(path);
-    } else {
-        DIR *dir = opendir(path.c_str());
-        if(dir != NULL) {
-            for(const auto &file : list_dir(path.c_str())) {
-                get_recursive((path+"/"+file).c_str(), paths);
-            }
-        }
-        closedir(dir);
-    }
-}
 
 void printFAIL(const char *m1="", const char *m2="", const char *m3="", const char *m4="") {
     pass = false;
@@ -100,11 +63,7 @@ int main(int argc, char **argv) {
         get_recursive(argv[i], input_files);
     }
 
-    std::string argv0 = std::string(argv[0]);
-    std::string exePath = argv0.substr(0, argv0.find_last_of("/\\")+1);
-    std::replace(exePath.begin(), exePath.end(), '\\', '/');
-
-    exePath += "gfastats";
+    std::string exePath = getExePath(argv[0]);
 
     std::string line;
     std::ifstream istream, exp, actOutput, *expOutput;
@@ -117,7 +76,7 @@ int main(int argc, char **argv) {
         std::getline(istream, line);
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         line.erase(remove(line.begin(), line.end(), '\n'), line.end());
-        std::string cmd = exePath+" "+line+" > "+tmp+" 2>"+err;
+        std::string cmd = "\""+exePath+"\""+" "+line+" > "+tmp+" 2>"+err;
         if(printCommand) std::cout << cmd << std::endl;
 
         if(system(cmd.c_str()) != EXIT_SUCCESS) {
