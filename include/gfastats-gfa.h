@@ -1162,12 +1162,6 @@ public:
         
     }
     
-    unsigned int getTotGapLen() {
-        
-        return accumulate(gapLens.begin(), gapLens.end(), 0);
-        
-    }
-    
     unsigned int getGapN() {
         
         return gapLens.size();
@@ -1505,13 +1499,21 @@ public:
     
     long unsigned int getTotContigLen () {
         
-        return accumulate(contigLens.begin(), contigLens.end(), 0);
+        long unsigned int totContigLen = 0;
+        
+        for (std::vector<unsigned int>::iterator contigLen = contigLens.begin(); contigLen != contigLens.end(); contigLen++) {
+            
+            totContigLen += *contigLen;
+            
+        }
+        
+        return totContigLen;
         
     }
 
     double computeAvgContigLen() {
         
-        return (double) accumulate(contigLens.begin(), contigLens.end(), 0)/contigLens.size();
+        return (double) getTotContigLen()/contigLens.size();
         
     }
     
@@ -1521,9 +1523,23 @@ public:
         
     }
     
+    unsigned int getTotGapLen() {
+        
+        long unsigned int totGapLen = 0;
+        
+        for (std::vector<unsigned int>::iterator gapLen = gapLens.begin(); gapLen != gapLens.end(); gapLen++) {
+            
+            totGapLen += *gapLen;
+            
+        }
+        
+        return totGapLen;
+        
+    }
+    
     double computeAverageGapLen() {
         
-        return totGapLen == 0 ? 0 : (double) accumulate(gapLens.begin(), gapLens.end(), 0)/gapLens.size();
+        return totGapLen == 0 ? 0 : (double) getTotGapLen()/gapLens.size();
         
     }
     
