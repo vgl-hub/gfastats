@@ -1,4 +1,4 @@
--b s testFiles/random1.fasta
+testFiles/random1.fasta -b s
 embedded
 Header1	0	5
 Header2	0	5

@@ -1,4 +1,4 @@
---homopolymer-compress 5 testFiles/random3.sorting.fasta
+testFiles/random3.sorting.fasta 
 embedded
 +++Summary+++: 
 # scaffolds: 4

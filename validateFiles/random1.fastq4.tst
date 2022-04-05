@@ -1,4 +1,4 @@
---homopolymer-compress 5 testFiles/random1.fastq
+testFiles/random1.fastq --homopolymer-compress 5
 embedded
 +++Summary+++: 
 # scaffolds: 5

@@ -1,4 +1,4 @@
-testFiles/random1.fastq
+testFiles/random1.fastq 
 embedded
 +++Summary+++: 
 # scaffolds: 5
