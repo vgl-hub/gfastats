@@ -1128,7 +1128,7 @@ public:
                     
                     stream->seekg(oldpos); // reset stream to previous line
                     
-                }else if(arguments[4] == "N"){
+                }else if(arguments[4] == "N" || arguments[4] == "U"){
 
                     hash = inSequences.getHash1();
                     
