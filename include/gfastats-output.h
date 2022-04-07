@@ -919,7 +919,6 @@ public:
         std::cout<<output("Average segment length") << gfa_round(inSequences.computeAvgSegmentLen()) << "\n";
         
         std::cout<<output("# gaps")<<inSequences.getGapN()<<"\n";
-        
         std::cout<<output("# paths")<<inSequences.getPathN()<<"\n";
         
         counter = 0;
@@ -961,6 +960,26 @@ public:
             std::cout<<output("# disconnected components")<<inSequences.getDisconnectedComponents()<<"\n";
             std::cout<<output("Total length disconnected components")<<inSequences.getLengthDisconnectedComponents()<<"\n";
             std::cout<<output("# separated components")<<connectedComponents<<"\n";
+            
+            inSequences.findBubbles();
+            
+            std::cout<<output("# bubbles")<<inSequences.getBubbles()->size()<<"\n";
+            
+            if (outBubbles_flag) {
+                
+                phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
+                
+                for (Bubble bubble : *inSequences.getBubbles()) { // loop through all nodes
+                    
+                    std::cout<<idsToHeaders[std::get<0>(bubble)]<<"\t"
+                             <<idsToHeaders[std::get<1>(bubble)]<<"\t"
+                             <<idsToHeaders[std::get<2>(bubble)]<<"\t"
+                             <<idsToHeaders[std::get<3>(bubble)]<<"\n";
+                    
+                }
+            
+            }
+                
         }
 
         return true;

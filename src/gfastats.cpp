@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
         {"out-sequence", no_argument, &outSequence_flag, 1},
         {"out-size", required_argument, 0, 's'},
         {"out-coord", required_argument, 0, 'b'},
+        {"out-bubbles", no_argument, &outBubbles_flag, 1},
         
         {"stats", no_argument, &stats_flag, 1},
         {"seq-report", no_argument, &seqReport_flag, 1},
@@ -334,6 +335,7 @@ int main(int argc, char **argv) {
                 printf("--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
+                printf("--out-bubbles outputs a potential list of bubbles in the graph.\n");
                 printf("--seq-report report statistics for each sequence.\n");
                 printf("--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
                 printf("--stats report summary statistics (default).\n");

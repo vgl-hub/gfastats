@@ -22,6 +22,7 @@ static int nstarReport_flag;
 static int outSize_flag;
 static int outCoord_flag;
 static int outFile_flag;
+static int outBubbles_flag;
 static int stats_flag;
 static int cmd_flag;
 static int rmGaps_flag;

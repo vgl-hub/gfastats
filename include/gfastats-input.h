@@ -377,7 +377,7 @@ public:
                                 
                             }
                             
-                        }else if (arguments[0] == "G") {
+                        }else if (arguments[0] == "G" || arguments[0] == "O") {
                             
                             version = '2';
                             verbose("Proposed GFA version: " + version);

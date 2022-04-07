@@ -680,6 +680,8 @@ private:
     unsigned int disconnectedComponents = 0;
     unsigned int lengthDisconnectedComponents = 0;
     
+    std::vector<Bubble> bubbles;
+    
     friend class SAK;
     
 public:
@@ -1862,7 +1864,7 @@ public:
         
     }
 
-   void dfsEdges(unsigned int v, unsigned int* componentLength) { // Depth First Search to find graph connectivity
+   void dfsEdges(unsigned int v, unsigned int* componentLength) { // Depth First Search to explore graph connectivity
 
        visited[v] = true; // mark the current node as visited
 
@@ -3123,6 +3125,92 @@ public:
             }
         }
 
+    }
+    
+    void findBubbles () {
+        
+        unsigned int sUId = 0, sUId1 = 0, sUId2 = 0;
+        char sId1Or, sId2Or;
+        
+        visited.clear();
+        
+        buildEdgeGraph(inEdges);
+        
+        for (InSegment segment : inSegments) {
+            
+            sUId = segment.getuId();
+            
+            verbose("Evaluating for node: " + idsToHeaders[sUId] + " (uId: " + std::to_string(sUId) + ")");
+            
+            if (!visited[sUId] && !deleted[sUId]) { // check if the node was already visited
+                
+                verbose("The node was not yet visited or deleted");
+                
+                if (adjEdgeListFW.at(sUId).size() == 2 && std::get<0>(adjEdgeListFW.at(sUId).at(0)) != std::get<0>(adjEdgeListFW.at(sUId).at(1))) { // if it has exactly two edges with different orientation it could be a het region of the bubble
+                    
+                    verbose("Exactly two edges with different orientation found. Could be a het region of the bubble");
+                    
+                    // then check the the adjacient nodes
+                    sUId1 = std::get<1>(adjEdgeListFW.at(sUId).at(0));
+                    sId1Or = std::get<2>(adjEdgeListFW.at(sUId).at(0));
+                    
+                    sUId2 = std::get<1>(adjEdgeListFW.at(sUId).at(1));
+                    sId2Or = std::get<2>(adjEdgeListFW.at(sUId).at(1));
+                    
+                    if (adjEdgeListFW.at(sUId1).size() >= 2 && adjEdgeListFW.at(sUId2).size() >= 2) { // both nodes need at least two edges to be a bubble
+                        
+                        verbose("Both neighbour nodes have at least two edges");
+                        
+                        for (EdgeTuple edge1 : adjEdgeListFW.at(sUId1)) {
+                            
+                            if (std::get<2>(edge1) == sId1Or && std::get<1>(edge1) != sUId) { // we are checking edges on the side of the potential bubble for node1, avoiding the original node
+                                
+                                verbose("Evaluating node: " + idsToHeaders[std::get<1>(edge1)] + " (uId: " + std::to_string(std::get<1>(edge1)) + ")");
+                                
+                                if (std::get<1>(edge1) == sUId2) { // this is a potential insertion
+                                    
+                                    bubbles.push_back(std::make_tuple(sUId, sUId1, sUId2, NULL));
+                                    
+                                    verbose("Candidate insertion found");
+                                    
+                                }else{
+                                    
+                                    for (EdgeTuple edge2 : adjEdgeListFW.at(sUId2)) {
+                                    
+                                        if (std::get<2>(edge2) == sId2Or && std::get<1>(edge1) == std::get<1>(edge2)) { // we are checking edges on the side of the potential bubble for node2 and that it connects to the same node as node1
+                                            
+                                            verbose("Evaluating node: " + idsToHeaders[std::get<1>(edge2)] + " (uId: " + std::to_string(std::get<1>(edge2)) + ")");
+                                            
+                                            bubbles.push_back(std::make_tuple(sUId, sUId1, sUId2, std::get<1>(edge2)));
+                                            
+                                            verbose("Candidate bubble found");
+                                            
+                                        }
+                                        
+                                    }
+                                    
+                                }
+                                   
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+
+            }
+            
+            visited[sUId] = true;
+            
+        }
+        
+    }
+    
+    std::vector<Bubble>* getBubbles () {
+        
+        return &bubbles;
+        
     }
     
     // end of gfa methods

@@ -17,9 +17,10 @@
 #include <cmath>
 
 //typedef
-typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> Tuple; // tuple for gap edges orientation|segment_id|orientation|dist|edge_id
-typedef std::tuple<char, unsigned int, char> EdgeTuple; // tuple for gap edges orientation|id|orientation
+typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> Tuple; // tuple for gaps orientation|segment_id|orientation|dist|edge_id
+typedef std::tuple<char, unsigned int, char> EdgeTuple; // tuple for edges orientation|id|orientation
 typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> PathTuple; // tuple for paths type|id|orientation|start|end
+typedef std::tuple<unsigned int, unsigned int, unsigned int, unsigned int> Bubble; // tuple for bubbles, ids of the 3/4 elements involved
 
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
