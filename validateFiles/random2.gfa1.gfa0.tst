@@ -1,5 +1,3 @@
-testFiles/random2.gfa1.gfa 
-embedded
 +++Summary+++: 
 # scaffolds: 1
 Total scaffold length: 18
@@ -37,3 +35,4 @@ Largest connected component length: 11
 # disconnected components: 1
 Total length disconnected components: 7
 # separated components: 1
+# bubbles: 0
