@@ -1,3 +1,5 @@
+testFiles/random2.gfa2.gfa
+embedded
 +++Summary+++: 
 # scaffolds: 1
 Total scaffold length: 20
