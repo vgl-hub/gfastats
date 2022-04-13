@@ -2804,7 +2804,7 @@ public:
                     
                 }else{
                     
-                    std::get<4>(*component) = (std::get<4>(*component) == 0 ? end - traversedSize : std::get<4>(*component) - 1) + start - traversedSize + end - traversedSize;
+                    std::get<4>(*component) = (std::get<4>(*component) == 0 ? end - traversedSize : std::get<4>(*component) - 1) + end - traversedSize;
                     
                     verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
                     
