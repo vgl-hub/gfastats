@@ -1057,7 +1057,7 @@ public:
         
         verbose("Header, comment, sequence and (optionally) quality read");
         
-        if(verbose_flag) {std::cout<<"\n";};
+        if(verbose_flag) {std::cerr<<"\n";};
         
         traverseInSequence(pHeader, pComment, sequence, sequenceQuality);
         
@@ -1067,7 +1067,7 @@ public:
         
         verbose("Increased total scaffold N");
         
-        if(verbose_flag) {std::cout<<"\n";};
+        if(verbose_flag) {std::cerr<<"\n";};
         
     }
     
@@ -1075,7 +1075,7 @@ public:
         
         verbose("Header, comment, sequence and (optionally) quality read");
         
-        if(verbose_flag) {std::cout<<"\n";};
+        if(verbose_flag) {std::cerr<<"\n";};
         
         traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality);
         
@@ -1085,7 +1085,7 @@ public:
         
         verbose("Increased total scaffold N");
         
-        if(verbose_flag) {std::cout<<"\n";};
+        if(verbose_flag) {std::cerr<<"\n";};
         
     }
     
@@ -2750,7 +2750,7 @@ public:
             
             verbose("New path size before iteration: " + std::to_string(actualSize));
             
-            verbose("Checking original coordinates of component (uId: " + std::to_string(std::get<1>(*component)) + ", start: " + std::to_string(std::get<4>(*component)) + ", end: " + std::to_string(std::get<3>(*component)) + ")");
+            verbose("Checking original coordinates of component (uId: " + std::to_string(std::get<1>(*component)) + ", start: " + std::to_string(std::get<3>(*component)) + ", end: " + std::to_string(std::get<4>(*component)) + ")");
             
             if (std::get<0>(*component) == 'S') {
             
@@ -2796,7 +2796,15 @@ public:
 
             if (traversedSize + compSize >= start && traversedSize < start) {
                 
+                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
+                
                 std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
+                    
+                }else{
+                    
+                    std::get<4>(*component) = end - traversedSize;
+                    
+                }
                 
                 verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
                 
@@ -2815,8 +2823,16 @@ public:
                 pathComponents->erase(component + 1, pathComponents->end());
                 
                 verbose("Erased extra components");
-            
-                std::get<4>(*component) = end - traversedSize ; // edit also to account for already trimmed component // traversedSize < start ? 0 : std::get<3>(*component)
+                
+                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
+                
+                    std::get<4>(*component) = end - traversedSize; // edit also to account for already trimmed component // traversedSize < start ? 0 : std::get<3>(*component)
+                    
+                }else{
+                    
+                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
+                    
+                }
                 
                 if (std::get<3>(*component) > std::get<4>(*component)) {std::get<4>(*component) = std::get<3>(*component) + std::get<4>(*component);}
                     
