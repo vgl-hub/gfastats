@@ -2798,15 +2798,17 @@ public:
                 
                 if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
                 
-                std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
+                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
+                    
+                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
                     
                 }else{
                     
                     std::get<4>(*component) = end - traversedSize;
                     
+                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
+                    
                 }
-                
-                verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
                 
                 newCompSize = std::get<4>(*component) - std::get<3>(*component) + 1;
                 
@@ -2828,15 +2830,17 @@ public:
                 
                     std::get<4>(*component) = end - traversedSize; // edit also to account for already trimmed component // traversedSize < start ? 0 : std::get<3>(*component)
                     
+                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
+                    
                 }else{
                     
-                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start + traversedSize; // edit also to account for already trimmed component
+                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + traversedSize; // edit also to account for already trimmed component
+                    
+                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
                     
                 }
                 
                 if (std::get<3>(*component) > std::get<4>(*component)) {std::get<4>(*component) = std::get<3>(*component) + std::get<4>(*component);}
-                    
-                verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
                 
                 if (std::get<4>(*component) > 0 && std::get<3>(*component) == 0) { // account for editing of the end coordinate but not the start coordinate
                     
