@@ -2830,7 +2830,7 @@ public:
                     
                 }else{
                     
-                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
+                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start + traversedSize; // edit also to account for already trimmed component
                     
                 }
                 
