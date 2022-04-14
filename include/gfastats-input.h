@@ -1251,7 +1251,7 @@ public:
                 
             }
             
-            inSequences.updateScaffoldStats();
+//            inSequences.updateScaffoldStats();
             
         }
             

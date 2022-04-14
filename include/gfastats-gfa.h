@@ -2796,27 +2796,11 @@ public:
 
             if (traversedSize + compSize >= start && traversedSize < start) {
                 
-                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
+                std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
                 
-                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
-                    
-                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
-                    
-                }else{
-                    
-                    std::get<4>(*component) = (std::get<4>(*component) == 0 ? end - traversedSize : std::get<3>(*component) - 1) + end - traversedSize;
-                    
-                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
-                    
-                }
+                verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
                 
                 newCompSize = std::get<4>(*component) - std::get<3>(*component) + 1;
-                
-            }
-            
-            if (std::get<3>(*component) > 0 && std::get<4>(*component) == 0) { // account for editing of the end coordinate but not the start coordinate
-                
-                std::get<4>(*component) = compSize;
                 
             }
             
@@ -2826,33 +2810,27 @@ public:
                 
                 verbose("Erased extra components");
                 
-                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
+//                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
                 
                     std::get<4>(*component) = end - traversedSize; // edit also to account for already trimmed component // traversedSize < start ? 0 : std::get<3>(*component)
-                    
-                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
-                    
-                }else{
-                    
-                    //placeholder for start coordinate
-                    
-                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
-                    
-                }
+                
+                verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
                 
                 if (std::get<3>(*component) > std::get<4>(*component)) {std::get<4>(*component) = std::get<3>(*component) + std::get<4>(*component);}
-                
-                if (std::get<4>(*component) > 0 && std::get<3>(*component) == 0) { // account for editing of the end coordinate but not the start coordinate
-                    
-                    std::get<3>(*component) = 1;
-                    
-                }
                 
                 newCompSize = std::get<4>(*component) - std::get<3>(*component) + 1;
                 
             }
             
-            if(std::get<3>(*component) == 1 && std::get<4>(*component) == compOriginalSize) { // if the result of trimming restores the original size of the component, no need to adjust the internal coordinates
+            if (std::get<3>(*component) > 0 && std::get<4>(*component) == 0) { // account for editing of the start coordinate but not the end coordinate
+                
+                std::get<4>(*component) = compOriginalSize;
+                
+            }else if (std::get<4>(*component) > 0 && std::get<3>(*component) == 0) { // account for editing of the end coordinate but not the start coordinate
+                
+                std::get<3>(*component) = 1;
+                
+            }else if(std::get<3>(*component) == 1 && std::get<4>(*component) == compOriginalSize) { // if the result of trimming restores the original size of the component, no need to adjust the internal coordinates
                 
                 std::get<3>(*component) = 0;
                 std::get<4>(*component) = 0;
