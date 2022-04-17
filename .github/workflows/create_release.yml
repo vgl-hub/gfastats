@@ -1,0 +1,63 @@
+name: Create Release
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  create_release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: gfastats ${{ github.ref }}
+        body: |
+          Changes in this Release
+        draft: false
+        prerelease: false
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+  add_resources:
+    needs: create_release
+    name: Add Resources
+    strategy:
+      matrix:
+        OS: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+        - OS: macos-latest
+          OS_NAME: macOS
+        - OS: ubuntu-latest
+          OS_NAME: linux
+        - OS: windows-latest
+          OS_NAME: win
+    runs-on: ${{ matrix.OS }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build
+        run: make
+      - name: Zip
+        uses: papeloto/action-zip@v1
+        with:
+          files: build/bin
+          dest: result.zip
+      - name: Add binaries
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: result.zip
+          asset_name: gfastats.${{ github.ref_name }}-${{matrix.OS_NAME}}.zip
+          asset_content_type: application/zip

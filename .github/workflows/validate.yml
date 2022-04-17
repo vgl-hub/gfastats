@@ -1,0 +1,29 @@
+name: Validate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Validate
+    strategy:
+      matrix:
+        OS: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+        - OS: macos-latest
+          TARGET: build/bin/gfastats-validate
+        - OS: ubuntu-latest
+          TARGET: build/bin/gfastats-validate
+        - OS: windows-latest
+          TARGET: build/bin/gfastats-validate.exe
+    runs-on: ${{ matrix.OS }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Build
+      run: make
+    - name: Validate
+      run: ${{ matrix.TARGET }} validateFiles -v
