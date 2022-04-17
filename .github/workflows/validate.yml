@@ -11,10 +11,11 @@ jobs:
     name: Validate
     strategy:
       matrix:
-        OS: [macos-latest, ubuntu-latest, windows-latest]
+        OS: [ubuntu-latest, windows-latest]
+        # OS: [macos-latest, ubuntu-latest, windows-latest]
         include:
-        - OS: macos-latest
-          TARGET: build/bin/gfastats-validate
+        # - OS: macos-latest
+        #   TARGET: build/bin/gfastats-validate
         - OS: ubuntu-latest
           TARGET: build/bin/gfastats-validate
         - OS: windows-latest
