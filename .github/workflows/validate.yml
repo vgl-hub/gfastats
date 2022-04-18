@@ -16,7 +16,7 @@ jobs:
           - os: ubuntu-latest
             command: "build/bin/gfastats-validate validateFiles -v"
           - os: windows-latest
-            command: "\"build/bin/gfastats-validate.exe\" validateFiles -v"
+            command: "\"\"build/bin/gfastats-validate.exe\" validateFiles -v\""
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
