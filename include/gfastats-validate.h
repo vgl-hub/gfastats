@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <vector>
 #include <set>
+#include <string>
 
 std::string getExePath(const std::string &argv0) {
     std::string exePath = argv0.substr(0, argv0.find_last_of("/\\")+1);
@@ -37,7 +38,9 @@ std::vector<std::string> list_dir(const char *path) {
         exit(0);
     }
     while ((entry = readdir(dir)) != NULL) {
-        if(entry->d_type == DT_REG) list.push_back(std::string(entry->d_name));
+        DIR *f = opendir((std::string(path)+"/"+entry->d_name).c_str());
+        if(f == NULL) /*not a directory*/ list.push_back(std::string(entry->d_name));
+        else closedir(f);
     }
     closedir(dir);
     return list;
