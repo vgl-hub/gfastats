@@ -10,29 +10,19 @@ jobs:
     name: Validate
     strategy:
       matrix:
-        mac:
-          OS: macos-latest
-          COMMAND: build/bin/gfastats-validate validateFiles -v
-        win:
-          OS: windows-latest
-          COMMAND: "build/bin/gfastats-validate.exe" validateFiles -v
-        lin:
-          OS: ubuntu-latest
-          COMMAND: build/bin/gfastats-validate validateFiles -v
-
-        # OS: [macos-latest, ubuntu-latest, windows-latest]
-        # include:
-        # - OS: macos-latest
-        #   COMMAND: build/bin/gfastats-validate validateFiles -v
-        # - OS: ubuntu-latest
-        #   COMMAND: build/bin/gfastats-validate validateFiles -v
-        # - OS: windows-latest
-        #   COMMAND: "build/bin/gfastats-validate.exe" validateFiles -v
-    runs-on: ${{ matrix.OS }}
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+        - os: macos-latest
+          command: build/bin/gfastats-validate validateFiles -v
+        - os: ubuntu-latest
+          command: build/bin/gfastats-validate validateFiles -v
+        - os: windows-latest
+          command: "build/bin/gfastats-validate.exe" validateFiles -v
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Build
       run: make
     - name: Validate
-      run: ${{ matrix.COMMAND }}
+      run: ${{ matrix.command }}
