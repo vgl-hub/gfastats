@@ -10,11 +10,13 @@ jobs:
     name: Validate
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        command: [build/bin/gfastats-validate validateFiles -v]
         include:
-        - os: windows-latest
-          command: "build/bin/gfastats-validate.exe" validateFiles -v
+          - os: macos-latest
+            command: build/bin/gfastats-validate validateFiles -v
+          - os: ubuntu-latest
+            command: build/bin/gfastats-validate validateFiles -v
+          - os: windows-latest
+            command: "build/bin/gfastats-validate.exe" validateFiles -v
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
