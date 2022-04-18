@@ -12,12 +12,12 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         include:
-        - os: macos-latest
-          command: build/bin/gfastats-validate validateFiles -v
-        - os: ubuntu-latest
-          command: build/bin/gfastats-validate validateFiles -v
-        - os: windows-latest
-          command: "build/bin/gfastats-validate.exe" validateFiles -v
+          - os: macos-latest
+            command: build/bin/gfastats-validate validateFiles -v
+          - os: ubuntu-latest
+            command: build/bin/gfastats-validate validateFiles -v
+          - os: windows-latest
+            command: "build/bin/gfastats-validate.exe" validateFiles -v
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
