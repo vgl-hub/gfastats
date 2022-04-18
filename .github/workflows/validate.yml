@@ -13,14 +13,11 @@ jobs:
         OS: [macos-latest, ubuntu-latest, windows-latest]
         include:
         - OS: macos-latest
-          CMD: build/bin/gfastats-validate validateFiles -v
-
+          COMMAND: build/bin/gfastats-validate validateFiles -v
         - OS: ubuntu-latest
-          CMD: build/bin/gfastats-validate validateFiles -v
-
+          COMMAND: build/bin/gfastats-validate validateFiles -v
         - OS: windows-latest
-          CMD: "build/bin/gfastats-validate.exe" validateFiles -v
-
+          COMMAND: "build/bin/gfastats-validate.exe" validateFiles -v
     runs-on: ${{ matrix.OS }}
     steps:
     - name: Checkout code
@@ -28,4 +25,4 @@ jobs:
     - name: Build
       run: make
     - name: Validate
-      run: ${{ matrix.CMD }}
+      run: ${{ matrix.COMMAND }}
