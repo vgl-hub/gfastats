@@ -17,48 +17,27 @@ int main(int argc, char **argv) {
     const std::map<std::set<std::string>, std::vector<std::string>> ext_args = {
         {{"fasta", "fastq"}, {"", "-b a", "-b c", "-b s", "--homopolymer-compress 5"}},
         {{"gfa"}, {""}}
-    //  {{set of test file extensions}, {list of command line args to run with}}
-    };
-
-    const std::map<std::set<std::string>, std::vector<std::string>> file_args = {
-        {{""}, {"-k random1.instructions.sak"}}
-    //  {{set of test file paths}, {list of command line args to run with}}
+    //  {{set of file extensions}, {list of command line args to run it with}}
     };
 
     const std::set<std::string> exclude {"agp", "sak"};
 
-    int i = 0;
-
-    auto genTest = [&i, &exePath](const std::string &file, const std::string &args){
-        std::string tstFile = "validateFiles/"+file+std::to_string(i)+".tst";
-        std::ofstream ostream;
-        ostream.open(tstFile);
-        ostream << "testFiles/" << file << " " << args << "\nembedded" << std::endl;
-        ostream.close();
-        std::string cmd = "\"\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile+"\"";
-        system(cmd.c_str());
-        ++i;
-    };
-
     for(const std::string &file : list_dir("testFiles")) {
         std::string ext = getFileExt(file);
         if(exclude.count(ext)) continue;
+
+        int i = 0;
         for(auto pair : ext_args) {
             if(!pair.first.count(ext)) continue;
             for(auto args : pair.second) {
-                genTest(file, args);
-            }
-        }
-    }
-
-    std::fstream fstream;
-    for(const auto &pair : file_args) {
-        for(const std::string &file : pair.first) {
-            fstream.open(file);
-            if(!fstream) continue;
-            fstream.close();
-            for(const std::string &args : pair.second) {
-                genTest(file, args);
+                std::string tstFile = "validateFiles/"+file+std::to_string(i)+".tst";
+                std::ofstream ostream;
+                ostream.open(tstFile);
+                ostream << "testFiles/" << file << " " << args << "\nembedded" << std::endl;
+                ostream.close();
+                std::string cmd = exePath+" "+args+" testFiles/"+file+" >> "+tstFile;
+                system(cmd.c_str());
+                ++i;
             }
         }
     }
