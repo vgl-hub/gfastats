@@ -56,9 +56,9 @@ void get_recursive(const std::string &path, std::set<std::string> &paths) {
                 get_recursive((path+"/"+file).c_str(), paths);
             }
             std::cout << "1.4" << std::endl;
+            closedir(dir);
         }
         std::cout << "1.5" << std::endl;
-        closedir(dir);
         std::cout << "1.6" << std::endl;
     }
 }
