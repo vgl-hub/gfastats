@@ -2,7 +2,6 @@ name: Validate
 
 on:
   push:
-    branches: [ main ]
   pull_request:
     branches: [ main ]
 
@@ -15,11 +14,11 @@ jobs:
         # OS: [macos-latest, ubuntu-latest, windows-latest]
         include:
         # - OS: macos-latest
-        #   TARGET: build/bin/gfastats-validate
+        #   CMD: build/bin/gfastats-validate validateFiles -v
         - OS: ubuntu-latest
-          TARGET: build/bin/gfastats-validate
+          CMD: build/bin/gfastats-validate validateFiles -v
         # - OS: windows-latest
-        #   TARGET: build/bin/gfastats-validate.exe
+        #   CMD: "build/bin/gfastats-validate.exe" validateFiles -v
     runs-on: ${{ matrix.OS }}
     steps:
     - name: Checkout code
@@ -27,4 +26,4 @@ jobs:
     - name: Build
       run: make
     - name: Validate
-      run: ${{ matrix.TARGET }} validateFiles -v
+      run: ${{ matrix.CMD }}

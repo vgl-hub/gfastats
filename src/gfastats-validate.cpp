@@ -76,7 +76,11 @@ int main(int argc, char **argv) {
         std::getline(istream, line);
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         line.erase(remove(line.begin(), line.end(), '\n'), line.end());
+#ifdef _WIN32
+        std::string cmd = "\"\""+exePath+"\""+" "+line+" > "+tmp+" 2>"+err+"\"";
+#else
         std::string cmd = "\""+exePath+"\""+" "+line+" > "+tmp+" 2>"+err;
+#endif
         if(printCommand) std::cout << cmd << std::endl;
 
         if(system(cmd.c_str()) != EXIT_SUCCESS) {

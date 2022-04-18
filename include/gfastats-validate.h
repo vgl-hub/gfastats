@@ -12,7 +12,11 @@
 std::string getExePath(const std::string &argv0) {
     std::string exePath = argv0.substr(0, argv0.find_last_of("/\\")+1);
     std::replace(exePath.begin(), exePath.end(), '\\', '/');
+#ifdef _WIN32
+    exePath += "gfastats.exe";
+#else
     exePath += "gfastats";
+#endif
     return exePath;
 }
 
