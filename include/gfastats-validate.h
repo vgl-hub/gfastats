@@ -47,13 +47,19 @@ void get_recursive(const std::string &path, std::set<std::string> &paths) {
     if(getFileExt(path) == "tst") {
         paths.insert(path);
     } else {
+        std::cout << "1.1" << std::endl;
         DIR *dir = opendir(path.c_str());
+        std::cout << "1.2" << std::endl;
         if(dir != NULL) {
+            std::cout << "1.3" << std::endl;
             for(const auto &file : list_dir(path.c_str())) {
                 get_recursive((path+"/"+file).c_str(), paths);
             }
+            std::cout << "1.4" << std::endl;
         }
+        std::cout << "1.5" << std::endl;
         closedir(dir);
+        std::cout << "1.6" << std::endl;
     }
 }
 
