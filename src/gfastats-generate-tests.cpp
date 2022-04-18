@@ -35,11 +35,7 @@ int main(int argc, char **argv) {
         ostream.open(tstFile);
         ostream << "testFiles/" << file << " " << args << "\nembedded" << std::endl;
         ostream.close();
-#ifdef _WIN32
         std::string cmd = "\"\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile+"\"";
-#else
-        std::string cmd = "\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile;
-#endif
         system(cmd.c_str());
         ++i;
     };
