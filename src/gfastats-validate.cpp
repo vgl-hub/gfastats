@@ -41,6 +41,8 @@ int main(int argc, char **argv) {
         exit(EXIT_SUCCESS);
     }
 
+    std::cout << "0" << std::endl;
+
     int opt;
     while((opt = getopt(argc, argv, "vVc")) != -1) 
     {
@@ -57,13 +59,17 @@ int main(int argc, char **argv) {
         }
     }
 
+    std::cout << "1" << std::endl;
+
     std::set<std::string> input_files;
 
     for(int i=1; i<argc; ++i) {
         get_recursive(argv[i], input_files);
     }
 
+    std::cout << "2" << std::endl;
     std::string exePath = getExePath(argv[0]);
+    std::cout << "3" << std::endl;
 
     std::string line;
     std::ifstream istream, exp, actOutput, *expOutput;
@@ -73,6 +79,7 @@ int main(int argc, char **argv) {
             printFAIL(input_file.c_str(), "couldn't open test file");
             continue;
         }
+        std::cout << "4" << std::endl;
         std::getline(istream, line);
         line.erase(remove(line.begin(), line.end(), '\r'), line.end());
         line.erase(remove(line.begin(), line.end(), '\n'), line.end());
@@ -82,6 +89,8 @@ int main(int argc, char **argv) {
         std::string cmd = "\""+exePath+"\""+" "+line+" > "+tmp+" 2>"+err;
 #endif
         if(printCommand) std::cout << cmd << std::endl;
+
+        std::cout << "5" << std::endl;
 
         if(system(cmd.c_str()) != EXIT_SUCCESS) {
             printFAIL(input_file.c_str(), "runtime error");
@@ -134,7 +143,7 @@ int main(int argc, char **argv) {
         }
 
         printPASS(input_file.c_str());
-    } 
+    }
 
     if(input_files.size() != 0 && remove(tmp.c_str()) != 0) {
         std::cerr << "error deleting temp file " << tmp.c_str() << std::endl;
