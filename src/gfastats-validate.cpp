@@ -36,6 +36,10 @@ void printPASS(const char *m1="", const char *m2="", const char *m3="", const ch
 }
 
 int main(int argc, char **argv) {
+    std::cout << "literally impossible to not print" << std::endl;
+    
+    
+    
     if (argc == 1) { // test with no arguments
         std::cout << "gfastats-validate <path to test folder and/or files>" << std::endl;
         exit(EXIT_SUCCESS);
