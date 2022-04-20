@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     };
 
     const std::map<std::set<std::string>, std::vector<std::string>> file_args = {
-        {{""}, {"-k random1.instructions.sak"}}
+        {{""}, {"-k random1.instructions.sak"}} // TODO generate sak tests
     //  {{set of test file paths}, {list of command line args to run with}}
     };
 
