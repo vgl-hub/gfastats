@@ -15,9 +15,9 @@ Overlap s1 AGP onto c1/p1 GFA. `--discover` is so gfastats finds the paths in th
 gfastats bColStr4.hap1.gfa --discover -a bColStr4.hap1.s1.agp -o bColStr4.hap1.s1.gfa
 ````
 
-Convert s1 GFA -> s1 FASTA, run salsa to obtain s2 AGP. `--line-length 60` is telling gfastats to output FASTA wrapped at 60th char
+Convert s1 GFA -> s1 FASTA, run salsa to obtain s2 AGP.
 ````bash
-gfastats bColStr4.hap1.s1.gfa --line-length 60 -o bColStr4.hap1.s1.gfastats.fasta
+gfastats bColStr4.hap1.s1.gfa -o bColStr4.hap1.s1.gfastats.fasta
 ````
 NOTE: IF Bionano is cutting, then subseq lines have colons in the names, so you need to remove those before SALSA
 ````bash
@@ -28,9 +28,12 @@ sed 's/:/_/g' bColStr4.hap1.s1.gfastats.fasta > bColStr4.hap1.s1.gfastats.nocolo
 
 `bColStr4.hap1.s1.gfastats.fasta` into SALSA produces `bColStr4.hap1.s2.agp`
 
-Overlap s2 AGP onto s1 GFA, convert s2 GFA to s2 FASTA
+Overlap s2 AGP onto s1 GFA to create s2 GFA
 ````bash
 cp <salsa_results_directory>/scaffolds_FINAL.original-coordinates.agp > ./bColStr4.hap1.s2.originalcoords.agp
 gfastats bColStr4.hap1.s1.gfa -a bColStr4.hap1.s2.originalcoords.agp -o bColStr4.hap1.s2.gfa
-gfastats bColStr4.hap1.s2.gfa --line-length 60 -o bColStr4.hap1.s2.gfastats.fasta
+````
+If you want to convert this s2 GFA to s2 FASTA:
+````bash
+gfastats bColStr4.hap1.s2.gfa -o bColStr4.hap1.s2.gfastats.fasta
 ````
