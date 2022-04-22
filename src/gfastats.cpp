@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
                     
                     if (isInt(optarg)) { // if the positional argument is a number, it is likely the expected genome size
                         
-                        gSize = atoi(optarg); pos_op++;
+                        gSize = atoll(optarg); pos_op++;
                         
                     }else{ // else it is an include argument
                         
