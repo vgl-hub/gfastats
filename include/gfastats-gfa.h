@@ -8,6 +8,41 @@
 #ifndef GFASTATS_GFA_H
 #define GFASTATS_GFA_H
 
+void homopolymerCompress(std::string *sequence, std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths, unsigned int cutoff) {
+    unsigned int index=0, length, new_length=0;
+
+    auto lambda = [&length, &index, &compressionIndices, &compressionLengths, &sequence, &new_length, &cutoff](int i){
+        length = i-index;
+        if(length > cutoff) {
+            compressionIndices.push_back(new_length);
+            compressionLengths.push_back(length);
+        }
+        int num = length > cutoff ? 1 : length;
+        memset(&((*sequence)[new_length]), (*sequence)[index], num);
+        new_length += num;
+    };
+
+    for(unsigned int i=1; i<sequence->length(); ++i) {
+        if((*sequence)[i] == (*sequence)[index]) continue;
+        lambda(i);
+        index = i;
+    }
+    lambda(sequence->length());
+
+    sequence->resize(new_length);
+}
+
+void homopolymerDecompress(std::string *sequence, const std::vector<unsigned int> &compressionIndices, const std::vector<unsigned int> &compressionLengths) {
+    std::string ret="";
+    ret.reserve(sequence->length()*2); // random guess for final sequence length
+    for(unsigned int i=0, ci=0, len; i<sequence->length(); ++i) {
+        len = ((ci<compressionIndices.size() && i==compressionIndices[ci]) ? compressionLengths[ci++] : 1);
+        ret += std::string(len, (*sequence)[i]);
+    }
+    ret.shrink_to_fit();
+    *sequence = ret;
+}
+
 //classes
 class BedCoordinates { // generic representation of bed coordinates
 private:
@@ -797,41 +832,6 @@ public:
         (*iId)++; // number of gaps in the current scaffold
         (*uId)++; // unique numeric identifier
         
-    }
-
-    void homopolymerCompress(std::string *sequence, std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths, unsigned int cutoff) {
-        unsigned int index=0, length, new_length=0;
-
-        auto lambda = [&length, &index, &compressionIndices, &compressionLengths, &sequence, &new_length, &cutoff](int i){
-            length = i-index;
-            if(length > cutoff) {
-                compressionIndices.push_back(new_length);
-                compressionLengths.push_back(length);
-            }
-            int num = length > cutoff ? 1 : length;
-            memset(&((*sequence)[new_length]), (*sequence)[index], num);
-            new_length += num;
-        };
-
-        for(unsigned int i=1; i<sequence->length(); ++i) {
-            if((*sequence)[i] == (*sequence)[index]) continue;
-            lambda(i);
-            index = i;
-        }
-        lambda(sequence->length());
-
-        sequence->resize(new_length);
-    }
-
-    void homopolymerDecompress(std::string *sequence, const std::vector<unsigned int> &compressionIndices, const std::vector<unsigned int> &compressionLengths) {
-        std::string ret="";
-        ret.reserve(sequence->length()*2); // random guess for final sequence length
-        for(unsigned int i=0, ci=0, len; i<sequence->length(); ++i) {
-            len = ((ci<compressionIndices.size() && i==compressionIndices[ci]) ? compressionLengths[ci++] : 1);
-            ret += std::string(len, (*sequence)[i]);
-        }
-        ret.shrink_to_fit();
-        *sequence = ret;
     }
     
     void traverseInSequence(std::string* pHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties

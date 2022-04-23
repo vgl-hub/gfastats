@@ -20,6 +20,9 @@ struct Instruction {
     std::string gHeader = "";
     
     int compressThreshhold;
+    bool decompressUseStack=true;
+    std::vector<unsigned int> decompressIndices;
+    std::vector<unsigned int> decompressLengths;
     char pId1Or, pId2Or, sId1Or, sId2Or;
     unsigned int gUId = 0, dist = 0, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
 };
@@ -189,25 +192,46 @@ public:
     }
 
     void readCompress(Instruction &instruction, std::vector<std::string> &arguments) {
-        instruction.compressThreshhold = stoi(arguments[0]);
+        instruction.compressThreshhold = stoi(arguments[1]);
     }
 
     bool compress(InSequences &inSequences, Instruction &instruction) {
-        // auto inSegments = inSequences.getInSegments();
-        
-        // for(int i=0; i<inSegments->size(); ++i) {
-            
-        // }
+        for(auto inSegment : inSequences.inSegments) {
+            std::vector<unsigned int> indices, lengths;
+            homopolymerCompress(&(inSegment.inSequence), indices, lengths, instruction.compressThreshhold);
+            compressStack.push({indices, lengths});
+        }
 
         return true;
     }
 
     void readDecompress(Instruction &instruction, std::vector<std::string> &arguments) {
+        if(arguments.size() == 1) {
+            instruction.decompressUseStack = true;
+            return;
+        }
 
+        auto *vec = &instruction.decompressIndices;
+        for(int i=1; i<2; vec = &instruction.decompressLengths, i++) {
+            size_t pos = 0, prevPos = 0;
+            while ((pos = arguments[i].find(',')) != std::string::npos) {
+                vec->push_back(stoi(arguments[i].substr(prevPos, pos)));
+                prevPos = pos+1;
+            }
+        }
     }
 
     bool decompress(InSequences &inSequences, Instruction &instruction) {
-        
+        for(auto inSegment : inSequences.inSegments) {
+            std::pair<std::vector<unsigned int>, std::vector<unsigned int>> pair;
+            if(instruction.decompressUseStack) {
+                pair = compressStack.top();
+                compressStack.pop();
+            } else {
+                pair = { instruction.decompressIndices, instruction.decompressLengths };
+            }
+            homopolymerDecompress(&(inSegment.inSequence), pair.first, pair.second);
+        }
         return true;
     }
 
@@ -215,18 +239,19 @@ private:
     InSequences inSequences;
     InSegment inSegment1, inSegment2, inSegmentNew;
     std::string sId1Header, sId2Header;
+    std::stack<std::pair<std::vector<unsigned int>, std::vector<unsigned int>>> compressStack; // decompress uses indices of corresponding compresses, last compress = first decompress
 
-    // unordered map to handle out correspondence in following switch statement
-    const phmap::flat_hash_map<std::string, Funcs> string_to_funcs { // std::pair<void (SAK::*)(Instruction&, std::vector<std::string>&), bool (SAK::*)(InSequences&, Instruction&)>
-        {"JOIN", {&SAK::readJoin, &SAK::join} },
-        {"SPLIT", {&SAK::readSplit, &SAK::split} },
-        {"EXCISE", {&SAK::readExcise, &SAK::excise} },
-        {"REMOVE", {&SAK::readRemove, &SAK::remove} },
-        {"ERASE", {&SAK::readErase, &SAK::erase} },
-        {"RVCP", {&SAK::readRvcp, &SAK::rvcp} },
-        {"INVERT", {&SAK::readInvert, &SAK::invert} },
-        {"COMPRESS", {&SAK::readCompress, &SAK::compress} },
-        {"DECOMPRESS", {&SAK::readDecompress, &SAK::decompress} }
+    // unordered map from sak instruction to corresponding read and execute functions
+    const phmap::flat_hash_map<std::string, Funcs> string_to_funcs {
+        {"JOIN",        {&SAK::readJoin,        &SAK::join      } },
+        {"SPLIT",       {&SAK::readSplit,       &SAK::split     } },
+        {"EXCISE",      {&SAK::readExcise,      &SAK::excise    } },
+        {"REMOVE",      {&SAK::readRemove,      &SAK::remove    } },
+        {"ERASE",       {&SAK::readErase,       &SAK::erase     } },
+        {"RVCP",        {&SAK::readRvcp,        &SAK::rvcp      } },
+        {"INVERT",      {&SAK::readInvert,      &SAK::invert    } },
+        {"COMPRESS",    {&SAK::readCompress,    &SAK::compress  } },
+        {"DECOMPRESS",  {&SAK::readDecompress,  &SAK::decompress} }
     };
 
 public:
