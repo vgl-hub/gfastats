@@ -2349,7 +2349,7 @@ public:
         
     }
     
-    bool removeSegment(std::string* contig1) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+    bool deleteSegment(std::string* contig1) {
         
         if (contig1 != NULL) {
             
@@ -2407,9 +2407,7 @@ public:
     
     void removePathsFromSegment(unsigned int uId) {
         
-        int i = 0;
-        
-        for (InPath inPath : inPaths) {
+        for (InPath& inPath : inPaths) {
             
             std::vector<PathTuple> pathComponents = inPath.getComponents();
             
@@ -2417,49 +2415,37 @@ public:
             
             if (pathIt != pathComponents.end()) {
             
-                removePath(i);
-                
+                removePath(inPath.getpUId());
+
             }
-            
-            ++i;
             
         }
         
     }
     
-    void removeSegmentInPath(unsigned int uId, InGap gap) {
-        
-        int i = 0;
-        
-        InPath newPath;
+    void removeSegmentInPath(unsigned int suId, InGap gap) {
         
         std::vector<PathTuple> newComponents;
         
-        for (InPath inPath : inPaths) {
+        for (InPath& inPath : inPaths) {
             
             std::vector<PathTuple> pathComponents = inPath.getComponents();
             
-            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId](PathTuple& obj) {return std::get<1>(obj) == uId;}); // given a node uId, find if present in the given path
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [suId](PathTuple& obj) {return std::get<1>(obj) == suId;}); // given a node uId, find if present in the given path
             
             if (pathIt != pathComponents.end()) {
                 
-                newPath.setHeader(inPath.getHeader()); // set path header
+                newComponents.insert(newComponents.end(), std::begin(pathComponents), pathIt-1); // subset path excluding segment to be removed
                 
-                newPath.append({std::begin(pathComponents), pathIt-1}); // subset path excluding segment to be removed
+                newComponents.push_back(std::make_tuple('G', gap.getuId(), '0', 0, 0)); // introduce gap
                 
-                newPath.add('G', gap.getuId(), '0'); // introduce gap
+                newComponents.insert(newComponents.end(), pathIt+2, std::end(pathComponents)); // add remaining components
                 
-                newPath.append({pathIt+2, std::end(pathComponents)}); // add remaining components
-                
-                addPath(newPath);
-                
-                removePath(i);
+                inPath.setComponents(newComponents);
                 
                 break;
                     
             }
-            
-            ++i;
             
         }
         
@@ -2624,19 +2610,31 @@ public:
         
     }
     
-    void splitPath(unsigned int guId, std::string header1, std::string header2) {
-        
-        int i = 0;
+    void splitPath(unsigned int guId, std::string pHeader1, std::string pHeader2) {
         
         InPath newPath1;
-        newPath1.setHeader(header1);
+        newPath1.setHeader(pHeader1);
         std::vector<PathTuple> newComponents1;
         
+        insertHash1(pHeader1, uId); // header to hash table
+        insertHash2(uId, pHeader1); // id to hash table
+        
+        path.newPath(uId, pHeader1);
+        
+        uId++;
+        
         InPath newPath2;
-        newPath2.setHeader(header2);
+        newPath2.setHeader(pHeader2);
         std::vector<PathTuple> newComponents2;
         
-        for (InPath inPath : inPaths) { // add first path
+        insertHash1(pHeader2, uId); // header to hash table
+        insertHash2(uId, pHeader2); // id to hash table
+        
+        path.newPath(uId, pHeader2);
+        
+        uId++;
+        
+        for (InPath& inPath : inPaths) { // search through all paths
             
             std::vector<PathTuple> pathComponents = inPath.getComponents();
             
@@ -2664,13 +2662,11 @@ public:
                     
                 }
                 
-                removePath(i);
+                removePath(inPath.getpUId());
             
                 break;
                 
             }
-            
-            ++i;
             
         }
         
@@ -2741,7 +2737,9 @@ public:
         }
         
         verbose("Trimming path (start: " + std::to_string(start) + ", end: " + std::to_string(end) + ")");
-    
+        
+        std::string trimmed;
+        
         unsigned int cUId = 0, traversedSize = 0, actualSize = 0, compSize = 0, newCompSize = 0, compOriginalSize = 0;
         
         for (std::vector<PathTuple>::iterator component = pathComponents->begin(); component != pathComponents->end(); component++) {
@@ -2760,25 +2758,19 @@ public:
                 
                 compSize = inSegment->getSegmentLength(std::get<3>(*component), std::get<4>(*component));
                 
-                if (std::get<4>(*component) > 0) {
-                    
-                    verbose("Component was already trimmed (size: " + std::to_string(compSize) + ")");
-                    
-                }else{
-                    
-                    verbose("Component was not already trimmed (size: " + std::to_string(compSize) + ")");
-                    
-                }
-                
             }else{
                 
                 auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                    
-                compSize = inGap->getDist(std::get<3>(*component), std::get<4>(*component));
                 
                 compOriginalSize = inGap->getDist();
                 
+                compSize = inGap->getDist(std::get<3>(*component), std::get<4>(*component));
+                
             }
+            
+            trimmed = compSize != compOriginalSize ? " " : " not ";
+                
+            verbose("Component was" + trimmed + "already trimmed (size: " + std::to_string(compSize) + ")");
                 
             if (traversedSize + compSize < start) {
                 
@@ -2796,29 +2788,41 @@ public:
 
             if (traversedSize + compSize >= start && traversedSize < start) {
                 
-                std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
+                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
                 
-                verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
-                
-                newCompSize = std::get<4>(*component) - std::get<3>(*component) + 1;
+                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
+                    
+                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
+                    
+                }else{
+                    
+                    std::get<4>(*component) = (std::get<4>(*component) == 0 ? compOriginalSize : std::get<4>(*component)) - start + traversedSize + 1;
+                    
+                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
+                    
+                }
                 
             }
             
             if (traversedSize + compSize >= end) {
                 
+                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
+                
+                    std::get<4>(*component) = end - traversedSize;
+                    
+                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
+                    
+                }else{
+                    
+                    std::get<3>(*component) = (std::get<4>(*component) == 0 ? compOriginalSize : std::get<4>(*component)) - end + traversedSize + 1;
+                    
+                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
+                    
+                }
+                
                 pathComponents->erase(component + 1, pathComponents->end());
                 
                 verbose("Erased extra components");
-                
-//                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
-                
-                    std::get<4>(*component) = end - traversedSize; // edit also to account for already trimmed component // traversedSize < start ? 0 : std::get<3>(*component)
-                
-                verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
-                
-                if (std::get<3>(*component) > std::get<4>(*component)) {std::get<4>(*component) = std::get<3>(*component) + std::get<4>(*component);}
-                
-                newCompSize = std::get<4>(*component) - std::get<3>(*component) + 1;
                 
             }
             
@@ -2837,7 +2841,10 @@ public:
                 
             }
             
-            actualSize += newCompSize;
+            newCompSize = (std::get<4>(*component) != 0 ? std::get<4>(*component) : compSize) - (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1);
+            verbose("Component size after trimming: " + std::to_string(newCompSize));
+            
+            actualSize += newCompSize != 0 ? newCompSize : compSize;
             verbose("Path size after iteration: " + std::to_string(actualSize));
             
             traversedSize += compSize;
@@ -2846,6 +2853,8 @@ public:
         }
             
         verbose("Final path size: " + std::to_string(actualSize));
+        
+        if (actualSize != end-start+1) {fprintf(stderr, "Error: Path size after trimming (%u) differs from expected size after trimming (%u). Terminating.\n", actualSize, end-start+1); exit(1);}
     
     }
     
