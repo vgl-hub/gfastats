@@ -3,5 +3,5 @@ JOIN	Header4+	Header5+	5	newGap2	Scaffold2
 JOIN	Scaffold1+	Header3+	10	newGap3	FinalScaffold
 SPLIT	Header2.1	Header2.3	Scaffold3	Scaffold4
 EXCISE	Header3.3	3	newGap4
-REMOVE	Header3.3
 INVERT	Header5.1
+REMOVE	Header1.1

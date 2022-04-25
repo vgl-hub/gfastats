@@ -2,7 +2,7 @@
 
 ## JOIN
 
-The JOIN instruction introduces a new gap of 50 bp between scaffold1 and scaffold2 (two paths) with id gap1, effectively joining the two sequences into a new sequences named new_scaffold with an optional comment.
+The JOIN instruction introduces a new gap of 50 bp between `scaffold1` and `scaffold2` (two paths) with id `gap1`, effectively joining the two sequences into a new sequence with id `new_scaffold` and an optional comment.
 
 ```
 JOIN    scaffold1+    scaffold2+    50  gap1    new_scaffold
@@ -11,26 +11,26 @@ JOIN    scaffold1(1:100)+    scaffold2(1:100)+    50  gap1    new_scaffold // op
 
 ## SPLIT
 
-The SPLIT instruction splits the scaffold containing contig1 and contig2, effectively removing the existing gap between them. Two optional comments can be provided.
+The SPLIT instruction splits the scaffold containing `segment1` and `segment2`, effectively removing the existing gap between them. Two optional comments can be provided.
 
 ```
-SPLIT   contig1+    contig2+    scaffold1   scaffold2 [this is a new scaffold1] [this is a new scaffold2]
+SPLIT   segment1+    segment2+    scaffold1   scaffold2 [this is a new scaffold1] [this is a new scaffold2]
 ```
 
 ## EXCISE
 
-The EXCISE instruction removes contig1 from its scaffold, leading leaving it unplaced and adding a gap of the given size with optional id gap1 between the original sequences
+The EXCISE instruction removes segment1 from its scaffold, leaving it unplaced and adding a gap of the given size with id `gap1` between the original sequences
 
 ```
-EXCISE  contig1  50  [gap1] // new 50 bp gap
+EXCISE  segment1  50  gap1
 ```
 
 ## REMOVE
 
-The REMOVE instruction removes contig1 from the segment set. If it is part of a path, the path is also removed.
+The REMOVE instruction removes the paths involving the specified segment.
 
 ```
-REMOVE  contig1
+REMOVE  segment1
 ```
 
 ## ERASE
@@ -38,23 +38,23 @@ REMOVE  contig1
 The ERASE instruction trims off the sequence range specified from the given segment.
 
 ```
-ERASE   contig1:10-100 // deletes contig1 sequence between the coordinates provided (in bed format)
+ERASE   segment1:10-100 // deletes segment1 sequence between the coordinates provided (in bed format)
 ```
 
 ## RVCP
 
-The RVCP instruction reverse-complements contig1 sequence in place
+The RVCP instruction reverse-complements segment1 sequence in place
 
 ```
-RVCP    contig1
+RVCP    segment1
 ```
 
 ## INVERT
 
-The INVERT instruction inverts contig1 sequence in place
+The INVERT instruction inverts segment1 sequence in place
 
 ```
-INVERT  contig1
+INVERT  segment1
 ```
 
 ## Yet to be implemented

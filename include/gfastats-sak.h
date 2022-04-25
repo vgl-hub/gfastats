@@ -127,11 +127,6 @@ public:
         inSequences.addGap(gap); // introduce the new gap
         inSequences.removeGaps(&instruction.contig1);
         inSequences.removeSegmentInPath(inSequences.headersToIds[instruction.contig1], gap); // removes the segment from the path
-        
-        InPath path;
-        path.setHeader(instruction.contig1);
-        path.add('S', inSequences.headersToIds[instruction.contig1], '+');
-        inSequences.addPath(path);
             
         return true;
     }
@@ -142,8 +137,8 @@ public:
 
     bool remove(InSequences& inSequences, Instruction &instruction) { // removes a segment
         inSequences.removePathsFromSegment(inSequences.headersToIds[instruction.contig1]); // remove the paths involving contig1
-        inSequences.removeSegment(&instruction.contig1); // remove the segment
-        inSequences.updateGapLens();
+        inSequences.deleteSegment(&instruction.contig1); // flag segment as deleted
+
         return true;
     }
 
