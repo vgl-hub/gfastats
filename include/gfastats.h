@@ -19,6 +19,7 @@
 #include <getopt.h>
 
 #include <vector>  //required for zstream
+#include <stack>
 #include <string.h>
 #include <algorithm> //required for zstream
 #include <cstring> //required for zstream
