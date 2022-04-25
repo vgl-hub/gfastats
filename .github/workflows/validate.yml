@@ -12,11 +12,11 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            command: "build/bin/gfastats-validate validateFiles -v"
+            command: ".github/workflows/val.sh"
           - os: ubuntu-latest
-            command: "build/bin/gfastats-validate validateFiles -v"
+            command: ".github/workflows/val.sh"
           - os: windows-latest
-            command: "./val"
+            command: ".github/workflows/val.bat"
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
