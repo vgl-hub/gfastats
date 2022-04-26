@@ -15,9 +15,9 @@ jobs:
             command: ".github/workflows/val.sh"
           - os: ubuntu-latest
             command: ".github/workflows/val.sh"
+            chmod: true
           - os: windows-latest
             command: ".github/workflows/val.bat"
-            shell: cmd
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
@@ -28,5 +28,4 @@ jobs:
       run: |
         chmod +x .github/workflows/val.sh
         ${{ matrix.command }}
-      shell: ${{ matrix.shell }}
 
