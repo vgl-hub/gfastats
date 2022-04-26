@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     };
 
     const std::map<std::set<std::string>, std::vector<std::string>> file_args = {
-        {{""}, {"-k random1.instructions.sak"}} // TODO generate sak tests
+        {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak"}}
     //  {{set of test file paths}, {list of command line args to run with}}
     };
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     std::fstream fstream;
     for(const auto &pair : file_args) {
         for(const std::string &file : pair.first) {
-            fstream.open(file);
+            fstream.open("testFiles/"+file);
             if(!fstream) continue;
             fstream.close();
             for(const std::string &args : pair.second) {

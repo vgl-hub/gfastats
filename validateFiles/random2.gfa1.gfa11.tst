@@ -1,4 +1,4 @@
-testFiles/random2.gfa1.gfa
+testFiles/random2.gfa1.gfa 
 embedded
 +++Summary+++: 
 # scaffolds: 1
