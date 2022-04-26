@@ -1,1 +1,1 @@
-build/bin/gfastats-validate validateFiles
+build/bin/gfastats-validate validateFiles -v

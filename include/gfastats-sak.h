@@ -78,9 +78,9 @@ public:
         instruction.gHeader = arguments[4];
         instruction.path3 = arguments[5];
         
-        if (arguments[6] != "") {
-            instruction.gUId = stoi(arguments[6]);
-        }
+        // if (arguments[6] != "") {
+        //     instruction.gUId = stoi(arguments[6]);
+        // }
     }
 
     bool join(InSequences& inSequences, Instruction &instruction) { // joins two sequences via a gap based on instruction

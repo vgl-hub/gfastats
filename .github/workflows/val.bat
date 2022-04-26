@@ -1,1 +1,1 @@
-"build/bin/gfastats-validate.exe" validateFiles
+"build/bin/gfastats-validate.exe" validateFiles -v
