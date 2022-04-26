@@ -13,10 +13,8 @@ jobs:
         include:
           - os: macos-latest
             command: ".github/workflows/val.sh"
-            shell: bash
           - os: ubuntu-latest
             command: ".github/workflows/val.sh"
-            shell: bash
           - os: windows-latest
             command: ".github/workflows/val.bat"
             shell: cmd
