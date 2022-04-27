@@ -77,10 +77,6 @@ public:
         instruction.dist = stoi(arguments[3]);
         instruction.gHeader = arguments[4];
         instruction.path3 = arguments[5];
-        
-        // if (arguments[6] != "") {
-        //     instruction.gUId = stoi(arguments[6]);
-        // }
     }
 
     bool join(InSequences& inSequences, Instruction &instruction) { // joins two sequences via a gap based on instruction
@@ -93,8 +89,6 @@ public:
         instruction.contig2 = arguments[2];
         instruction.path1 = arguments[3];
         instruction.path2 = arguments[4];
-        instruction.comment1 = arguments[5];
-        instruction.comment2 = arguments[6];
     }
 
     bool split(InSequences& inSequences, Instruction &instruction) { // splits two sequences removing the gap in between based on instruction
