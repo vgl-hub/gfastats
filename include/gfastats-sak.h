@@ -115,8 +115,7 @@ public:
 
         gap.newGap(inSequences.uId, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
         
-        inSequences.insertHash1(instruction.gHeader, inSequences.uId); // header to hash table
-        inSequences.insertHash2(inSequences.uId, instruction.gHeader); // header to hash table
+        inSequences.insertHash(instruction.gHeader, inSequences.uId);
         
         inSequences.addGap(gap); // introduce the new gap
         inSequences.removeGaps(&instruction.contig1);

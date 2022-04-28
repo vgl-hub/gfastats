@@ -796,8 +796,7 @@ public:
         
         addGap(gap);
         
-        insertHash1(*seqHeader+"."+std::to_string(*iId), *uId); // header to hash table
-        insertHash2(*uId, *seqHeader+"."+std::to_string(*iId)); // uID to hash table
+        insertHash(*seqHeader+"."+std::to_string(*iId), *uId);
         
         path.add('G', *uId, '0');
         
@@ -822,8 +821,7 @@ public:
         
         addSegment(*uId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
         
-        insertHash1(*seqHeader+"."+std::to_string(*iId), *uId); // header to hash table
-        insertHash2(*uId, *seqHeader+"."+std::to_string(*iId)); // uID to hash table
+        insertHash(*seqHeader+"."+std::to_string(*iId), *uId);
         
         path.add('S', *uId, '+');
         
@@ -857,8 +855,7 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this path name
             
-            insertHash1(*pHeader, uId); // header to hash table
-            insertHash2(uId, *pHeader); // uId to hash table
+            insertHash(*pHeader, uId);
             
         }else{
             
@@ -1032,8 +1029,7 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this segment
             
-            insertHash1(*seqHeader, uId); // header to hash table
-            insertHash2(uId, *seqHeader); // header to hash table
+            insertHash(*seqHeader, uId);
             
             sUId = uId;
             
@@ -1774,18 +1770,11 @@ public:
     }
     
     //gfa methods
-    void insertHash1(std::string segHeader, unsigned int i) {
-
+    void insertHash(const std::string &segHeader, unsigned int i) {
         headersToIds.insert({segHeader, i});
-
-    }
-
-    void insertHash2(unsigned int i, std::string segHeader) {
-
         idsToHeaders.insert({i, segHeader});
-
     }
-    
+
     void setuId(unsigned int uid) {
 
         uId = uid;
@@ -2461,8 +2450,7 @@ public:
             
             verbose("Path not found in keys. Creating new path (" + pHeader + ", pUId: " + std::to_string(uId) + ")");
             
-            insertHash1(pHeader, uId); // header to hash table
-            insertHash2(uId, pHeader); // header to hash table
+            insertHash(pHeader, uId);
             
             path.newPath(uId, pHeader);
             
@@ -2510,8 +2498,7 @@ public:
         
         if (gUId == 0) {
             
-            insertHash1(gHeader, uId); // header to hash table
-            insertHash2(uId, gHeader); // id to hash table
+            insertHash(gHeader, uId);
             
             gUId = uId;
             
@@ -2616,8 +2603,7 @@ public:
         newPath1.setHeader(pHeader1);
         std::vector<PathTuple> newComponents1;
         
-        insertHash1(pHeader1, uId); // header to hash table
-        insertHash2(uId, pHeader1); // id to hash table
+        insertHash(pHeader1, uId);
         
         path.newPath(uId, pHeader1);
         
@@ -2627,8 +2613,7 @@ public:
         newPath2.setHeader(pHeader2);
         std::vector<PathTuple> newComponents2;
         
-        insertHash1(pHeader2, uId); // header to hash table
-        insertHash2(uId, pHeader2); // id to hash table
+        insertHash(pHeader2, uId);
         
         path.newPath(uId, pHeader2);
         
@@ -2690,8 +2675,7 @@ public:
         
         pathIt->setHeader(pHeader);
         
-        insertHash1(pHeader, pUId); // header to hash table
-        insertHash2(pUId, pHeader); // uId to hash table
+        insertHash(pHeader, pUId);
         
         if (newpUId != NULL) {
             
@@ -3016,8 +3000,7 @@ public:
                 
                 path.newPath(uId, inSegment.getSeqHeader() + "_path");
                 
-                insertHash1(inSegment.getSeqHeader() + "_path", uId); // header to hash table
-                insertHash2(uId, inSegment.getSeqHeader() + "_path"); // uId to hash table
+                insertHash(inSegment.getSeqHeader() + "_path", uId);
                 
                 uId++;
                 

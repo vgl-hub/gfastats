@@ -437,8 +437,7 @@ public:
                                     
                                     uId = inSequences.getuId();
                                     
-                                    inSequences.insertHash1(gHeader, uId); // header to hash table
-                                    inSequences.insertHash2(uId, gHeader); // uID to hash table
+                                    inSequences.insertHash(gHeader, uId);
                                     
                                     guId = uId; // since I am still reading segments I need to keep this fixed
                                     
@@ -457,8 +456,7 @@ public:
                                         
                                         uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                        inSequences.insertHash(seqHeader, uId);
                                     
                                         sId1 = uId;
                                         
@@ -483,8 +481,7 @@ public:
                                         
                                         uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                        inSequences.insertHash(seqHeader, uId);
                                     
                                         sId2 = uId;
                                         
@@ -530,8 +527,7 @@ public:
                                     
                                     uId = inSequences.getuId();
                                     
-                                    inSequences.insertHash1(eHeader, uId); // header to hash table
-                                    inSequences.insertHash2(uId, eHeader); // uID to hash table
+                                    inSequences.insertHash(eHeader, uId);
                                     
                                     euId = uId; // since I am still reading segments I need to keep this fixed
                                     
@@ -550,8 +546,7 @@ public:
                                         
                                         uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                        inSequences.insertHash(seqHeader, uId);
                                     
                                         sId1 = uId;
                                         
@@ -576,8 +571,7 @@ public:
                                         
                                         uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                        inSequences.insertHash(seqHeader, uId);
                                     
                                         sId2 = uId;
                                         
@@ -617,8 +611,7 @@ public:
                                     
                                     if (got == hash.end()) { // this is the first time we see this header
                                         
-                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                        inSequences.insertHash(seqHeader, uId);
                                         
                                     }else{
                                         
@@ -673,8 +666,7 @@ public:
                                             
                                             uId = inSequences.getuId();
                                             
-                                            inSequences.insertHash1(component, uId); // header to hash table
-                                            inSequences.insertHash2(uId, component); // uId to hash table
+                                            inSequences.insertHash(component, uId);
                                         
                                             sId1 = uId;
                                             
@@ -796,8 +788,7 @@ public:
                                         
                                         uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                        inSequences.insertHash(seqHeader, uId);
                                     
                                         sId1 = uId;
                                         
@@ -823,8 +814,7 @@ public:
                                         
                                         uId = inSequences.getuId();
                                         
-                                        inSequences.insertHash1(seqHeader, uId); // header to hash table
-                                        inSequences.insertHash2(uId, seqHeader); // header to hash table
+                                        inSequences.insertHash(seqHeader, uId);
                                     
                                         sId2 = uId;
                                         
@@ -895,8 +885,7 @@ public:
                                             
                                             uId = inSequences.getuId();
                                             
-                                            inSequences.insertHash1(component, uId); // header to hash table
-                                            inSequences.insertHash2(uId, component); // header to hash table
+                                            inSequences.insertHash(component, uId);
                                         
                                             sId1 = uId;
                                             
@@ -1105,8 +1094,7 @@ public:
                         
                         path.append({std::begin(pathComponents), std::end(pathComponents)});
                         
-                        inSequences.insertHash1(pHeaderNew, pUId); // header to hash table
-                        inSequences.insertHash2(pUId, pHeaderNew); // uId to hash table
+                        inSequences.insertHash(pHeaderNew, pUId);
                         
                         inSequences.setuId(pUId+1);
                         
@@ -1167,8 +1155,7 @@ public:
                         
                     }
                     
-                    inSequences.insertHash1(gHeader, gUId); // header to hash table
-                    inSequences.insertHash2(gUId, gHeader); // uId to hash table
+                    inSequences.insertHash(gHeader, gUId);
                     
                     inSequences.setuId(gUId+1);
                     
