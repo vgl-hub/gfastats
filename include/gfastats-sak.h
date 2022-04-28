@@ -186,7 +186,7 @@ public:
     bool compress(InSequences &inSequences, Instruction &instruction) {
         for(auto inSegment : inSequences.inSegments) {
             std::vector<unsigned int> indices, lengths;
-            homopolymerCompress(&(inSegment.inSequence), indices, lengths, instruction.compressThreshhold);
+            inSequences.homopolymerCompress(&(inSegment.inSequence), indices, lengths, instruction.compressThreshhold);
             compressStack.push({indices, lengths});
         }
 
@@ -218,7 +218,7 @@ public:
             } else {
                 pair = { instruction.decompressIndices, instruction.decompressLengths };
             }
-            homopolymerDecompress(&(inSegment.inSequence), pair.first, pair.second);
+            inSequences.homopolymerDecompress(&(inSegment.inSequence), pair.first, pair.second);
         }
         return true;
     }
