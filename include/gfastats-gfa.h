@@ -2734,23 +2734,9 @@ public:
             
             verbose("Checking original coordinates of component (uId: " + std::to_string(std::get<1>(*component)) + ", start: " + std::to_string(std::get<3>(*component)) + ", end: " + std::to_string(std::get<4>(*component)) + ")");
             
-            if (std::get<0>(*component) == 'S') {
+            compOriginalSize = getComponentSize(*component, true);
             
-                auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                
-                compOriginalSize = inSegment->getSegmentLength();
-                
-                compSize = inSegment->getSegmentLength(std::get<3>(*component), std::get<4>(*component));
-                
-            }else{
-                
-                auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
-                
-                compOriginalSize = inGap->getDist();
-                
-                compSize = inGap->getDist(std::get<3>(*component), std::get<4>(*component));
-                
-            }
+            compSize = getComponentSize(*component, false);
             
             trimmed = compSize != compOriginalSize ? " " : " not ";
                 
@@ -2769,41 +2755,29 @@ public:
                 continue;
                 
             }
-
-            if (traversedSize + compSize >= start && traversedSize < start) {
+            
+            if (traversedSize + compSize >= start && traversedSize < start - 1 && traversedSize + compSize > end) {
+               
+               verbose("Trimming both ends");
+               
+               trimComponent(*component, start - traversedSize, end - traversedSize);
+               
+            } else if (traversedSize + compSize >= start && traversedSize < start && traversedSize + compSize <= end) {
                 
-                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
+                verbose("Trimming left end");
                 
-                    std::get<3>(*component) = (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1) + start - traversedSize; // edit also to account for already trimmed component
-                    
-                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
-                    
-                }else{
-                    
-                    std::get<4>(*component) = (std::get<4>(*component) == 0 ? compOriginalSize : std::get<4>(*component)) - start + traversedSize + 1;
-                    
-                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
-                    
-                }
+                trimComponent(*component, start - traversedSize, 0);
+                
+            } else if (traversedSize + compSize > end) {
+                
+                verbose("Trimming right end");
+                
+                trimComponent(*component, 0, end - traversedSize);
                 
             }
             
             if (traversedSize + compSize >= end) {
-                
-                if (std::get<2>(*component) == '+') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
-                
-                    std::get<4>(*component) = end - traversedSize;
-                    
-                    verbose("End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(*component)) + ")");
-                    
-                }else{
-                    
-                    std::get<3>(*component) = (std::get<4>(*component) == 0 ? compOriginalSize : std::get<4>(*component)) - end + traversedSize + 1;
-                    
-                    verbose("Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(*component)) + ")");
-                    
-                }
-                
+            
                 pathComponents->erase(component + 1, pathComponents->end());
                 
                 verbose("Erased extra components");
@@ -2825,10 +2799,10 @@ public:
                 
             }
             
-            newCompSize = (std::get<4>(*component) != 0 ? std::get<4>(*component) : compSize) - (std::get<3>(*component) == 0 ? 0 : std::get<3>(*component) - 1);
+            newCompSize = getComponentSize(*component, false);
             verbose("Component size after trimming: " + std::to_string(newCompSize));
             
-            actualSize += newCompSize != 0 ? newCompSize : compSize;
+            actualSize += newCompSize;
             verbose("Path size after iteration: " + std::to_string(actualSize));
             
             traversedSize += compSize;
@@ -2840,6 +2814,82 @@ public:
         
         if (actualSize != end-start+1) {fprintf(stderr, "Error: Path size after trimming (%u) differs from expected size after trimming (%u). Terminating.\n", actualSize, end-start+1); exit(1);}
     
+    }
+    
+    void trimComponent(PathTuple& component, int start, int end) {
+        
+        int startCom = std::get<3>(component), endCom = std::get<4>(component);
+
+        if (std::get<2>(component) == '+' || std::get<2>(component) == '0') { // we only change the end coordinate if the component wasn't already flipped, otherwise we edit the start
+        
+            if (start != 0 && end != 0) {
+            
+                std::get<4>(component) = (startCom == 0 ? 0 : startCom - 1) + end;
+                
+                std::get<3>(component) = (startCom == 0 ? 0 : startCom - 1) + start;
+                
+                verbose("Plus orientation (+). Both start and end coordinates of the component need to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(component)) + ", new end: " + std::to_string(std::get<4>(component)) + ")");
+                
+            }else if (start != 0) {
+                        
+                std::get<3>(component) = (startCom == 0 ? 0 : startCom - 1) + start;
+                    
+                verbose("Plus orientation (+). Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(component)) + ")");
+     
+            }else if (end != 0) {
+             
+                std::get<4>(component) = (startCom == 0 ? 0 : startCom - 1) + end;
+                
+                verbose("Plus orientation (+). End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(component)) + ")");
+                
+            }
+            
+        }else{
+            
+            if (start != 0 && end != 0) {
+                
+                std::get<3>(component) = (startCom == 0 ? 0 : startCom - 1) + getComponentSize(component, false) - end + 1;
+                
+                std::get<4>(component) = (endCom == 0 ? getComponentSize(component, false) : endCom) - start + 1;
+
+                verbose("Minus orientation (-). Both start and end coordinates of the component need to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(component)) + ", new end: " + std::to_string(std::get<4>(component)) + ")");
+                
+            }else if (start != 0) {
+
+                std::get<4>(component) = (endCom == 0 ? getComponentSize(component, false) : endCom) - start + 1;
+
+                verbose("Minus orientation (-). End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(std::get<4>(component)) + ")");
+
+            }else if (end != 0) {
+
+                std::get<3>(component) = (startCom == 0 ? 0 : startCom - 1) + getComponentSize(component, false) - end + 1;
+
+                verbose("Minus orientation (-). Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(std::get<3>(component)) + ")");
+
+            }
+
+        }
+        
+    }
+    
+    int getComponentSize(PathTuple& component, bool original) {
+        
+        int cUId = std::get<1>(component);
+        
+        if (std::get<0>(component) == 'S') {
+        
+            auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+            
+            return original ? inSegment->getSegmentLength() : inSegment->getSegmentLength(std::get<3>(component), std::get<4>(component));
+            
+        }else{
+            
+            auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+            
+            return original ? inGap->getDist() : inGap->getDist(std::get<3>(component), std::get<4>(component));
+            
+        }
+        
     }
     
     unsigned int pathLen(unsigned int pUId) {
