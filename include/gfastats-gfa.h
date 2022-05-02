@@ -2724,11 +2724,9 @@ public:
         
         std::string trimmed;
         
-        unsigned int cUId = 0, traversedSize = 0, actualSize = 0, compSize = 0, newCompSize = 0, compOriginalSize = 0;
+        unsigned int traversedSize = 0, actualSize = 0, compSize = 0, newCompSize = 0, compOriginalSize = 0;
         
         for (std::vector<PathTuple>::iterator component = pathComponents->begin(); component != pathComponents->end(); component++) {
-            
-            cUId = std::get<1>(*component);
             
             verbose("New path size before iteration: " + std::to_string(actualSize));
             
