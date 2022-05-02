@@ -2874,7 +2874,7 @@ public:
     
     int getComponentSize(PathTuple& component, bool original) {
         
-        int cUId = std::get<1>(component);
+        unsigned int cUId = std::get<1>(component);
         
         if (std::get<0>(component) == 'S') {
         
