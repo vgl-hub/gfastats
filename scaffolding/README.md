@@ -15,7 +15,7 @@ Newer versions of gfastats append `_path` to path names, so the Bionano AGP must
 
 an example of fixing the Bionano AGP to recognize `_path` in contig names:
 ````bash
-sed 's/\(h*tg[0-9]*.\)/\1_path/g' bTaeGut2.hap1.s1.edit.agp | sed 's/_path_obj/_obj/g' | sed 's/_path_subseq_/_subseq_/g' | sed 's/:/_/g' > bTaeGut2.hap1.s1.edit.path.agp
+awk '{OFS = "\t"}{if ($0 ~ /^#/) print $0 }{if ($6 ~ /h1*/) print $1,$2,$3,$4,$5,$6"_path",$7,$8,$9; if ($6 ~ /^[0-9]/) print $0}' bTaeGut2.hap1.s1.edit.agp > bTaeGut2.hap1.s1.edit.path.agp
 ````
 
 Overlap s1 AGP onto c1/p1 GFA. `--discover` is so gfastats finds the paths in the GFA
