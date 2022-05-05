@@ -2,5 +2,5 @@ testFiles/random1.fastq -a testFiles/random1.agp --stats -ofa
 embedded
 >newpath1
 GacTNNNNNTCGNNNNNNATNC
->wpath2
+>newpath2
 TCGAGNNNNNNNNTTCCTcgCACtC
