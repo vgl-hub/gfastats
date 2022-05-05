@@ -10,6 +10,14 @@ NOTE: IF Bionano is cutting, then fix the subseq lines. Bionano is not cutting i
 sed 's/W\t\(.*\)_subseq_\([0-9]*\):\([0-9]*\)\t[0-9]*\t[0-9]*\t\(.\)/W\t\1\t\2\t\3\t\4/g' bTaeGut2_hap1_s1.agp > bTaeGut2_hap1_s1.edit.agp
 ````
 
+##### UPDATE: MAY 3, 2022
+Newer versions of gfastats append `_path` to path names, so the Bionano AGP must be processed accordingly. **This needs to happen even if Bionano is not cutting -- i.e. this needs to happen for Galaxy assemblies!**
+
+an example of fixing the Bionano AGP to recognize `_path` in contig names:
+````bash
+awk '{OFS = "\t"}{if ($0 ~ /^#/) print $0 }{if ($6 ~ /h1*/) print $1,$2,$3,$4,$5,$6"_path",$7,$8,$9; if ($6 ~ /^[0-9]/) print $0}' bTaeGut2.hap1.s1.edit.agp > bTaeGut2.hap1.s1.edit.path.agp
+````
+
 Overlap s1 AGP onto c1/p1 GFA. `--discover` is so gfastats finds the paths in the GFA
 ````bash
 gfastats bColStr4.hap1.gfa --discover -a bColStr4.hap1.s1.agp -o bColStr4.hap1.s1.gfa
