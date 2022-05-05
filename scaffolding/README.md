@@ -7,7 +7,7 @@ Convert GFA -> FASTA run bionano to obtain s1 AGPs. `bColStr4.hap1.fasta` into B
 NOTE: IF Bionano is cutting, then fix the subseq lines. Bionano is not cutting in Galaxy, so do not need to run `sed` command on Galaxy assemblies.
 ````bash
 # THIS IS NOT NEEDED FOR GALAXY ASSEMBLIES
-sed 's/W\t\(.*\)_subseq_\([0-9]*\):\([0-9]*\)\t[0-9]*\t[0-9]*\t\(.\)/W\t\1\t\2\t\3\t\4/g' bTaeGut2_hap1_s1.agp > bTaeGut2_hap1_s1.edit.agp
+cat bTaeGut2_hap1_s1.agp | sed 's/W\t\(.*\)_subseq_\([0-9]*\):\([0-9]*\)\t[0-9]*\t[0-9]*\t\(.\)/W\t\1\t\2\t\3\t\4/g' | sed 's/subseq_\([0-9]*\):\([0-9]*\)/subseq_\1_\2/g' > bTaeGut2_hap1_s1.edit.agp
 ````
 
 ##### UPDATE: MAY 3, 2022
