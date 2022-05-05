@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
     };
 
     const std::map<std::set<std::string>, std::vector<std::string>> file_args = {
+        {{"random1.fasta", "random1.gfa", "random1.fastq"}, {"-a testFiles/random1.agp --stats", "-a testFiles/random1.agp --stats -ofa"}},
         {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.instructions.sak"}}
     //  {{set of test file paths}, {list of command line args to run with}}
     };
