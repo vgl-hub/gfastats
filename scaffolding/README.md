@@ -1,8 +1,9 @@
 ### example data: bTaeGut2 Hifiasm (HiC) assembly
-- hap1 contigs as GFA: `bTaeGut2.trim.HiC.hic.hap1.p_ctg.gfa` on [GenomeArk](https://genomeark.s3.amazonaws.com/index.html?prefix=species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/hifiasm/)
-- hap1 s1 AGP: `bTaeGut2_Saphyr_DLE1_3172351_bppAdjust_cmap_bTaeGut2_trim_HiC_hic_hap1_p_ctg_fasta_NGScontigs_HYBRID_SCAFFOLD.agp` on [GenomeArk](https://genomeark.s3.amazonaws.com/index.html?prefix=species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/bionano_hap1/agp_fasta/)
-- hap1 s1 edited AGP: 
-- hap1 s2 AGP: `scaffolds_FINAL.original-coordinates.agp` on [GenomeArk](https://genomeark.s3.amazonaws.com/index.html?prefix=species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/salsa_hap1/bTaeGut2_hap1_s1.gfastats.rename_salsa/)
+right click -> download link
+- [hap1 contigs as GFA](https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/hifiasm/bTaeGut2.trim.HiC.hic.hap1.p_ctg.gfa)
+- [hap1 s1 AGP](https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/bionano_hap1/agp_fasta/bTaeGut2_Saphyr_DLE1_3172351_bppAdjust_cmap_bTaeGut2_trim_HiC_hic_hap1_p_ctg_fasta_NGScontigs_HYBRID_SCAFFOLD.agp)
+- [hap1 s2 AGP](https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/salsa_hap1/bTaeGut2_hap1_s1.gfastats.rename_salsa/scaffolds_FINAL.original-coordinates.agp)
+- [hap1 s2 final fasta (to check your results)](https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/bTaeGut2.hic.hap1.s2.fasta)
 
 The starting files from hifiasm-HiC workflow are the hap1 & hap2 GFAs:
 
@@ -26,7 +27,8 @@ awk '{OFS = "\t"}{if ($0 ~ /^#/) print $0 }{if ($6 ~ /h1*/) print $1,$2,$3,$4,$5
 
 Overlap s1 AGP onto c1/p1 GFA. `--discover` is so gfastats finds the paths in the GFA
 ````bash
-gfastats bTaeGut2.hap1.gfa --discover -a bTaeGut2.hap1.s1.agp -o bTaeGut2.hap1.s1.gfa
+gfastats bTaeGut2.trim.HiC.hic.hap1.p_ctg.gfa --discover -o bTaeGut2.hap1.discover.gfa
+gfastats bTaeGut2.hap1.discover.gfa --discover -a bTaeGut2.hap1.s1.edit.path.agp -o bTaeGut2.hap1.s1.gfa
 ````
 
 Convert s1 GFA -> s1 FASTA, run salsa to obtain s2 AGP.
