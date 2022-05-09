@@ -1,8 +1,15 @@
+### example data: bTaeGut2 Hifiasm (HiC) assembly
+right click -> download link
+- [hap1 contigs as GFA](https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/hifiasm/bTaeGut2.trim.HiC.hic.hap1.p_ctg.gfa)
+- [hap1 s1 AGP](https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/bionano_hap1/agp_fasta/bTaeGut2_Saphyr_DLE1_3172351_bppAdjust_cmap_bTaeGut2_trim_HiC_hic_hap1_p_ctg_fasta_NGScontigs_HYBRID_SCAFFOLD.agp)
+- [hap1 s2 AGP](https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/intermediates/salsa_hap1/bTaeGut2_hap1_s1.gfastats.rename_salsa/scaffolds_FINAL.original-coordinates.agp)
+- [hap1 s2 final fasta (to check your results)](https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut2/assembly_vgp_hic_2.0/bTaeGut2.hic.hap1.s2.fasta)
+
 The starting files from hifiasm-HiC workflow are the hap1 & hap2 GFAs:
 
-`bColStr4.hap1.gfa` and `bColStr4.hap2.gfa`
+`bTaeGut2.hap1.gfa` and `bTaeGut2.hap2.gfa`
 
-Convert GFA -> FASTA run bionano to obtain s1 AGPs. `bColStr4.hap1.fasta` into Bionano produces `bColStr4.hap1.s1.agp`, and same for hap2.
+Convert GFA -> FASTA run bionano to obtain s1 AGPs. `bTaeGut2.hap1.fasta` into Bionano produces `bTaeGut2.hap1.s1.agp`, and same for hap2.
 
 NOTE: IF Bionano is cutting, then fix the subseq lines. Bionano is not cutting in Galaxy, so do not need to run `sed` command on Galaxy assemblies.
 ````bash
@@ -20,28 +27,29 @@ awk '{OFS = "\t"}{if ($0 ~ /^#/) print $0 }{if ($6 ~ /h1*/) print $1,$2,$3,$4,$5
 
 Overlap s1 AGP onto c1/p1 GFA. `--discover` is so gfastats finds the paths in the GFA
 ````bash
-gfastats bColStr4.hap1.gfa --discover -a bColStr4.hap1.s1.agp -o bColStr4.hap1.s1.gfa
+gfastats bTaeGut2.trim.HiC.hic.hap1.p_ctg.gfa --discover -o bTaeGut2.hap1.discover.gfa
+gfastats bTaeGut2.hap1.discover.gfa --discover -a bTaeGut2.hap1.s1.edit.path.agp -o bTaeGut2.hap1.s1.gfa
 ````
 
 Convert s1 GFA -> s1 FASTA, run salsa to obtain s2 AGP.
 ````bash
-gfastats bColStr4.hap1.s1.gfa -o bColStr4.hap1.s1.gfastats.fasta
+gfastats bTaeGut2.hap1.s1.gfa -o bTaeGut2.hap1.s1.gfastats.fasta
 ````
 NOTE: IF Bionano is cutting, then subseq lines have colons in the names, so you need to remove those before SALSA
 ````bash
 ## Removing colons from bionano scaff names, because salsa doesn't like it
 # THIS IS NOT NEEDED FOR GALAXY ASSEMBLIES
-sed 's/:/_/g' bColStr4.hap1.s1.gfastats.fasta > bColStr4.hap1.s1.gfastats.nocolon.fasta
+sed 's/:/_/g' bTaeGut2.hap1.s1.gfastats.fasta > bTaeGut2.hap1.s1.gfastats.nocolon.fasta
 ````
 
-`bColStr4.hap1.s1.gfastats.fasta` into SALSA produces `bColStr4.hap1.s2.agp`
+`bTaeGut2.hap1.s1.gfastats.fasta` into SALSA produces `bTaeGut2.hap1.s2.agp`
 
 Overlap s2 AGP onto s1 GFA to create s2 GFA
 ````bash
-cp <salsa_results_directory>/scaffolds_FINAL.original-coordinates.agp > ./bColStr4.hap1.s2.originalcoords.agp
-gfastats bColStr4.hap1.s1.gfa -a bColStr4.hap1.s2.originalcoords.agp -o bColStr4.hap1.s2.gfa
+cp <salsa_results_directory>/scaffolds_FINAL.original-coordinates.agp > ./bTaeGut2.hap1.s2.originalcoords.agp
+gfastats bTaeGut2.hap1.s1.gfa -a bTaeGut2.hap1.s2.originalcoords.agp -o bTaeGut2.hap1.s2.gfa
 ````
 If you want to convert this s2 GFA to s2 FASTA:
 ````bash
-gfastats bColStr4.hap1.s2.gfa -o bColStr4.hap1.s2.gfastats.fasta
+gfastats bTaeGut2.hap1.s2.gfa -o bTaeGut2.hap1.s2.gfastats.fasta
 ````
