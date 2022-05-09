@@ -2095,7 +2095,7 @@ public:
         
     }
     
-    bool updateScaffoldStats() {
+    bool updateStats() {
         
         scaffLens.clear();
         contigLens.clear();
@@ -3018,7 +3018,7 @@ public:
                 
                 auto inGap = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                 
-                gapLen += inGap->getDist(std::get<4>(*component) - std::get<3>(*component));
+                gapLen += inGap->getDist(std::get<3>(*component) - std::get<4>(*component));
                 
                 if (!(std::get<0>(*(component + 1)) == 'G')) {
                 
@@ -3028,7 +3028,7 @@ public:
                     
                 }
                 
-                pathIt->increaseLen(inGap->getDist(std::get<4>(*component) - std::get<3>(*component)));
+                pathIt->increaseLen(inGap->getDist(std::get<3>(*component) - std::get<4>(*component)));
                 
             }
             

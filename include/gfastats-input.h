@@ -139,7 +139,7 @@ public:
         std::string firstLine;
         char firstChar;
         unsigned char buffer[2];
-        bool stopStream = false;
+        bool stopStream = false, updateStats = false;
         
         std::ifstream is(iSeqFileArg);
         
@@ -987,7 +987,7 @@ public:
         
         }
         
-        inSequences.updateScaffoldStats();
+        inSequences.updateStats();
 
         if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
             
@@ -1244,7 +1244,7 @@ public:
                 
             }
             
-            inSequences.updateScaffoldStats();
+            updateStats = true;
             
         }
             
@@ -1281,6 +1281,12 @@ public:
             }
             
             inSequences.sortPathsByList(headerList);
+            
+        }
+        
+        if (updateStats) {
+            
+            inSequences.updateStats();
             
         }
 
