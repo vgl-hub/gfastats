@@ -185,7 +185,7 @@ public:
                         
                     }
                     
-                    *stream <<"\n";
+                    *stream << std::endl;
                     
                     pathComponents = inPath.getComponents();
                     
@@ -227,7 +227,7 @@ public:
                         
                     }else{
                         
-                        *stream<<inSeq<<"\n";
+                        *stream<<inSeq<<std::endl;
                         
                     }
                     

@@ -20,6 +20,7 @@
 
 #include <vector>  //required for zstream
 #include <stack>
+#include <queue>
 #include <string.h>
 #include <algorithm> //required for zstream
 #include <cstring> //required for zstream

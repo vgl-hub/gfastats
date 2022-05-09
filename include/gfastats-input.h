@@ -1018,8 +1018,16 @@ public:
                 stream = make_unique<std::ifstream>(std::ifstream(iAgpFileArg));
                 
             }
+
+            std::queue<std::string> nextLines;
             
-            while (getline(*stream, line)) {
+            while (true) {
+                if(nextLines.size() > 0) {
+                    line = nextLines.front();
+                    nextLines.pop();
+                } else if(!getline(*stream, line)) {
+                    break;
+                }
                 
                 std::istringstream iss(line); // line to string
                 
@@ -1076,9 +1084,8 @@ public:
                         
                     }
                     
-                    std::streampos oldpos = stream->tellg();  // stores the position before we read another line
-                    
                     getline(*stream, line);
+                    nextLines.push(line);
                     
                     arguments = readDelimited(line, "\t", "#"); // read the next sequence
                     
@@ -1113,8 +1120,7 @@ public:
                         }
                         
                     }
-                    
-                    stream->seekg(oldpos); // reset stream to previous line
+                
                     
                 }else if(arguments[4] == "N" || arguments[4] == "U"){
 

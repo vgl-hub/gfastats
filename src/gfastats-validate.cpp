@@ -21,7 +21,7 @@ build/bin/gfastats-validate testFiles/random1.fasta testFiles/random2.gfa2.gfa.g
 #include <set>
 #include <regex>
 
-bool verbose = false, veryVerbose = false, printCommand = false;
+bool printCommand = false;
 const std::string tmp = "tmp.txt";
 const std::string err = "err.txt";
 bool pass = true;
@@ -42,15 +42,10 @@ int main(int argc, char **argv) {
     }
 
     int opt;
-    while((opt = getopt(argc, argv, "vVc")) != -1) 
+    while((opt = getopt(argc, argv, "c")) != -1) 
     {
         switch(opt) 
         {
-        case 'V':
-            veryVerbose = true;
-        case 'v':
-            verbose = true;
-            break;
         case 'c':
             printCommand = true;
             break;
@@ -126,7 +121,6 @@ int main(int argc, char **argv) {
 
         if(diffs.size() > 0) {
             printFAIL(input_file.c_str(), "expected output did not match actual output");
-            if(verbose)
             for(const auto &pair : diffs) {
                 std::cout << "    expected: " << pair.second.c_str() << std::endl << "      actual: " << pair.first.c_str() << std::endl;
             }
