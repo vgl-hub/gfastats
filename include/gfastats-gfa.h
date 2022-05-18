@@ -1090,7 +1090,7 @@ public:
         return inSegments.size();
     }
     
-    InSegment getInSegment(unsigned int sId) {
+    InSegment *getInSegment(unsigned int sId) {
         
         auto inSegment = find_if(inSegments.begin(), inSegments.end(), [sId](InSegment& obj) {return obj.getuId() == sId;}); // given a uId, find it in nodes
         
@@ -1100,7 +1100,7 @@ public:
             
         }
             
-        return *inSegment;
+        return &(*inSegment);
         
     }
     

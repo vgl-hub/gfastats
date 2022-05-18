@@ -180,15 +180,21 @@ public:
     }
 
     void readCompress(Instruction &instruction, std::vector<std::string> &arguments) {
-        instruction.compressThreshhold = stoi(arguments[1]);
+        instruction.contig1 = arguments[1];
+        instruction.compressThreshhold = stoi(arguments[2]);
     }
 
     bool compress(InSequences &inSequences, Instruction &instruction) {
-        for(auto inSegment : inSequences.inSegments) {
-            std::vector<unsigned int> indices, lengths;
-            inSequences.homopolymerCompress(&(inSegment.inSequence), indices, lengths, instruction.compressThreshhold);
-            compressStack.push({indices, lengths});
+        auto got = inSequences.headersToIds.find(instruction.contig1); // get the headers to uIds table to look for the header
+        if (got == inSequences.headersToIds.end()) { // this is the first time we see this path name
+            fprintf(stderr, "Error: couldn't find (%s). Terminating.\n", instruction.contig1.c_str());
+            exit(1);
         }
+        int id = got->second;
+        std::string *sequence = &(inSequences.getInSegment(id)->inSequence);
+        std::vector<unsigned int> indices, lengths;
+        inSequences.homopolymerCompress(sequence, indices, lengths, instruction.compressThreshhold);
+        compressStack.push({indices, lengths});
 
         return true;
     }

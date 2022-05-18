@@ -683,7 +683,7 @@ public:
                             
                             if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                             
-                            std::cout<<(*inSegments)[sIdx].getSeqHeader()<<"\t"<<pos;
+                            std::cout<<pHeader<<"\t"<<pos;
                             
                             pos += (*inSegments)[sIdx].getInSequence().size();
                             
@@ -752,7 +752,7 @@ public:
                             
                             if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
                             
-                            std::cout<<(*inGaps)[gIdx].getgHeader()<<"\t"<<pos;
+                            std::cout<<pHeader<<"\t"<<pos;
                             
                             pos += (*inGaps)[gIdx].getDist();
                             
