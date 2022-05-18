@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     std::cout << "deleting old validate files..." << std::endl;
 
     for(auto &file : list_dir("validateFiles")) {
-        if(getFileExt(file) != "tst") continue;
+        if(getFileExt(file) != "tst") continue; // dont delete README
         file = "validateFiles/"+file;
         if(remove(file.c_str()) != 0) {
             std::cerr << "error deleting <" << file << ">" << std::endl;
