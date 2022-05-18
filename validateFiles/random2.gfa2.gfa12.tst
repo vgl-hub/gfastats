@@ -8,6 +8,7 @@ Scaffold N50: 20
 Scaffold auN: 20.00
 Scaffold L50: 1
 Largest scaffold: 20
+# contigs: 3
 Total contig length: 15
 Average contig length: 5.00
 Contig N50: 5
@@ -27,7 +28,7 @@ GC content %: 33.33
 # segments: 5
 Total segment length: 35
 Average segment length: 7.00
-# gaps: 2
+# gaps: 4
 # paths: 1
 # edges: 2
 Average degree: 0.40

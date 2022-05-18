@@ -1,16 +1,29 @@
 #include <gfastats-validate.h>
 #include <map>
+#include <cstdio>
 
 int main(int argc, char **argv) {
     std::cout << "WARNING: only run this program if gfastats is in a working state" << std::endl;
+    std::cout << "WARNING: previous validate files will be deleted" << std::endl;
     std::cout << "continue? (Y/N) ";
     std::string input;
     std::cin >> input;
     if(input != "Y" && input != "y") {
-        std::cout << "test generation cancelled" << std::endl;
+        std::cout << "validate generation cancelled" << std::endl;
         std::exit(0);
     }
-    std::cout << "generating test files..." << std::endl;
+    std::cout << "deleting old validate files..." << std::endl;
+
+    for(auto &file : list_dir("validateFiles")) {
+        if(getFileExt(file) != "tst") continue;
+        file = "validateFiles/"+file;
+        if(remove(file.c_str()) != 0) {
+            std::cerr << "error deleting <" << file << ">" << std::endl;
+            return -1;
+        }
+    }
+
+    std::cout << "generating new validate files..." << std::endl;
 
     std::string exePath = getExePath(argv[0]);
 
