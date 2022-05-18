@@ -878,6 +878,7 @@ public:
         }
         std::cout<<output("Largest scaffold")<<inSequences.getLargestScaffold()<<"\n";
         
+        std::cout<<output("# contigs")<<inSequences.getTotContigN()<<"\n";
         std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<"\n";
         std::cout<<output("Average contig length") << gfa_round(inSequences.computeAvgContigLen()) << "\n";
         inSequences.evalNstars('c', gSize); // contig N* statistics

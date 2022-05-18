@@ -8,6 +8,7 @@ Scaffold N50: 20
 Scaffold auN: 20.00
 Scaffold L50: 1
 Largest scaffold: 20
+# contigs: 3
 Total contig length: 15
 Average contig length: 5.00
 Contig N50: 5

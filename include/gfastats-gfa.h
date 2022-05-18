@@ -452,7 +452,7 @@ private:
     std::vector<PathTuple> pathComponents;
     unsigned int pUId;
     
-    long unsigned int length = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
+    long unsigned int contigN = 0, length = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
     
     friend class SAK;
     friend class InSequences;
@@ -540,6 +540,12 @@ public:
     
     }
     
+    unsigned int getContigN() {
+        
+        return contigN;
+        
+    }
+    
     unsigned int getLen() {
         
         return length;
@@ -579,6 +585,12 @@ public:
     void revCom() {
         
         revComPathComponents(pathComponents);
+    
+    }
+    
+    void increaseContigN() {
+        
+        contigN++;
     
     }
     
@@ -665,6 +677,7 @@ private:
     
     unsigned int
     scaffN = 0,
+    contigN = 0,
     pathN = 0,
     totGapLen = 0,
     uId = 0; // unique numeric identifier for each feature
@@ -1085,11 +1098,6 @@ public:
         
     }
     
-    unsigned int getSegmentN() {
-        
-        return inSegments.size();
-    }
-    
     InSegment *getInSegment(unsigned int sId) {
         
         auto inSegment = find_if(inSegments.begin(), inSegments.end(), [sId](InSegment& obj) {return obj.getuId() == sId;}); // given a uId, find it in nodes
@@ -1315,6 +1323,12 @@ public:
         
     }
     
+    unsigned int getTotContigN() {
+        
+        return contigN;
+        
+    }
+    
     std::vector <unsigned int> getScaffNstars() {
         
         return scaffNstars;
@@ -1429,7 +1443,7 @@ public:
         
     }
     
-    unsigned int getContigNs() {
+    unsigned int getSegmentN() {
         
         return inSegments.size();
         
@@ -2101,7 +2115,7 @@ public:
         contigLens.clear();
         gapLens.clear();
         
-        totScaffLen = 0, scaffN = 0, totA = 0, totC = 0, totG = 0, totT = 0, totLowerCount = 0;
+        totScaffLen = 0, scaffN = 0, contigN = 0, totA = 0, totC = 0, totG = 0, totT = 0, totLowerCount = 0;
         
         for (InPath& inPath : inPaths) { // loop through all paths
             
@@ -2114,6 +2128,10 @@ public:
             scaffN++;
             
             verbose("Increased total scaffold N");
+            
+            contigN += inPath.getContigN();
+            
+            verbose("Increased total contig N");
             
             recordScaffLen(inPath.getLen());
             
@@ -2915,6 +2933,8 @@ public:
                 auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                 
                 contigLens.push_back(inSegment->getSegmentLength(std::get<3>(*component), std::get<4>(*component)));
+                
+                pathIt->increaseContigN();
                 
                 pathIt->increaseLen(inSegment->getSegmentLength(std::get<3>(*component), std::get<4>(*component)));
                 
