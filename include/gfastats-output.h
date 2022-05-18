@@ -896,7 +896,7 @@ public:
         }
         std::cout<<output("Largest contig")<<inSequences.getLargestContig()<<"\n";
         
-        std::cout<<output("# gaps in scaffolds")<<inSequences.getGapN()<<"\n";
+        std::cout<<output("# gaps in scaffolds")<<inSequences.getGapNScaffold()<<"\n";
         std::cout<<output("Total gap length in scaffolds")<<inSequences.getTotGapLen()<<"\n";
         std::cout<<output("Average gap length in scaffolds") << gfa_round(inSequences.computeAverageGapLen()) << "\n";
         inSequences.evalNstars('g'); // gap N* statistics

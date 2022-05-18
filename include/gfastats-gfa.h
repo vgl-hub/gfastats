@@ -1168,9 +1168,15 @@ public:
         
     }
     
-    unsigned int getGapN() {
+    unsigned int getGapNScaffold() {
         
         return gapLens.size();
+        
+    }
+    
+    unsigned int getGapN() {
+        
+        return inGaps.size();
         
     }
 
@@ -3040,7 +3046,7 @@ public:
                 
                 gapLen += inGap->getDist(std::get<3>(*component) - std::get<4>(*component));
                 
-                if (!(std::get<0>(*(component + 1)) == 'G')) {
+                if (component + 1 == pathComponents.end() || !(std::get<0>(*(component + 1)) == 'G')) {
                 
                     gapLens.push_back(gapLen);
                     

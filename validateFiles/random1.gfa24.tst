@@ -28,5 +28,5 @@ GC content %: 55.56
 # segments: 8
 Total segment length: 40
 Average segment length: 5.00
-# gaps: 4
+# gaps: 9
 # paths: 2
