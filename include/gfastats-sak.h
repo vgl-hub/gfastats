@@ -184,29 +184,37 @@ public:
         instruction.compressThreshhold = stoi(arguments[2]);
     }
 
-    bool compress(InSequences &inSequences, Instruction &instruction) {
-        auto got = inSequences.headersToIds.find(instruction.contig1); // get the headers to uIds table to look for the header
+    std::string *headerToSequence(const std::string &header, InSequences &inSequences, const Instruction &instruction) {
+        auto got = inSequences.headersToIds.find(header); // get the headers to uIds table to look for the header
         if (got == inSequences.headersToIds.end()) { // this is the first time we see this path name
             fprintf(stderr, "Error: couldn't find (%s). Terminating.\n", instruction.contig1.c_str());
             exit(1);
         }
         int id = got->second;
-        std::string *sequence = &(inSequences.getInSegment(id)->inSequence);
+        return &(inSequences.getInSegment(id)->inSequence);
+    }
+
+    bool compress(InSequences &inSequences, Instruction &instruction) {
+        std::string *sequence = headerToSequence(instruction.contig1, inSequences, instruction);
         std::vector<unsigned int> indices, lengths;
-        inSequences.homopolymerCompress(sequence, indices, lengths, instruction.compressThreshhold);
+        homopolymerCompress(sequence, indices, lengths, instruction.compressThreshhold);
         compressStack.push({indices, lengths});
 
         return true;
     }
 
     void readDecompress(Instruction &instruction, std::vector<std::string> &arguments) {
-        if(arguments.size() == 1) {
+        instruction.contig1 = arguments[1];
+
+        if(arguments.size() == 2) {
             instruction.decompressUseStack = true;
             return;
         }
 
+
+        // untested, also unlikely to be used
         auto *vec = &instruction.decompressIndices;
-        for(int i=1; i<2; vec = &instruction.decompressLengths, i++) {
+        for(int i=2; i<3; vec = &instruction.decompressLengths, i++) {
             size_t pos = 0, prevPos = 0;
             while ((pos = arguments[i].find(',')) != std::string::npos) {
                 vec->push_back(stoi(arguments[i].substr(prevPos, pos)));
@@ -216,16 +224,16 @@ public:
     }
 
     bool decompress(InSequences &inSequences, Instruction &instruction) {
-        for(auto inSegment : inSequences.inSegments) {
-            std::pair<std::vector<unsigned int>, std::vector<unsigned int>> pair;
-            if(instruction.decompressUseStack) {
-                pair = compressStack.top();
-                compressStack.pop();
-            } else {
-                pair = { instruction.decompressIndices, instruction.decompressLengths };
-            }
-            inSequences.homopolymerDecompress(&(inSegment.inSequence), pair.first, pair.second);
+        std::string *sequence = headerToSequence(instruction.contig1, inSequences, instruction);
+        std::pair<std::vector<unsigned int>, std::vector<unsigned int>> pair;
+        if(instruction.decompressUseStack) {
+            pair = compressStack.top();
+            compressStack.pop();
+        } else {
+            pair = { instruction.decompressIndices, instruction.decompressLengths };
         }
+        homopolymerDecompress(sequence, pair.first, pair.second);
+
         return true;
     }
 
