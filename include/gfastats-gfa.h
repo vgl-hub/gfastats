@@ -73,6 +73,7 @@ private:
     
     friend class SAK;
     friend class InSequences;
+    friend class Report;
     
 public:
     
@@ -812,9 +813,9 @@ public:
     
     void traverseInSequence(std::string* pHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
-        std::vector<unsigned int> compressionIndices, compressionLengths;
+        std::vector<std::pair<unsigned int, unsigned int>> bedCoords;
         if(hc_flag) {
-            homopolymerCompress(sequence, compressionIndices, compressionLengths, hc_cutoff);
+            homopolymerCompress(sequence, bedCoords, hc_cutoff);
         }
 
         unsigned int pos = 0, // current position in sequence
@@ -853,7 +854,12 @@ public:
         
         unsigned int seqLen = sequence->length()-1;
         for (char &base : *sequence) {
-            unsigned int count = hc_flag && hc_index < compressionIndices.size() && pos == compressionIndices[hc_index] ? compressionLengths[hc_index++] : 1;
+
+            unsigned int count = 1;
+            if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
+                count = bedCoords[hc_index].second - bedCoords[hc_index].first;
+                ++hc_index;
+            }
             
             if (islower(base)) {
                 

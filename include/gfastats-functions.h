@@ -284,14 +284,14 @@ void revComPathComponents(std::vector<PathTuple>& pathComponents) {
     
 }
 
-void homopolymerCompress(std::string *sequence, std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths, unsigned int cutoff) {
+// bed coords are bed coords of compressed sequence
+void homopolymerCompress(std::string *sequence, std::vector<std::pair<unsigned int, unsigned int>> &bedCoords, unsigned int cutoff) {
     unsigned int index=0, length, new_length=0;
 
-    auto lambda = [&length, &index, &compressionIndices, &compressionLengths, &sequence, &new_length, &cutoff](int i){
+    auto lambda = [&length, &index, &bedCoords, &sequence, &new_length, &cutoff](int i){
         length = i-index;
         if(length > cutoff) {
-            compressionIndices.push_back(new_length);
-            compressionLengths.push_back(length);
+            bedCoords.push_back({new_length, new_length+length});
         }
         int num = length > cutoff ? 1 : length;
         memset(&((*sequence)[new_length]), (*sequence)[index], num);
@@ -304,15 +304,20 @@ void homopolymerCompress(std::string *sequence, std::vector<unsigned int> &compr
         index = i;
     }
     lambda(sequence->length());
-
     sequence->resize(new_length);
 }
 
-void homopolymerDecompress(std::string *sequence, const std::vector<unsigned int> &compressionIndices, const std::vector<unsigned int> &compressionLengths) {
+// bed coords are bed coords of compressed sequence
+void homopolymerDecompress(std::string *sequence, const std::vector<std::pair<unsigned int, unsigned int>> &bedCoords) {
     std::string ret="";
-    ret.reserve(sequence->length()*2); // random guess for final sequence length
+    ret.reserve(sequence->length()*2); // random guess for final sequence length to reduce resizes
     for(unsigned int i=0, ci=0, len; i<sequence->length(); ++i) {
-        len = ((ci<compressionIndices.size() && i==compressionIndices[ci]) ? compressionLengths[ci++] : 1);
+        if(ci < bedCoords.size() && i == bedCoords[ci].first) {
+            len = bedCoords[ci].second - bedCoords[ci].first;
+            ++ci;
+        } else {
+            len = 1;
+        }
         ret += std::string(len, (*sequence)[i]);
     }
     ret.shrink_to_fit();
@@ -341,9 +346,18 @@ unsigned int homopolymerRunsCount(const std::string &sequence, unsigned int thre
     return runs;
 }
 
-void indicesLengthsToBedCoordinates(std::vector<unsigned int> &compressionIndices, std::vector<unsigned int> &compressionLengths) {
-    for(unsigned int i=0; i<compressionLengths.size(); ++i) {
-        compressionLengths[i] += compressionIndices[i];
+// bed coords of uncompressed sequence
+void homopolymerBedCoords(std::string *sequence, std::vector<std::pair<unsigned int, unsigned int>> &bedCoords, unsigned int cutoff) {
+    int index = 0;
+    for(unsigned int i=1; i < sequence->size(); ++i) {
+        if((*sequence)[i] == (*sequence)[i-1]) continue;
+        if(i-index > cutoff) {
+            bedCoords.push_back({index, i});
+        }
+        index = i;
+    }
+    if((*sequence)[sequence->size()-1] == (*sequence)[sequence->size()-2] && sequence->size()-index > cutoff) {
+        bedCoords.push_back({index, sequence->size()});
     }
 }
 

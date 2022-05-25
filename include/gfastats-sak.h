@@ -20,9 +20,6 @@ struct Instruction {
     std::string gHeader = "";
     
     int compressThreshhold;
-    bool decompressUseStack=true;
-    std::vector<unsigned int> decompressIndices;
-    std::vector<unsigned int> decompressLengths;
     char pId1Or, pId2Or, sId1Or, sId2Or;
     unsigned int gUId = 0, dist = 0, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
 };
@@ -196,43 +193,22 @@ public:
 
     bool compress(InSequences &inSequences, Instruction &instruction) {
         std::string *sequence = headerToSequence(instruction.contig1, inSequences, instruction);
-        std::vector<unsigned int> indices, lengths;
-        homopolymerCompress(sequence, indices, lengths, instruction.compressThreshhold);
-        compressStack.push({indices, lengths});
+        std::vector<std::pair<unsigned int, unsigned int>> bedCoords;
+        homopolymerCompress(sequence, bedCoords, instruction.compressThreshhold);
+        compressStack.push(bedCoords);
 
         return true;
     }
 
     void readDecompress(Instruction &instruction, std::vector<std::string> &arguments) {
         instruction.contig1 = arguments[1];
-
-        if(arguments.size() == 2) {
-            instruction.decompressUseStack = true;
-            return;
-        }
-
-
-        // untested, also unlikely to be used
-        auto *vec = &instruction.decompressIndices;
-        for(int i=2; i<3; vec = &instruction.decompressLengths, i++) {
-            size_t pos = 0, prevPos = 0;
-            while ((pos = arguments[i].find(',')) != std::string::npos) {
-                vec->push_back(stoi(arguments[i].substr(prevPos, pos)));
-                prevPos = pos+1;
-            }
-        }
     }
 
     bool decompress(InSequences &inSequences, Instruction &instruction) {
         std::string *sequence = headerToSequence(instruction.contig1, inSequences, instruction);
-        std::pair<std::vector<unsigned int>, std::vector<unsigned int>> pair;
-        if(instruction.decompressUseStack) {
-            pair = compressStack.top();
-            compressStack.pop();
-        } else {
-            pair = { instruction.decompressIndices, instruction.decompressLengths };
-        }
-        homopolymerDecompress(sequence, pair.first, pair.second);
+        std::vector<std::pair<unsigned int, unsigned int>> bedCoords = compressStack.top();
+        compressStack.pop();
+        homopolymerDecompress(sequence, bedCoords);
 
         return true;
     }
@@ -241,7 +217,7 @@ private:
     InSequences inSequences;
     InSegment inSegment1, inSegment2, inSegmentNew;
     std::string sId1Header, sId2Header;
-    std::stack<std::pair<std::vector<unsigned int>, std::vector<unsigned int>>> compressStack; // decompress uses indices of corresponding compresses, last compress = first decompress
+    std::stack<std::vector<std::pair<unsigned int, unsigned int>>> compressStack; // decompress uses indices of corresponding compresses, last compress = first decompress
 
     // unordered map from sak instruction to corresponding read and execute functions
     const phmap::flat_hash_map<std::string, Funcs> string_to_funcs {

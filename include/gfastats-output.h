@@ -10,6 +10,7 @@
 
 //classes
 class Report {
+
 private:
     unsigned int counter = 0;
     
@@ -587,39 +588,39 @@ public:
         std::string seqHeader;
         std::vector<unsigned int> seqBoundaries;
         
-        switch (bedOutType) {
+        unsigned int uId = 0, sIdx = 0, gIdx = 0, pos = 0;
+
+        std::string pHeader;
+        std::vector<InPath> inPaths = inSequences.getInPaths();
+        std::vector<InSegment>* inSegments = inSequences.getInSegments();
+        std::vector<InGap>* inGaps = inSequences.getInGaps();
+        std::vector<PathTuple> pathComponents;
+
+        for (InPath inPath : inSequences.getInPaths()) {
+            
+            if (inPath.getHeader() == "") {
                 
-            case 's': { // scaffolds
+                pHeader = inPath.getpUId();
                 
-                std::string pHeader;
-                std::vector<InPath> inPaths = inSequences.getInPaths();
-                std::vector<InSegment>* inSegments = inSequences.getInSegments();
-                std::vector<InGap>* inGaps = inSequences.getInGaps();
-                std::vector<PathTuple> pathComponents;
+            }else{
                 
-                unsigned int uId = 0, sIdx = 0, gIdx = 0, pos = 0;
+                pHeader = inPath.getHeader();
+                
+            }
+
+            pathComponents = inPath.getComponents();
+
+            switch (bedOutType) {
                     
-                for (InPath inPath : inSequences.getInPaths()) {
-                    
-                    if (inPath.getHeader() == "") {
-                        
-                        pHeader = inPath.getpUId();
-                        
-                    }else{
-                        
-                        pHeader = inPath.getHeader();
-                        
-                    }
+                case 's': { // scaffolds
                     
                     std::cout<<pHeader<<"\t"<<pos;
                     
-                    pathComponents = inPath.getComponents();
-                    
-                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    for (auto &component : pathComponents) {
                         
-                        uId = std::get<1>(*component);
+                        uId = std::get<1>(component);
                         
-                        if (std::get<0>(*component) == 'S') {
+                        if (std::get<0>(component) == 'S') {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -631,7 +632,7 @@ public:
                             
                             auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
+                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the gap index
                             
                             pos += (*inGaps)[gIdx].getDist();
                             
@@ -643,41 +644,16 @@ public:
                     std::cout<<"\t"<<pos<<"\n";
                     pos = 0;
                     
+                    break;
                 }
-                
-                break;
-                
-            }
-                
-            case 'c': { // contigs
-                
-                std::string pHeader;
-                std::vector<InPath> inPaths = inSequences.getInPaths();
-                std::vector<InSegment>* inSegments = inSequences.getInSegments();
-                std::vector<InGap>* inGaps = inSequences.getInGaps();
-                std::vector<PathTuple> pathComponents;
-                
-                unsigned int uId = 0, sIdx = 0, gIdx = 0, pos = 0;
+
+                case 'c': { // contigs
                     
-                for (InPath inPath : inSequences.getInPaths()) {
-                    
-                    if (inPath.getHeader() == "") {
+                    for (auto &component : pathComponents) {
                         
-                        pHeader = inPath.getpUId();
+                        uId = std::get<1>(component);
                         
-                    }else{
-                        
-                        pHeader = inPath.getHeader();
-                        
-                    }
-                    
-                    pathComponents = inPath.getComponents();
-                    
-                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
-                        
-                        uId = std::get<1>(*component);
-                        
-                        if (std::get<0>(*component) == 'S') {
+                        if (std::get<0>(component) == 'S') {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -693,52 +669,25 @@ public:
                             
                             auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
+                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the gap index
                             
                             pos += (*inGaps)[gIdx].getDist();
                             
                         }
-                        
-                        
                     }
                     
                     pos = 0;
                     
+                    break;
                 }
                 
-                break;
-                
-            }
-                
-            case 'g': { // gaps
-                
-                std::string pHeader;
-                std::vector<InPath> inPaths = inSequences.getInPaths();
-                std::vector<InSegment>* inSegments = inSequences.getInSegments();
-                std::vector<InGap>* inGaps = inSequences.getInGaps();
-                std::vector<PathTuple> pathComponents;
-                
-                unsigned int uId = 0, sIdx = 0, gIdx = 0, pos = 0;
+                case 'g': { // gaps
                     
-                for (InPath inPath : inSequences.getInPaths()) {
-                    
-                    if (inPath.getHeader() == "") {
+                    for (auto &component : pathComponents) {
                         
-                        pHeader = inPath.getpUId();
+                        uId = std::get<1>(component);
                         
-                    }else{
-                        
-                        pHeader = inPath.getHeader();
-                        
-                    }
-                    
-                    pathComponents = inPath.getComponents();
-                    
-                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
-                        
-                        uId = std::get<1>(*component);
-                        
-                        if (std::get<0>(*component) == 'S') {
+                        if (std::get<0>(component) == 'S') {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -750,7 +699,7 @@ public:
                             
                             auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
+                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the gap index
                             
                             std::cout<<pHeader<<"\t"<<pos;
                             
@@ -764,42 +713,57 @@ public:
                     
                     pos = 0;
                     
+                    break;
                 }
-                
-                break;
-                
-            }
-                
-            default:
-            case 'a': { // both contigs and gaps in .agp format
-                
-                std::string pHeader;
-                std::vector<InPath> inPaths = inSequences.getInPaths();
-                std::vector<InSegment>* inSegments = inSequences.getInSegments();
-                std::vector<InGap>* inGaps = inSequences.getInGaps();
-                std::vector<PathTuple> pathComponents;
-                
-                unsigned int uId = 0, sIdx = 0, gIdx = 0, pos = 0;
-                    
-                for (InPath inPath : inSequences.getInPaths()) {
-                    
-                    if (inPath.getHeader() == "") {
+
+                case 'h': { // homopolymer runs
+
+                    for (auto &component : pathComponents) {
                         
-                        pHeader = inPath.getpUId();
+                        uId = std::get<1>(component);
                         
-                    }else{
-                        
-                        pHeader = inPath.getHeader();
+                        if (std::get<0>(component) == 'S') {
+
+                            auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            
+                            if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
+
+                            InSegment *seg = &(inSegments->at(sIdx));
+
+                            std::vector<std::pair<unsigned int, unsigned int>> bedCoords;
+                            homopolymerBedCoords(&(seg->inSequence), bedCoords, 1);
+
+                            for(const auto &pair : bedCoords) {
+                                std::cout << pHeader << "\t" << pair.first+pos << "\t" << pair.second+pos << std::endl;
+                            }
+
+                            pos += seg->inSequence.size();
+
+                        }else{
+                            
+                            auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                            
+                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the gap index
+                            
+                            pos += (*inGaps)[gIdx].getDist();
+                            
+                        }
                         
                     }
                     
-                    pathComponents = inPath.getComponents();
+                    pos = 0;
+
+                    break;
+                }
+                
+                // default includes 'a'
+                default: { // both contigs and gaps in .agp format
                     
-                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    for (auto &component : pathComponents) {
                         
-                        uId = std::get<1>(*component);
+                        uId = std::get<1>(component);
                         
-                        if (std::get<0>(*component) == 'S') {
+                        if (std::get<0>(component) == 'S') {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -811,13 +775,13 @@ public:
                             
                             counter++;
                             
-                            std::cout<<"\t"<<pos<<"\t"<<counter<<"\tW\t"<<(*inSegments)[sIdx].getSeqHeader()<<"\t1\t"<<(*inSegments)[sIdx].getInSequence().size()<<"\t"<<std::get<2>(*component)<<"\n";
+                            std::cout<<"\t"<<pos<<"\t"<<counter<<"\tW\t"<<(*inSegments)[sIdx].getSeqHeader()<<"\t1\t"<<(*inSegments)[sIdx].getInSequence().size()<<"\t"<<std::get<2>(component)<<"\n";
                             
                         }else{
                             
                             auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
-                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
+                            if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the gap index
                             
                             std::cout<<pHeader<<"\t"<<pos+1;
                             
@@ -833,15 +797,11 @@ public:
                     
                     pos = 0;
                     counter = 0;
-                    
                 }
-            
             }
-                
         }
-        
+
         return true;
-        
     }
     
     bool reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType) { // method to output all summary statistics for the entire sequence set
