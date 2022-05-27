@@ -192,7 +192,7 @@ public:
                     
                     while (getFasta(*stream, inSequence)) {
                         
-                        if(bedIncludeList.size() - bedExcludeList.size() != 0 && bedIncludeList.size() - bedExcludeList.size() == inSequences.getScaffN()) { // we have all the sequences needed
+                        if(bedIncludeList.size() - bedExcludeList.size() != 0 && bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
                             verbose("Found all sequences, stop streaming input");
                             break;
                             
