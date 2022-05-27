@@ -196,7 +196,7 @@ public:
 
     }
     
-    unsigned int getSegmentLength(unsigned int start = 0, unsigned int end = 0) {
+    unsigned long long int getSegmentLength(unsigned long long int start = 0, unsigned long long int end = 0) {
         
         return start != 0 || end != 0 ? end-start+1 : inSequence.size();
         
@@ -553,25 +553,25 @@ public:
         
     }
     
-    unsigned int getA() {
+    unsigned long long int getA() {
         
         return A;
         
     }
     
-    unsigned int getC() {
+    unsigned long long int getC() {
         
         return C;
         
     }
     
-    unsigned int getG() {
+    unsigned long long int getG() {
         
         return G;
         
     }
     
-    unsigned int getT() {
+    unsigned long long int getT() {
         
         return T;
         
