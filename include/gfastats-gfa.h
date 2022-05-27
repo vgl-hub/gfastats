@@ -1105,7 +1105,7 @@ public:
         
     }
     
-    void changeTotSegmentLen(int segmentLen) {
+    void changeTotSegmentLen(long long int segmentLen) {
         
         totSegmentLen += segmentLen;
         
