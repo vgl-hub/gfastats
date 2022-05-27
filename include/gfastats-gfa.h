@@ -753,7 +753,7 @@ public:
         
         verbose("Segment added to sequence vector");
         
-        unsigned int seqSize = sequence->size();
+        unsigned long long int seqSize = sequence->size();
         
         contigLens.push_back(seqSize);
         
@@ -811,7 +811,7 @@ public:
     
     void traverseInSequence(std::string* pHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
-        std::vector<std::pair<unsigned int, unsigned int>> bedCoords;
+        std::vector<std::pair<unsigned long long int, unsigned long long int>> bedCoords;
         if(hc_flag) {
             homopolymerCompress(sequence, bedCoords, hc_cutoff);
         }
@@ -956,10 +956,6 @@ public:
         
         verbose("Added fasta sequence as path");
         
-        recordScaffLen(seqLen+1);
-        
-        verbose("Recorded length of sequence");
-        
     }
     
     void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
@@ -1027,10 +1023,6 @@ public:
                 
         addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
         
-        recordScaffLen(sequence->size());
-        
-        verbose("Recorded length of sequence");
-        
     }
     
     void appendSequence(std::string* pHeader, std::string* pComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence from a fasta
@@ -1042,10 +1034,6 @@ public:
         traverseInSequence(pHeader, pComment, sequence, sequenceQuality);
         
         verbose("Sequence traversed");
-        
-        scaffN++;
-        
-        verbose("Increased total scaffold N");
         
         if(verbose_flag) {std::cerr<<"\n";};
         
@@ -1060,10 +1048,6 @@ public:
         traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality);
         
         verbose("Segment traversed");
-        
-        scaffN++;
-        
-        verbose("Increased total scaffold N");
         
         if(verbose_flag) {std::cerr<<"\n";};
         

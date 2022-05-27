@@ -34,7 +34,7 @@ struct PathComponent {
     unsigned int id;
     char orientation;
     unsigned long long int start;
-    unsigned long long int end; 
+    unsigned long long int end;
 };
 struct Bubble {
     unsigned int id0, id1, id2, id3;
@@ -303,7 +303,7 @@ void revComPathComponents(std::vector<PathComponent>& pathComponents) {
 }
 
 // bed coords are bed coords of compressed sequence
-void homopolymerCompress(std::string *sequence, std::vector<std::pair<unsigned int, unsigned int>> &bedCoords, unsigned int cutoff) {
+void homopolymerCompress(std::string *sequence, std::vector<std::pair<unsigned long long int, unsigned long long int>> &bedCoords, unsigned int cutoff) {
     unsigned int index=0, length, new_length=0;
 
     auto lambda = [&length, &index, &bedCoords, &sequence, &new_length, &cutoff](int i){
@@ -326,7 +326,7 @@ void homopolymerCompress(std::string *sequence, std::vector<std::pair<unsigned i
 }
 
 // bed coords are bed coords of compressed sequence
-void homopolymerDecompress(std::string *sequence, const std::vector<std::pair<unsigned int, unsigned int>> &bedCoords) {
+void homopolymerDecompress(std::string *sequence, const std::vector<std::pair<unsigned long long int, unsigned long long int>> &bedCoords) {
     std::string ret="";
     ret.reserve(sequence->length()*2); // random guess for final sequence length to reduce resizes
     for(unsigned int i=0, ci=0, len; i<sequence->length(); ++i) {
