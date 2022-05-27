@@ -451,9 +451,9 @@ private:
 //    unsigned long long int lineN; // useful if we wish to sort as is the original input
     std::string pHeader, pComment;
     std::vector<PathComponent> pathComponents;
-    unsigned int pUId;
+    unsigned int pUId, contigN = 0;
     
-    long unsigned int contigN = 0, length = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
+    unsigned long long int length = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
     
     friend class SAK;
     friend class InSequences;
@@ -547,7 +547,7 @@ public:
         
     }
     
-    unsigned int getLen() {
+    unsigned long long int getLen() {
         
         return length;
         
@@ -650,18 +650,18 @@ private:
     phmap::flat_hash_map<int, bool> visited, deleted;
     bool backward = false;
     
-    std::vector<unsigned int> scaffLens;
-    std::vector<unsigned int> contigLens;
+    std::vector<unsigned long long int> scaffLens;
+    std::vector<unsigned long long int> contigLens;
     std::vector<unsigned int> gapLens;
     
-    std::vector<unsigned int> scaffNstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned long long int> scaffNstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> scaffLstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    std::vector<unsigned int> scaffNGstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned long long int> scaffNGstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> scaffLGstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
-    std::vector<unsigned int> contigNstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned long long int> contigNstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> contigLstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    std::vector<unsigned int> contigNGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned long long int> contigNGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> contigLGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
     std::vector<unsigned int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -683,11 +683,11 @@ private:
     totGapLen = 0,
     uId = 0; // unique numeric identifier for each feature
     
-    unsigned long int totA = 0;
-    unsigned long int totC = 0;
-    unsigned long int totG = 0;
-    unsigned long int totT = 0;
-    unsigned long int totLowerCount = 0;
+    unsigned long long int totA = 0;
+    unsigned long long int totC = 0;
+    unsigned long long int totG = 0;
+    unsigned long long int totT = 0;
+    unsigned long long int totLowerCount = 0;
 
     //connectivity
     unsigned int deadEnds = 0;
@@ -1163,7 +1163,7 @@ public:
         
     }
     
-    void recordScaffLen(unsigned int seqLen) {
+    void recordScaffLen(unsigned long long int seqLen) {
         
         scaffLens.push_back(seqLen);
         
@@ -1205,15 +1205,15 @@ public:
     }
     
     
-    void computeNstars(std::vector<unsigned int>& lens, // compute N/L* statistics, vector of all lengths
-                       std::vector<unsigned int>& Nstars,      std::vector<unsigned int>& Lstars, // required arguments are passed by reference
-                       std::vector<unsigned int>* NGstars = 0, std::vector<unsigned int>* LGstars = 0, unsigned long long int gSize = 0) { // optional arguments are passed by pointer
+    void computeNstars(std::vector<unsigned long long int>& lens, // compute N/L* statistics, vector of all lengths
+                       std::vector<unsigned long long int>& Nstars,      std::vector<unsigned int>& Lstars, // required arguments are passed by reference
+                       std::vector<unsigned long long int>* NGstars = 0, std::vector<unsigned int>* LGstars = 0, unsigned long long int gSize = 0) { // optional arguments are passed by pointer
         
-        sort(lens.begin(), lens.end(), std::greater<unsigned int>()); // sort lengths Z-A
+        sort(lens.begin(), lens.end(), std::greater<unsigned long long int>()); // sort lengths Z-A
         
         unsigned long long int sum = 0, totLen = 0;
         
-        for(std::vector<unsigned int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
+        for(std::vector<unsigned long long int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
             totLen += *it;
         
         short int N = 1, NG = 1;
@@ -1273,11 +1273,11 @@ public:
         
     }
     
-    void computeAuN(std::vector<unsigned int>& lens, double& auN, double* auNG = 0, unsigned long long int gSize = 0) {// compute N* statistics
+    void computeAuN(std::vector<unsigned long long int>& lens, double& auN, double* auNG = 0, unsigned long long int gSize = 0) {// compute N* statistics
         
         unsigned long long int totLen = 0;
         
-        for(std::vector<unsigned int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
+        for(std::vector<unsigned long long int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
             totLen += *it;
         
         for(unsigned int i = 0; i < lens.size(); i++) { // for each length
@@ -1462,13 +1462,13 @@ public:
         
     }
     
-    unsigned int getLargestScaffold() {
+    unsigned long long int getLargestScaffold() {
         
         return scaffLens.size() == 0 ? 0 : scaffLens[0]; // sorted during N/L* computation
         
     }
     
-    unsigned int getLargestContig() {
+    unsigned long long int getLargestContig() {
         
         return contigLens.size() == 0 ? 0 : contigLens[0]; // sorted during N/L* computation
         
@@ -1532,27 +1532,27 @@ public:
         
     }
     
-    unsigned long int getTotA() {
+    unsigned long long int getTotA() {
         
         return totA;
     }
     
-    unsigned long int getTotC() {
+    unsigned long long int getTotC() {
         
         return totC;
     }
     
-    unsigned long int getTotG() {
+    unsigned long long int getTotG() {
         
         return totG;
     }
     
-    unsigned long int getTotT() {
+    unsigned long long int getTotT() {
         
         return totT;
     }
     
-    unsigned long int getTotLowerCount() {
+    unsigned long long int getTotLowerCount() {
         
         return totLowerCount;
     }
