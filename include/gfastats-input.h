@@ -22,29 +22,9 @@ public:
     {
         s.clear();
         
-//        int i = 0;
-//        
-//        size_t buffer_s = 500000000; // large input buffer
-        
         getline(is, s, '>');
         
         s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
-        
-//        char* str_new = (char*) malloc(buffer_s * sizeof(char));
-//
-//        for(char* c = str; *c != '\0'; c++) { // for each character
-//
-//            if (*c != '\n') { // remove newline characters
-//
-//                str_new[i] = *c; i++;
-//
-//            }
-//
-//        }
-
-//        s = str_new;
-//        free(str);
-//        free(str_new);
 
         return is.eof() ? false : true;
 
@@ -213,6 +193,8 @@ public:
                     while (getFasta(*stream, inSequence)) {
                         
                         verbose("Individual fasta sequence read");
+                        
+                        if(bedIncludeList.size() - bedExcludeList.size() == inSequences.getScaffN()) {break;} // we have all the sequences needed
                         
                         stopStream = includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                         
