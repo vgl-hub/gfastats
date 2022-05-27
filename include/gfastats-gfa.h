@@ -577,7 +577,7 @@ public:
         
     }
     
-    unsigned int getLowerCount() {
+    unsigned long long int getLowerCount() {
         
         return lowerCount;
         
@@ -595,37 +595,37 @@ public:
     
     }
     
-    void increaseLen(unsigned int n) {
+    void increaseLen(unsigned long long int n) {
         
         length += n;
     
     }
     
-    void increaseLowerCount(unsigned int n) {
+    void increaseLowerCount(unsigned long long int n) {
         
         lowerCount += n;
     
     }
     
-    void increaseA(unsigned int n) {
+    void increaseA(unsigned long long int n) {
         
         A += n;
     
     }
     
-    void increaseC(unsigned int n) {
+    void increaseC(unsigned long long int n) {
         
         C += n;
     
     }
     
-    void increaseG(unsigned int n) {
+    void increaseG(unsigned long long int n) {
         
         G += n;
     
     }
     
-    void increaseT(unsigned int n) {
+    void increaseT(unsigned long long int n) {
         
         T += n;
     

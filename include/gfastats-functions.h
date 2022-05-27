@@ -33,8 +33,8 @@ struct PathComponent {
     PathType type;
     unsigned int id;
     char orientation;
-    unsigned int start;
-    unsigned int end; 
+    unsigned long long int start;
+    unsigned long long int end; 
 };
 struct Bubble {
     unsigned int id0, id1, id2, id3;
