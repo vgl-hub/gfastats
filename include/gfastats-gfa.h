@@ -181,9 +181,9 @@ public:
             
         }else{
             
-            long unsigned int lowerCountSubset = 0;
+            unsigned long long int lowerCountSubset = 0;
             
-            for (char base : inSequence) {
+            for (char base : inSequence) { // need to fix this loop
                 
                 if (islower(base)) {
                     
@@ -753,11 +753,11 @@ public:
         
         verbose("Segment added to sequence vector");
         
-        unsigned long long int seqSize = sequence->size();
+        std::size_t seqSize = sequence->size();
         
         contigLens.push_back(seqSize);
         
-        verbose("Recorded length of sequence");
+        verbose("Recorded length of segment");
         
         changeTotSegmentLen(seqSize);
         
@@ -851,7 +851,7 @@ public:
             
         }
         
-        unsigned long long int seqLen = sequence->length()-1;
+        std::size_t seqLen = sequence->length()-1;
         for (char &base : *sequence) {
 
             unsigned long long int count = 1;
