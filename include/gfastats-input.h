@@ -192,6 +192,12 @@ public:
                     
                     while (getFasta(*stream, inSequence)) {
                         
+                        if(bedIncludeList.size() - bedExcludeList.size() != 0 && bedIncludeList.size() - bedExcludeList.size() == inSequences.getScaffN()) { // we have all the sequences needed
+                            verbose("Found all sequences, stop streaming input");
+                            stopStream = true;
+                            
+                        }
+                        
                         verbose("Individual fasta sequence read");
                         
                         stopStream = includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
@@ -208,8 +214,6 @@ public:
                             seqComment = std::string(c);
                             
                         }
-                        
-                        if(bedIncludeList.size() - bedExcludeList.size() == inSequences.getScaffN()) {stopStream = true;} // we have all the sequences needed
                         
                         if (stopStream) {break;}
                         
@@ -1292,14 +1296,6 @@ public:
         }else if(!bedIncludeList.empty() &&
                   bedExcludeList.empty()) {
             
-            if(inSequences->getInSegments()->size() == bedIncludeList.size()) { // check if we retrieved all we needed
-                
-                verbose("Found all sequences, stop streaming input");
-                
-                return true;
-                
-            }
-            
             offset = 0, prevCEnd = 0;
             outSeq = false;
             
@@ -1422,14 +1418,6 @@ public:
                  !bedExcludeList.empty() &&
                  std::find(bedIncludeListHeaders.begin(), bedIncludeListHeaders.end(), *seqHeader) != bedIncludeListHeaders.end() &&
                  std::find(bedExcludeListHeaders.begin(), bedExcludeListHeaders.end(), *seqHeader) == bedExcludeListHeaders.end()) {
-                    
-                    if(inSequences->getInSegments()->size() == bedIncludeList.size()) { // check if we retrieved all we needed
-                        
-                        verbose("Found all sequences, stop streaming input");
-                        
-                        return true;
-                        
-                    }
                     
                     inSequences->appendSequence(seqHeader, seqComment, inSequence, inSequenceQuality);
                     
