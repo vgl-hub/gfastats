@@ -194,8 +194,6 @@ public:
                         
                         verbose("Individual fasta sequence read");
                         
-                        if(bedIncludeList.size() - bedExcludeList.size() == inSequences.getScaffN()) {break;} // we have all the sequences needed
-                        
                         stopStream = includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                         
                         getline(*stream, newLine);
@@ -210,6 +208,8 @@ public:
                             seqComment = std::string(c);
                             
                         }
+                        
+                        if(bedIncludeList.size() - bedExcludeList.size() == inSequences.getScaffN()) {stopStream = true;} // we have all the sequences needed
                         
                         if (stopStream) {break;}
                         
