@@ -753,7 +753,7 @@ public:
         
         verbose("Segment added to sequence vector");
         
-        std::size_t seqSize = sequence->size();
+        unsigned int seqSize = sequence->size();
         
         contigLens.push_back(seqSize);
         
@@ -851,7 +851,7 @@ public:
             
         }
         
-        std::size_t seqLen = sequence->length()-1;
+        unsigned int seqLen = sequence->length()-1;
         for (char &base : *sequence) {
 
             unsigned long long int count = 1;
