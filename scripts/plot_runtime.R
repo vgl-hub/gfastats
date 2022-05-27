@@ -14,9 +14,10 @@ ggplot(df, aes(x=size, y=time, group=format)) +
   theme(
     text = element_text(size = 60),
     legend.title = element_blank(),
-    legend.key = element_rect(fill = NA, color = NA),
-    legend.key.size = unit(3,"cm")
-  )+
-  xlab("Genome size") + ylab("Time (s)")
+    legend.key.size = unit(3,"cm"),
+    axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0))
+  ) +
+  xlab("Genome size (Gbp)") + ylab("Time (s)") +
+  guides(color=guide_legend(override.aes=list(fill=NA)))
 
 dev.off()
