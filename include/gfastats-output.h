@@ -160,7 +160,7 @@ public:
                 std::vector<InPath> inPaths = inSequences.getInPaths();
                 std::vector<InSegment>* inSegments = inSequences.getInSegments();
                 std::vector<InGap>* inGaps = inSequences.getInGaps();
-                std::vector<PathTuple> pathComponents;
+                std::vector<PathComponent> pathComponents;
                 
                 unsigned int uId = 0, sIdx = 0, gIdx = 0;
                     
@@ -190,23 +190,23 @@ public:
                     
                     pathComponents = inPath.getComponents();
                     
-                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    for (std::vector<PathComponent>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                         
-                        uId = std::get<1>(*component);
+                        uId = component->id;
                         
-                        if (std::get<0>(*component) == 'S') {
+                        if (component->type == SEGMENT) {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
                             if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                             
-                            if (std::get<2>(*component) == '+') {
+                            if (component->orientation == '+') {
                             
-                                inSeq += (*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component));
+                                inSeq += (*inSegments)[sIdx].getInSequence(component->start, component->end);
                                 
                             }else{
                                 
-                                inSeq += revCom((*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component)));
+                                inSeq += revCom((*inSegments)[sIdx].getInSequence(component->start, component->end));
                                 
                             }
                             
@@ -216,7 +216,7 @@ public:
                             
                             if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
                             
-                            inSeq += std::string((*inGaps)[gIdx].getDist(std::get<3>(*component), std::get<4>(*component)), 'N');
+                            inSeq += std::string((*inGaps)[gIdx].getDist(component->start, component->end), 'N');
                             
                         }
                         
@@ -249,7 +249,7 @@ public:
                 std::vector<InPath> inPaths = inSequences.getInPaths();
                 std::vector<InSegment>* inSegments = inSequences.getInSegments();
                 std::vector<InGap>* inGaps = inSequences.getInGaps();
-                std::vector<PathTuple> pathComponents;
+                std::vector<PathComponent> pathComponents;
                 
                 unsigned int uId = 0, sIdx = 0, gIdx = 0;
                     
@@ -279,29 +279,29 @@ public:
                     
                     pathComponents = inPath.getComponents();
                     
-                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    for (std::vector<PathComponent>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                         
-                        uId = std::get<1>(*component);
+                        uId = component->id;
                         
-                        if (std::get<0>(*component) == 'S') {
+                        if (component->type == SEGMENT) {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
                             if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                             
-                            if (std::get<2>(*component) == '+') {
+                            if (component->orientation == '+') {
                             
-                                inSeq += (*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component));
+                                inSeq += (*inSegments)[sIdx].getInSequence(component->start, component->end);
                                 
                             }else{
                                 
-                                inSeq += revCom((*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component)));
+                                inSeq += revCom((*inSegments)[sIdx].getInSequence(component->start, component->end));
                                 
                             }
                             
                             if ((*inSegments)[sIdx].getInSequenceQuality() != "") {
                             
-                                inSeqQual += (*inSegments)[sIdx].getInSequence(std::get<3>(*component), std::get<4>(*component));
+                                inSeqQual += (*inSegments)[sIdx].getInSequence(component->start, component->end);
                                 
                             }else{
                                 
@@ -383,7 +383,7 @@ public:
                     
                 }
                 
-                std::vector<PathTuple> pathComponents;
+                std::vector<PathComponent> pathComponents;
                 
                 for (InPath inPath : inSequences.getInPaths()) {
                     
@@ -403,19 +403,19 @@ public:
                     
                     pathComponents = inPath.getComponents();
                     
-                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    for (std::vector<PathComponent>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                             
-                        *stream << idsToHeaders[std::get<1>(*component)];
+                        *stream << idsToHeaders[component->id];
                         
-                        if(std::get<3>(*component) != 0 || std::get<4>(*component) != 0) {
+                        if(component->start != 0 || component->end != 0) {
                             
-                            *stream << "(" << std::to_string(std::get<3>(*component)) << ":" << std::to_string(std::get<4>(*component)) << ")";
+                            *stream << "(" << std::to_string(component->start) << ":" << std::to_string(component->end) << ")";
                             
                         }
                         
-                        if(std::get<2>(*component) != '0') {
+                        if(component->orientation != '0') {
                         
-                            *stream << std::get<2>(*component);
+                            *stream << component->orientation;
                             
                         }
                         
@@ -485,7 +485,7 @@ public:
                 std::vector<InPath> inPaths = inSequences.getInPaths();
                 std::vector<InSegment>* inSegments = inSequences.getInSegments();
                 std::vector<InGap>* inGaps = inSequences.getInGaps();
-                std::vector<PathTuple> pathComponents;
+                std::vector<PathComponent> pathComponents;
                 
                 unsigned int uId = 0, sIdx = 0, gIdx = 0, size = 0;
                     
@@ -505,17 +505,17 @@ public:
                     
                     pathComponents = inPath.getComponents();
                     
-                    for (std::vector<PathTuple>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                    for (std::vector<PathComponent>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                         
-                        if (std::get<4>(*component) > 0) { // if we are subsetting we do not need to know the length of the segment
+                        if (component->end > 0) { // if we are subsetting we do not need to know the length of the segment
                             
-                            size += std::get<4>(*component) - std::get<3>(*component);
+                            size += component->end - component->start;
                             
                         }else{
                         
-                            uId = std::get<1>(*component);
+                            uId = component->id;
                             
-                            if (std::get<0>(*component) == 'S') {
+                            if (component->type == SEGMENT) {
                             
                                 auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                                 
@@ -594,7 +594,7 @@ public:
         std::vector<InPath> inPaths = inSequences.getInPaths();
         std::vector<InSegment>* inSegments = inSequences.getInSegments();
         std::vector<InGap>* inGaps = inSequences.getInGaps();
-        std::vector<PathTuple> pathComponents;
+        std::vector<PathComponent> pathComponents;
 
         for (InPath inPath : inSequences.getInPaths()) {
             
@@ -618,9 +618,9 @@ public:
                     
                     for (auto &component : pathComponents) {
                         
-                        uId = std::get<1>(component);
+                        uId = component.id;
                         
-                        if (std::get<0>(component) == 'S') {
+                        if (component.type == SEGMENT) {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -651,9 +651,9 @@ public:
                     
                     for (auto &component : pathComponents) {
                         
-                        uId = std::get<1>(component);
+                        uId = component.id;
                         
-                        if (std::get<0>(component) == 'S') {
+                        if (component.type == SEGMENT) {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -685,9 +685,9 @@ public:
                     
                     for (auto &component : pathComponents) {
                         
-                        uId = std::get<1>(component);
+                        uId = component.id;
                         
-                        if (std::get<0>(component) == 'S') {
+                        if (component.type == SEGMENT) {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -720,9 +720,9 @@ public:
 
                     for (auto &component : pathComponents) {
                         
-                        uId = std::get<1>(component);
+                        uId = component.id;
                         
-                        if (std::get<0>(component) == 'S') {
+                        if (component.type == SEGMENT) {
 
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -761,9 +761,9 @@ public:
                     
                     for (auto &component : pathComponents) {
                         
-                        uId = std::get<1>(component);
+                        uId = component.id;
                         
-                        if (std::get<0>(component) == 'S') {
+                        if (component.type == SEGMENT) {
                         
                             auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
                             
@@ -775,7 +775,7 @@ public:
                             
                             counter++;
                             
-                            std::cout<<"\t"<<pos<<"\t"<<counter<<"\tW\t"<<(*inSegments)[sIdx].getSeqHeader()<<"\t1\t"<<(*inSegments)[sIdx].getInSequence().size()<<"\t"<<std::get<2>(component)<<"\n";
+                            std::cout<<"\t"<<pos<<"\t"<<counter<<"\tW\t"<<(*inSegments)[sIdx].getSeqHeader()<<"\t1\t"<<(*inSegments)[sIdx].getInSequence().size()<<"\t"<<component.orientation<<"\n";
                             
                         }else{
                             
@@ -932,10 +932,10 @@ public:
                 
                 for (Bubble bubble : *inSequences.getBubbles()) { // loop through all nodes
                     
-                    std::cout<<idsToHeaders[std::get<0>(bubble)]<<"\t"
-                             <<idsToHeaders[std::get<1>(bubble)]<<"\t"
-                             <<idsToHeaders[std::get<2>(bubble)]<<"\t"
-                             <<idsToHeaders[std::get<3>(bubble)]<<"\n";
+                    std::cout<<idsToHeaders[bubble.id0]<<"\t"
+                             <<idsToHeaders[bubble.id1]<<"\t"
+                             <<idsToHeaders[bubble.id2]<<"\t"
+                             <<idsToHeaders[bubble.id3]<<"\n";
                     
                 }
             

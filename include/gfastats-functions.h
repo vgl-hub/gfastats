@@ -16,11 +16,29 @@
 #include <algorithm>
 #include <cmath>
 
-//typedef
-typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> Tuple; // tuple for gaps orientation|segment_id|orientation|dist|edge_id
-typedef std::tuple<char, unsigned int, char> EdgeTuple; // tuple for edges orientation|id|orientation
-typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> PathTuple; // tuple for paths type|id|orientation|start|end
-typedef std::tuple<unsigned int, unsigned int, unsigned int, unsigned int> Bubble; // tuple for bubbles, ids of the 3/4 elements involved
+struct Gap {
+    char orientation0;
+    unsigned int segmentId;
+    char orientation1;
+    unsigned int dist;
+    unsigned int edgeId;
+};
+struct Edge {
+    char orientation0;
+    unsigned int id;
+    char orientation1;
+};
+enum PathType { SEGMENT, GAP };
+struct PathComponent {
+    PathType type;
+    unsigned int id;
+    char orientation;
+    unsigned int start;
+    unsigned int end; 
+};
+struct Bubble {
+    unsigned int id0, id1, id2, id3;
+};
 
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
@@ -268,13 +286,13 @@ bool isNumber(const std::string& str)
     return true;
 }
 
-void revComPathComponents(std::vector<PathTuple>& pathComponents) {
+void revComPathComponents(std::vector<PathComponent>& pathComponents) {
     
-    for (PathTuple& component : pathComponents) {
+    for (PathComponent& component : pathComponents) {
         
-        if (std::get<2>(component) != '0') {
+        if (component.orientation != '0') {
         
-        std::get<2>(component) = std::get<2>(component) == '+' ? '-' : '+';
+            component.orientation = (component.orientation == '+' ? '-' : '+');
         
         }
         
