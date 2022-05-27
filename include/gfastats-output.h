@@ -487,7 +487,8 @@ public:
                 std::vector<InGap>* inGaps = inSequences.getInGaps();
                 std::vector<PathComponent> pathComponents;
                 
-                unsigned int uId = 0, sIdx = 0, gIdx = 0, size = 0;
+                unsigned int uId = 0, sIdx = 0, gIdx = 0;
+                unsigned long long int size = 0;
                     
                 for (InPath inPath : inSequences.getInPaths()) {
                     
@@ -588,7 +589,8 @@ public:
         std::string seqHeader;
         std::vector<unsigned int> seqBoundaries;
         
-        unsigned int uId = 0, sIdx = 0, gIdx = 0, pos = 0;
+        unsigned int uId = 0, sIdx = 0, gIdx = 0;
+        unsigned long long int pos = 0;
 
         std::string pHeader;
         std::vector<InPath> inPaths = inSequences.getInPaths();

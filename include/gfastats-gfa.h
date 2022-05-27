@@ -1366,13 +1366,13 @@ public:
         
     }
     
-    unsigned int getScaffN50() {
+    unsigned long long int getScaffN50() {
         
         return scaffNstars[4];
         
     }
     
-    unsigned int getScaffNG50() {
+    unsigned long long int getScaffNG50() {
         
         return scaffNGstars[4];
         
