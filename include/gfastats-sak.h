@@ -20,9 +20,6 @@ struct Instruction {
     std::string gHeader = "";
     
     int compressThreshhold;
-    bool decompressUseStack=true;
-    std::vector<unsigned int> decompressIndices;
-    std::vector<unsigned int> decompressLengths;
     char pId1Or, pId2Or, sId1Or, sId2Or;
     unsigned int gUId = 0, dist = 0, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
 };
@@ -184,48 +181,35 @@ public:
         instruction.compressThreshhold = stoi(arguments[2]);
     }
 
-    bool compress(InSequences &inSequences, Instruction &instruction) {
-        auto got = inSequences.headersToIds.find(instruction.contig1); // get the headers to uIds table to look for the header
+    std::string *headerToSequence(const std::string &header, InSequences &inSequences, const Instruction &instruction) {
+        auto got = inSequences.headersToIds.find(header); // get the headers to uIds table to look for the header
         if (got == inSequences.headersToIds.end()) { // this is the first time we see this path name
             fprintf(stderr, "Error: couldn't find (%s). Terminating.\n", instruction.contig1.c_str());
             exit(1);
         }
         int id = got->second;
-        std::string *sequence = &(inSequences.getInSegment(id)->inSequence);
-        std::vector<unsigned int> indices, lengths;
-        inSequences.homopolymerCompress(sequence, indices, lengths, instruction.compressThreshhold);
-        compressStack.push({indices, lengths});
+        return &(inSequences.getInSegment(id)->inSequence);
+    }
+
+    bool compress(InSequences &inSequences, Instruction &instruction) {
+        std::string *sequence = headerToSequence(instruction.contig1, inSequences, instruction);
+        std::vector<std::pair<unsigned int, unsigned int>> bedCoords;
+        homopolymerCompress(sequence, bedCoords, instruction.compressThreshhold);
+        compressStack.push(bedCoords);
 
         return true;
     }
 
     void readDecompress(Instruction &instruction, std::vector<std::string> &arguments) {
-        if(arguments.size() == 1) {
-            instruction.decompressUseStack = true;
-            return;
-        }
-
-        auto *vec = &instruction.decompressIndices;
-        for(int i=1; i<2; vec = &instruction.decompressLengths, i++) {
-            size_t pos = 0, prevPos = 0;
-            while ((pos = arguments[i].find(',')) != std::string::npos) {
-                vec->push_back(stoi(arguments[i].substr(prevPos, pos)));
-                prevPos = pos+1;
-            }
-        }
+        instruction.contig1 = arguments[1];
     }
 
     bool decompress(InSequences &inSequences, Instruction &instruction) {
-        for(auto inSegment : inSequences.inSegments) {
-            std::pair<std::vector<unsigned int>, std::vector<unsigned int>> pair;
-            if(instruction.decompressUseStack) {
-                pair = compressStack.top();
-                compressStack.pop();
-            } else {
-                pair = { instruction.decompressIndices, instruction.decompressLengths };
-            }
-            inSequences.homopolymerDecompress(&(inSegment.inSequence), pair.first, pair.second);
-        }
+        std::string *sequence = headerToSequence(instruction.contig1, inSequences, instruction);
+        std::vector<std::pair<unsigned int, unsigned int>> bedCoords = compressStack.top();
+        compressStack.pop();
+        homopolymerDecompress(sequence, bedCoords);
+
         return true;
     }
 
@@ -233,7 +217,7 @@ private:
     InSequences inSequences;
     InSegment inSegment1, inSegment2, inSegmentNew;
     std::string sId1Header, sId2Header;
-    std::stack<std::pair<std::vector<unsigned int>, std::vector<unsigned int>>> compressStack; // decompress uses indices of corresponding compresses, last compress = first decompress
+    std::stack<std::vector<std::pair<unsigned int, unsigned int>>> compressStack; // decompress uses indices of corresponding compresses, last compress = first decompress
 
     // unordered map from sak instruction to corresponding read and execute functions
     const phmap::flat_hash_map<std::string, Funcs> string_to_funcs {

@@ -16,11 +16,29 @@
 #include <algorithm>
 #include <cmath>
 
-//typedef
-typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> Tuple; // tuple for gaps orientation|segment_id|orientation|dist|edge_id
-typedef std::tuple<char, unsigned int, char> EdgeTuple; // tuple for edges orientation|id|orientation
-typedef std::tuple<char, unsigned int, char, unsigned int, unsigned int> PathTuple; // tuple for paths type|id|orientation|start|end
-typedef std::tuple<unsigned int, unsigned int, unsigned int, unsigned int> Bubble; // tuple for bubbles, ids of the 3/4 elements involved
+struct Gap {
+    char orientation0;
+    unsigned int segmentId;
+    char orientation1;
+    unsigned int dist;
+    unsigned int edgeId;
+};
+struct Edge {
+    char orientation0;
+    unsigned int id;
+    char orientation1;
+};
+enum PathType { SEGMENT, GAP };
+struct PathComponent {
+    PathType type;
+    unsigned int id;
+    char orientation;
+    unsigned int start;
+    unsigned int end; 
+};
+struct Bubble {
+    unsigned int id0, id1, id2, id3;
+};
 
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
@@ -268,13 +286,13 @@ bool isNumber(const std::string& str)
     return true;
 }
 
-void revComPathComponents(std::vector<PathTuple>& pathComponents) {
+void revComPathComponents(std::vector<PathComponent>& pathComponents) {
     
-    for (PathTuple& component : pathComponents) {
+    for (PathComponent& component : pathComponents) {
         
-        if (std::get<2>(component) != '0') {
+        if (component.orientation != '0') {
         
-        std::get<2>(component) = std::get<2>(component) == '+' ? '-' : '+';
+            component.orientation = (component.orientation == '+' ? '-' : '+');
         
         }
         
@@ -282,6 +300,83 @@ void revComPathComponents(std::vector<PathTuple>& pathComponents) {
     
     std::reverse(pathComponents.begin(), pathComponents.end());
     
+}
+
+// bed coords are bed coords of compressed sequence
+void homopolymerCompress(std::string *sequence, std::vector<std::pair<unsigned int, unsigned int>> &bedCoords, unsigned int cutoff) {
+    unsigned int index=0, length, new_length=0;
+
+    auto lambda = [&length, &index, &bedCoords, &sequence, &new_length, &cutoff](int i){
+        length = i-index;
+        if(length > cutoff) {
+            bedCoords.push_back({new_length, new_length+length});
+        }
+        int num = length > cutoff ? 1 : length;
+        memset(&((*sequence)[new_length]), (*sequence)[index], num);
+        new_length += num;
+    };
+
+    for(unsigned int i=1; i<sequence->length(); ++i) {
+        if((*sequence)[i] == (*sequence)[index]) continue;
+        lambda(i);
+        index = i;
+    }
+    lambda(sequence->length());
+    sequence->resize(new_length);
+}
+
+// bed coords are bed coords of compressed sequence
+void homopolymerDecompress(std::string *sequence, const std::vector<std::pair<unsigned int, unsigned int>> &bedCoords) {
+    std::string ret="";
+    ret.reserve(sequence->length()*2); // random guess for final sequence length to reduce resizes
+    for(unsigned int i=0, ci=0, len; i<sequence->length(); ++i) {
+        if(ci < bedCoords.size() && i == bedCoords[ci].first) {
+            len = bedCoords[ci].second - bedCoords[ci].first;
+            ++ci;
+        } else {
+            len = 1;
+        }
+        ret += std::string(len, (*sequence)[i]);
+    }
+    ret.shrink_to_fit();
+    *sequence = ret;
+}
+
+unsigned int homopolymerRunsCount(const std::string &sequence, unsigned int threshhold) {
+    unsigned int runs = 0;
+    unsigned int currentRun=0;
+    char prev=0;
+    for(const char &curr : sequence) {
+        if(prev != curr) {
+            if(currentRun >= threshhold) {
+                ++runs;
+            }
+            currentRun = 0;
+        }
+        else {
+            ++currentRun;
+        }
+        prev = curr;
+    }
+    if(currentRun >= threshhold) { // loop wont catch run at end of sequence
+        ++runs;
+    }
+    return runs;
+}
+
+// bed coords of uncompressed sequence
+void homopolymerBedCoords(std::string *sequence, std::vector<std::pair<unsigned int, unsigned int>> &bedCoords, unsigned int cutoff) {
+    int index = 0;
+    for(unsigned int i=1; i < sequence->size(); ++i) {
+        if((*sequence)[i] == (*sequence)[i-1]) continue;
+        if(i-index > cutoff) {
+            bedCoords.push_back({index, i});
+        }
+        index = i;
+    }
+    if((*sequence)[sequence->size()-1] == (*sequence)[sequence->size()-2] && sequence->size()-index > cutoff) {
+        bedCoords.push_back({index, sequence->size()});
+    }
 }
 
 #endif /* GFASTATS_FUNCTIONS_H */

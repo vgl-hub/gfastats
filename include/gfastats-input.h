@@ -685,7 +685,7 @@ public:
                                     
                                         if (sId != inSegments->end()) {
                                             
-                                            path.add('S', sId1, sId1Or, start, end);
+                                            path.add(SEGMENT, sId1, sId1Or, start, end);
                                              
                                         }else{
                                             
@@ -693,7 +693,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.add('G', sId1, '0', start, end);
+                                                path.add(GAP, sId1, '0', start, end);
                                             
                                             }
                                             
@@ -904,7 +904,7 @@ public:
                                     
                                         if (sId != inSegments->end()) {
                                             
-                                            path.add('S', sId1, sId1Or);
+                                            path.add(SEGMENT, sId1, sId1Or);
                                              
                                         }else{
                                             
@@ -912,7 +912,7 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.add('G', sId1, '0');
+                                                path.add(GAP, sId1, '0');
                                             
                                             }
                                             
@@ -1097,7 +1097,7 @@ public:
                         
                         path.newPath(pUId, pHeaderNew);
                         
-                        std::vector<PathTuple> pathComponents = inSequences.getInPath(pUId1).getComponents();
+                        std::vector<PathComponent> pathComponents = inSequences.getInPath(pUId1).getComponents();
                         
                         path.append({std::begin(pathComponents), std::end(pathComponents)});
                         
