@@ -952,7 +952,7 @@ public:
         std::cout << std::setprecision(2); // 2 decimal poinst
 
         int pos = 1;
-        std::vector <unsigned int> scaffNstars = inSequences.getScaffNstars();
+        std::vector <unsigned long long int> scaffNstars = inSequences.getScaffNstars();
         for (unsigned int val : scaffNstars) {
             std::cout<<output("Scaffold N"+std::to_string(pos*10))<<val<<"\n";
             pos++;
@@ -968,7 +968,7 @@ public:
         if (gSize > 0) {
             
             pos = 1;
-            std::vector <unsigned int> scaffNGstars = inSequences.getScaffNGstars();
+            std::vector <unsigned long long int> scaffNGstars = inSequences.getScaffNGstars();
             for (unsigned int val : scaffNGstars) {
                 std::cout<<output("Scaffold NG"+std::to_string(pos*10))<<val<<"\n";
                 pos++;
@@ -984,7 +984,7 @@ public:
         }
         
         pos = 1;
-        std::vector <unsigned int> contigNstars = inSequences.getContigNstars();
+        std::vector <unsigned long long int> contigNstars = inSequences.getContigNstars();
         for (unsigned int val : contigNstars) {
             std::cout<<output("Contig N"+std::to_string(pos*10))<<val<<"\n";
             pos++;
@@ -1000,7 +1000,7 @@ public:
         if (gSize > 0) {
             
             pos = 1;
-            std::vector <unsigned int> contigNGstars = inSequences.getContigNGstars();
+            std::vector <unsigned long long int> contigNGstars = inSequences.getContigNGstars();
             for (unsigned int val : contigNGstars) {
                 std::cout<<output("Contig NG"+std::to_string(pos*10))<<val<<"\n";
                 pos++;
@@ -1016,7 +1016,7 @@ public:
         }
         
         pos = 1;
-        std::vector <unsigned int> gapNstars = inSequences.getGapNstars();
+        std::vector <unsigned long long int> gapNstars = inSequences.getGapNstars();
         for (unsigned int val : gapNstars) {
             std::cout<<output("Gap N"+std::to_string(pos*10))<<val<<"\n";
             pos++;

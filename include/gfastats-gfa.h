@@ -652,7 +652,7 @@ private:
     
     std::vector<unsigned long long int> scaffLens;
     std::vector<unsigned long long int> contigLens;
-    std::vector<unsigned int> gapLens;
+    std::vector<unsigned long long int> gapLens;
     
     std::vector<unsigned long long int> scaffNstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> scaffLstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -664,7 +664,7 @@ private:
     std::vector<unsigned long long int> contigNGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> contigLGstars {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
-    std::vector<unsigned int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    std::vector<unsigned long long int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> gapLstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
     double scaffAuN = 0, scaffAuNG = 0, contigAuN = 0, contigAuNG = 0, gapAuN = 0;
@@ -1306,13 +1306,13 @@ public:
         
     }
     
-    std::vector <unsigned int> getScaffNstars() {
+    std::vector <unsigned long long int> getScaffNstars() {
         
         return scaffNstars;
         
     }
     
-    std::vector <unsigned int> getScaffNGstars() {
+    std::vector <unsigned long long int> getScaffNGstars() {
         
         return scaffNGstars;
         
@@ -1330,13 +1330,13 @@ public:
         
     }
     
-    std::vector <unsigned int> getContigNstars() {
+    std::vector <unsigned long long int> getContigNstars() {
         
         return contigNstars;
         
     }
     
-    std::vector <unsigned int> getContigNGstars() {
+    std::vector <unsigned long long int> getContigNGstars() {
         
         return contigNGstars;
         
@@ -1354,7 +1354,7 @@ public:
         
     }
     
-    std::vector <unsigned int> getGapNstars() {
+    std::vector <unsigned long long int> getGapNstars() {
         
         return gapNstars;
         
@@ -1486,11 +1486,11 @@ public:
         
     }
     
-    long unsigned int getTotContigLen () {
+    unsigned long long int getTotContigLen () {
         
-        long unsigned int totContigLen = 0;
+        unsigned long long int totContigLen = 0;
         
-        for (std::vector<unsigned int>::iterator contigLen = contigLens.begin(); contigLen != contigLens.end(); contigLen++) {
+        for (std::vector<unsigned long long int>::iterator contigLen = contigLens.begin(); contigLen != contigLens.end(); contigLen++) {
             
             totContigLen += *contigLen;
             
@@ -1512,11 +1512,11 @@ public:
         
     }
     
-    unsigned int getTotGapLen() {
+    unsigned long long int getTotGapLen() {
         
-        long unsigned int totGapLen = 0;
+        unsigned long long int totGapLen = 0;
         
-        for (std::vector<unsigned int>::iterator gapLen = gapLens.begin(); gapLen != gapLens.end(); gapLen++) {
+        for (std::vector<unsigned long long int>::iterator gapLen = gapLens.begin(); gapLen != gapLens.end(); gapLen++) {
             
             totGapLen += *gapLen;
             
