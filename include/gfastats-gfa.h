@@ -69,7 +69,8 @@ private:
     std::string seqComment;
     std::string inSequence;
     std::string inSequenceQuality;
-    unsigned int A = 0, C = 0, G = 0, T = 0, lowerCount = 0, uId = 0, iId = 0;
+    unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
+    unsigned int uId = 0, iId = 0;
     
     friend class SAK;
     friend class InSequences;
@@ -121,8 +122,10 @@ public:
         
     }
     
-    unsigned int getSegmentLen() {
-        return inSequence.size();
+    unsigned long long int getSegmentLen(unsigned long long int start = 0, unsigned long long int end = 0) {
+        
+        return start != 0 || end != 0 ? end-start+1 : inSequence.size();
+        
     }
     
     unsigned int getuId() { // absolute id
@@ -135,7 +138,7 @@ public:
         return iId;
     }
     
-    void setACGT(unsigned int* a, unsigned int* c, unsigned int* g, unsigned int* t) {
+    void setACGT(unsigned long long int* a, unsigned long long int* c, unsigned long long int* g, unsigned long long int* t) {
         
         A = *a;
         C = *c;
@@ -144,33 +147,33 @@ public:
         
     }
     
-    void setLowerCount(unsigned int* C) {
+    void setLowerCount(unsigned long long int* C) {
         
         lowerCount = *C;
         
     }
     
-    unsigned int getA() {
+    unsigned long long int getA() {
         
         return A;
     }
     
-    unsigned int getC() {
+    unsigned long long int getC() {
         
         return C;
     }
     
-    unsigned int getG() {
+    unsigned long long int getG() {
         
         return G;
     }
     
-    unsigned int getT() {
+    unsigned long long int getT() {
         
         return T;
     }
     
-    unsigned int getLowerCount(unsigned int start = 0, unsigned int end = 0) {
+    unsigned int getLowerCount(unsigned long long int start = 0, unsigned long long int end = 0) {
         
         if (start == 0 || end == 0) {
             
@@ -194,12 +197,6 @@ public:
             
         }
 
-    }
-    
-    unsigned long long int getSegmentLength(unsigned long long int start = 0, unsigned long long int end = 0) {
-        
-        return start != 0 || end != 0 ? end-start+1 : inSequence.size();
-        
     }
     
     double computeGCcontent() {
@@ -487,7 +484,7 @@ public:
         pComment = c;
     }
     
-    void add(PathType type, unsigned int UId, char sign = '+', unsigned int start = 0, unsigned int end = 0) {
+    void add(PathType type, unsigned int UId, char sign = '+', unsigned long long int start = 0, unsigned long long int end = 0) {
         
         pathComponents.push_back({type, UId, sign, start, end});
         
@@ -674,25 +671,26 @@ private:
     InEdge edge;
     InPath path;
     
-    unsigned long long int totScaffLen = 0, totSegmentLen = 0;
+    unsigned long long int
+    totScaffLen = 0,
+    totSegmentLen = 0,
+    totGapLen = 0,
+    totA = 0,
+    totC = 0,
+    totG = 0,
+    totT = 0,
+    totLowerCount = 0;
     
     unsigned int
     scaffN = 0,
     contigN = 0,
     pathN = 0,
-    totGapLen = 0,
     uId = 0; // unique numeric identifier for each feature
-    
-    unsigned long long int totA = 0;
-    unsigned long long int totC = 0;
-    unsigned long long int totG = 0;
-    unsigned long long int totT = 0;
-    unsigned long long int totLowerCount = 0;
 
     //connectivity
     unsigned int deadEnds = 0;
     unsigned int disconnectedComponents = 0;
-    unsigned int lengthDisconnectedComponents = 0;
+    unsigned long long int lengthDisconnectedComponents = 0;
     
     std::vector<Bubble> bubbles;
     
@@ -700,7 +698,7 @@ private:
     
 public:
     
-    void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned int* A, unsigned int* C, unsigned int* G, unsigned int* T, unsigned int* lowerCount, std::string* sequenceQuality = NULL) {
+    void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL) {
         
         // operations on the segment
         
@@ -786,7 +784,7 @@ public:
         
     }
     
-    void pushbackSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned int* uId, unsigned int* A, unsigned int* C, unsigned int* G, unsigned int* T, unsigned int* lowerCount, unsigned int sStart, unsigned int sEnd, std::string* sequenceQuality = NULL) {
+    void pushbackSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned int* uId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
          
         std::string sequenceSubSeq, sequenceQualitySubSeq;
         
@@ -818,10 +816,11 @@ public:
             homopolymerCompress(sequence, bedCoords, hc_cutoff);
         }
 
-        unsigned int pos = 0, // current position in sequence
+        unsigned long long int pos = 0, // current position in sequence
         hc_index=0, // used with homopolymer compression
         A = 0, C = 0, G = 0, T = 0,
-        lowerCount = 0,
+        lowerCount = 0;
+        unsigned int
         dist = 0, // gap size
         iId = 1, // scaffold feature internal identifier
         sStart = 0, sEnd = 0; // segment start and end
@@ -965,7 +964,8 @@ public:
     
     void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
-        unsigned int A = 0, C = 0, G = 0, T = 0, sUId = 0, lowerCount = 0;
+        unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
+        unsigned int sUId = 0;
         
         for (char &base : *sequence) {
             
@@ -2875,7 +2875,7 @@ public:
         
             auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
             
-            return original ? inSegment->getSegmentLength() : inSegment->getSegmentLength(component.start, component.end);
+            return original ? inSegment->getSegmentLen() : inSegment->getSegmentLen(component.start, component.end);
             
         }else{
             
@@ -2911,11 +2911,11 @@ public:
                 
                 auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
                 
-                contigLens.push_back(inSegment->getSegmentLength(component->start, component->end));
+                contigLens.push_back(inSegment->getSegmentLen(component->start, component->end));
                 
                 pathIt->increaseContigN();
                 
-                pathIt->increaseLen(inSegment->getSegmentLength(component->start, component->end));
+                pathIt->increaseLen(inSegment->getSegmentLen(component->start, component->end));
                 
                 pathIt->increaseLowerCount(inSegment->getLowerCount(component->end - component->start));
                 

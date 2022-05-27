@@ -476,6 +476,7 @@ public:
         
         std::cout << std::fixed; // disables scientific notation
         std::cout << std::setprecision(2); // 2 decimal poinst
+        
         switch (sizeOutType) {
  
             default:
@@ -483,12 +484,6 @@ public:
                 
                 std::string pHeader;
                 std::vector<InPath> inPaths = inSequences.getInPaths();
-                std::vector<InSegment>* inSegments = inSequences.getInSegments();
-                std::vector<InGap>* inGaps = inSequences.getInGaps();
-                std::vector<PathComponent> pathComponents;
-                
-                unsigned int uId = 0, sIdx = 0, gIdx = 0;
-                unsigned long long int size = 0;
                     
                 for (InPath inPath : inSequences.getInPaths()) {
                     
@@ -502,44 +497,7 @@ public:
                         
                     }
                     
-                    std::cout<<pHeader<<"\t";
-                    
-                    pathComponents = inPath.getComponents();
-                    
-                    for (std::vector<PathComponent>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
-                        
-                        if (component->end > 0) { // if we are subsetting we do not need to know the length of the segment
-                            
-                            size += component->end - component->start;
-                            
-                        }else{
-                        
-                            uId = component->id;
-                            
-                            if (component->type == SEGMENT) {
-                            
-                                auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
-                                
-                                if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
-                                
-                                size += (*inSegments)[sIdx].getInSequence().size();
-                                
-                            }else{
-                                
-                                auto gId = find_if(inGaps->begin(), inGaps->end(), [uId](InGap& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
-                                
-                                if (gId != inGaps->end()) {gIdx = std::distance(inGaps->begin(), gId);} // gives us the segment index
-                                
-                                size += (*inGaps)[gIdx].getDist();
-                                
-                            }
-                            
-                        }
-                        
-                    }
-                    
-                    std::cout<<size<<"\n";
-                    size = 0;
+                    std::cout<<pHeader<<"\t"<<inPath.getLen()<<"\n";
                     
                 }
                 
