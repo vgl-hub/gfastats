@@ -753,7 +753,7 @@ public:
         
         verbose("Segment added to sequence vector");
         
-        unsigned long long int seqSize = 0;
+        unsigned long long int seqSize = sequence->size();
         
         contigLens.push_back(seqSize);
         
@@ -851,10 +851,10 @@ public:
             
         }
         
-        unsigned int seqLen = sequence->length()-1;
+        unsigned long long int seqLen = sequence->length()-1;
         for (char &base : *sequence) {
 
-            unsigned int count = 1;
+            unsigned long long int count = 1;
             if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
                 count = bedCoords[hc_index].second - bedCoords[hc_index].first;
                 ++hc_index;
@@ -1105,7 +1105,7 @@ public:
         
     }
     
-    void changeTotSegmentLen(int segmentLen) {
+    void changeTotSegmentLen(long long int segmentLen) {
         
         totSegmentLen += segmentLen;
         
