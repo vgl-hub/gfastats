@@ -973,7 +973,7 @@ public:
         
         }
         
-        inSequences.updateStats();
+//        inSequences.updateStats();
 
         if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
             
