@@ -181,9 +181,9 @@ public:
             
         }else{
             
-            long unsigned int lowerCountSubset = 0;
+            unsigned long long int lowerCountSubset = 0;
             
-            for (char base : inSequence) {
+            for (char base : inSequence) { // need to fix this loop
                 
                 if (islower(base)) {
                     
@@ -753,11 +753,11 @@ public:
         
         verbose("Segment added to sequence vector");
         
-        unsigned long long int seqSize = sequence->size();
+        unsigned long long int seqSize = 0;
         
         contigLens.push_back(seqSize);
         
-        verbose("Recorded length of sequence");
+        verbose("Recorded length of segment");
         
         changeTotSegmentLen(seqSize);
         
@@ -851,10 +851,10 @@ public:
             
         }
         
-        unsigned long long int seqLen = sequence->length()-1;
+        unsigned int seqLen = sequence->length()-1;
         for (char &base : *sequence) {
 
-            unsigned long long int count = 1;
+            unsigned int count = 1;
             if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
                 count = bedCoords[hc_index].second - bedCoords[hc_index].first;
                 ++hc_index;
@@ -956,10 +956,6 @@ public:
         
         verbose("Added fasta sequence as path");
         
-        recordScaffLen(seqLen+1);
-        
-        verbose("Recorded length of sequence");
-        
     }
     
     void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
@@ -1026,10 +1022,6 @@ public:
         }
                 
         addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
-        
-        recordScaffLen(sequence->size());
-        
-        verbose("Recorded length of sequence");
         
     }
     
@@ -1113,7 +1105,7 @@ public:
         
     }
     
-    void changeTotSegmentLen(int segmentLen) {
+    void changeTotSegmentLen(long long int segmentLen) {
         
         totSegmentLen += segmentLen;
         
