@@ -181,9 +181,9 @@ public:
             
         }else{
             
-            unsigned long long int lowerCountSubset = 0;
+            long unsigned int lowerCountSubset = 0;
             
-            for (char base : inSequence) { // need to fix this loop
+            for (char base : inSequence) {
                 
                 if (islower(base)) {
                     
@@ -753,11 +753,11 @@ public:
         
         verbose("Segment added to sequence vector");
         
-        unsigned long long int seqSize = 0;
+        unsigned long long int seqSize = sequence->size();
         
         contigLens.push_back(seqSize);
         
-        verbose("Recorded length of segment");
+        verbose("Recorded length of sequence");
         
         changeTotSegmentLen(seqSize);
         
@@ -851,10 +851,10 @@ public:
             
         }
         
-        unsigned int seqLen = sequence->length()-1;
+        unsigned long long int seqLen = sequence->length()-1;
         for (char &base : *sequence) {
 
-            unsigned int count = 1;
+            unsigned long long int count = 1;
             if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
                 count = bedCoords[hc_index].second - bedCoords[hc_index].first;
                 ++hc_index;
@@ -1023,6 +1023,10 @@ public:
                 
         addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
         
+        recordScaffLen(sequence->size());
+        
+        verbose("Recorded length of sequence");
+        
     }
     
     void appendSequence(std::string* pHeader, std::string* pComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence from a fasta
@@ -1105,7 +1109,7 @@ public:
         
     }
     
-    void changeTotSegmentLen(long long int segmentLen) {
+    void changeTotSegmentLen(int segmentLen) {
         
         totSegmentLen += segmentLen;
         
