@@ -759,7 +759,7 @@ public:
         
         verbose("Recorded length of segment");
         
-        changeTotSegmentLen(seqSize);
+        increaseTotSegmentLen(seqSize);
         
         verbose("Increased total segment length");
         
@@ -1106,6 +1106,12 @@ public:
     }
     
     void changeTotSegmentLen(long long int segmentLen) {
+        
+        totSegmentLen += segmentLen;
+        
+    }
+    
+    void increaseTotSegmentLen(unsigned long long int segmentLen) {
         
         totSegmentLen += segmentLen;
         
