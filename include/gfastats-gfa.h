@@ -753,7 +753,7 @@ public:
         
         verbose("Segment added to sequence vector");
         
-        unsigned long long int seqSize = *A + *C + *G + *T;
+        unsigned int seqSize = sequence->size();
         
         contigLens.push_back(seqSize);
         
