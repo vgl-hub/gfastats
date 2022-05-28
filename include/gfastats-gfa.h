@@ -124,7 +124,7 @@ public:
     
     unsigned long long int getSegmentLen(unsigned long long int start = 0, unsigned long long int end = 0) {
         
-        return start != 0 || end != 0 ? end-start+1 : inSequence.getA() + inSequence.getC() + inSequence.getG() + inSequence.getT(); // need to sum long long int to prevent size() overflow
+        return start != 0 || end != 0 ? end-start+1 : A + C + G + T; // need to sum long long int to prevent size() overflow
         
     }
     
