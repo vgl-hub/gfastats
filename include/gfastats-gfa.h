@@ -1023,10 +1023,6 @@ public:
                 
         addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
         
-        recordScaffLen(sequence->size());
-        
-        verbose("Recorded length of sequence");
-        
     }
     
     void appendSequence(std::string* pHeader, std::string* pComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence from a fasta
