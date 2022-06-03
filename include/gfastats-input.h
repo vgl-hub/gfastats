@@ -118,57 +118,57 @@ public:
         
         std::string firstLine;
         char firstChar;
-        unsigned char buffer[2];
-        bool stopStream = false, updateStats = false;
+        unsigned char buffer;
+        bool stopStream = false, updateStats = false, isGzip = false;
+        
+        stream = make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
+
+        stream->read((char*)(&buffer), 1);
+
+        if (buffer == 0x1f && (stream->peek() == 0x8b)) { // check if pipe is gzipped
+
+            isGzip = true;
+
+        }
+
+        stream->unget();
         
         std::ifstream is(iSeqFileArg);
         
         // this stream takes input from a gzip compressed file
         zstream::igzstream zfin(is);
         
-        if (determineGzip(iSeqFileArg)) { // input is a compressed file
-            
+        if (isGzip) {
+                
             stream = make_unique<std::istream>(zfin.rdbuf());
             
-        } else if (isPipe && (pipeType == 's')) { // input is from pipe
+        
+        }
+        
+        if (isPipe && (pipeType == 's')) { // input is from pipe
             
-            std::cin.read((char*)(&buffer[0]), 2);
+            std::cin.read((char*)(&buffer), 1);
 
-            if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) { // check if pipe is gzipped
+            if (buffer == 0x1f && (std::cin.peek() == 0x8b)) { // check if pipe is gzipped
 
                 // this stream takes input from a gzip compressed pipe
                 zstream::igzstream zin(std::cin);
                 
                 stream = make_unique<std::istream>(zin.rdbuf());
-                
-                getline(*stream, newLine);
-                
-                std::cout<<"Gz pipe currently not supported\n";
-                
-                exit(1);
 
-            }else{
+            }else {
 
                 stream = make_unique<std::istream>(std::cin.rdbuf());
 
             }
-
-        } else { // input is a regular plain text file
-
-            stream = make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
+            
+            stream->unget();
 
         }
         
         if (stream) {
             
             getline(*stream, newLine);
-            
-            if (isPipe && (pipeType == 's')) { // if input from pipe, recover the first two bytes
-                
-                newLine.insert (0, 1, buffer[1]);
-                newLine.insert (0, 1, buffer[0]);
-                
-            }
             
             firstLine = newLine;
             firstChar = newLine[0];
@@ -281,13 +281,6 @@ public:
                     
                 }
                 default: {
-                    
-                    if ((!isPipe || pipeType != 's') && !determineGzip(iSeqFileArg)) {
-
-                        stream->clear();
-                        stream->seekg(0, stream->beg);
-
-                    }
                     
                     std::string h_col1, h_col2, h_col3, s, version, gHeader, eHeader, cigar, startS, endS;
                     char sId1Or, sId2Or;
