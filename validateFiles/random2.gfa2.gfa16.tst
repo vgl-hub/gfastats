@@ -8,6 +8,7 @@ Scaffold N50: 20
 Scaffold auN: 20.00
 Scaffold L50: 1
 Largest scaffold: 20
+Smallest scaffold: 20
 # contigs: 3
 Total contig length: 15
 Average contig length: 5.00
@@ -15,6 +16,7 @@ Contig N50: 5
 Contig auN: 5.53
 Contig L50: 2
 Largest contig: 7
+Smallest contig: 3
 # gaps in scaffolds: 2
 Total gap length in scaffolds: 5
 Average gap length in scaffolds: 2.50
@@ -22,6 +24,7 @@ Gap N50 in scaffolds: 3
 Gap auN in scaffolds: 2.60
 Gap L50 in scaffolds: 1
 Largest gap in scaffolds: 3
+Smallest gap in scaffolds: 2
 Base composition (A:C:G:T): 6:4:1:4
 GC content %: 33.33
 # soft-masked bases: 0
