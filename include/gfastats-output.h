@@ -797,6 +797,7 @@ public:
             
         }
         std::cout<<output("Largest scaffold")<<inSequences.getLargestScaffold()<<"\n";
+        std::cout<<output("Smallest scaffold")<<inSequences.getSmallestScaffold()<<"\n";
         
         std::cout<<output("# contigs")<<inSequences.getTotContigN()<<"\n";
         std::cout<<output("Total contig length")<<inSequences.getTotContigLen()<<"\n";
@@ -815,6 +816,7 @@ public:
             
         }
         std::cout<<output("Largest contig")<<inSequences.getLargestContig()<<"\n";
+        std::cout<<output("Smallest contig")<<inSequences.getSmallestContig()<<"\n";
         
         std::cout<<output("# gaps in scaffolds")<<inSequences.getGapNScaffold()<<"\n";
         std::cout<<output("Total gap length in scaffolds")<<inSequences.getTotGapLen()<<"\n";
@@ -825,6 +827,7 @@ public:
         std::cout<<output("Gap auN in scaffolds") << gfa_round(inSequences.getGapauN()) << "\n";
         std::cout<<output("Gap L50 in scaffolds")<<inSequences.getGapL50()<<"\n";
         std::cout<<output("Largest gap in scaffolds")<<inSequences.getLargestGap()<<"\n";
+        std::cout<<output("Smallest gap in scaffolds")<<inSequences.getSmallestGap()<<"\n";
         
         std::cout<<output("Base composition (A:C:G:T)");
         std::cout << inSequences.getTotA() << ":"
