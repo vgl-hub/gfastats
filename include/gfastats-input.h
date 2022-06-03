@@ -155,6 +155,10 @@ public:
                 zstream::igzstream zin(std::cin);
                 
                 stream = make_unique<std::istream>(zin.rdbuf());
+                
+                std::cout<<"Gz pipe currently not supported\n";
+                
+                exit(1);
 
             }else {
 
