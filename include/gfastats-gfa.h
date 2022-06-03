@@ -1451,16 +1451,36 @@ public:
         return scaffLens.size() == 0 ? 0 : scaffLens[0]; // sorted during N/L* computation
         
     }
+
+    unsigned long long int getSmallestScaffold() {
+        
+        return scaffLens.size() == 0 ? 0 : scaffLens.back(); // sorted during N/L* computation
+        
+    }
+
     
     unsigned long long int getLargestContig() {
         
         return contigLens.size() == 0 ? 0 : contigLens[0]; // sorted during N/L* computation
         
     }
+
+    unsigned long long int getSmallestContig() {
+        
+        return contigLens.size() == 0 ? 0 : contigLens.back(); // sorted during N/L* computation
+        
+    }
+
     
     unsigned int getLargestGap() {
         
-        return gapLens.size() > 0 ? gapLens[0] : 0; // sorted during N/L* computation
+        return gapLens.size() == 0 ? 0 : gapLens[0]; // sorted during N/L* computation
+        
+    }
+
+    unsigned int getSmallestGap() {
+        
+        return gapLens.size() == 0 ? 0 : gapLens.back(); // sorted during N/L* computation
         
     }
     
