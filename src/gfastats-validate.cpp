@@ -107,24 +107,74 @@ int main(int argc, char **argv) {
         }
 
         actOutput.open(tmp);
-        std::vector<std::pair<std::string, std::string>> diffs;
-        while(!actOutput.eof() || !expOutput->eof()) {
+        std::string line;
+        std::getline(*expOutput, line);
+        if(line == "+++Summary+++: ") {
+            std::getline(actOutput, line);
+            std::set<std::string> exp_summary, act_summary;
+            while(!actOutput.eof()) {
+                std::getline(actOutput, line);
+                act_summary.insert(line);
+            }
+            while(!expOutput->eof()) {
+                std::getline(*expOutput, line);
+                exp_summary.insert(line);
+            }
+            std::set<std::string> additions, missings;
+            for(const auto &entry : exp_summary) {
+                if(act_summary.count(entry) == 0) {
+                    missings.insert(entry);
+                }
+            }
+            for(const auto &entry : act_summary) {
+                if(exp_summary.count(entry) == 0) {
+                    additions.insert(entry);
+                }
+            }
+
+            actOutput.close();
+            exp.close();
+            istream.close();
+
+            if(additions.size() > 0 || missings.size() > 0) {
+                printFAIL(input_file.c_str(), "expected output did not match actual output");
+                std::cout << "additions:" << std::endl;
+                for(const auto &addition : additions) {
+                    std::cout << addition << std::endl;
+                }
+                std::cout << "missing:" << std::endl;
+                for(const auto &missing : missings) {
+                    std::cout << missing << std::endl;
+                }
+
+                continue; // to next validate file
+            }
+        }
+        else {
+            std::vector<std::pair<std::string, std::string>> diffs;
+
             std::string l1, l2;
             std::getline(actOutput, l1);
-            std::getline(*expOutput, l2);
+            l2 = line;
             if(l1 != l2) diffs.push_back(std::pair<std::string, std::string>(l1, l2));
-        }
-        actOutput.close();
 
-        exp.close();
-        istream.close();
-
-        if(diffs.size() > 0) {
-            printFAIL(input_file.c_str(), "expected output did not match actual output");
-            for(const auto &pair : diffs) {
-                std::cout << "    expected: " << pair.second.c_str() << std::endl << "      actual: " << pair.first.c_str() << std::endl;
+            while(!actOutput.eof() || !expOutput->eof()) {
+                std::getline(actOutput, l1);
+                std::getline(*expOutput, l2);
+                if(l1 != l2) diffs.push_back(std::pair<std::string, std::string>(l1, l2));
             }
-            continue;
+
+            actOutput.close();
+            exp.close();
+            istream.close();
+
+            if(diffs.size() > 0) {
+                printFAIL(input_file.c_str(), "expected output did not match actual output");
+                for(const auto &pair : diffs) {
+                    std::cout << "    expected: " << pair.second.c_str() << std::endl << "      actual: " << pair.first.c_str() << std::endl;
+                }
+                continue;
+            }
         }
 
         printPASS(input_file.c_str());
