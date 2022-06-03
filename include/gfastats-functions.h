@@ -137,30 +137,6 @@ bool ifFileExists(const char * optarg) { // check if file exists
     
 }
 
-bool determineGzip(std::string iFastaFileArg) { // check first two bytes for gzip compression
-    
-    std::ifstream stream(iFastaFileArg);
-    
-    unsigned char buffer[2];
-    stream.read((char*)(&buffer[0]), 2);
-    
-    stream.clear();
-    stream.seekg(0, stream.beg);
-    
-    if (buffer[0] == 0x1f && (buffer[1] == 0x8b)) {
-        
-        stream.close();
-        
-        return true;
-        
-    }else{
-        
-        return false;
-        
-    }
-    
-}
-
 void textWrap(std::string input, std::ostream& output, int width) { // generic text wrapper (useful for fasta output)
     
     std::string tmp;
