@@ -630,6 +630,43 @@ public:
     
 };
 
+class UIdGenerator {
+private:
+    int prevUId;
+    int currUId;
+    int nextUId;
+
+public:
+    UIdGenerator() {
+        prevUId = 0;
+        currUId = 0;
+        nextUId = 1;
+    }
+
+    // returns the next uId without generating a new one
+    int peek() {
+        return nextUId;
+    }
+
+    // returns the current uId without generating a new uId
+    int get() {
+        return currUId;
+    }
+
+    // returns the previously generated uId
+    int prev() {
+        return prevUId;
+    }
+
+    // returns the current uId and generates a new uId
+    int next() {
+        prevUId = currUId;
+        currUId = nextUId;
+        nextUId ++;
+        return prevUId;
+    }
+};
+
 class InSequences { //collection of InSegment and inGap objects and their summary statistics
     
 private:
@@ -684,8 +721,7 @@ private:
     unsigned int
     scaffN = 0,
     contigN = 0,
-    pathN = 0,
-    uId = 0; // unique numeric identifier for each feature
+    pathN = 0;
 
     //connectivity
     unsigned int deadEnds = 0;
@@ -697,6 +733,7 @@ private:
     friend class SAK;
     
 public:
+    UIdGenerator uId; // unique numeric identifier for each feature
     
     void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL) {
         
@@ -765,26 +802,26 @@ public:
         
     }
     
-    void pushbackGap(std::string* seqHeader, unsigned int* iId, unsigned int* uId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
+    void pushbackGap(std::string* seqHeader, unsigned int* iId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
         
-        verbose("Processing gap " + *seqHeader+"."+std::to_string(*iId) + " (uId: " + std::to_string(*uId) + ", iId: " + std::to_string(*iId) + ")");
+        verbose("Processing gap " + *seqHeader+"."+std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
         
-        gap.newGap(*uId, (pos - *dist == 0) ? *uId+1 : *uId-1, (pos - seqLen == 0) ? *uId+n : *uId+1, '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
+        gap.newGap(uId.get(), (pos - *dist == 0) ? uId.peek() : uId.prev(), (pos - seqLen == 0 && n == -1) ? uId.prev() : uId.peek(), '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
         
         addGap(gap);
         
-        insertHash(*seqHeader+"."+std::to_string(*iId), *uId);
+        insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
         
-        path.add(GAP, *uId, '0');
+        path.add(GAP, uId.get(), '0');
         
         *dist=0;
         
         (*iId)++; // number of gaps in the current scaffold
-        (*uId)++; // unique numeric identifier
+        uId.next(); // unique numeric identifier
         
     }
     
-    void pushbackSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned int* uId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
+    void pushbackSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
          
         std::string sequenceSubSeq, sequenceQualitySubSeq;
         
@@ -796,16 +833,16 @@ public:
             
         }
         
-        addSegment(*uId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
+        addSegment(uId.get(), *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
         
-        insertHash(*seqHeader+"."+std::to_string(*iId), *uId);
+        insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
         
-        path.add(SEGMENT, *uId, '+');
+        path.add(SEGMENT, uId.get(), '+');
         
         *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
         
         (*iId)++; // number of gaps in the current scaffold
-        (*uId)++; // unique numeric identifier
+        uId.next(); // unique numeric identifier
         
     }
     
@@ -833,7 +870,7 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this path name
             
-            insertHash(*pHeader, uId);
+            insertHash(*pHeader, uId.get());
             
         }else{
             
@@ -841,9 +878,9 @@ public:
             
         }
         
-        path.newPath(uId, *pHeader);
+        path.newPath(uId.get(), *pHeader);
         
-        uId++;
+        uId.next();
         
         if (seqComment != NULL) {
             
@@ -878,7 +915,7 @@ public:
                     if (!wasN && pos>0) { // gap start and gap not at the start of the sequence
                             
                         sEnd = pos - 1;
-                        pushbackSegment(pHeader, seqComment, sequence, &iId, &uId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequenceQuality);
+                        pushbackSegment(pHeader, seqComment, sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequenceQuality);
                         
                     }
                     
@@ -886,7 +923,7 @@ public:
                         
                         sign = '-';
                         
-                        pushbackGap(pHeader, &iId, &uId, pos, &dist, sign, seqLen, -1);
+                        pushbackGap(pHeader, &iId, pos, &dist, sign, seqLen, -1);
                         
                     }
                     
@@ -931,14 +968,14 @@ public:
                     if (wasN) { // internal gap end
                         
                         sStart = pos;
-                        pushbackGap(pHeader, &iId, &uId, pos, &dist, sign, seqLen, 1);
+                        pushbackGap(pHeader, &iId, pos, &dist, sign, seqLen, 1);
                         
                     }
                     
                     if (pos == seqLen) {
                         
                         sEnd = pos;
-                        pushbackSegment(pHeader, seqComment, sequence, &iId, &uId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequenceQuality);
+                        pushbackSegment(pHeader, seqComment, sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequenceQuality);
                         
                     }
                     
@@ -1009,11 +1046,11 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this segment
             
-            insertHash(*seqHeader, uId);
+            insertHash(*seqHeader, uId.get());
             
-            sUId = uId;
+            sUId = uId.get();
             
-            uId++;
+            uId.next();
             
         }else{
             
@@ -1769,16 +1806,10 @@ public:
         headersToIds.insert({segHeader, i});
         idsToHeaders.insert({i, segHeader});
     }
-
-    void setuId(unsigned int uid) {
-
-        uId = uid;
-
-    }
     
     unsigned int getuId() {
 
-        return uId;
+        return uId.get();
 
     }
     
@@ -1801,8 +1832,8 @@ public:
         adjListFW.clear();
         adjListBW.clear();
         
-        adjListFW.resize(uId); // resize the adjaciency list to hold all nodes
-        adjListBW.resize(uId); // resize the adjaciency list to hold all nodes
+        adjListFW.resize(headersToIds.size()); // resize the adjaciency list to hold all nodes
+        adjListBW.resize(headersToIds.size()); // resize the adjaciency list to hold all nodes
         
         for (auto &gap: gaps) // add edges to the graph
         {
@@ -1829,7 +1860,7 @@ public:
         
         adjEdgeListFW.clear();
         
-        adjEdgeListFW.resize(uId); // resize the adjaciency list to hold all nodes
+        adjEdgeListFW.resize(uId.get()); // resize the adjaciency list to hold all nodes
         
         for (auto &edge: edges) // add edges to the graph
         {
@@ -2447,13 +2478,13 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this path
             
-            verbose("Path not found in keys. Creating new path (" + pHeader + ", pUId: " + std::to_string(uId) + ")");
+            verbose("Path not found in keys. Creating new path (" + pHeader + ", pUId: " + std::to_string(uId.get()) + ")");
             
-            insertHash(pHeader, uId);
+            insertHash(pHeader, uId.get());
             
-            path.newPath(uId, pHeader);
+            path.newPath(uId.get(), pHeader);
             
-            uId++;
+            uId.next();
             
         }else{
             
@@ -2498,11 +2529,11 @@ public:
         
         if (gUId == 0) {
             
-            insertHash(gHeader, uId);
+            insertHash(gHeader, uId.get());
             
-            gUId = uId;
+            gUId = uId.get();
             
-            uId++;
+            uId.next();
         
         }
         
@@ -2604,21 +2635,21 @@ public:
         newPath1.setHeader(pHeader1);
         std::vector<PathComponent> newComponents1;
         
-        insertHash(pHeader1, uId);
+        insertHash(pHeader1, uId.get());
         
-        path.newPath(uId, pHeader1);
+        path.newPath(uId.get(), pHeader1);
         
-        uId++;
+        uId.next();
         
         InPath newPath2;
         newPath2.setHeader(pHeader2);
         std::vector<PathComponent> newComponents2;
         
-        insertHash(pHeader2, uId);
+        insertHash(pHeader2, uId.get());
         
-        path.newPath(uId, pHeader2);
+        path.newPath(uId.get(), pHeader2);
         
-        uId++;
+        uId.next();
         
         for (InPath& inPath : inPaths) { // search through all paths
             
@@ -3049,11 +3080,11 @@ public:
                 
                 InPath path;
                 
-                path.newPath(uId, inSegment.getSeqHeader() + "_path");
+                path.newPath(uId.get(), inSegment.getSeqHeader() + "_path");
                 
-                insertHash(inSegment.getSeqHeader() + "_path", uId);
+                insertHash(inSegment.getSeqHeader() + "_path", uId.get());
                 
-                uId++;
+                uId.next();
                 
                 dfsPath(inSegment.getuId(), path);
                 

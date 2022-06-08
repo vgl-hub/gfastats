@@ -424,7 +424,7 @@ public:
                                     
                                     guId = uId; // since I am still reading segments I need to keep this fixed
                                     
-                                    inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                    inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                     
                                     sId1Or = arguments[2].back(); // get sequence orientation in the gap
                                     
@@ -443,7 +443,7 @@ public:
                                     
                                         sId1 = uId;
                                         
-                                        inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                        inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                         
                                     }else{
                                         
@@ -468,7 +468,7 @@ public:
                                     
                                         sId2 = uId;
                                         
-                                        inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                        inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                         
                                     }else{
                                         
@@ -514,7 +514,7 @@ public:
                                     
                                     euId = uId; // since I am still reading segments I need to keep this fixed
                                     
-                                    inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                    inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                     
                                     sId1Or = arguments[2].back(); // get sequence orientation in the edge
                                     
@@ -533,7 +533,7 @@ public:
                                     
                                         sId1 = uId;
                                         
-                                        inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                        inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                         
                                     }else{
                                         
@@ -558,7 +558,7 @@ public:
                                     
                                         sId2 = uId;
                                         
-                                        inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                        inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                         
                                     }else{
                                         
@@ -604,7 +604,7 @@ public:
                                     
                                     path.newPath(uId, seqHeader);
                                     
-                                    inSequences.setuId(uId+1);
+                                    inSequences.uId.next();
                                     
                                     components = readDelimited(arguments[2], " ");
                                     
@@ -653,7 +653,7 @@ public:
                                         
                                             sId1 = uId;
                                             
-                                            inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                            inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                             
                                         }else{
                                             
@@ -755,7 +755,7 @@ public:
                                     
                                     euId = uId; // since I am still reading segments I need to keep this fixed
                                     
-                                    inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                    inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                     
                                     arguments.push_back(newLine); // last column
                                     
@@ -777,7 +777,7 @@ public:
                                         
                                         uId++;
                                         
-                                        inSequences.setuId(uId); // we have touched a segment need to increase the unique segment counter
+                                        inSequences.uId.next(); // we have touched a segment need to increase the unique segment counter
                                         
                                     }else{
                                         
@@ -803,7 +803,7 @@ public:
                                         
                                         uId++;
                                         
-                                        inSequences.setuId(uId); // we have touched a segment need to increase the unique segment counter
+                                        inSequences.uId.next(); // we have touched a segment need to increase the unique segment counter
                                         
                                     }else{
                                         
@@ -830,7 +830,7 @@ public:
                                     seqHeader = strtok(NULL,"\t");
 
                                     uId = inSequences.getuId();
-                                    inSequences.setuId(uId+1);
+                                    inSequences.uId.next();
                                     
                                     path.newPath(uId, seqHeader);
                                     
@@ -872,7 +872,7 @@ public:
                                         
                                             sId1 = uId;
                                             
-                                            inSequences.setuId(uId+1); // we have touched a feature need to increase the unique feature counter
+                                            inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
                                             
                                         }else{
                                             
@@ -1086,7 +1086,7 @@ public:
                         
                         inSequences.insertHash(pHeaderNew, pUId);
                         
-                        inSequences.setuId(pUId+1);
+                        inSequences.uId.next();
                         
                         inSequences.addPath(path);
                         
@@ -1133,20 +1133,21 @@ public:
                             
                             got = hash.find("gap"+std::to_string(gUId)); // get the headers to uIds table
                             
-                            
+                            inSequences.uId.next();
                         }
                     
+                        inSequences.uId.next();
                         gHeader = "gap"+std::to_string(gUId);
                     
                     }else{
                         
                         gHeader = arguments[6];
+                        inSequences.uId.next();
                         
                     }
                     
                     inSequences.insertHash(gHeader, gUId);
                     
-                    inSequences.setuId(gUId+1);
                     
                     dist = stoi(arguments[5]);
                     

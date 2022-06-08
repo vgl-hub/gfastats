@@ -108,11 +108,10 @@ public:
     bool excise(InSequences& inSequences, Instruction &instruction) { // excises a sequence, removing also edges if present and optionally adding a gap
         std::vector<InGap> oldGaps = inSequences.getGap(&instruction.contig1); // get the gaps associated with contig1
         InGap gap;
-        inSequences.uId++;
 
-        gap.newGap(inSequences.uId, oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
+        gap.newGap(inSequences.uId.next(), oldGaps[0].getsId1(), oldGaps[1].getsId2(), oldGaps[0].getsId1Or(), oldGaps[1].getsId2Or(), instruction.dist, instruction.gHeader); // define the new gap
         
-        inSequences.insertHash(instruction.gHeader, inSequences.uId);
+        inSequences.insertHash(instruction.gHeader, inSequences.uId.get());
         
         inSequences.addGap(gap); // introduce the new gap
         inSequences.removeGaps(&instruction.contig1);

@@ -3,8 +3,8 @@ USAGE:
 test <path to test folder or files>
 
 EXAMPLE:
-build/bin/gfastats-validate testFiles
-build/bin/gfastats-validate testFiles/random1.fasta testFiles/random2.gfa2.gfa.gz
+build/bin/gfastats-validate validateFiles
+build/bin/gfastats-validate validateFiles/random1.fasta0.tst
 
 
 */
