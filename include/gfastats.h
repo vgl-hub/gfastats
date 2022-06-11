@@ -30,6 +30,7 @@
 
 #include <chrono>
 #include <memory>
+#include <thread>
 
 #include <parallel_hashmap/phmap.h>
 

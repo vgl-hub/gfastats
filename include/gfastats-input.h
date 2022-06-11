@@ -18,18 +18,6 @@ class InFile {
     
 public:
     
-    bool getFasta(std::istream& is, std::string& s) // buffer reader for fasta
-    {
-        s.clear();
-        
-        getline(is, s, '>');
-        
-        s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
-
-        return is.eof() ? false : true;
-
-    }
-    
     InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
@@ -117,7 +105,6 @@ public:
         InSequences inSequences;
         
         std::string firstLine;
-        char firstChar;
         unsigned char buffer;
         bool stopStream = false, updateStats = false, isGzip = false;
         
@@ -172,39 +159,19 @@ public:
         
         if (stream) {
             
-            getline(*stream, newLine);
-            
-            firstLine = newLine;
-            firstChar = newLine[0];
-            
-            switch (firstChar) {
+            switch (stream->peek()) {
                     
                 case '>': {
-                        
-                    firstLine.erase(0, 1);
                     
-                    h = std::string(strtok(strdup(firstLine.c_str())," ")); //process header line
-                    c = strtok(NULL,""); //read comment
+                    stream->get();
                     
-                    seqHeader = h;
-                    
-                    if (c != NULL) {
-                        
-                        seqComment = std::string(c);
-                        
-                    }
-                    
-                    while (getFasta(*stream, inSequence)) {
+                    while (!stream->eof()) {
                         
                         if(bedIncludeList.size() - bedExcludeList.size() != 0 && bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
                             verbose("Found all sequences, stop streaming input");
                             break;
                             
                         }
-                        
-                        verbose("Individual fasta sequence read");
-                        
-                        stopStream = includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                         
                         getline(*stream, newLine);
                         
@@ -219,38 +186,23 @@ public:
                             
                         }
                         
+                        inSequence.clear();
+                        
+                        getline(*stream, inSequence, '>');
+                        
+                        inSequence.erase(std::remove(inSequence.begin(), inSequence.end(), '\n'), inSequence.end());
+                        
+                        verbose("Individual fasta sequence read");
+                        
+                        stopStream = includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                        
                         if (stopStream) {break;}
                         
                     }
                     
-                    includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
-                    
                     break;
                 }
                 case '@': {
-                        
-                    firstLine.erase(0, 1);
-                    
-                    h = std::string(strtok(strdup(firstLine.c_str())," ")); //process header line
-                    c = strtok(NULL,""); //read comment
-                    
-                    seqHeader = h;
-                    
-                    if (c != NULL) {
-                        
-                        seqComment = std::string(c);
-                        
-                    }
-                    
-                    getline(*stream, newLine);
-                    inSequence = newLine;
-                    
-                    getline(*stream, newLine);
-                    
-                    getline(*stream, newLine);
-                    inSequenceQuality = newLine;
-                    
-                    includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
                     
                     while (getline(*stream, newLine)) { // file input
                         
@@ -303,6 +255,10 @@ public:
                     std::vector<std::string> arguments, components; // process the columns of each row
                     
                     size_t pos = 0;
+                    
+                    getline(*stream, newLine);
+                    
+                    firstLine = newLine;
                     
                     while ((pos = firstLine.find(delimiter)) != std::string::npos) { // process first line
                         
