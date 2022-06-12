@@ -450,7 +450,7 @@ private:
     std::vector<PathComponent> pathComponents;
     unsigned int pUId, contigN = 0;
     
-    unsigned long long int length = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
+    unsigned long long int length = 0, segmentLength = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
     
     friend class SAK;
     friend class InSequences;
@@ -574,6 +574,12 @@ public:
         
     }
     
+    unsigned long long int getSegmentLen() {
+        
+        return segmentLength;
+        
+    }
+    
     unsigned long long int getLowerCount() {
         
         return lowerCount;
@@ -592,9 +598,21 @@ public:
     
     }
     
+    void increaseGapN() {
+        
+        contigN++;
+    
+    }
+    
     void increaseLen(unsigned long long int n) {
         
         length += n;
+    
+    }
+    
+    void increaseSegmentLen(unsigned long long int n) {
+        
+        segmentLength += n;
     
     }
     
@@ -690,6 +708,8 @@ private:
     std::vector<unsigned long long int> contigLens;
     std::vector<unsigned long long int> gapLens;
     
+    std::vector<unsigned long long int> segmentLens;
+    
     std::vector<unsigned long long int> scaffNstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> scaffLstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned long long int> scaffNGstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -712,6 +732,7 @@ private:
     
     unsigned long long int
     totScaffLen = 0,
+    totContigLen = 0,
     totSegmentLen = 0,
     totGapLen = 0,
     totA = 0,
@@ -768,7 +789,7 @@ public:
         
         inSegment.setSeqHeader(&seqHeader);
         
-        if (seqComment != NULL) {
+        if (*seqComment != "") {
             
             inSegment.setSeqComment(*seqComment);
             
@@ -778,7 +799,7 @@ public:
         
         verbose("Segment sequence set");
         
-        if (sequenceQuality != NULL) {
+        if (*sequenceQuality != "") {
             
             inSegment.setInSequenceQuality(sequenceQuality);
             
@@ -788,6 +809,12 @@ public:
         
         inSegment.setACGT(A, C, G, T);
         
+        verbose("Increased ACGT counts");
+        
+        inSegment.setLowerCount(lowerCount);
+        
+        verbose("Increased count of lower bases");
+        
         return inSegment;
         
     }
@@ -796,11 +823,12 @@ public:
         
         verbose("Processing gap " + *seqHeader+"."+std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
         
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        lck.lock();
+        
         InGap gap;
         
         gap.newGap(uId.get(), (pos - *dist == 0) ? uId.peek() : uId.prev(), (pos - seqLen == 0 && n == -1) ? uId.prev() : uId.peek(), '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
-        
-        addGap(gap);
         
         insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
         
@@ -810,6 +838,8 @@ public:
         
         (*iId)++; // number of gaps in the current scaffold
         uId.next(); // unique numeric identifier
+        
+        lck.unlock();
         
         return gap;
         
@@ -827,6 +857,9 @@ public:
             
         }
         
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        lck.lock();
+        
         InSegment inSegment = addSegment(uId.get(), *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
         
         insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
@@ -837,6 +870,8 @@ public:
         
         (*iId)++; // number of segments in the current scaffold
         uId.next(); // unique numeric identifier
+        
+        lck.unlock();
         
         return inSegment;
         
@@ -876,13 +911,13 @@ public:
             fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", sequence.header.c_str()); exit(1);
 
         }
-
-        lck.unlock();
         
         path.newPath(uId.get(), sequence.header);
 
         uId.next();
 
+        lck.unlock();
+        
         if (sequence.comment != "") {
 
             path.setComment(sequence.comment);
@@ -1161,7 +1196,13 @@ public:
         
     }
     
-    unsigned long long int getTotSegmentLen() {
+    unsigned long long int getTotSegmentLen () {
+        
+        for (std::vector<unsigned long long int>::iterator segmentLen = segmentLens.begin(); segmentLen != segmentLens.end(); segmentLen++) {
+            
+            totSegmentLen += *segmentLen;
+            
+        }
         
         return totSegmentLen;
         
@@ -1200,6 +1241,12 @@ public:
     void recordScaffLen(unsigned long long int seqLen) {
         
         scaffLens.push_back(seqLen);
+        
+    }
+
+    void recordSegmentLen(unsigned long long int segLen) {
+        
+        segmentLens.push_back(segLen);
         
     }
     
@@ -1542,7 +1589,7 @@ public:
     
     unsigned long long int getTotContigLen () {
         
-        unsigned long long int totContigLen = 0;
+        totContigLen = 0;
         
         for (std::vector<unsigned long long int>::iterator contigLen = contigLens.begin(); contigLen != contigLens.end(); contigLen++) {
             
@@ -1568,7 +1615,7 @@ public:
     
     unsigned long long int getTotGapLen() {
         
-        unsigned long long int totGapLen = 0;
+        totGapLen = 0;
         
         for (std::vector<unsigned long long int>::iterator gapLen = gapLens.begin(); gapLen != gapLens.end(); gapLen++) {
             
@@ -2154,6 +2201,10 @@ public:
             
             verbose("Recorded length of sequence: " + std::to_string(inPath.getLen()));
             
+            recordSegmentLen(inPath.getSegmentLen());
+            
+            verbose("Increased total segment length");
+            
             totA += inPath.getA();
             totC += inPath.getC();
             totG += inPath.getG();
@@ -2168,25 +2219,6 @@ public:
         }
         
         verbose("Updated scaffold statistics");
-        
-        return true;
-        
-    }
-    
-    bool updateGapLens() {
-        
-        totGapLen = 0;
-        gapLens.clear();
-        
-        for (unsigned int i = 0; i != inGaps.size(); ++i) { // loop through all edges
-        
-            recordGapLen(inGaps[i].getDist());
-            
-            changeTotGapLen(inGaps[i].getDist());
-            
-        }
-        
-        verbose("Updated list of gap lengths");
         
         return true;
         
@@ -2956,6 +2988,8 @@ public:
                 pathIt->increaseContigN();
                 
                 pathIt->increaseLen(inSegment->getSegmentLen(component->start, component->end));
+                
+                pathIt->increaseSegmentLen(inSegment->getSegmentLen(component->start, component->end));
                 
                 pathIt->increaseLowerCount(inSegment->getLowerCount(component->end - component->start));
                 
