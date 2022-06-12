@@ -671,6 +671,8 @@ class InSequences { //collection of InSegment and inGap objects and their summar
     
 private:
     
+    std::vector<std::thread> threadVec;
+    
     //gfa variables
     std::vector<InSegment> inSegments;
     std::vector<InGap> inGaps;
@@ -735,9 +737,30 @@ private:
 public:
     UIdGenerator uId; // unique numeric identifier for each feature
     
-    void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL) {
+    void startThread(Sequence sequence) {
+        
+        verbose("Processing using thread #" + std::to_string(threadVec.size()+1));
+        threadVec.push_back(std::thread(&InSequences::traverseInSequence, this, sequence));
+        
+    }
+    
+    void joinThreads() {
+        
+        for (std::thread & th : threadVec)
+        {
+            // If thread Object is Joinable then Join that thread.
+            if (th.joinable())
+                th.join();
+        }
+        
+    }
+    
+    InSegment addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL) {
+        
+        verbose("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
         
         // operations on the segment
+        InSegment inSegment;
         
         inSegment.setiId(iId); // set temporary sId internal to scaffold
         
@@ -750,8 +773,6 @@ public:
             inSegment.setSeqComment(*seqComment);
             
         }
-        
-        verbose("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
         
         inSegment.setInSequence(sequence);
         
@@ -767,44 +788,15 @@ public:
         
         inSegment.setACGT(A, C, G, T);
         
-        verbose("Increased ACGT counts");
-        
-        totA += *A;
-        totC += *C;
-        totG += *G;
-        totT += *T;
-        
-        verbose("Increased total ACGT counts");
-        
-        inSegment.setLowerCount(lowerCount);
-        
-        verbose("Increased count of lower bases");
-        
-        totLowerCount += *lowerCount;
-
-        verbose("Increased total count of lower bases");
-        
-        inSegments.push_back(inSegment); // adding segment to segment set
-        
-        // operations of the segment set
-        
-        verbose("Segment added to sequence vector");
-        
-        unsigned long long int seqSize = *A + *C + *G + *T;
-        
-        contigLens.push_back(seqSize);
-        
-        verbose("Recorded length of segment");
-        
-        changeTotSegmentLen(seqSize);
-        
-        verbose("Increased total segment length");
+        return inSegment;
         
     }
     
-    void pushbackGap(std::string* seqHeader, unsigned int* iId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
+    InGap pushbackGap(InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
         
         verbose("Processing gap " + *seqHeader+"."+std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
+        
+        InGap gap;
         
         gap.newGap(uId.get(), (pos - *dist == 0) ? uId.peek() : uId.prev(), (pos - seqLen == 0 && n == -1) ? uId.prev() : uId.peek(), '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
         
@@ -812,45 +804,49 @@ public:
         
         insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
         
-        path.add(GAP, uId.get(), '0');
+        path->add(GAP, uId.get(), '0');
         
         *dist=0;
         
         (*iId)++; // number of gaps in the current scaffold
         uId.next(); // unique numeric identifier
         
+        return gap;
+        
     }
     
-    void pushbackSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
+    InSegment pushbackSegment(InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
          
         std::string sequenceSubSeq, sequenceQualitySubSeq;
         
         sequenceSubSeq = sequence->substr(sStart, sEnd + 1 - sStart);
         
-        if (sequenceQuality != NULL) {
+        if (*sequenceQuality != "") {
             
             sequenceQualitySubSeq = sequenceQuality->substr(sStart, sEnd + 1 - sStart);
             
         }
         
-        addSegment(uId.get(), *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
+        InSegment inSegment = addSegment(uId.get(), *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
         
         insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
         
-        path.add(SEGMENT, uId.get(), '+');
+        path->add(SEGMENT, uId.get(), '+');
         
         *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
         
-        (*iId)++; // number of gaps in the current scaffold
+        (*iId)++; // number of segments in the current scaffold
         uId.next(); // unique numeric identifier
+        
+        return inSegment;
         
     }
     
-    void traverseInSequence(std::string* pHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
-        
+    void traverseInSequence(Sequence sequence) { // traverse the sequence to split at gaps and measure sequence properties
+
         std::vector<std::pair<unsigned long long int, unsigned long long int>> bedCoords;
         if(hc_flag) {
-            homopolymerCompress(sequence, bedCoords, hc_cutoff);
+            homopolymerCompress(&sequence.sequence, bedCoords, hc_cutoff);
         }
 
         unsigned long long int pos = 0, // current position in sequence
@@ -863,136 +859,141 @@ public:
         sStart = 0, sEnd = 0; // segment start and end
         char sign = '+';
         bool wasN = false;
+
+        InPath path;
         
-        path.clearPath();
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        lck.lock();
         
-        phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (*pHeader); // get the headers to uIds table to look for the header
-        
+        phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (sequence.header); // get the headers to uIds table to look for the header
+
         if (got == headersToIds.end()) { // this is the first time we see this path name
-            
-            insertHash(*pHeader, uId.get());
-            
+
+            insertHash(sequence.header, uId.get());
+
         }else{
-            
-            fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", pHeader->c_str()); exit(1);
-            
+
+            fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", sequence.header.c_str()); exit(1);
+
         }
+
+        lck.unlock();
         
-        path.newPath(uId.get(), *pHeader);
-        
+        path.newPath(uId.get(), sequence.header);
+
         uId.next();
-        
-        if (seqComment != NULL) {
-            
-            path.setComment(*seqComment);
-            
+
+        if (sequence.comment != "") {
+
+            path.setComment(sequence.comment);
+
         }
-        
-        unsigned long long int seqLen = sequence->size()-1;
-        for (char &base : *sequence) {
+
+        unsigned long long int seqLen = sequence.sequence.size()-1;
+        for (char &base : sequence.sequence) {
 
             unsigned int count = 1;
             if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
                 count = bedCoords[hc_index].second - bedCoords[hc_index].first;
                 ++hc_index;
             }
-            
+
             if (islower(base)) {
-                
+
                 lowerCount+=count;
-                
+
             }
-            
+
             switch (base) {
-                    
+
                 case 'N':
                 case 'n':
                 case 'X':
                 case 'x': {
-                    
+
                     dist+=count;
-                    
+
                     if (!wasN && pos>0) { // gap start and gap not at the start of the sequence
-                            
+
                         sEnd = pos - 1;
-                        pushbackSegment(pHeader, seqComment, sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequenceQuality);
-                        
+                        inSegments.push_back(pushbackSegment(&path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+
                     }
-                    
+
                     if(pos == seqLen) { // end of scaffold, terminal gap
-                        
+
                         sign = '-';
-                        
-                        pushbackGap(pHeader, &iId, pos, &dist, sign, seqLen, -1);
-                        
+
+                        inGaps.push_back(pushbackGap(&path, &sequence.header, &iId, pos, &dist, sign, seqLen, -1));
+
                     }
-                    
+
                     wasN = true;
-                    
+
                     break;
                 }
                 default: {
-                    
+
                     switch (base) {
                         case 'A':
                         case 'a':{
-                            
+
                             A+=count;
                             break;
-                            
+
                         }
                         case 'C':
                         case 'c':{
-                            
+
                             C+=count;
                             break;
-                            
+
                         }
                         case 'G':
                         case 'g': {
-                            
+
                             G+=count;
                             break;
-                            
+
                         }
                         case 'T':
                         case 't': {
-                            
+
                             T+=count;
                             break;
-                            
+
                         }
-                            
+
                     }
-                    
+
                     if (wasN) { // internal gap end
-                        
+
                         sStart = pos;
-                        pushbackGap(pHeader, &iId, pos, &dist, sign, seqLen, 1);
-                        
+                        inGaps.push_back(pushbackGap(&path, &sequence.header, &iId, pos, &dist, sign, seqLen, 1));
+
                     }
-                    
+
                     if (pos == seqLen) {
-                        
+
                         sEnd = pos;
-                        pushbackSegment(pHeader, seqComment, sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequenceQuality);
-                        
+                        inSegments.push_back(pushbackSegment(&path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+
                     }
-                    
+
                     wasN = false;
-                    
+
                 }
-                    
+
             }
-            
+
             pos++;
-            
+
         }
-        
+
         inPaths.push_back(path);
-        
+
         verbose("Added fasta sequence as path");
-        
+
     }
     
     void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
@@ -1062,13 +1063,25 @@ public:
         
     }
     
-    void appendSequence(std::string* pHeader, std::string* pComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence from a fasta
+    void appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
         
-        verbose("Header, comment, sequence and (optionally) quality read");
+        if (sequence.sequenceQuality.size() == 0) {
         
-        if(verbose_flag) {std::cerr<<"\n";};
-        
-        traverseInSequence(pHeader, pComment, sequence, sequenceQuality);
+            verbose("Header, comment and sequence read");
+            
+            if(verbose_flag) {std::cerr<<"\n";};
+            
+            startThread(sequence);
+            
+        }else{
+            
+            verbose("Header, comment, sequence and quality read");
+            
+            if(verbose_flag) {std::cerr<<"\n";};
+            
+            startThread(sequence);
+            
+        }
         
         verbose("Sequence traversed");
         
@@ -1617,14 +1630,6 @@ public:
     
     //gfa methods
     bool addGap(InGap inGap) {
-        
-        recordGapLen(inGap.dist);
-        
-        verbose("Recorded length of gaps in sequence");
-        
-        changeTotGapLen(inGap.dist);
-        
-        verbose("Increased total gap length");
         
         inGaps.push_back(inGap);
 

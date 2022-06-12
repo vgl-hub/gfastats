@@ -30,7 +30,10 @@
 
 #include <chrono>
 #include <memory>
+
 #include <thread>
+#include <mutex>
+std::mutex mtx;
 
 #include <parallel_hashmap/phmap.h>
 

@@ -16,6 +16,10 @@
 #include <algorithm>
 #include <cmath>
 
+struct Sequence {
+    std::string header, comment, sequence, sequenceQuality;
+};
+
 struct Gap {
     char orientation0;
     unsigned int segmentId;
@@ -23,11 +27,13 @@ struct Gap {
     unsigned int dist;
     unsigned int edgeId;
 };
+
 struct Edge {
     char orientation0;
     unsigned int id;
     char orientation1;
 };
+
 enum PathType { SEGMENT, GAP };
 struct PathComponent {
     PathType type;
@@ -36,6 +42,7 @@ struct PathComponent {
     unsigned long long int start;
     unsigned long long int end;
 };
+
 struct Bubble {
     unsigned int id0, id1, id2, id3;
 };
@@ -72,9 +79,14 @@ void verbose(std::string msg) { // verbose decorated output
     
     if(verbose_flag) {
         
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        lck.lock();
+        
         std::cerr << msg << " (done in " << std::to_string(elapsedTime()) << " s).\n"; // if you don't cast double to string it will mess up all file output!
         
         elapsedTime();
+        
+        lck.unlock();
         
     }
 }
@@ -354,5 +366,7 @@ void homopolymerBedCoords(std::string *sequence, std::vector<std::pair<unsigned 
         bedCoords.push_back({index, sequence->size()});
     }
 }
+
+void traverseInSequence(Sequence sequence);
 
 #endif /* GFASTATS_FUNCTIONS_H */

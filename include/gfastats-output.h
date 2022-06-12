@@ -301,11 +301,11 @@ public:
                             
                             if ((*inSegments)[sIdx].getInSequenceQuality() != "") {
                             
-                                inSeqQual += (*inSegments)[sIdx].getInSequence(component->start, component->end);
+                                inSeqQual += (*inSegments)[sIdx].getInSequenceQuality(component->start, component->end);
                                 
                             }else{
                                 
-                                inSeqQual += std::string((*inSegments)[sIdx].getInSequence().size(), '!');
+                                inSeqQual += std::string((*inSegments)[sIdx].getInSequenceQuality().size(), '!');
                                 
                             }
                             

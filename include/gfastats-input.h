@@ -12,9 +12,6 @@ class InFile {
     
     std::string h;
     char* c;
-    std::vector<std::string> bedIncludeListHeaders;
-    std::vector<std::string> bedExcludeListHeaders;
-    unsigned int pos = 0, cBegin = 0, cEnd = 0, offset = 0, prevCEnd = 0;
     
 public:
     
@@ -194,11 +191,17 @@ public:
                         
                         verbose("Individual fasta sequence read");
                         
-                        stopStream = includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                        Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList);
                         
-                        if (stopStream) {break;}
+                        if (sequence.header != "") {
+                        
+                            inSequences.appendSequence(sequence);
+                            
+                        }
                         
                     }
+                    
+                    inSequences.joinThreads();
                     
                     break;
                 }
@@ -227,9 +230,13 @@ public:
                         getline(*stream, newLine);
                         inSequenceQuality = newLine;
 
-                        stopStream = includeExcludeAppend(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
+                        Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList, inSequenceQuality);
                         
-                        if (stopStream) {break;}
+                        if (sequence.header != "") {
+                        
+                            inSequences.appendSequence(sequence);
+                            
+                        }
                         
                     }
                     
@@ -1233,19 +1240,23 @@ public:
         return inSequences;
         
     }
+    
+    Sequence includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string inSequenceQuality = "") {
         
-    bool includeExcludeAppend(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL) {
- 
+        std::vector<std::string> bedIncludeListHeaders;
+        std::vector<std::string> bedExcludeListHeaders;
+        unsigned int pos = 0, cBegin = 0, cEnd = 0, offset = 0, prevCEnd = 0;
+
         bedIncludeListHeaders = bedIncludeList.getSeqHeaders();
         bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
-        bool outSeq;
+        bool outSeq = false;
         
-        verbose("Processing sequence: " + *seqHeader);
+        verbose("Processing sequence: " + seqHeader);
         
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
             
-            inSequences->appendSequence(seqHeader, seqComment, inSequence, inSequenceQuality);
+            outSeq = true;
             
         }else if(!bedIncludeList.empty() &&
                   bedExcludeList.empty()) {
@@ -1257,9 +1268,9 @@ public:
             
             while (it != end(bedIncludeListHeaders)) {
                 
-                it = std::find(it, bedIncludeListHeaders.end(), *seqHeader);
+                it = std::find(it, bedIncludeListHeaders.end(), seqHeader);
                 
-                if (it == end(bedIncludeListHeaders) || bedIncludeList.getSeqHeader(pos) != *seqHeader) {
+                if (it == end(bedIncludeListHeaders) || bedIncludeList.getSeqHeader(pos) != seqHeader) {
                     
                     break;
                     
@@ -1272,11 +1283,11 @@ public:
                 
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
-                    inSequence->erase(offset, cBegin-prevCEnd);
+                    inSequence.erase(offset, cBegin-prevCEnd);
                     
-                    if (inSequenceQuality != NULL) {
+                    if (inSequenceQuality != "") {
                     
-                        inSequenceQuality->erase(offset, cBegin-prevCEnd);
+                        inSequenceQuality.erase(offset, cBegin-prevCEnd);
                     
                     }
                         
@@ -1290,26 +1301,22 @@ public:
                 
             }
                 
-            if (outSeq && inSequence->size()>0) {
+            if (outSeq && inSequence.size()>0) {
                 
                 if (offset>0) {
                 
-                    inSequence->erase(offset, inSequence->size()-offset);
+                    inSequence.erase(offset, inSequence.size()-offset);
                     
-                    if (inSequenceQuality != NULL) {
+                    if (inSequenceQuality != "") {
                     
-                        inSequenceQuality->erase(offset, inSequenceQuality->size()-offset);
+                        inSequenceQuality.erase(offset, inSequenceQuality.size()-offset);
                         
                     }
                     
                 }
                 
-                inSequences->appendSequence(seqHeader, seqComment, inSequence, inSequenceQuality);
+                outSeq = true;
             
-            }else {
-                
-                verbose("Sequence entirely removed as a result of include: " + *seqHeader);
-                
             }
                 
         }else if(bedIncludeList.empty() &&
@@ -1323,7 +1330,7 @@ public:
             
             while (it != end(bedExcludeListHeaders)) {
                 
-                it = std::find(it, bedExcludeListHeaders.end(), *seqHeader);
+                it = std::find(it, bedExcludeListHeaders.end(), seqHeader);
                 
                 if (it == end(bedExcludeListHeaders)) {
                     
@@ -1336,11 +1343,11 @@ public:
                 
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
-                    inSequence->erase(cBegin-offset, cEnd-cBegin);
+                    inSequence.erase(cBegin-offset, cEnd-cBegin);
                     
-                    if (inSequenceQuality != NULL) {
+                    if (inSequenceQuality != "") {
                     
-                        inSequenceQuality->erase(cBegin-offset, cEnd-cBegin);
+                        inSequenceQuality.erase(cBegin-offset, cEnd-cBegin);
                         
                     }
                         
@@ -1356,32 +1363,38 @@ public:
                 pos++;
                 
             }
-                
-            if (outSeq && inSequence->size()>0) {
-            
-                inSequences->appendSequence(seqHeader, seqComment, inSequence, inSequenceQuality);
-            
-            }else {
-                
-                verbose("Sequence entirely removed as a result of exclude: " + *seqHeader);
-                
-            }
                     
         }else if
                 (!bedIncludeList.empty() &&
                  !bedExcludeList.empty() &&
-                 std::find(bedIncludeListHeaders.begin(), bedIncludeListHeaders.end(), *seqHeader) != bedIncludeListHeaders.end() &&
-                 std::find(bedExcludeListHeaders.begin(), bedExcludeListHeaders.end(), *seqHeader) == bedExcludeListHeaders.end()) {
+                 std::find(bedIncludeListHeaders.begin(), bedIncludeListHeaders.end(), seqHeader) != bedIncludeListHeaders.end() &&
+                 std::find(bedExcludeListHeaders.begin(), bedExcludeListHeaders.end(), seqHeader) == bedExcludeListHeaders.end()) {
                     
-                    inSequences->appendSequence(seqHeader, seqComment, inSequence, inSequenceQuality);
+                    outSeq = true;
                     
         }
         
-        return false;
+        if (outSeq && inSequence.size()>0) {
+        
+            Sequence sequence {seqHeader, seqComment, inSequence, inSequenceQuality};
+            return sequence;
+        
+        }else {
+            
+            verbose("Sequence entirely removed as a result of BED filter: " + seqHeader);
+            
+            Sequence sequence {""};
+            return sequence;
+            
+        }
         
     }
     
     bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL) {
+        
+        std::vector<std::string> bedIncludeListHeaders;
+        std::vector<std::string> bedExcludeListHeaders;
+        unsigned int pos = 0, cBegin = 0, cEnd = 0, offset = 0, prevCEnd = 0;
  
         bedIncludeListHeaders = bedIncludeList.getSeqHeaders();
         bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
