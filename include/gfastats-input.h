@@ -640,11 +640,17 @@ public:
                                         
                                     }
                                     
-                                    c = strtok(NULL,"\t");
-                                    if (c != NULL) {
+                                    for (int i = 2; i < arguments.size(); i++) {
                                         
-                                        seqComment = std::string(c);
-                                        path.setComment(seqComment);
+                                        if (arguments[i].substr(0,3) == "C:Z") {
+                                            
+                                            seqComment = arguments[i];
+                                            
+                                            seqComment.erase(0,4);
+                                            
+                                            path.setComment(seqComment);
+                                            
+                                        }
                                         
                                     }
                                     
@@ -1046,11 +1052,17 @@ public:
                                         
                                     }
                                     
-                                    c = strtok(NULL,"\t");
-                                    if (c != NULL) {
+                                    for (int i = 2; i < arguments.size(); i++) {
                                         
-                                        seqComment = std::string(c);
-                                        path.setComment(seqComment);
+                                        if (arguments[i].substr(0,3) == "C:Z") {
+                                            
+                                            seqComment = arguments[i];
+                                            
+                                            seqComment.erase(0,4);
+                                            
+                                            path.setComment(seqComment);
+                                            
+                                        }
                                         
                                     }
                                     
