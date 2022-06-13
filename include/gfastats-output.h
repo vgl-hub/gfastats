@@ -379,8 +379,17 @@ public:
                     
                     *stream <<"J\t" // line type
                             <<idsToHeaders[inGap.getsId1()]<<"\t"<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
-                            <<idsToHeaders[inGap.getsId2()]<<"\t"<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
-                            <<inGap.getDist()<<"\n"; // size
+                            <<idsToHeaders[inGap.getsId2()]<<"\t"<<inGap.getsId2Or()<<"\t"; // sUid2:sid2:ref
+                    
+                    if (inGap.getDist() != 0) {
+                        
+                        *stream <<inGap.getDist()<<"\n"; // gap size
+                        
+                    }else{
+                        
+                        *stream <<"*\n"; // gap size
+                        
+                    }
                     
                 }
                 
@@ -410,27 +419,17 @@ public:
                         
                             *stream << idsToHeaders[component->id];
                         
-//                        if(component->start != 0 || component->end != 0) {
-//
-//                            *stream << "(" << std::to_string(component->start) << ":" << std::to_string(component->end) << ")";
-//
-//                        }
+                        if(component->start != 0 || component->end != 0) {
+
+                            *stream << "(" << std::to_string(component->start) << ":" << std::to_string(component->end) << ")";
+
+                        }
 
                             *stream << component->orientation;
                             
-                        }
-                        
-                        if (component != std::prev(pathComponents.end())) {
-                            
-                            if(component->orientation != '0') { // separator
-                            
-                                *stream <<",";
+                        }else{
                                 
-                            }else{
-                                
-                                *stream <<";";
-                                
-                            }
+                            *stream <<";";
                             
                         }
                         
@@ -438,7 +437,7 @@ public:
                     
                     if (inPath.getComment() != "") {
                     
-                    *stream <<"\t"
+                    *stream <<"\tC:Z:"
                             <<inPath.getComment();
                         
                     }
@@ -546,7 +545,7 @@ public:
                     
                     if (inPath.getComment() != "") {
                     
-                    *stream <<"\t"
+                    *stream <<"\tC:Z:"
                             <<inPath.getComment();
                         
                     }

@@ -244,7 +244,7 @@ public:
                     InGap gap;
                     InEdge edge;
                     InPath path;
-                    unsigned int sId1 = 0, sId2 = 0, dist = 0, start = 0, end = 0;
+                    unsigned int sId1 = 0, sId2 = 0, dist = 0, start = 0, end = 0, gapN = 0;
                     phmap::flat_hash_map<std::string, unsigned int> hash;
                     phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
                     
@@ -692,6 +692,96 @@ public:
                                     break;
                                     
                                 }
+                                    
+                                case 'J': {
+                                    
+                                    delimiter = "\t";
+
+                                    arguments.clear();
+                                    
+                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
+                                        
+                                        arguments.push_back(newLine.substr(0, pos));
+                                        
+                                        newLine.erase(0, pos + delimiter.length());
+                                    
+                                    }
+                                    
+                                    arguments.push_back(newLine); // last column
+                                    
+                                    gHeader = "gap" + std::to_string(gapN);
+                                    
+                                    gapN++;
+                                    
+                                    uId = inSequences.getuId();
+                                    
+                                    inSequences.insertHash(gHeader, uId);
+                                    
+                                    guId = uId; // since I am still reading segments I need to keep this fixed
+                                    
+                                    inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
+                                    
+                                    seqHeader = std::string(arguments[1]); // first component
+                                    
+                                    sId1Or = arguments[2][0]; // get orientation in the gap
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        uId = inSequences.getuId();
+                                        
+                                        inSequences.insertHash(seqHeader, uId);
+                                    
+                                        sId1 = uId;
+                                        
+                                        inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
+                                        
+                                    }else{
+                                        
+                                        sId1 = got->second;
+                                        
+                                    }
+                                    
+                                    seqHeader = arguments[3]; // second component
+                                    
+                                    sId2Or = arguments[4][0]; // get orientation in the gap
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        uId = inSequences.getuId();
+                                        
+                                        inSequences.insertHash(seqHeader, uId);
+                                    
+                                        sId2 = uId;
+                                        
+                                        inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
+                                        
+                                    }else{
+                                        
+                                        sId2 = got->second;
+                                        
+                                    }
+                                    
+                                    dist = stoi(arguments[5]);
+                                    
+                                    verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
+                                    
+                                    gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
+                                    
+                                    inSequences.addGap(gap);
+                                    
+                                    lineN++;
+                                                 
+                                    break;
+                                    
+                                }
 
                                 case 'L': {
                                     
@@ -781,38 +871,64 @@ public:
 
                                 case 'P': {
                                     
-                                    strtok(strdup(newLine.c_str()),"\t"); // process first line
+                                    arguments.clear();
                                     
-                                    seqHeader = strtok(NULL,"\t");
-
+                                    arguments = readDelimited(newLine, "\t");
+                                    
+                                    seqHeader = arguments[1];
+                                    
                                     uId = inSequences.getuId();
-                                    inSequences.uId.next();
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table to look for the header
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this header
+                                        
+                                        inSequences.insertHash(seqHeader, uId);
+                                        
+                                    }else{
+                                        
+                                        fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", seqHeader.c_str()); exit(1);
+                                        
+                                    }
                                     
                                     path.newPath(uId, seqHeader);
                                     
-                                    s = strtok(NULL,"\t");
+                                    inSequences.uId.next();
                                     
-                                    delimiter = ",";
+                                    components = readDelimited(arguments[2], ";");
                                     
-                                    arguments.clear();
-                                    
-                                    while ((pos = s.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(s.substr(0, pos));
-                                        
-                                        s.erase(0, pos + delimiter.length());
-                                    
-                                    }
-                                    
-                                    arguments.push_back(s); // last column
-                                    
-                                    for (std::string component : arguments) {
+                                    for (std::string component : components) {
                                         
                                         sId1Or = component.back(); // get sequence orientation
                                         
                                         if (sId1Or == '+' || sId1Or == '-') { // only segments have orientation
                                         
                                             component.pop_back();
+                                            
+                                        }
+                                        
+                                        if (component.find("(") != std::string::npos && component.find(":") != std::string::npos && component.find(")") != std::string::npos) {
+                                            
+                                            startS = component.substr(component.find("(") + 1, component.find(":") - component.find("(") - 1);
+                                            endS = component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1);
+                                            
+                                            start = std::stoi(startS);
+                                            end = std::stoi(endS);
+
+                                            component = component.substr(0, component.find("("));
+                                            
+                                        }else{
+                                            
+                                            start = 0;
+                                            end = 0;
+                                            
+                                        }
+                                        
+                                        if (end != 0) {
+                                        
+                                            verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
                                             
                                         }
                                     
@@ -843,7 +959,7 @@ public:
                                     
                                         if (sId != inSegments->end()) {
                                             
-                                            path.add(SEGMENT, sId1, sId1Or);
+                                            path.add(SEGMENT, sId1, sId1Or, start, end);
                                              
                                         }else{
                                             
@@ -851,17 +967,15 @@ public:
                                             
                                             if (gId != inGaps->end()) {
                                             
-                                                path.add(GAP, sId1, '0');
+                                                path.add(GAP, sId1, '0', start, end);
                                             
                                             }
                                             
                                         }
                                         
                                     }
-                                    strtok(NULL,"\t");
                                     
                                     c = strtok(NULL,"\t");
-                                    
                                     if (c != NULL) {
                                         
                                         seqComment = std::string(c);
