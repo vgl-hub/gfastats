@@ -1102,15 +1102,7 @@ public:
         
         if (sequence.sequenceQuality.size() == 0) {
         
-            verbose("Header, comment and sequence read");
-            
-            if(verbose_flag) {std::cerr<<"\n";};
-            
-            startThread(sequence);
-            
-        }else{
-            
-            verbose("Header, comment, sequence and quality read");
+            verbose("Header, comment, sequence, and (optionally) quality read");
             
             if(verbose_flag) {std::cerr<<"\n";};
             
