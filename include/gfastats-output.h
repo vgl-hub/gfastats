@@ -75,7 +75,9 @@ public:
             {"fastq.gz",2},
             {"fq.gz",2},
             {"gfa",3},
-            {"gfa.gz",3}
+            {"gfa.gz",3},
+            {"gfa2",4},
+            {"gfa2.gz",4}
         };
         
         // variables to handle output type
@@ -334,7 +336,122 @@ public:
                 
             }
                 
-            case 3: { // gfa[.gz]
+            case 3: { // gfa[.gz] GFA1.2
+                
+                std::string seqHeader, gHeader, pHeader;
+                
+                phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
+                
+                std::vector<InSegment>* inSegments = inSequences.getInSegments();
+                
+                *stream<<"H\tVN:Z:1.2\n";
+                
+                for (InSegment inSegment : *inSegments) {
+                    
+                    seqHeader = inSegment.getSeqHeader();
+                    
+                    *stream <<"S\t" // line type
+                            <<seqHeader<<"\t" // header
+                            <<inSegment.getInSequence()<<"\t" // sequence
+                            <<"LN:"<<inSegment.getSegmentLen(); // sequence length
+                    
+                    if (inSegment.getInSequenceQuality() != "") {
+                        
+                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional quality
+                        
+                    }
+                    
+                    *stream<<"\n";
+                    
+                }
+                
+                for (InGap inGap : inSequences.getGaps()) {
+                    
+                    if (inGap.getgHeader() == "") {
+                        
+                        gHeader = inGap.getuId();
+                        
+                    }else{
+                        
+                        gHeader = inGap.getgHeader();
+                        
+                    }
+                    
+                    *stream <<"J\t" // line type
+                            <<idsToHeaders[inGap.getsId1()]<<"\t"<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
+                            <<idsToHeaders[inGap.getsId2()]<<"\t"<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
+                            <<inGap.getDist()<<"\n"; // size
+                    
+                }
+                
+                std::vector<PathComponent> pathComponents;
+                
+                for (InPath inPath : inSequences.getInPaths()) {
+                    
+                    if (inPath.getHeader() == "") {
+                        
+                        pHeader = inPath.getpUId();
+                        
+                    }else{
+                        
+                        pHeader = inPath.getHeader();
+                        
+                    }
+                    
+                    *stream <<"P\t" // line type
+                            <<pHeader<<"\t"; // id
+                    
+                    
+                    pathComponents = inPath.getComponents();
+                    
+                    for (std::vector<PathComponent>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
+                        
+                        if(component->orientation != '0') {
+                        
+                            *stream << idsToHeaders[component->id];
+                        
+//                        if(component->start != 0 || component->end != 0) {
+//
+//                            *stream << "(" << std::to_string(component->start) << ":" << std::to_string(component->end) << ")";
+//
+//                        }
+
+                            *stream << component->orientation;
+                            
+                        }
+                        
+                        if (component != std::prev(pathComponents.end())) {
+                            
+                            if(component->orientation != '0') { // separator
+                            
+                                *stream <<",";
+                                
+                            }else{
+                                
+                                *stream <<";";
+                                
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                    if (inPath.getComment() != "") {
+                    
+                    *stream <<"\t"
+                            <<inPath.getComment();
+                        
+                    }
+                    
+                    *stream <<"\n";
+                    
+                }
+                
+                break;
+                
+            }
+                
+            case 4: { // gfa[.gz] GFA2
                 
                 std::string seqHeader, gHeader, pHeader;
                 
