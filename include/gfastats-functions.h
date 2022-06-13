@@ -247,9 +247,9 @@ std::vector<std::string> readDelimited(std::string line, std::string delimiter, 
         line.erase(0, pos + delimiter.length());
             
     }
-
+    
     arguments.push_back(line); // last column
-            
+        
     return arguments;
     
 }

@@ -899,15 +899,50 @@ public:
                                     
                                     components = readDelimited(arguments[2], ";");
                                     
-                                    for (std::string component : components) {
+                                    for (auto it = std::begin(components); it != std::end(components); ++it) {
+                                        
+                                        std::string component;
+                                        
+                                        if(it == std::begin(components) && *it == "") { // handle starting/ending gap
+                                                
+                                                component = *(std::next(it, 1));
+                                                
+                                                component.pop_back();
+                                                
+                                                got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                                
+                                                if (got == hash.end()) { // this is the first time we see this segment
+                                                    
+                                                    fprintf(stderr, "Error1: cannot find next component in path (%s). Terminating.\n", component.c_str()); exit(1);
+                                                    
+                                                }else{
+                                                    
+                                                    sId1 = got->second;
+                                                    
+                                                }
+                                                
+                                                std::vector<InGap>* inGaps = inSequences.getInGaps();
+                                                
+                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getsId1() == sId1 && obj.getsId2() == sId1;}); // given a uId, find it in gaps
+                                                
+                                                if (gId != inGaps->end()) {
+                                                    
+                                                    path.add(GAP, gId->getuId(), '0', start, end);
+                                                    
+                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                
+                                                }
+                                            
+                                            ++it;
+                                            
+                                        }
+                                        
+                                        component = *it;
+                                        
                                         
                                         sId1Or = component.back(); // get sequence orientation
                                         
-                                        if (sId1Or == '+' || sId1Or == '-') { // only segments have orientation
-                                        
-                                            component.pop_back();
-                                            
-                                        }
+                                        component.pop_back();
                                         
                                         if (component.find("(") != std::string::npos && component.find(":") != std::string::npos && component.find(")") != std::string::npos) {
                                             
@@ -961,14 +996,50 @@ public:
                                             
                                             path.add(SEGMENT, sId1, sId1Or, start, end);
                                              
-                                        }else{
+                                        }
+                                        
+                                        if (std::next(it, 1) != std::end(components)){
                                             
-                                            auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getuId() == sId1;}); // given a uId, find it in gaps
+                                            component = *(std::next(it, 1));
                                             
-                                            if (gId != inGaps->end()) {
+                                            if (component != "") {
                                             
-                                                path.add(GAP, sId1, '0', start, end);
-                                            
+                                                component.pop_back();
+                                                
+                                                got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                                
+                                                if (got == hash.end()) { // this is the first time we see this segment
+                                                    
+                                                    fprintf(stderr, "Error: cannot find next component in path (%s). Terminating.\n", component.c_str()); exit(1);
+                                                    
+                                                }else{
+                                                    
+                                                    sId2 = got->second;
+                                                    
+                                                }
+                                                
+                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1,sId2](InGap& obj) {return obj.getsId1() == sId1 && obj.getsId2() == sId2;}); // given a uId, find it in gaps
+                                                
+                                                if (gId != inGaps->end()) {
+                                                    
+                                                    path.add(GAP, gId->getuId(), '0', start, end);
+                                                    
+                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                
+                                                }
+                                                
+                                            }else{
+                                                
+                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getsId1() == sId1 && obj.getsId2() == sId1;}); // given a uId, find it in gaps
+                                                
+                                                if (gId != inGaps->end()) {
+                                                    
+                                                    path.add(GAP, gId->getuId(), '0', start, end);
+                                                    
+                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                
+                                                }
+                                                
                                             }
                                             
                                         }
