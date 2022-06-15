@@ -1722,6 +1722,12 @@ public:
     }
     
     //sorting methods
+
+    void sortPathsByOriginal(){
+        
+        sort(inPaths.begin(), inPaths.end(), [](InPath& one, InPath& two){return one.getSeqPos() < two.getSeqPos();});
+        
+    }
     
     void sortPathsByNameAscending(){
         

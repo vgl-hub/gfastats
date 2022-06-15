@@ -164,27 +164,9 @@ public:
                 std::vector<InGap>* inGaps = inSequences.getInGaps();
                 std::vector<PathComponent> pathComponents;
                 
-                unsigned int uId = 0, sIdx = 0, gIdx = 0, pathCounter = 0, currentPath = 0, lastPath = inPaths.size() - 1;
-                
-                InPath inPath;
-                
-                while (pathCounter <= lastPath) {
+                unsigned int uId = 0, sIdx = 0, gIdx = 0;
                     
-                    InPath inPath = inPaths[currentPath]; // current path
-                    
-                    currentPath++;
-                    
-                    if (currentPath > lastPath) {currentPath = 0;} // keep looping in the paths until we are done
-                    
-                    if (inPath.getSeqPos() != pathCounter) { // check if the current path is the one that should be outputted now
-                        
-                        continue;
-                        
-                    } else {
-                        
-                        pathCounter++;
-                        
-                    }
+                for (InPath inPath : inSequences.getInPaths()) {
                     
                     if (inPath.getHeader() == "") {
                         

@@ -1233,6 +1233,11 @@ public:
             
             inSequences.sortPathsByList(headerList);
             
+        }else{
+            
+            inSequences.sortPathsByOriginal();
+            
+            
         }
         
         if (updateStats) {
