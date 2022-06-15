@@ -18,6 +18,7 @@
 
 struct Sequence {
     std::string header, comment, sequence, sequenceQuality;
+    unsigned int seqPos;
 };
 
 struct Gap {

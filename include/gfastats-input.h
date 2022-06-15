@@ -196,8 +196,10 @@ public:
                         Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList);
                         
                         if (sequence.header != "") {
-                        
-                            inSequences.appendSequence(sequence, seqPos);
+                            
+                            sequence.seqPos = seqPos; // remember the order
+                            
+                            inSequences.appendSequence(sequence);
                             
                             seqPos++;
                             

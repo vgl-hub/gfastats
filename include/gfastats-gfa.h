@@ -765,10 +765,10 @@ private:
 public:
     UIdGenerator uId; // unique numeric identifier for each feature
     
-    void startThread(Sequence sequence, unsigned int seqPos) {
+    void startThread(Sequence sequence) {
         
         verbose("Processing using thread #" + std::to_string(threadVec.size()+1));
-        threadVec.push_back(std::thread(&InSequences::traverseInSequence, this, sequence, seqPos));
+        threadVec.push_back(std::thread(&InSequences::traverseInSequence, this, sequence));
         
     }
     
@@ -884,7 +884,7 @@ public:
         
     }
     
-    void traverseInSequence(Sequence sequence, unsigned int seqPos) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSequence(Sequence sequence) { // traverse the sequence to split at gaps and measure sequence properties
 
         std::vector<std::pair<unsigned long long int, unsigned long long int>> bedCoords;
         if(hc_flag) {
@@ -919,7 +919,7 @@ public:
 
         }
         
-        path.newPath(uId.get(), sequence.header, "", seqPos);
+        path.newPath(uId.get(), sequence.header, "", sequence.seqPos);
 
         uId.next();
 
@@ -1105,7 +1105,7 @@ public:
         
     }
     
-    void appendSequence(Sequence sequence, unsigned int seqPos = 0) { // method to append a new sequence from a fasta
+    void appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
         
         if (sequence.sequenceQuality.size() == 0) {
         
@@ -1113,7 +1113,7 @@ public:
             
             if(verbose_flag) {std::cerr<<"\n";};
             
-            startThread(sequence, seqPos);
+            startThread(sequence);
             
         }
         
