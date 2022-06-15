@@ -448,7 +448,7 @@ private:
 //    unsigned long long int lineN; // useful if we wish to sort as is the original input
     std::string pHeader, pComment;
     std::vector<PathComponent> pathComponents;
-    unsigned int pUId, contigN = 0;
+    unsigned int pUId, contigN = 0, seqPos;
     
     unsigned long long int length = 0, segmentLength = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
     
@@ -457,12 +457,13 @@ private:
 
 public:
     
-    void newPath(unsigned int pUid, std::string h, std::string c = "") {
+    void newPath(unsigned int pUid, std::string h, std::string c = "", unsigned int seqpos = 0) {
         
         pHeader = h;
         pComment = c;
         pathComponents.clear();
         pUId = pUid;
+        seqPos = seqpos;
         
         verbose("Processed sequence: " + pHeader + " (uId: " + std::to_string(pUId) + ")");
     
@@ -535,6 +536,12 @@ public:
     std::string getComment() {
         
         return pComment;
+    
+    }
+    
+    unsigned int getSeqPos() {
+        
+        return seqPos;
     
     }
     
@@ -758,10 +765,10 @@ private:
 public:
     UIdGenerator uId; // unique numeric identifier for each feature
     
-    void startThread(Sequence sequence) {
+    void startThread(Sequence sequence, unsigned int seqPos) {
         
         verbose("Processing using thread #" + std::to_string(threadVec.size()+1));
-        threadVec.push_back(std::thread(&InSequences::traverseInSequence, this, sequence));
+        threadVec.push_back(std::thread(&InSequences::traverseInSequence, this, sequence, seqPos));
         
     }
     
@@ -877,7 +884,7 @@ public:
         
     }
     
-    void traverseInSequence(Sequence sequence) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSequence(Sequence sequence, unsigned int seqPos) { // traverse the sequence to split at gaps and measure sequence properties
 
         std::vector<std::pair<unsigned long long int, unsigned long long int>> bedCoords;
         if(hc_flag) {
@@ -912,7 +919,7 @@ public:
 
         }
         
-        path.newPath(uId.get(), sequence.header);
+        path.newPath(uId.get(), sequence.header, "", seqPos);
 
         uId.next();
 
@@ -1098,7 +1105,7 @@ public:
         
     }
     
-    void appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
+    void appendSequence(Sequence sequence, unsigned int seqPos = 0) { // method to append a new sequence from a fasta
         
         if (sequence.sequenceQuality.size() == 0) {
         
@@ -1106,7 +1113,7 @@ public:
             
             if(verbose_flag) {std::cerr<<"\n";};
             
-            startThread(sequence);
+            startThread(sequence, seqPos);
             
         }
         

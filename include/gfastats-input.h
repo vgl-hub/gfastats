@@ -99,12 +99,14 @@ public:
             
         }
         
+        // stream read variable definition
         InSequences inSequences;
-        
         std::string firstLine;
         unsigned char buffer;
         bool stopStream = false, updateStats = false, isGzip = false;
+        unsigned int seqPos = 0; // to keep track of the original sequence order
         
+        // start streaming
         stream = make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
 
         stream->read((char*)(&buffer), 1);
@@ -167,7 +169,7 @@ public:
                         if(bedIncludeList.size() - bedExcludeList.size() != 0 && bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
                             verbose("Found all sequences, stop streaming input");
                             break;
-                            
+                        
                         }
                         
                         getline(*stream, newLine);
@@ -195,7 +197,9 @@ public:
                         
                         if (sequence.header != "") {
                         
-                            inSequences.appendSequence(sequence);
+                            inSequences.appendSequence(sequence, seqPos);
+                            
+                            seqPos++;
                             
                         }
                         
