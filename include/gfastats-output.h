@@ -383,13 +383,21 @@ public:
                     
                     if (inGap.getDist() != 0) {
                         
-                        *stream <<inGap.getDist()<<"\n"; // gap size
+                        *stream <<inGap.getDist(); // gap size
                         
                     }else{
                         
-                        *stream <<"*\n"; // gap size
+                        *stream <<"*"; // gap size
                         
                     }
+                    
+                    for (std::string tag : inGap.getTags()) {
+                        
+                        *stream <<"\t"<<tag; // gap tags
+                        
+                    }
+                        
+                    *stream <<"\n";
                     
                 }
                 

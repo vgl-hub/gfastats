@@ -280,12 +280,13 @@ private:
     std::string gHeader;
     char sId1Or, sId2Or;
     unsigned int uId, iId, sId1, sId2, dist;
+    std::vector<std::string> tags;
     
     friend class SAK;
     friend class InSequences;
     
 public:
-    void newGap(unsigned int uid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d, std::string gheader = "") {
+    void newGap(unsigned int uid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d, std::string gheader = "", std::vector<std::string> inTags = {"SC:i:1"}) {
         
         gHeader = gheader;
         uId = uid;
@@ -294,6 +295,7 @@ public:
         sId1Or = sid1or;
         sId2Or = sid2or;
         dist = d;
+        tags = inTags;
         
     }
 
@@ -358,6 +360,14 @@ public:
         return start != 0 || end != 0 ? end-start+1 : dist;
         
     }
+    
+    std::vector<std::string> getTags() {
+        
+        return tags;
+        
+    }
+    
+    
     
 };
 class InEdge {
