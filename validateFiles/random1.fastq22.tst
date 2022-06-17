@@ -1,4 +1,4 @@
-testFiles/random1.gfa -a testFiles/random1.agp --stats
+testFiles/random1.fastq -a testFiles/random1.agp --stats
 embedded
 +++Summary+++: 
 # scaffolds: 2
