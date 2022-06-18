@@ -1866,6 +1866,8 @@ public:
 
     void buildEdgeGraph(std::vector<InEdge> const& edges) { // graph constructor
         
+        unsigned int sIdx = 0;
+        
         verbose("Started edge graph construction");
         
         adjEdgeListFW.clear();
@@ -1875,9 +1877,33 @@ public:
         for (auto &edge: edges) // add edges to the graph
         {
             
-            verbose("Adding forward edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or);
+            verbose("Adding edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or);
             
             adjEdgeListFW.at(edge.sId1).push_back({edge.sId1Or, edge.sId2, edge.sId2Or}); // insert at edge start gap destination and orientations
+            
+            auto sId2 = edge.sId2;
+            
+            auto sId = find_if(inSegments.begin(), inSegments.end(), [sId2](InSegment& obj) {return obj.getuId() == sId2;}); // given a node Uid, find it
+            
+            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+            
+            if (adjEdgeListFW.at(edge.sId2).size() >= sIdx) {
+            
+                auto e = adjEdgeListFW.at(edge.sId2).at(sIdx);
+                    
+                if(e.orientation0 != (edge.sId2Or == '+' ? '-' : '+') && // add backward edge only if is not already present
+                   e.id != edge.sId1 &&
+                   e.orientation1 != (edge.sId1Or == '+' ? '-' : '+')) {
+
+                    adjEdgeListFW.at(edge.sId2).push_back({edge.sId2Or == '+' ? '-' : '+', edge.sId1, edge.sId1Or == '+' ? '-' : '+'}); // assembly are bidirected by definition
+                
+                }
+                
+            }else{
+                
+                adjEdgeListFW.at(edge.sId2).push_back({edge.sId2Or == '+' ? '-' : '+', edge.sId1, edge.sId1Or == '+' ? '-' : '+'}); // assembly are bidirected by definition
+                
+            }
             
         }
         
