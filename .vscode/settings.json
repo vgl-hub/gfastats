@@ -3,7 +3,7 @@
         "*.cpp": "cpp",
         "*.hpp": "cpp",
         "*.c": "c",
-        "*.h": "c",
+        "*.h": "cpp",
         "*.tcc": "cpp",
         "cctype": "cpp",
         "clocale": "cpp",
