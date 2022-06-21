@@ -373,7 +373,7 @@ int main(int argc, char **argv) {
     
     verbose("Sequence object generated");
     
-    inSequences = inFile.readFiles(iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
+    inFile.readFiles(inSequences, iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
     
     verbose("Finished reading sequences from file to sequence object");
     

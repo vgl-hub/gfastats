@@ -15,7 +15,7 @@ class InFile {
     
 public:
     
-    InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
+    void readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
         
@@ -100,7 +100,6 @@ public:
         }
         
         // stream read variable definition
-        InSequences inSequences;
         std::string firstLine;
         unsigned char buffer;
         bool stopStream = false, updateStats = false, isGzip = false;
@@ -1247,9 +1246,6 @@ public:
             inSequences.updateStats();
             
         }
-
-        return inSequences;
-        
     }
     
     Sequence includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string inSequenceQuality = "") {

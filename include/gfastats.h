@@ -47,6 +47,8 @@ std::mutex mtx;
 #include "gfastats-global.h" // global variables
 #include "gfastats-functions.h" // global functions
 
+#include "gfastats-threadpool.h"
+
 #include "gfastats-gfa.h" // gfa classes
 #include "gfastats-sak.h" // swiss army knife classes
 

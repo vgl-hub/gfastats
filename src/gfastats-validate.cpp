@@ -35,6 +35,13 @@ void printPASS(const char *m1="", const char *m2="", const char *m3="", const ch
     std::cout << "\033[0;32mPASS\033[0m " << m1 << " " << m2 << " " << m3 << " " << m4 << std::endl;
 }
 
+bool getline(std::ifstream &s, std::string &line) {
+    if(!std::getline(s, line)) return false;
+    line.erase(remove(line.begin(), line.end(), '\r'), line.end());
+    line.erase(remove(line.begin(), line.end(), '\n'), line.end());
+    return true;
+}
+
 int main(int argc, char **argv) {
     if (argc == 1) { // test with no arguments
         std::cout << "gfastats-validate <path to test folder and/or files>" << std::endl;
@@ -68,9 +75,7 @@ int main(int argc, char **argv) {
             printFAIL(input_file.c_str(), "couldn't open test file");
             continue;
         }
-        std::getline(istream, line);
-        line.erase(remove(line.begin(), line.end(), '\r'), line.end());
-        line.erase(remove(line.begin(), line.end(), '\n'), line.end());
+        getline(istream, line);
 #ifdef _WIN32
         std::string cmd = "\"\""+exePath+"\""+" "+line+" > "+tmp+" 2>"+err+"\"";
 #else
@@ -87,7 +92,7 @@ int main(int argc, char **argv) {
                 std::cout << "    error: couldn't open err.txt" << std::endl;
                 continue;
             }
-            for(std::string line; std::getline(errfstream, line);) {
+            for(std::string line; getline(errfstream, line);) {
                 std::cout << "    " << line.c_str() << std::endl;
             }
             errfstream.close();
@@ -95,7 +100,7 @@ int main(int argc, char **argv) {
         }
 
 
-        std::getline(istream, line);
+        getline(istream, line);
         exp.open(line);
         if(exp) {
             expOutput = &exp; // seperate expected output file
@@ -108,16 +113,16 @@ int main(int argc, char **argv) {
 
         actOutput.open(tmp);
         std::string line;
-        std::getline(*expOutput, line);
+        getline(*expOutput, line);
         if(line == "+++Summary+++: ") {
-            std::getline(actOutput, line);
+            getline(actOutput, line);
             std::set<std::string> exp_summary, act_summary;
             while(!actOutput.eof()) {
-                std::getline(actOutput, line);
+                getline(actOutput, line);
                 act_summary.insert(line);
             }
             while(!expOutput->eof()) {
-                std::getline(*expOutput, line);
+                getline(*expOutput, line);
                 exp_summary.insert(line);
             }
             std::set<std::string> additions, missings;
@@ -154,13 +159,13 @@ int main(int argc, char **argv) {
             std::vector<std::pair<std::string, std::string>> diffs;
 
             std::string l1, l2;
-            std::getline(actOutput, l1);
+            getline(actOutput, l1);
             l2 = line;
             if(l1 != l2) diffs.push_back(std::pair<std::string, std::string>(l1, l2));
 
             while(!actOutput.eof() || !expOutput->eof()) {
-                std::getline(actOutput, l1);
-                std::getline(*expOutput, l2);
+                getline(actOutput, l1);
+                getline(*expOutput, l2);
                 if(l1 != l2) diffs.push_back(std::pair<std::string, std::string>(l1, l2));
             }
 

@@ -696,7 +696,7 @@ class InSequences { //collection of InSegment and inGap objects and their summar
     
 private:
     
-    std::vector<std::thread> threadVec;
+    ThreadPool threadPool;
     
     //gfa variables
     std::vector<InSegment> inSegments;
@@ -764,22 +764,22 @@ private:
     
 public:
     UIdGenerator uId; // unique numeric identifier for each feature
+
+    InSequences() {
+        threadPool.Init(this, 4);
+    }
+    
     
     void startThread(Sequence sequence) {
         
-        verbose("Processing using thread #" + std::to_string(threadVec.size()+1));
-        threadVec.push_back(std::thread(&InSequences::traverseInSequence, this, sequence));
+        verbose("Processing using thread");
+        threadPool.queueTask(sequence);
         
     }
     
     void joinThreads() {
         
-        for (std::thread & th : threadVec)
-        {
-            // If thread Object is Joinable then Join that thread.
-            if (th.joinable())
-                th.join();
-        }
+        threadPool.Join();
         
     }
     
