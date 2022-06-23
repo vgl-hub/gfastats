@@ -1,14 +1,14 @@
 testFiles/random2.gfa 
 embedded
 +++Summary+++: 
-# scaffolds: 1
+# scaffolds: 2
 Total scaffold length: 26
-Average scaffold length: 26.00
+Average scaffold length: 13.00
 Scaffold N50: 26
 Scaffold auN: 26.00
 Scaffold L50: 1
 Largest scaffold: 26
-Smallest scaffold: 26
+Smallest scaffold: 0
 # contigs: 3
 Total contig length: 18
 Average contig length: 6.00
@@ -32,13 +32,13 @@ GC content %: 38.89
 Total segment length: 18
 Average segment length: 6.00
 # gaps: 2
-# paths: 1
+# paths: 2
 # edges: 3
 Average degree: 1.00
-# connected components: 0
-Largest connected component length: 11
-# dead ends: 4
-# disconnected components: 1
-Total length disconnected components: 7
+# connected components: 1
+Largest connected component length: 18
+# dead ends: 2
+# disconnected components: 0
+Total length disconnected components: 0
 # separated components: 1
 # bubbles: 0
