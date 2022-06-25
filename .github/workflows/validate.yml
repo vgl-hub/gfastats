@@ -11,17 +11,17 @@ jobs:
     strategy:
       matrix:
         include:
-
+          - os: macos-latest
+            command: ".github/workflows/val.sh"
+          - os: ubuntu-latest
+            command: ".github/workflows/val.sh"
+            chmod: true
           - os: windows-latest
             command: ".github/workflows/val.bat"
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
-    - name: install zlib
-      uses: msys2/setup-msys2@v2
-      with:
-        install: zlib
+      uses: actions/checkout@v3
     - name: Build
       run: make
     - name: Validate
