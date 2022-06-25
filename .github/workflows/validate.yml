@@ -22,9 +22,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Build
       with:
         install: zlib
+    - name: Build
       run: make
     - name: Validate
       run: |
