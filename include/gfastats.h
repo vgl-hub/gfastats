@@ -34,7 +34,7 @@
 
 #include <parallel_hashmap/phmap.h>
 
-#include <zlib.h>
+#include "zlib.h"
 #include <zstream/zstream_common.hpp>
 #include <zstream/izstream.hpp>
 #include <zstream/izstream_impl.hpp>
