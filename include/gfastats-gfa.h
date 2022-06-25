@@ -71,6 +71,7 @@ private:
     std::string inSequenceQuality;
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     unsigned int uId = 0, iId = 0;
+    std::vector<Tag> tags;
     
     friend class SAK;
     friend class InSequences;
@@ -93,6 +94,10 @@ public:
     void setInSequenceQuality(std::string* q) {
         inSequenceQuality = *q;
     }
+    
+    void setSeqTags(std::vector<Tag>* t) {
+        tags = *t;
+    }
 
     void setuId(unsigned int i) { // absolute id
         uId = i;
@@ -110,9 +115,21 @@ public:
         return seqComment;
     }
     
+    std::vector<Tag> getTags() {
+        return tags;
+    }
+    
     std::string getInSequence(unsigned int start = 0, unsigned int end = 0) {
         
-        return start != 0 || end != 0 ? inSequence.substr(start-1, end-start+1) : inSequence;
+        if (inSequence == "") {
+            
+            return "*";
+            
+        }else{
+        
+            return start != 0 || end != 0 ? inSequence.substr(start-1, end-start+1) : inSequence;
+            
+        }
         
     }
     
@@ -124,7 +141,7 @@ public:
     
     unsigned long long int getSegmentLen(unsigned long long int start = 0, unsigned long long int end = 0) {
         
-        if (inSequence == "*") {
+        if (inSequence == "") {
             
             return lowerCount;
             
@@ -753,7 +770,7 @@ private:
 public:
     UIdGenerator uId; // unique numeric identifier for each feature
     
-    void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL) {
+    void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
         
         unsigned long long int seqSize = 0;
         
@@ -770,6 +787,12 @@ public:
         if (seqComment != NULL) {
             
             inSegment.setSeqComment(*seqComment);
+            
+        }
+        
+        if (inSequenceTags != NULL) {
+            
+            inSegment.setSeqTags(inSequenceTags);
             
         }
         
@@ -1098,7 +1121,7 @@ public:
             
         }
                 
-        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
+        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags);
         
     }
     

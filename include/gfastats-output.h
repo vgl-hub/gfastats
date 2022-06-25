@@ -352,8 +352,18 @@ public:
                     
                     *stream <<"S\t" // line type
                             <<seqHeader<<"\t" // header
-                            <<inSegment.getInSequence()<<"\t" // sequence
-                            <<"LN:"<<inSegment.getSegmentLen(); // sequence length
+                            <<inSegment.getInSequence()<<"\t"; // sequence
+                    
+                    std::vector<Tag> tags = inSegment.getTags();
+                    
+                    for (Tag &tag : tags) {
+                    
+                        *stream <<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
+                        
+                        if (&tag != &tags.back())
+                            *stream <<"\t";
+                        
+                    }
                     
                     if (inSegment.getInSequenceQuality() != "") {
                         
