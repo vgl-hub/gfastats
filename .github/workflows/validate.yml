@@ -23,7 +23,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: install zlib
-    - uses: msys2/setup-msys2@v2
+      uses: msys2/setup-msys2@v2
       with:
         install: zlib
     - name: Build
