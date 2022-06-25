@@ -988,7 +988,7 @@ public:
                                         
                                     }
                                     
-                                    for (int i = 2; i < arguments.size(); i++) {
+                                    for (unsigned int i = 2; i < arguments.size(); i++) {
                                         
                                         if (arguments[i].substr(0,3) == "C:Z") {
                                             

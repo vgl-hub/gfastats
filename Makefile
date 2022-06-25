@@ -12,7 +12,6 @@ SOURCE_PATH = src
 
 LIBS += -lz
 
-
 $(TARGET): $(SOURCE_PATH)/$(TARGET).cpp
 	mkdir -p $(BUILD_PATH)
 	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS)
