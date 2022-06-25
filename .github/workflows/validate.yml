@@ -16,7 +16,7 @@ jobs:
           - os: ubuntu-latest
             command: ".github/workflows/val.sh"
             chmod: true
-          - os: windows-2022
+          - os: windows-2019
             command: ".github/workflows/val.bat"
     runs-on: ${{ matrix.os }}
     steps:
