@@ -16,26 +16,42 @@
 #include <algorithm>
 #include <cmath>
 
+struct Tag {
+    
+    char type, label[2];
+    std::string content;
+    
+};
+
 struct Gap {
+    
     char orientation0;
     unsigned int segmentId;
     char orientation1;
     unsigned int dist;
     unsigned int edgeId;
+    
 };
+
 struct Edge {
+    
     char orientation0;
     unsigned int id;
     char orientation1;
+    
 };
+
 enum PathType { SEGMENT, GAP };
 struct PathComponent {
+    
     PathType type;
     unsigned int id;
     char orientation;
     unsigned long long int start;
     unsigned long long int end;
+    
 };
+
 struct Bubble {
     unsigned int id0, id1, id2, id3;
 };
@@ -47,6 +63,10 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 }
 
 //functions
+bool checkTag(const char tag1[2], std::string tag2) {
+    return tag1 == tag2;
+}
+
 bool isInt(const std::string &str) {
     return !str.empty() && str.find_first_not_of("0123456789") == std::string::npos;
 }

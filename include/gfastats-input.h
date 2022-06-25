@@ -251,41 +251,22 @@ public:
                     unsigned int lineN = 1;
                     unsigned int uId = 0, guId = 0, euId = 0;
                     
-                    std::string delimiter = "\t";
-                    std::vector<std::string> arguments, components; // process the columns of each row
+                    std::vector<std::string> arguments, components, tagValues; // process the columns of each row
                     
-                    size_t pos = 0;
+                    std::vector<Tag> inSequenceTags;
+                    Tag tag;
                     
                     getline(*stream, newLine);
                     
                     firstLine = newLine;
                     
-                    while ((pos = firstLine.find(delimiter)) != std::string::npos) { // process first line
-                        
-                        arguments.push_back(firstLine.substr(0, pos));
-                        
-                        firstLine.erase(0, pos + delimiter.length());
-                    
-                    }
-                    
-                    arguments.push_back(firstLine); // last column
+                    arguments = readDelimited(newLine, "\t");
                     
                     if (arguments[0] == "H") {
                         
                         h_col2 = arguments[1]; // read header col2
-                        delimiter = ":";
                         
-                        arguments.clear();
-                        
-                        while ((pos = h_col2.find(delimiter)) != std::string::npos) { // process version tag
-                            
-                            arguments.push_back(h_col2.substr(0, pos));
-                            
-                            h_col2.erase(0, pos + delimiter.length());
-                        
-                        }
-                        
-                        arguments.push_back(h_col2); // last column
+                        arguments = readDelimited(newLine, ":");
                         
                         if (arguments[2] != "") {
                             
@@ -304,7 +285,7 @@ public:
                         
                         if (arguments[0] == "S") {
                             
-                            if (isInt(arguments[2]) || arguments[2] == "*") {
+                            if (isInt(arguments[2]) || (arguments[2] == "*" && arguments[3].find(":") == std::string::npos)) {
                                 
                                 version = '2';
                                 verbose("Proposed GFA version: " + version);
@@ -322,6 +303,8 @@ public:
                             verbose("Proposed GFA version: " + version);
                             
                         }
+                        
+                        stream->seekg(0); // return to begin of file after detection
                             
                     }
                     
@@ -358,19 +341,7 @@ public:
                                 }
                                 case 'G': {
                                     
-                                    delimiter = "\t";
-
-                                    arguments.clear();
-                                    
-                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(newLine.substr(0, pos));
-                                        
-                                        newLine.erase(0, pos + delimiter.length());
-                                    
-                                    }
-                                    
-                                    arguments.push_back(newLine); // last column
+                                    arguments = readDelimited(newLine, "\t");
                                     
                                     gHeader = arguments[1];
                                     
@@ -447,20 +418,8 @@ public:
                                 }
 
                                 case 'E': {
-                             
-                                    delimiter = "\t";
-
-                                    arguments.clear();
                                     
-                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(newLine.substr(0, pos));
-                                        
-                                        newLine.erase(0, pos + delimiter.length());
-                                    
-                                    }
-                                    
-                                    arguments.push_back(newLine); // last column
+                                    arguments = readDelimited(newLine, "\t");
                                     
                                     eHeader = arguments[1];
                                     
@@ -535,8 +494,6 @@ public:
                                 }
                                     
                                 case 'O': {
-                                    
-                                    arguments.clear();
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
@@ -676,22 +633,27 @@ public:
                                     
                                 case 'S': {
                                     
-                                    strtok(strdup(newLine.c_str()),"\t"); // process first line
-                                    h = strtok(NULL,"\t");
+                                    arguments = readDelimited(newLine, "\t");
                                     
-                                    seqHeader = h;
+                                    seqHeader = arguments[1];
                                     
-                                    s = strtok(NULL,"\t");
-                                    inSequence = s;
+                                    inSequence = arguments[2];
                                     
-                                    c = strtok(NULL,"\t");
-                                    if (c != NULL) {
+                                    inSequenceTags.clear();
+                                    
+                                    for (int i = 3; i < arguments.size(); i++) {
                                         
-                                        seqComment = std::string(c);
+                                        tagValues = readDelimited(arguments[i], ":");
                                         
+                                        strcpy(tag.label, tagValues[0].c_str());
+                                        tag.type = tagValues[1][0];
+                                        tag.content = tagValues[2];
+                                    
+                                        inSequenceTags.push_back(tag);
+                                    
                                     }
                                     
-                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inSequenceTags);
                                     
                                     lineN++;
                                     
@@ -701,19 +663,7 @@ public:
                                     
                                 case 'J': {
                                     
-                                    delimiter = "\t";
-
-                                    arguments.clear();
-                                    
-                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(newLine.substr(0, pos));
-                                        
-                                        newLine.erase(0, pos + delimiter.length());
-                                    
-                                    }
-                                    
-                                    arguments.push_back(newLine); // last column
+                                    arguments = readDelimited(newLine, "\t");
                                     
                                     gHeader = "gap" + std::to_string(gapN);
                                     
@@ -791,25 +741,13 @@ public:
 
                                 case 'L': {
                                     
-                                    delimiter = "\t";
-                                    
-                                    arguments.clear();
-                                    
-                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(newLine.substr(0, pos));
-                                        
-                                        newLine.erase(0, pos + delimiter.length());
-                                    
-                                    }
+                                    arguments = readDelimited(newLine, "\t");
 
                                     uId = inSequences.getuId();
                                     
                                     euId = uId; // since I am still reading segments I need to keep this fixed
                                     
                                     inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
-                                    
-                                    arguments.push_back(newLine); // last column
                                     
                                     sId1Or = arguments[2][0]; // get sequence orientation in the edge
                                     
@@ -876,8 +814,6 @@ public:
                                 }
 
                                 case 'P': {
-                                    
-                                    arguments.clear();
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
@@ -1578,7 +1514,7 @@ public:
         
     }
     
-    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL) {
+    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
  
         bedIncludeListHeaders = bedIncludeList.getSeqHeaders();
         bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
@@ -1587,7 +1523,7 @@ public:
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
             
-            inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
+            inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality, inSequenceTags);
             
         }else if(!bedIncludeList.empty() &&
                   bedExcludeList.empty()) {

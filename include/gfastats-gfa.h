@@ -124,7 +124,15 @@ public:
     
     unsigned long long int getSegmentLen(unsigned long long int start = 0, unsigned long long int end = 0) {
         
-        return start != 0 || end != 0 ? end-start+1 : A + C + G + T; // need to sum long long int to prevent size() overflow
+        if (inSequence == "*") {
+            
+            return lowerCount;
+            
+        }else{
+        
+            return start != 0 || end != 0 ? end-start+1 : A + C + G + T; // need to sum long long int to prevent size() overflow
+            
+        }
         
     }
     
@@ -747,7 +755,11 @@ public:
     
     void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL) {
         
+        unsigned long long int seqSize = 0;
+        
         // operations on the segment
+        
+        verbose("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
         
         inSegment.setiId(iId); // set temporary sId internal to scaffold
         
@@ -761,46 +773,46 @@ public:
             
         }
         
-        verbose("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
-        
-        inSegment.setInSequence(sequence);
-        
-        verbose("Segment sequence set");
-        
-        if (sequenceQuality != NULL) {
+        if (*sequence != "*") {
             
-            inSegment.setInSequenceQuality(sequenceQuality);
+            inSegment.setInSequence(sequence);
             
-            verbose("Segment sequence quality set");
+            verbose("Segment sequence set");
+            
+            if (sequenceQuality != NULL) {
+                
+                inSegment.setInSequenceQuality(sequenceQuality);
+                
+                verbose("Segment sequence quality set");
+                
+            }
+            
+            inSegment.setACGT(A, C, G, T);
+            
+            verbose("Increased ACGT counts");
+            
+            totA += *A;
+            totC += *C;
+            totG += *G;
+            totT += *T;
+            
+            verbose("Increased total ACGT counts");
+            
+            inSegment.setLowerCount(lowerCount);
+            
+            verbose("Increased count of lower bases");
+            
+            totLowerCount += *lowerCount;
+
+            verbose("Increased total count of lower bases");
+            
+            seqSize = *A + *C + *G + *T;
+            
+        }else{
+            
+            seqSize = *lowerCount;
             
         }
-        
-        inSegment.setACGT(A, C, G, T);
-        
-        verbose("Increased ACGT counts");
-        
-        totA += *A;
-        totC += *C;
-        totG += *G;
-        totT += *T;
-        
-        verbose("Increased total ACGT counts");
-        
-        inSegment.setLowerCount(lowerCount);
-        
-        verbose("Increased count of lower bases");
-        
-        totLowerCount += *lowerCount;
-
-        verbose("Increased total count of lower bases");
-        
-        inSegments.push_back(inSegment); // adding segment to segment set
-        
-        // operations of the segment set
-        
-        verbose("Segment added to sequence vector");
-        
-        unsigned long long int seqSize = *A + *C + *G + *T;
         
         contigLens.push_back(seqSize);
         
@@ -809,6 +821,10 @@ public:
         changeTotSegmentLen(seqSize);
         
         verbose("Increased total segment length");
+        
+        inSegments.push_back(inSegment); // adding segment to segment set
+        
+        verbose("Segment added to segment vector");
         
     }
     
@@ -1005,7 +1021,7 @@ public:
         
     }
     
-    void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
         unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
         unsigned int sUId = 0;
@@ -1048,6 +1064,20 @@ public:
                     
                 }
                     
+                case '*': {
+                    
+                    auto tag = find_if(inSequenceTags->begin(), inSequenceTags->end(), [](Tag& obj) {return checkTag(obj.label, "LN");}); // find if length tag is present in the case sequence is missing
+                    
+                    if (tag != inSequenceTags->end()) {
+                        
+                        lowerCount = stol(tag->content);
+                        
+                    }
+                        
+                    break;
+                    
+                }
+                    
             }
                 
         }
@@ -1086,13 +1116,13 @@ public:
         
     }
     
-    void appendSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new segment from a gfa
+    void appendSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // method to append a new segment from a gfa
         
         verbose("Header, comment, sequence and (optionally) quality read");
         
         if(verbose_flag) {std::cerr<<"\n";};
         
-        traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality);
+        traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality, inSequenceTags);
         
         verbose("Segment traversed");
         
