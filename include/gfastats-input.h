@@ -308,7 +308,7 @@ public:
                             
                     }
                     
-                    if (version[0] == '2') {
+                    if (version[0] == '2') { // GFA2
                     
                         while (getline(*stream, newLine)) {
                             
@@ -318,18 +318,24 @@ public:
                                     
                                 case 'S': {
                                     
-                                    strtok(strdup(newLine.c_str()),"\t"); //process first line
-                                    seqHeader = strtok(NULL,"\t");
+                                    arguments = readDelimited(newLine, "\t");
                                     
-                                    strtok(NULL,"\t");
-                                    s = strtok(NULL,"\t");
-                                    inSequence = s;
+                                    seqHeader = arguments[1];
                                     
-                                    c = strtok(NULL,"\t");
-                                    if (c != NULL) {
+                                    inSequence = arguments[3];
+                                    
+                                    inSequenceTags.clear();
+                                    
+                                    for (unsigned int i = 4; i < arguments.size(); i++) {
                                         
-                                        seqComment = std::string(c);
+                                        tagValues = readDelimited(arguments[i], ":");
                                         
+                                        strcpy(tag.label, tagValues[0].c_str());
+                                        tag.type = tagValues[1][0];
+                                        tag.content = tagValues[2];
+                                    
+                                        inSequenceTags.push_back(tag);
+                                    
                                     }
                                     
                                     stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
@@ -817,6 +823,8 @@ public:
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
+                                    if (arguments[2].find(";") == std::string::npos) break; // we are not reading edge paths yet
+                                    
                                     seqHeader = arguments[1];
                                     
                                     uId = inSequences.getuId();
@@ -880,7 +888,6 @@ public:
                                         }
                                         
                                         component = *it;
-                                        
                                         
                                         sId1Or = component.back(); // get sequence orientation
                                         
