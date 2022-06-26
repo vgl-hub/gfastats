@@ -835,6 +835,10 @@ public:
             
             seqSize = *lowerCount;
             
+            inSegment.setLowerCount(&seqSize);
+            
+            verbose("No seq input. Length (" + std::to_string(seqSize) + ") recorded in lower count");
+            
         }
         
         contigLens.push_back(seqSize);
@@ -853,7 +857,7 @@ public:
     
     void pushbackGap(std::string* seqHeader, unsigned int* iId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
         
-        verbose("Processing gap " + *seqHeader+"."+std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
+        verbose("Processing gap " + *seqHeader+"." + std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
         
         gap.newGap(uId.get(), (pos - *dist == 0) ? uId.peek() : uId.prev(), (pos - seqLen == 0 && n == -1) ? uId.prev() : uId.peek(), '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
         

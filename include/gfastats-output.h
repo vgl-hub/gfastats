@@ -352,22 +352,19 @@ public:
                     
                     *stream <<"S\t" // line type
                             <<seqHeader<<"\t" // header
-                            <<inSegment.getInSequence()<<"\t"; // sequence
+                            <<inSegment.getInSequence(); // sequence
                     
                     std::vector<Tag> tags = inSegment.getTags();
                     
                     for (Tag &tag : tags) {
                     
-                        *stream <<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
-                        
-                        if (&tag != &tags.back())
-                            *stream <<"\t";
+                        *stream <<"\t"<<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
                         
                     }
                     
                     if (inSegment.getInSequenceQuality() != "") {
                         
-                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional quality
+                        *stream <<"\tQL:Z:"<<inSegment.getInSequenceQuality(); // optional quality
                         
                     }
                     
@@ -455,7 +452,7 @@ public:
                     
                     if (inPath.getComment() != "") {
                     
-                    *stream <<"\tC:Z:"
+                    *stream <<"\tCM:Z:"
                             <<inPath.getComment();
                         
                     }
@@ -487,9 +484,17 @@ public:
                             <<inSegment.getSegmentLen()<<"\t" // seq length
                             <<inSegment.getInSequence(); // sequence
                     
+                    std::vector<Tag> tags = inSegment.getTags();
+                    
+                    for (Tag &tag : tags) {
+                    
+                        *stream <<"\t"<<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
+                        
+                    }
+                    
                     if (inSegment.getInSequenceQuality() != "") {
                         
-                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional quality
+                        *stream <<"\tQL:Z:"<<inSegment.getInSequenceQuality(); // optional quality
                         
                     }
                     
@@ -563,7 +568,7 @@ public:
                     
                     if (inPath.getComment() != "") {
                     
-                    *stream <<"\tC:Z:"
+                    *stream <<"\tCM:Z:"
                             <<inPath.getComment();
                         
                     }
