@@ -330,7 +330,8 @@ public:
                                         
                                         tagValues = readDelimited(arguments[i], ":");
                                         
-                                        strcpy(tag.label, tagValues[0].c_str());
+                                        tag.label[0] = tagValues[0][0];
+                                        tag.label[1] = tagValues[0][1];
                                         tag.type = tagValues[1][0];
                                         tag.content = tagValues[2];
                                     
@@ -651,7 +652,8 @@ public:
                                         
                                         tagValues = readDelimited(arguments[i], ":");
                                         
-                                        strcpy(tag.label, tagValues[0].c_str());
+                                        tag.label[0] = tagValues[0][0];
+                                        tag.label[1] = tagValues[0][1];
                                         tag.type = tagValues[1][0];
                                         tag.content = tagValues[2];
                                     
