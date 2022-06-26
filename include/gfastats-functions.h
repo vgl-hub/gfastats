@@ -18,7 +18,7 @@
 
 struct Tag {
     
-    char type, label[2];
+    char type, label[3] = "";
     std::string content;
     
 };
