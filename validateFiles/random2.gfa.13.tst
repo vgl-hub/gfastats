@@ -1,4 +1,4 @@
-testFiles/random2.gfa -ogfa2
+testFiles/random2.gfa -o gfa2
 embedded
 H	VN:Z:2.0
 S	11	5	ACCTT	LN:i:5	QL:Z:?@97?

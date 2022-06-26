@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
     const std::map<std::set<std::string>, std::vector<std::string>> ext_args = {
         {{"fasta", "fastq"}, {"", "-b a", "-b c", "-b s", "--homopolymer-compress 5"}},
-        {{"gfa"}, {""}}
+        {{"gfa", "gfa2"}, {"-o gfa2", "-o gfa", "-o fasta"}}
     //  {{set of test file extensions}, {list of command line args to run with}}
     };
 
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
     int i = 0;
 
     auto genTest = [&i, &exePath](const std::string &file, const std::string &args){
-        std::string tstFile = "validateFiles/"+file+std::to_string(i)+".tst";
+        std::string tstFile = "validateFiles/"+file+"."+std::to_string(i)+".tst";
         std::ofstream ostream;
         ostream.open(tstFile);
         ostream << "testFiles/" << file << " " << args << "\nembedded" << std::endl;
