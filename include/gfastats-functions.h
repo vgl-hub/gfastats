@@ -17,31 +17,46 @@
 #include <cmath>
 
 struct Sequence {
+    
     std::string header, comment, sequence, sequenceQuality;
     unsigned int seqPos;
+    
+};
+
+struct Tag {
+    
+    char type, label[3] = "";
+    std::string content;
+    
 };
 
 struct Gap {
+    
     char orientation0;
     unsigned int segmentId;
     char orientation1;
     unsigned int dist;
     unsigned int edgeId;
+    
 };
 
 struct Edge {
+    
     char orientation0;
     unsigned int id;
     char orientation1;
+    
 };
 
 enum PathType { SEGMENT, GAP };
 struct PathComponent {
+    
     PathType type;
     unsigned int id;
     char orientation;
     unsigned long long int start;
     unsigned long long int end;
+    
 };
 
 struct Bubble {
@@ -55,6 +70,10 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 }
 
 //functions
+bool checkTag(const char tag1[2], std::string tag2) {
+    return tag1 == tag2;
+}
+
 bool isInt(const std::string &str) {
     return !str.empty() && str.find_first_not_of("0123456789") == std::string::npos;
 }
@@ -255,9 +274,9 @@ std::vector<std::string> readDelimited(std::string line, std::string delimiter, 
         line.erase(0, pos + delimiter.length());
             
     }
-
+    
     arguments.push_back(line); // last column
-            
+        
     return arguments;
     
 }

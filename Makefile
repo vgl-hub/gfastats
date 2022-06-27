@@ -1,5 +1,5 @@
 CC = g++
-INCLUDE_DIR = -I./include -I./include/zlib
+INCLUDE_DIR = -I./include
 
 CFLAGS += -g -Wall -std=gnu++11 -O3 $(INCLUDE_DIR)
 
@@ -12,12 +12,15 @@ SOURCE_PATH = src
 
 LIBS += -lz
 
-
 $(TARGET): $(SOURCE_PATH)/$(TARGET).cpp
 	mkdir -p $(BUILD_PATH)
 	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS) -pthread
 	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TEST_TARGET) $(SOURCE_PATH)/$(TEST_TARGET).cpp $(LIBS)
 	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(GENERATE_TARGET) $(SOURCE_PATH)/$(GENERATE_TARGET).cpp $(LIBS)
+
+main:
+	mkdir -p $(BUILD_PATH)
+	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS)
 
 validate:
 	mkdir -p $(BUILD_PATH)

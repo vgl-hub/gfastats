@@ -71,6 +71,7 @@ private:
     std::string inSequenceQuality;
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     unsigned int uId = 0, iId = 0;
+    std::vector<Tag> tags;
     
     friend class SAK;
     friend class InSequences;
@@ -93,6 +94,10 @@ public:
     void setInSequenceQuality(std::string* q) {
         inSequenceQuality = *q;
     }
+    
+    void setSeqTags(std::vector<Tag>* t) {
+        tags = *t;
+    }
 
     void setuId(unsigned int i) { // absolute id
         uId = i;
@@ -110,9 +115,21 @@ public:
         return seqComment;
     }
     
+    std::vector<Tag> getTags() {
+        return tags;
+    }
+    
     std::string getInSequence(unsigned int start = 0, unsigned int end = 0) {
         
-        return start != 0 || end != 0 ? inSequence.substr(start-1, end-start+1) : inSequence;
+        if (inSequence == "") {
+            
+            return "*";
+            
+        }else{
+        
+            return start != 0 || end != 0 ? inSequence.substr(start-1, end-start+1) : inSequence;
+            
+        }
         
     }
     
@@ -124,7 +141,15 @@ public:
     
     unsigned long long int getSegmentLen(unsigned long long int start = 0, unsigned long long int end = 0) {
         
-        return start != 0 || end != 0 ? end-start+1 : A + C + G + T; // need to sum long long int to prevent size() overflow
+        if (inSequence == "") {
+            
+            return lowerCount;
+            
+        }else{
+        
+            return start != 0 || end != 0 ? end-start+1 : A + C + G + T; // need to sum long long int to prevent size() overflow
+            
+        }
         
     }
     
@@ -280,12 +305,13 @@ private:
     std::string gHeader;
     char sId1Or, sId2Or;
     unsigned int uId, iId, sId1, sId2, dist;
+    std::vector<std::string> tags;
     
     friend class SAK;
     friend class InSequences;
     
 public:
-    void newGap(unsigned int uid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d, std::string gheader = "") {
+    void newGap(unsigned int uid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d, std::string gheader = "", std::vector<std::string> inTags = {"SC:i:1"}) {
         
         gHeader = gheader;
         uId = uid;
@@ -294,6 +320,7 @@ public:
         sId1Or = sid1or;
         sId2Or = sid2or;
         dist = d;
+        tags = inTags;
         
     }
 
@@ -358,6 +385,14 @@ public:
         return start != 0 || end != 0 ? end-start+1 : dist;
         
     }
+    
+    std::vector<std::string> getTags() {
+        
+        return tags;
+        
+    }
+    
+    
     
 };
 class InEdge {
@@ -783,9 +818,12 @@ public:
         
     }
     
-    InSegment addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL) {
+
+    void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
         
         verbose("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
+        
+        unsigned long long int seqSize = 0;
         
         // operations on the segment
         InSegment inSegment;
@@ -802,33 +840,74 @@ public:
             
         }
         
-        inSegment.setInSequence(sequence);
-        
-        verbose("Segment sequence set");
-        
-        if (*sequenceQuality != "") {
+        if (inSequenceTags != NULL) {
             
-            inSegment.setInSequenceQuality(sequenceQuality);
-            
-            verbose("Segment sequence quality set");
+            inSegment.setSeqTags(inSequenceTags);
             
         }
         
-        inSegment.setACGT(A, C, G, T);
+        if (*sequence != "*") {
+            
+            inSegment.setInSequence(sequence);
+            
+            verbose("Segment sequence set");
+            
+            if (sequenceQuality != NULL) {
+                
+                inSegment.setInSequenceQuality(sequenceQuality);
+                
+                verbose("Segment sequence quality set");
+                
+            }
+            
+            inSegment.setACGT(A, C, G, T);
+            
+            verbose("Increased ACGT counts");
+            
+            totA += *A;
+            totC += *C;
+            totG += *G;
+            totT += *T;
+            
+            verbose("Increased total ACGT counts");
+            
+            inSegment.setLowerCount(lowerCount);
+            
+            verbose("Increased count of lower bases");
+            
+            totLowerCount += *lowerCount;
+
+            verbose("Increased total count of lower bases");
+            
+            seqSize = *A + *C + *G + *T;
+            
+        }else{
+            
+            seqSize = *lowerCount;
+            
+            inSegment.setLowerCount(&seqSize);
+            
+            verbose("No seq input. Length (" + std::to_string(seqSize) + ") recorded in lower count");
+            
+        }
         
-        verbose("Increased ACGT counts");
+        contigLens.push_back(seqSize);
         
-        inSegment.setLowerCount(lowerCount);
+        verbose("Recorded length of segment");
         
-        verbose("Increased count of lower bases");
+        changeTotSegmentLen(seqSize);
         
-        return inSegment;
+        verbose("Increased total segment length");
+        
+        inSegments.push_back(inSegment); // adding segment to segment set
+        
+        verbose("Segment added to segment vector");
         
     }
     
     InGap pushbackGap(InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
         
-        verbose("Processing gap " + *seqHeader+"."+std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
+        verbose("Processing gap " + *seqHeader+"." + std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
         
         std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         lck.lock();
@@ -1038,7 +1117,7 @@ public:
 
     }
     
-    void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
         unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
         unsigned int sUId = 0;
@@ -1081,6 +1160,20 @@ public:
                     
                 }
                     
+                case '*': {
+                    
+                    auto tag = find_if(inSequenceTags->begin(), inSequenceTags->end(), [](Tag& obj) {return checkTag(obj.label, "LN");}); // find if length tag is present in the case sequence is missing
+                    
+                    if (tag != inSequenceTags->end()) {
+                        
+                        lowerCount = stol(tag->content);
+                        
+                    }
+                        
+                    break;
+                    
+                }
+                    
             }
                 
         }
@@ -1101,7 +1194,7 @@ public:
             
         }
                 
-        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality);
+        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags);
         
     }
     
@@ -1123,13 +1216,13 @@ public:
         
     }
     
-    void appendSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new segment from a gfa
+    void appendSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // method to append a new segment from a gfa
         
         verbose("Header, comment, sequence and (optionally) quality read");
         
         if(verbose_flag) {std::cerr<<"\n";};
         
-        traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality);
+        traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality, inSequenceTags);
         
         verbose("Segment traversed");
         
@@ -1913,6 +2006,8 @@ public:
 
     void buildEdgeGraph(std::vector<InEdge> const& edges) { // graph constructor
         
+        unsigned int sIdx = 0;
+        
         verbose("Started edge graph construction");
         
         adjEdgeListFW.clear();
@@ -1922,9 +2017,33 @@ public:
         for (auto &edge: edges) // add edges to the graph
         {
             
-            verbose("Adding forward edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or);
+            verbose("Adding edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or);
             
             adjEdgeListFW.at(edge.sId1).push_back({edge.sId1Or, edge.sId2, edge.sId2Or}); // insert at edge start gap destination and orientations
+            
+            auto sId2 = edge.sId2;
+            
+            auto sId = find_if(inSegments.begin(), inSegments.end(), [sId2](InSegment& obj) {return obj.getuId() == sId2;}); // given a node Uid, find it
+            
+            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
+            
+            if (adjEdgeListFW.at(edge.sId2).size() >= sIdx) {
+            
+                auto e = adjEdgeListFW.at(edge.sId2).at(sIdx);
+                    
+                if(e.orientation0 != (edge.sId2Or == '+' ? '-' : '+') && // add backward edge only if is not already present
+                   e.id != edge.sId1 &&
+                   e.orientation1 != (edge.sId1Or == '+' ? '-' : '+')) {
+
+                    adjEdgeListFW.at(edge.sId2).push_back({edge.sId2Or == '+' ? '-' : '+', edge.sId1, edge.sId1Or == '+' ? '-' : '+'}); // assembly are bidirected by definition
+                
+                }
+                
+            }else{
+                
+                adjEdgeListFW.at(edge.sId2).push_back({edge.sId2Or == '+' ? '-' : '+', edge.sId1, edge.sId1Or == '+' ? '-' : '+'}); // assembly are bidirected by definition
+                
+            }
             
         }
         

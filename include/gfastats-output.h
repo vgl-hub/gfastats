@@ -352,12 +352,19 @@ public:
                     
                     *stream <<"S\t" // line type
                             <<seqHeader<<"\t" // header
-                            <<inSegment.getInSequence()<<"\t" // sequence
-                            <<"LN:"<<inSegment.getSegmentLen(); // sequence length
+                            <<inSegment.getInSequence(); // sequence
+                    
+                    std::vector<Tag> tags = inSegment.getTags();
+                    
+                    for (Tag &tag : tags) {
+                    
+                        *stream <<"\t"<<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
+                        
+                    }
                     
                     if (inSegment.getInSequenceQuality() != "") {
                         
-                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional quality
+                        *stream <<"\tQL:Z:"<<inSegment.getInSequenceQuality(); // optional quality
                         
                     }
                     
@@ -379,8 +386,25 @@ public:
                     
                     *stream <<"J\t" // line type
                             <<idsToHeaders[inGap.getsId1()]<<"\t"<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
-                            <<idsToHeaders[inGap.getsId2()]<<"\t"<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
-                            <<inGap.getDist()<<"\n"; // size
+                            <<idsToHeaders[inGap.getsId2()]<<"\t"<<inGap.getsId2Or()<<"\t"; // sUid2:sid2:ref
+                    
+                    if (inGap.getDist() != 0) {
+                        
+                        *stream <<inGap.getDist(); // gap size
+                        
+                    }else{
+                        
+                        *stream <<"*"; // gap size
+                        
+                    }
+                    
+                    for (std::string tag : inGap.getTags()) {
+                        
+                        *stream <<"\t"<<tag; // gap tags
+                        
+                    }
+                        
+                    *stream <<"\n";
                     
                 }
                 
@@ -410,27 +434,17 @@ public:
                         
                             *stream << idsToHeaders[component->id];
                         
-//                        if(component->start != 0 || component->end != 0) {
-//
-//                            *stream << "(" << std::to_string(component->start) << ":" << std::to_string(component->end) << ")";
-//
-//                        }
+                        if(component->start != 0 || component->end != 0) {
+
+                            *stream << "(" << std::to_string(component->start) << ":" << std::to_string(component->end) << ")";
+
+                        }
 
                             *stream << component->orientation;
                             
-                        }
-                        
-                        if (component != std::prev(pathComponents.end())) {
-                            
-                            if(component->orientation != '0') { // separator
-                            
-                                *stream <<",";
+                        }else{
                                 
-                            }else{
-                                
-                                *stream <<";";
-                                
-                            }
+                            *stream <<";";
                             
                         }
                         
@@ -438,8 +452,7 @@ public:
                     
                     if (inPath.getComment() != "") {
                     
-                    *stream <<"\t"
-                            <<inPath.getComment();
+                    *stream <<"\tCM:Z:"<<inPath.getComment();
                         
                     }
                     
@@ -470,9 +483,17 @@ public:
                             <<inSegment.getSegmentLen()<<"\t" // seq length
                             <<inSegment.getInSequence(); // sequence
                     
+                    std::vector<Tag> tags = inSegment.getTags();
+                    
+                    for (Tag &tag : tags) {
+                    
+                        *stream <<"\t"<<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
+                        
+                    }
+                    
                     if (inSegment.getInSequenceQuality() != "") {
                         
-                        *stream <<"\tQ:"<<inSegment.getInSequenceQuality(); // optional quality
+                        *stream <<"\tQL:Z:"<<inSegment.getInSequenceQuality(); // optional quality
                         
                     }
                     
@@ -546,7 +567,7 @@ public:
                     
                     if (inPath.getComment() != "") {
                     
-                    *stream <<"\t"
+                    *stream <<"\tCM:Z:"
                             <<inPath.getComment();
                         
                     }

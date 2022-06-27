@@ -257,48 +257,29 @@ public:
                     InGap gap;
                     InEdge edge;
                     InPath path;
-                    unsigned int sId1 = 0, sId2 = 0, dist = 0, start = 0, end = 0;
+                    unsigned int sId1 = 0, sId2 = 0, dist = 0, start = 0, end = 0, gapN = 0;
                     phmap::flat_hash_map<std::string, unsigned int> hash;
                     phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
                     
                     unsigned int lineN = 1;
                     unsigned int uId = 0, guId = 0, euId = 0;
                     
-                    std::string delimiter = "\t";
-                    std::vector<std::string> arguments, components; // process the columns of each row
+                    std::vector<std::string> arguments, components, tagValues; // process the columns of each row
                     
-                    size_t pos = 0;
+                    std::vector<Tag> inSequenceTags;
+                    Tag tag;
                     
                     getline(*stream, newLine);
                     
                     firstLine = newLine;
                     
-                    while ((pos = firstLine.find(delimiter)) != std::string::npos) { // process first line
-                        
-                        arguments.push_back(firstLine.substr(0, pos));
-                        
-                        firstLine.erase(0, pos + delimiter.length());
-                    
-                    }
-                    
-                    arguments.push_back(firstLine); // last column
+                    arguments = readDelimited(newLine, "\t");
                     
                     if (arguments[0] == "H") {
                         
                         h_col2 = arguments[1]; // read header col2
-                        delimiter = ":";
                         
-                        arguments.clear();
-                        
-                        while ((pos = h_col2.find(delimiter)) != std::string::npos) { // process version tag
-                            
-                            arguments.push_back(h_col2.substr(0, pos));
-                            
-                            h_col2.erase(0, pos + delimiter.length());
-                        
-                        }
-                        
-                        arguments.push_back(h_col2); // last column
+                        arguments = readDelimited(newLine, ":");
                         
                         if (arguments[2] != "") {
                             
@@ -317,7 +298,7 @@ public:
                         
                         if (arguments[0] == "S") {
                             
-                            if (isInt(arguments[2]) || arguments[2] == "*") {
+                            if (isInt(arguments[2]) || (arguments[2] == "*" && arguments[3].find(":") == std::string::npos)) {
                                 
                                 version = '2';
                                 verbose("Proposed GFA version: " + version);
@@ -335,10 +316,12 @@ public:
                             verbose("Proposed GFA version: " + version);
                             
                         }
+                        
+                        stream->seekg(0); // return to begin of file after detection
                             
                     }
                     
-                    if (version[0] == '2') {
+                    if (version[0] == '2') { // GFA2
                     
                         while (getline(*stream, newLine)) {
                             
@@ -348,18 +331,25 @@ public:
                                     
                                 case 'S': {
                                     
-                                    strtok(strdup(newLine.c_str()),"\t"); //process first line
-                                    seqHeader = strtok(NULL,"\t");
+                                    arguments = readDelimited(newLine, "\t");
                                     
-                                    strtok(NULL,"\t");
-                                    s = strtok(NULL,"\t");
-                                    inSequence = s;
+                                    seqHeader = arguments[1];
                                     
-                                    c = strtok(NULL,"\t");
-                                    if (c != NULL) {
+                                    inSequence = arguments[3];
+                                    
+                                    inSequenceTags.clear();
+                                    
+                                    for (unsigned int i = 4; i < arguments.size(); i++) {
                                         
-                                        seqComment = std::string(c);
+                                        tagValues = readDelimited(arguments[i], ":");
                                         
+                                        tag.label[0] = tagValues[0][0];
+                                        tag.label[1] = tagValues[0][1];
+                                        tag.type = tagValues[1][0];
+                                        tag.content = tagValues[2];
+                                    
+                                        inSequenceTags.push_back(tag);
+                                    
                                     }
                                     
                                     stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
@@ -371,19 +361,7 @@ public:
                                 }
                                 case 'G': {
                                     
-                                    delimiter = "\t";
-
-                                    arguments.clear();
-                                    
-                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(newLine.substr(0, pos));
-                                        
-                                        newLine.erase(0, pos + delimiter.length());
-                                    
-                                    }
-                                    
-                                    arguments.push_back(newLine); // last column
+                                    arguments = readDelimited(newLine, "\t");
                                     
                                     gHeader = arguments[1];
                                     
@@ -460,20 +438,8 @@ public:
                                 }
 
                                 case 'E': {
-                             
-                                    delimiter = "\t";
-
-                                    arguments.clear();
                                     
-                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(newLine.substr(0, pos));
-                                        
-                                        newLine.erase(0, pos + delimiter.length());
-                                    
-                                    }
-                                    
-                                    arguments.push_back(newLine); // last column
+                                    arguments = readDelimited(newLine, "\t");
                                     
                                     eHeader = arguments[1];
                                     
@@ -548,8 +514,6 @@ public:
                                 }
                                     
                                 case 'O': {
-                                    
-                                    arguments.clear();
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
@@ -653,11 +617,17 @@ public:
                                         
                                     }
                                     
-                                    c = strtok(NULL,"\t");
-                                    if (c != NULL) {
+                                    for (unsigned int i = 2; i < arguments.size(); i++) {
                                         
-                                        seqComment = std::string(c);
-                                        path.setComment(seqComment);
+                                        if (arguments[i].substr(0,3) == "C:Z") {
+                                            
+                                            seqComment = arguments[i];
+                                            
+                                            seqComment.erase(0,4);
+                                            
+                                            path.setComment(seqComment);
+                                            
+                                        }
                                         
                                     }
                                     
@@ -683,50 +653,122 @@ public:
                                     
                                 case 'S': {
                                     
-                                    strtok(strdup(newLine.c_str()),"\t"); // process first line
-                                    h = strtok(NULL,"\t");
+                                    arguments = readDelimited(newLine, "\t");
                                     
-                                    seqHeader = h;
+                                    seqHeader = arguments[1];
                                     
-                                    s = strtok(NULL,"\t");
-                                    inSequence = s;
+                                    inSequence = arguments[2];
                                     
-                                    c = strtok(NULL,"\t");
-                                    if (c != NULL) {
+                                    inSequenceTags.clear();
+                                    
+                                    for (unsigned int i = 3; i < arguments.size(); i++) {
                                         
-                                        seqComment = std::string(c);
+                                        tagValues = readDelimited(arguments[i], ":");
                                         
+                                        tag.label[0] = tagValues[0][0];
+                                        tag.label[1] = tagValues[0][1];
+                                        tag.type = tagValues[1][0];
+                                        tag.content = tagValues[2];
+                                    
+                                        inSequenceTags.push_back(tag);
+                                    
                                     }
                                     
-                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inSequenceTags);
                                     
                                     lineN++;
                                     
                                     break;
                                     
                                 }
+                                    
+                                case 'J': {
+                                    
+                                    arguments = readDelimited(newLine, "\t");
+                                    
+                                    gHeader = "gap" + std::to_string(gapN);
+                                    
+                                    gapN++;
+                                    
+                                    uId = inSequences.getuId();
+                                    
+                                    inSequences.insertHash(gHeader, uId);
+                                    
+                                    guId = uId; // since I am still reading segments I need to keep this fixed
+                                    
+                                    inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
+                                    
+                                    seqHeader = std::string(arguments[1]); // first component
+                                    
+                                    sId1Or = arguments[2][0]; // get orientation in the gap
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        uId = inSequences.getuId();
+                                        
+                                        inSequences.insertHash(seqHeader, uId);
+                                    
+                                        sId1 = uId;
+                                        
+                                        inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
+                                        
+                                    }else{
+                                        
+                                        sId1 = got->second;
+                                        
+                                    }
+                                    
+                                    seqHeader = arguments[3]; // second component
+                                    
+                                    sId2Or = arguments[4][0]; // get orientation in the gap
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this segment
+                                        
+                                        uId = inSequences.getuId();
+                                        
+                                        inSequences.insertHash(seqHeader, uId);
+                                    
+                                        sId2 = uId;
+                                        
+                                        inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
+                                        
+                                    }else{
+                                        
+                                        sId2 = got->second;
+                                        
+                                    }
+                                    
+                                    dist = stoi(arguments[5]);
+                                    
+                                    verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
+                                    
+                                    gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
+                                    
+                                    inSequences.addGap(gap);
+                                    
+                                    lineN++;
+                                                 
+                                    break;
+                                    
+                                }
 
                                 case 'L': {
                                     
-                                    delimiter = "\t";
-                                    
-                                    arguments.clear();
-                                    
-                                    while ((pos = newLine.find(delimiter)) != std::string::npos) {
-                                        
-                                        arguments.push_back(newLine.substr(0, pos));
-                                        
-                                        newLine.erase(0, pos + delimiter.length());
-                                    
-                                    }
+                                    arguments = readDelimited(newLine, "\t");
 
                                     uId = inSequences.getuId();
                                     
                                     euId = uId; // since I am still reading segments I need to keep this fixed
                                     
                                     inSequences.uId.next(); // we have touched a feature need to increase the unique feature counter
-                                    
-                                    arguments.push_back(newLine); // last column
                                     
                                     sId1Or = arguments[2][0]; // get sequence orientation in the edge
                                     
@@ -794,38 +836,98 @@ public:
 
                                 case 'P': {
                                     
-                                    strtok(strdup(newLine.c_str()),"\t"); // process first line
+                                    arguments = readDelimited(newLine, "\t");
                                     
-                                    seqHeader = strtok(NULL,"\t");
-
+                                    if (arguments[2].find(";") == std::string::npos) break; // we are not reading edge paths yet
+                                    
+                                    seqHeader = arguments[1];
+                                    
                                     uId = inSequences.getuId();
-                                    inSequences.uId.next();
+                                    
+                                    hash = inSequences.getHash1();
+                                    
+                                    got = hash.find(seqHeader); // get the headers to uIds table to look for the header
+                                    
+                                    if (got == hash.end()) { // this is the first time we see this header
+                                        
+                                        inSequences.insertHash(seqHeader, uId);
+                                        
+                                    }else{
+                                        
+                                        fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", seqHeader.c_str()); exit(1);
+                                        
+                                    }
                                     
                                     path.newPath(uId, seqHeader);
                                     
-                                    s = strtok(NULL,"\t");
+                                    inSequences.uId.next();
                                     
-                                    delimiter = ",";
+                                    components = readDelimited(arguments[2], ";");
                                     
-                                    arguments.clear();
-                                    
-                                    while ((pos = s.find(delimiter)) != std::string::npos) {
+                                    for (auto it = std::begin(components); it != std::end(components); ++it) {
                                         
-                                        arguments.push_back(s.substr(0, pos));
+                                        std::string component;
                                         
-                                        s.erase(0, pos + delimiter.length());
-                                    
-                                    }
-                                    
-                                    arguments.push_back(s); // last column
-                                    
-                                    for (std::string component : arguments) {
+                                        if(it == std::begin(components) && *it == "") { // handle starting/ending gap
+                                                
+                                                component = *(std::next(it, 1));
+                                                
+                                                component.pop_back();
+                                                
+                                                got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                                
+                                                if (got == hash.end()) { // this is the first time we see this segment
+                                                    
+                                                    fprintf(stderr, "Error1: cannot find next component in path (%s). Terminating.\n", component.c_str()); exit(1);
+                                                    
+                                                }else{
+                                                    
+                                                    sId1 = got->second;
+                                                    
+                                                }
+                                                
+                                                std::vector<InGap>* inGaps = inSequences.getInGaps();
+                                                
+                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getsId1() == sId1 && obj.getsId2() == sId1;}); // given a uId, find it in gaps
+                                                
+                                                if (gId != inGaps->end()) {
+                                                    
+                                                    path.add(GAP, gId->getuId(), '0', start, end);
+                                                    
+                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                
+                                                }
+                                            
+                                            ++it;
+                                            
+                                        }
+                                        
+                                        component = *it;
                                         
                                         sId1Or = component.back(); // get sequence orientation
                                         
-                                        if (sId1Or == '+' || sId1Or == '-') { // only segments have orientation
+                                        component.pop_back();
                                         
-                                            component.pop_back();
+                                        if (component.find("(") != std::string::npos && component.find(":") != std::string::npos && component.find(")") != std::string::npos) {
+                                            
+                                            startS = component.substr(component.find("(") + 1, component.find(":") - component.find("(") - 1);
+                                            endS = component.substr(component.find(":") + 1, component.find(")") - component.find(":") - 1);
+                                            
+                                            start = std::stoi(startS);
+                                            end = std::stoi(endS);
+
+                                            component = component.substr(0, component.find("("));
+                                            
+                                        }else{
+                                            
+                                            start = 0;
+                                            end = 0;
+                                            
+                                        }
+                                        
+                                        if (end != 0) {
+                                        
+                                            verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
                                             
                                         }
                                     
@@ -856,29 +958,69 @@ public:
                                     
                                         if (sId != inSegments->end()) {
                                             
-                                            path.add(SEGMENT, sId1, sId1Or);
+                                            path.add(SEGMENT, sId1, sId1Or, start, end);
                                              
-                                        }else{
+                                        }
+                                        
+                                        if (std::next(it, 1) != std::end(components)){
                                             
-                                            auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getuId() == sId1;}); // given a uId, find it in gaps
+                                            component = *(std::next(it, 1));
                                             
-                                            if (gId != inGaps->end()) {
+                                            if (component != "") {
                                             
-                                                path.add(GAP, sId1, '0');
-                                            
+                                                component.pop_back();
+                                                
+                                                got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                                
+                                                if (got == hash.end()) { // this is the first time we see this segment
+                                                    
+                                                    fprintf(stderr, "Error: cannot find next component in path (%s). Terminating.\n", component.c_str()); exit(1);
+                                                    
+                                                }else{
+                                                    
+                                                    sId2 = got->second;
+                                                    
+                                                }
+                                                
+                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1,sId2](InGap& obj) {return obj.getsId1() == sId1 && obj.getsId2() == sId2;}); // given a uId, find it in gaps
+                                                
+                                                if (gId != inGaps->end()) {
+                                                    
+                                                    path.add(GAP, gId->getuId(), '0', start, end);
+                                                    
+                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                
+                                                }
+                                                
+                                            }else{
+                                                
+                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getsId1() == sId1 && obj.getsId2() == sId1;}); // given a uId, find it in gaps
+                                                
+                                                if (gId != inGaps->end()) {
+                                                    
+                                                    path.add(GAP, gId->getuId(), '0', start, end);
+                                                    
+                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                
+                                                }
+                                                
                                             }
                                             
                                         }
                                         
                                     }
-                                    strtok(NULL,"\t");
                                     
-                                    c = strtok(NULL,"\t");
-                                    
-                                    if (c != NULL) {
+                                    for (unsigned int i = 2; i < arguments.size(); i++) {
                                         
-                                        seqComment = std::string(c);
-                                        path.setComment(seqComment);
+                                        if (arguments[i].substr(0,3) == "C:Z") {
+                                            
+                                            seqComment = arguments[i];
+                                            
+                                            seqComment.erase(0,4);
+                                            
+                                            path.setComment(seqComment);
+                                            
+                                        }
                                         
                                     }
                                     
@@ -1400,8 +1542,8 @@ public:
         }
         
     }
-    
-    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL) {
+
+    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
         
         std::vector<std::string> bedIncludeListHeaders;
         std::vector<std::string> bedExcludeListHeaders;
@@ -1414,7 +1556,7 @@ public:
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
             
-            inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
+            inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality, inSequenceTags);
             
         }else if(!bedIncludeList.empty() &&
                   bedExcludeList.empty()) {
