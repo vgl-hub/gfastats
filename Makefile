@@ -9,7 +9,6 @@ TEST_TARGET = gfastats-validate
 RANDOM_FASTA_TARGET = gfastats-generate-random-fasta
 BUILD_PATH = build/bin
 SOURCE_PATH = src
-LIBS = -L./include/zlib
 LIBS += -lz
 
 
