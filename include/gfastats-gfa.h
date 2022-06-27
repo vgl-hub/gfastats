@@ -819,7 +819,7 @@ public:
     }
     
 
-    void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
+    InSegment addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
         
         verbose("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
         
@@ -899,9 +899,7 @@ public:
         
         verbose("Increased total segment length");
         
-        inSegments.push_back(inSegment); // adding segment to segment set
-        
-        verbose("Segment added to segment vector");
+        return inSegment; // adding segment to segment set
         
     }
     
@@ -1038,6 +1036,8 @@ public:
 
                         sEnd = pos - 1;
                         inSegments.push_back(pushbackSegment(&path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+                        
+                        verbose("Segment added to segment vector");
 
                     }
 
