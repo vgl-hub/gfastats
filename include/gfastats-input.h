@@ -1065,6 +1065,8 @@ public:
             exit(1);
 
         }
+        
+        while(inSequences.getInPaths().size() != seqPos) {}
             
         inSequences.joinThreads();
         
