@@ -11,16 +11,17 @@ BUILD_PATH = build/bin
 SOURCE_PATH = src
 
 LIBS += -lz
+LDFLAGS= -pthread
 
 $(TARGET): $(SOURCE_PATH)/$(TARGET).cpp
 	mkdir -p $(BUILD_PATH)
-	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS)
+	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS) $(LDFLAGS)
 	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TEST_TARGET) $(SOURCE_PATH)/$(TEST_TARGET).cpp $(LIBS)
 	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(GENERATE_TARGET) $(SOURCE_PATH)/$(GENERATE_TARGET).cpp $(LIBS)
 
 main:
 	mkdir -p $(BUILD_PATH)
-	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS)
+	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TARGET) $(SOURCE_PATH)/$(TARGET).cpp $(LIBS) $(LDFLAGS)
 
 validate:
 	mkdir -p $(BUILD_PATH)
