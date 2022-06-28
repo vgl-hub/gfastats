@@ -886,14 +886,6 @@ public:
             
         }
         
-        contigLens.push_back(seqSize);
-        
-        verbose("Recorded length of segment");
-        
-        changeTotSegmentLen(seqSize);
-        
-        verbose("Increased total segment length");
-        
         return inSegment; // adding segment to segment set
         
     }
