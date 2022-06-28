@@ -845,10 +845,6 @@ public:
         
         verbose("Recorded length of segment");
         
-        changeTotSegmentLen(seqSize);
-        
-        verbose("Increased total segment length");
-        
         inSegments.push_back(inSegment); // adding segment to segment set
         
         verbose("Segment added to segment vector");
@@ -1125,7 +1121,7 @@ public:
             
         }
                 
-        inSegments.push_back(addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags));
+        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags);
         
     }
     
