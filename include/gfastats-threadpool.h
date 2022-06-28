@@ -6,7 +6,7 @@ class ThreadPool {
 private:
     int maxThreads;
     std::vector<std::thread> threads;
-    std::queue<const T> jobs;
+    std::vector<const T> jobs;
     std::mutex queueMutex;
     std::condition_variable mutexCondition;
     bool done;
@@ -37,7 +37,7 @@ void ThreadPool<T>::threadLoop(int i) {
                 return;
             }
             job = jobs.front();
-            jobs.pop();
+            jobs.pop_back();
         }
         job();
     }
@@ -59,7 +59,7 @@ template<class T>
 void ThreadPool<T>::queueJob(const T& job) {
     {
         std::unique_lock<std::mutex> lock(queueMutex);
-        jobs.push(job);
+        jobs.push_back(job);
     }
     mutexCondition.notify_one();
 }
