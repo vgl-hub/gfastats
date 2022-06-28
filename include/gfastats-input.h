@@ -850,6 +850,7 @@ public:
                                     inSequences.uId.next();
                                     
                                     components = readDelimited(arguments[2], ";");
+                                    std::cout<<components.size();
                                     
                                     for (auto it = std::begin(components); it != std::end(components); ++it) {
                                         
