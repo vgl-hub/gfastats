@@ -15,7 +15,7 @@ class InFile {
     
 public:
     
-    InSequences readFiles(std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
+    void readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
         
@@ -47,6 +47,8 @@ public:
                 
             }
             
+            verbose("Finished reading SAK instructions");
+            
         }
         
         if (!iBedIncludeFileArg.empty() || (isPipe && (pipeType == 'i'))) {
@@ -70,6 +72,8 @@ public:
                 begin = 0, end = 0;
                 
             }
+            
+            verbose("Finished reading BED include list");
             
         }
         
@@ -97,23 +101,28 @@ public:
                 
             }
             
+            verbose("Finished reading BED exclude list");
+            
         }
         
         // stream read variable definition
-        InSequences inSequences;
-        std::string firstLine;
+        std::string firstLine, streamType = "plain/file";
         unsigned char buffer;
         bool stopStream = false, updateStats = false, isGzip = false;
         unsigned int seqPos = 0; // to keep track of the original sequence order
         
         // start streaming
         stream = make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
+        
+        verbose("Created stream object");
 
         stream->read((char*)(&buffer), 1);
 
         if (buffer == 0x1f && (stream->peek() == 0x8b)) { // check if pipe is gzipped
 
             isGzip = true;
+            
+            streamType = "gzip/file";
 
         }
 
@@ -149,12 +158,18 @@ public:
             }else {
 
                 stream = make_unique<std::istream>(std::cin.rdbuf());
+                
+                streamType = "plain/pipe";
 
             }
             
             stream->unget();
 
         }
+        
+        verbose("Detected stream type (" + streamType + ").\nStreaming started.");
+        
+        inSequences.threadPoolInit(4);
         
         if (stream) {
             
@@ -206,8 +221,6 @@ public:
                         }
                         
                     }
-                    
-                    inSequences.joinThreads();
                     
                     break;
                 }
@@ -1053,6 +1066,8 @@ public:
 
         }
         
+        inSequences.joinThreads();
+        
         if (rmGaps_flag) {
          
             inSequences.removeTerminalGaps();
@@ -1389,9 +1404,6 @@ public:
             inSequences.updateStats();
             
         }
-
-        return inSequences;
-        
     }
     
     Sequence includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string inSequenceQuality = "") {
