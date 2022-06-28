@@ -450,6 +450,8 @@ public:
                         
                     }
                     
+                    *stream << "\t*"; // cigar
+                    
                     if (inPath.getComment() != "") {
                     
                     *stream <<"\tCM:Z:"
