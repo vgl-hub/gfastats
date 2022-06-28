@@ -870,18 +870,7 @@ public:
             
             verbose("Increased ACGT counts");
             
-            totA += *A;
-            totC += *C;
-            totG += *G;
-            totT += *T;
-            
-            verbose("Increased total ACGT counts");
-            
             inSegment.setLowerCount(lowerCount);
-            
-            verbose("Increased count of lower bases");
-            
-            totLowerCount += *lowerCount;
 
             verbose("Increased total count of lower bases");
             
@@ -913,9 +902,6 @@ public:
         
         verbose("Processing gap " + *seqHeader+"." + std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
         
-        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-        lck.lock();
-        
         InGap gap;
         
         gap.newGap(uId.get(), (pos - *dist == 0) ? uId.peek() : uId.prev(), (pos - seqLen == 0 && n == -1) ? uId.prev() : uId.peek(), '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
@@ -928,8 +914,6 @@ public:
         
         (*iId)++; // number of gaps in the current scaffold
         uId.next(); // unique numeric identifier
-        
-        lck.unlock();
         
         return gap;
         
@@ -947,9 +931,6 @@ public:
             
         }
         
-        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-        lck.lock();
-        
         InSegment inSegment = addSegment(uId.get(), *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
         
         insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
@@ -961,13 +942,14 @@ public:
         (*iId)++; // number of segments in the current scaffold
         uId.next(); // unique numeric identifier
         
-        lck.unlock();
-        
         return inSegment;
         
     }
     
     void traverseInSequence(Sequence sequence) { // traverse the sequence to split at gaps and measure sequence properties
+        
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        lck.lock();
 
         std::vector<std::pair<unsigned long long int, unsigned long long int>> bedCoords;
         if(hc_flag) {
@@ -987,9 +969,6 @@ public:
 
         InPath path;
         
-        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-        lck.lock();
-        
         phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (sequence.header); // get the headers to uIds table to look for the header
 
         if (got == headersToIds.end()) { // this is the first time we see this path name
@@ -1005,8 +984,6 @@ public:
         path.newPath(uId.get(), sequence.header, "", sequence.seqPos);
 
         uId.next();
-
-        lck.unlock();
         
         if (sequence.comment != "") {
 
@@ -1116,8 +1093,6 @@ public:
             pos++;
 
         }
-        
-        lck.lock();
 
         inPaths.push_back(path);
 

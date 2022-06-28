@@ -31,12 +31,13 @@
 #include <chrono>
 #include <memory>
 
-#include "gfastats-global.h" // global variables
-#include "gfastats-functions.h" // global functions
-
 #include <thread>
 #include <mutex>
 std::mutex mtx;
+
+#include "gfastats-global.h" // global variables
+#include "gfastats-functions.h" // global functions
+
 #include "gfastats-threadpool.h"
 
 #include <parallel_hashmap/phmap.h>
