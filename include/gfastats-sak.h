@@ -142,7 +142,6 @@ public:
 
     bool erase(InSequences& inSequences, Instruction &instruction) { // erases a portion of sequence
         inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].trimSegment(instruction.start1, instruction.end1); // trim segment
-        inSequences.changeTotSegmentLen(instruction.start1-instruction.end1);
         return true;
     }
 

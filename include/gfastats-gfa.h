@@ -750,8 +750,6 @@ private:
     std::vector<unsigned long long int> contigLens;
     std::vector<unsigned long long int> gapLens;
     
-    std::vector<unsigned long long int> segmentLens;
-    
     std::vector<unsigned long long int> scaffNstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> scaffLstars   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned long long int> scaffNGstars  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -1171,7 +1169,7 @@ public:
             
         }
                 
-        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags);
+        inSegments.push_back(addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags));
         
     }
     
@@ -1255,17 +1253,11 @@ public:
         
     }
     
-    void changeTotSegmentLen(unsigned long long int segmentLen) {
+    unsigned long long int getTotSegmentLen() {
         
-        totSegmentLen += segmentLen;
-        
-    }
-    
-    unsigned long long int getTotSegmentLen () {
-        
-        for (std::vector<unsigned long long int>::iterator segmentLen = segmentLens.begin(); segmentLen != segmentLens.end(); segmentLen++) {
+        for (std::vector<InSegment>::iterator inSegment = inSegments.begin(); inSegment != inSegments.end(); inSegment++) {
             
-            totSegmentLen += *segmentLen;
+            totSegmentLen += inSegment->getA() + inSegment->getC() + inSegment->getG() + inSegment->getT();
             
         }
         
@@ -1306,12 +1298,6 @@ public:
     void recordScaffLen(unsigned long long int seqLen) {
         
         scaffLens.push_back(seqLen);
-        
-    }
-
-    void recordSegmentLen(unsigned long long int segLen) {
-        
-        segmentLens.push_back(segLen);
         
     }
     
@@ -2298,10 +2284,6 @@ public:
             
             verbose("Recorded length of sequence: " + std::to_string(inPath.getLen()));
             
-            recordSegmentLen(inPath.getSegmentLen());
-            
-            verbose("Increased total segment length");
-            
             totA += inPath.getA();
             totC += inPath.getC();
             totG += inPath.getG();
@@ -2513,8 +2495,6 @@ public:
             if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
         
             deleted[sIdx] = true;
-            
-            changeTotSegmentLen(-sId->getSegmentLen());
             
         }else{
             
