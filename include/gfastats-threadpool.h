@@ -14,7 +14,7 @@ private:
     void threadLoop(int i);
 
 public:
-    void init(int maxThreads, bool relative=false);
+    void init(int maxThreads);
     void queueJob(const T& job);
     bool empty();
     void join();
@@ -44,9 +44,10 @@ void ThreadPool<T>::threadLoop(int i) {
 }
 
 template<class T>
-void ThreadPool<T>::init(int maxThreads, bool relative) {
+void ThreadPool<T>::init(int maxThreads) {
     
-    if(relative) maxThreads += std::thread::hardware_concurrency();
+    if(maxThreads == 0) maxThreads = std::thread::hardware_concurrency();
+    if(maxThreads == 0) maxThreads = 1;
     threads.resize(maxThreads);
     for(int i=0; i<maxThreads; ++i) {
         threads[i] = std::thread(&ThreadPool::threadLoop, this, i);
