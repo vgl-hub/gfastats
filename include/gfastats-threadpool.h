@@ -14,9 +14,10 @@ private:
     void threadLoop(int i);
 
 public:
-    void Init(int maxThreads, bool relative=false);
+    void init(int maxThreads, bool relative=false);
     void queueJob(const T& job);
-    void Join();
+    bool empty();
+    void join();
 };
 
 template<class T>
@@ -30,7 +31,7 @@ void ThreadPool<T>::threadLoop(int i) {
             verbose("Processing using thread " + std::to_string(i));
             
             mutexCondition.wait(lock, [this] {
-                return !jobs.empty() || !done;
+                return !jobs.empty() || done;
             });
             if (done) {
                 return;
@@ -38,12 +39,12 @@ void ThreadPool<T>::threadLoop(int i) {
             job = jobs.front();
             jobs.pop();
         }
-//        job(T);
+        job();
     }
 }
 
 template<class T>
-void ThreadPool<T>::Init(int maxThreads, bool relative) {
+void ThreadPool<T>::init(int maxThreads, bool relative) {
     
     if(relative) maxThreads += std::thread::hardware_concurrency();
     threads.resize(maxThreads);
@@ -64,7 +65,17 @@ void ThreadPool<T>::queueJob(const T& job) {
 }
 
 template<class T>
-void ThreadPool<T>::Join() {
+bool ThreadPool<T>::empty() {
+    bool empty;
+    {
+        std::unique_lock<std::mutex> lock(queueMutex);
+        empty = jobs.empty();
+    }
+    return empty;
+}
+
+template<class T>
+void ThreadPool<T>::join() {
     {
         std::unique_lock<std::mutex> lock(queueMutex);
         done = true;

@@ -1065,7 +1065,7 @@ public:
             exit(1);
 
         }
-        
+            
         inSequences.joinThreads();
         
         if (rmGaps_flag) {

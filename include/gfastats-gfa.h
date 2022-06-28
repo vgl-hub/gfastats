@@ -731,7 +731,7 @@ class InSequences { //collection of InSegment and inGap objects and their summar
     
 private:
     
-    ThreadPool<std::function<void(InSequences, Sequence)>> threadPool;
+    ThreadPool<std::function<void()>> threadPool;
     
     //gfa variables
     std::vector<InSegment> inSegments;
@@ -802,19 +802,25 @@ public:
 
     void threadPoolInit(int threadN) {
         
-        threadPool.Init(threadN);
+        threadPool.init(threadN);
         
     }
     
-    void startThread(std::function<void(InSequences, Sequence)> job) {
+    void startThread(std::function<void()> job) {
         
         threadPool.queueJob(job);
+        
+    }
+
+    bool emptyQueue() {
+        
+        return threadPool.empty();
         
     }
     
     void joinThreads() {
         
-        threadPool.Join();
+        threadPool.join();
         
     }
     
@@ -1110,10 +1116,14 @@ public:
             pos++;
 
         }
+        
+        lck.lock();
 
         inPaths.push_back(path);
 
         verbose("Added fasta sequence as path");
+        
+        lck.unlock();
 
     }
     
@@ -1206,7 +1216,7 @@ public:
             
             if(verbose_flag) {std::cerr<<"\n";};
             
-            startThread(std::bind(&InSequences::traverseInSequence, &sequence));
+            startThread([=] { return traverseInSequence(sequence); });
             
         }
         
