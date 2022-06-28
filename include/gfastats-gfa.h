@@ -1177,16 +1177,12 @@ public:
     
     void appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
         
-        if (sequence.sequenceQuality.size() == 0) {
-        
-            verbose("Header, comment, sequence, and (optionally) quality read");
+        verbose("Header, comment, sequence, and (optionally) quality read");
             
-            if(verbose_flag) {std::cerr<<"\n";};
+        if(verbose_flag) {std::cerr<<"\n";};
             
-            startThread([=] { return traverseInSequence(sequence); });
-            
-        }
-        
+        startThread([=] { return traverseInSequence(sequence); });
+           
         verbose("Sequence traversed");
         
         if(verbose_flag) {std::cerr<<"\n";};

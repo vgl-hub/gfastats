@@ -108,7 +108,7 @@ public:
         // stream read variable definition
         std::string firstLine, streamType = "plain/file";
         unsigned char buffer;
-        bool stopStream = false, updateStats = false, isGzip = false;
+        bool stopStream = false, isGzip = false;
         unsigned int seqPos = 0; // to keep track of the original sequence order
         
         // start streaming
@@ -169,7 +169,7 @@ public:
         
         verbose("Detected stream type (" + streamType + ").\nStreaming started.");
         
-        inSequences.threadPoolInit(1);
+        inSequences.threadPoolInit(4);
         
         if (stream) {
             
@@ -252,8 +252,11 @@ public:
                         Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList, inSequenceQuality);
                         
                         if (sequence.header != "") {
+                            
+                            sequence.seqPos = seqPos; // remember the order
                         
                             inSequences.appendSequence(sequence);
+                            seqPos++;
                             
                         }
                         
@@ -645,6 +648,7 @@ public:
                                     }
                                     
                                     inSequences.addPath(path);
+                                    seqPos++;
                                     
                                     lineN++;
                                     
@@ -1038,6 +1042,7 @@ public:
                                     }
                                     
                                     inSequences.addPath(path);
+                                    seqPos++;
                                     
                                     lineN++;
                                     
@@ -1098,7 +1103,46 @@ public:
         
         }
         
-        inSequences.updateStats();
+        if (sortType == "ascending") {
+            
+            inSequences.sortPathsByNameAscending();
+            
+        }else if (sortType == "descending") {
+            
+            inSequences.sortPathsByNameDescending();
+            
+        }else if (sortType == "largest") {
+            
+            inSequences.sortPathsBySize(0);
+
+        }else if (sortType == "smallest") {
+            
+            inSequences.sortPathsBySize(1);
+            
+        }else if (sortType != "none" && ifFileExists(sortType.c_str())){
+                
+            stream = make_unique<std::ifstream>(std::ifstream(sortType));
+            
+            std::string header;
+            std::vector<std::string> headerList;
+            
+            while (getline(*stream, line)) { // read the file to vector
+                
+                std::istringstream iss(line);
+                iss >> header;
+                
+                headerList.push_back(header);
+                
+            }
+            
+            inSequences.sortPathsByList(headerList);
+            
+        }else{
+            
+            inSequences.sortPathsByOriginal();
+            
+            
+        }
 
         if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
             
@@ -1356,56 +1400,10 @@ public:
                 
             }
             
-            updateStats = true;
-            
         }
             
-        if (sortType == "ascending") {
-            
-            inSequences.sortPathsByNameAscending();
-            
-        }else if (sortType == "descending") {
-            
-            inSequences.sortPathsByNameDescending();
-            
-        }else if (sortType == "largest") {
-            
-            inSequences.sortPathsBySize(0);
-
-        }else if (sortType == "smallest") {
-            
-            inSequences.sortPathsBySize(1);
-            
-        }else if (sortType != "none" && ifFileExists(sortType.c_str())){
-                
-            stream = make_unique<std::ifstream>(std::ifstream(sortType));
-            
-            std::string header;
-            std::vector<std::string> headerList;
-            
-            while (getline(*stream, line)) { // read the file to vector
-                
-                std::istringstream iss(line);
-                iss >> header;
-                
-                headerList.push_back(header);
-                
-            }
-            
-            inSequences.sortPathsByList(headerList);
-            
-        }else{
-            
-            inSequences.sortPathsByOriginal();
-            
-            
-        }
+        inSequences.updateStats();
         
-        if (updateStats) {
-            
-            inSequences.updateStats();
-            
-        }
     }
     
     Sequence includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string inSequenceQuality = "") {
