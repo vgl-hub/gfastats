@@ -1,12 +1,12 @@
 testFiles/random1.gfa2 -o fasta
 embedded
 >Header1
-
+CGacT
 >Header2
-N
+CGANT
 >Header3
-NNN
+TGANATNCTN
 >Header4
-NNN
+NNNTTCCTcgCACtC
 >Header5
-NNN
+AACTCGATCACGNNN

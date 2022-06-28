@@ -29,7 +29,7 @@ Base composition (A:C:G:T): 4:10:5:8
 GC content %: 55.56
 # soft-masked bases: 5
 # segments: 8
-Total segment length: 27
-Average segment length: 3.38
+Total segment length: 40
+Average segment length: 5.00
 # gaps: 9
 # paths: 2
