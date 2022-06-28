@@ -851,7 +851,7 @@ public:
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
-                                    if (arguments[2].find(";") == std::string::npos) break; // we are not reading edge paths yet
+                                    if (!(arguments[2].find(",") == std::string::npos)) break; // we are not reading edge paths yet
                                     
                                     seqHeader = arguments[1];
                                     
