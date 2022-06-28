@@ -29,5 +29,6 @@ static int rmGaps_flag;
 static int discoverPaths_flag;
 static int hc_flag;
 static int hc_cutoff;
+static int maxThreads = 0;
 
 #endif /* GFASTATS_GLOBAL_H */

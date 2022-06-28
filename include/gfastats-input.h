@@ -169,7 +169,7 @@ public:
         
         verbose("Detected stream type (" + streamType + ").\nStreaming started.");
         
-        inSequences.threadPoolInit(4);
+        inSequences.threadPoolInit(maxThreads);
         
         if (stream) {
             

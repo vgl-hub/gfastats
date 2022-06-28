@@ -43,6 +43,8 @@ int main(int argc, char **argv) {
     static struct option long_options[] = { // struct mapping long options
         {"input-sequence", required_argument, 0, 'f'},
         
+        {"threads", required_argument, 0, 'j'},
+        
         {"agp-to-path", required_argument, 0, 'a'}, // agp to path conversion
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
         {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
@@ -78,7 +80,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:a:b:e:f:i:k:o:s:tvh",
+        c = getopt_long(argc, argv, "-:j:a:b:e:f:i:k:o:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) { // if pipe wasn't assigned already
@@ -293,6 +295,9 @@ int main(int argc, char **argv) {
                     
                 stats_flag = 1;
                 break;
+                
+            case 'j': // max threads
+                maxThreads = atoi(optarg);
                 
             case 'o': // handle output (file or stdout)
                 outSeq = optarg;
