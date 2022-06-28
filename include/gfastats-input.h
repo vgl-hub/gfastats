@@ -825,7 +825,7 @@ public:
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
-                                    if (arguments[2].find(";") == std::string::npos) break; // we are not reading edge paths yet
+                                    if (arguments[2].find(",") == std::string::npos) break; // we are not reading edge paths yet
                                     
                                     seqHeader = arguments[1];
                                     
@@ -850,7 +850,6 @@ public:
                                     inSequences.uId.next();
                                     
                                     components = readDelimited(arguments[2], ";");
-                                    std::cout<<components.size();
                                     
                                     for (auto it = std::begin(components); it != std::end(components); ++it) {
                                         
