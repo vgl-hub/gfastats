@@ -1125,7 +1125,7 @@ public:
             
         }
                 
-        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags);
+        inSegments.push_back(addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags));
         
     }
     
@@ -1209,14 +1209,14 @@ public:
         
     }
     
-    void changeTotSegmentLen(unsigned long long int segmentLen) {
-        
-        totSegmentLen += segmentLen;
-        
-    }
-    
     unsigned long long int getTotSegmentLen() {
         
+        for (std::vector<InSegment>::iterator inSegment = inSegments.begin(); inSegment != inSegments.end(); inSegment++) {
+            
+            totSegmentLen += inSegment->getA() + inSegment->getC() + inSegment->getG() + inSegment->getT();
+            
+        }
+
         return totSegmentLen;
         
     }
@@ -2472,8 +2472,6 @@ public:
             if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
         
             deleted[sIdx] = true;
-            
-            changeTotSegmentLen(-sId->getSegmentLen());
             
         }else{
             
