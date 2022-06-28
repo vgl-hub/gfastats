@@ -11,7 +11,6 @@ BUILD_PATH = build/bin
 SOURCE_PATH = src
 
 LIBS += -lz
-LDFLAGS= -pthread
 
 $(TARGET): $(SOURCE_PATH)/$(TARGET).cpp
 	mkdir -p $(BUILD_PATH)
