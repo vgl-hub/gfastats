@@ -34,6 +34,7 @@
 #include <thread>
 #include <mutex>
 std::mutex mtx;
+#include <condition_variable>
 
 #include "gfastats-global.h" // global variables
 #include "gfastats-functions.h" // global functions

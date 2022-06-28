@@ -1,7 +1,7 @@
 CC = g++
 INCLUDE_DIR = -I./include
 
-CFLAGS += -g -Wall -std=gnu++11 -O3 $(INCLUDE_DIR)
+CFLAGS = -g -Wall -std=gnu++11 -O3 $(INCLUDE_DIR)
 
 TARGET = gfastats
 GENERATE_TARGET = gfastats-generate-tests
