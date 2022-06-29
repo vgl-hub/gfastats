@@ -1072,10 +1072,10 @@ public:
 
         }
         
+        while(inSequences.getInPaths().size() != seqPos) {}
+        
         lg.verbose("test");
         exit(1);
-        
-        while(inSequences.getInPaths().size() != seqPos) {}
             
         inSequences.joinThreads();
         
