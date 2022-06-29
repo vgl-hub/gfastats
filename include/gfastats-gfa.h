@@ -1187,9 +1187,6 @@ public:
         if(verbose_flag) {std::cerr<<"\n";};
             
         startThread([=]{ return traverseInSequence(sequence); });
-
-        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-        lck.lock();
         
         for (auto it = logs.begin(); it != logs.end(); it++) {
          
@@ -1198,8 +1195,6 @@ public:
             if(verbose_flag) {std::cerr<<"\n";};
             
         }
-        
-        lck.unlock();
         
     }
     

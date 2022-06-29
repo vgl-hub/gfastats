@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:j:a:b:e:f:i:k:o:s:tvh",
+        c = getopt_long(argc, argv, "-:a:b:e:f:i:j:k:o:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) { // if pipe wasn't assigned already
@@ -280,6 +280,11 @@ int main(int argc, char **argv) {
                 stats_flag = 1;
                 break;
                 
+            case 'j': // max threads
+                maxThreads = atoi(optarg);
+                stats_flag = 1;
+                break;
+                
             case 'k': // the swiss army knife
                 
                 if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
@@ -294,10 +299,6 @@ int main(int argc, char **argv) {
                 }
                     
                 stats_flag = 1;
-                break;
-                
-            case 'j': // max threads
-                maxThreads = atoi(optarg);
                 break;
                 
             case 'o': // handle output (file or stdout)
