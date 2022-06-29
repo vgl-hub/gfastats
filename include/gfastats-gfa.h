@@ -809,9 +809,9 @@ public:
         
     }
 
-    bool emptyQueue() {
+    bool threadBusy() {
         
-        return threadPool.empty();
+        return threadPool.busy();
         
     }
     

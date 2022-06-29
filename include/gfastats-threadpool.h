@@ -16,7 +16,7 @@ private:
 public:
     void init(int maxThreads);
     void queueJob(const T& job);
-    bool empty();
+    bool busy();
     void join();
 };
 
@@ -67,7 +67,7 @@ void ThreadPool<T>::queueJob(const T& job) {
 }
 
 template<class T>
-bool ThreadPool<T>::empty() {
+bool ThreadPool<T>::busy() {
     bool empty;
     {
         std::unique_lock<std::mutex> lock(queueMutex);

@@ -1072,10 +1072,7 @@ public:
 
         }
         
-//        while(inSequences.getInPaths().size() != seqPos) {std::cerr<<inSequences.getInPaths().size()<<" "<<seqPos<<"\n";}
-//        
-//        
-//        exit(1);
+        inSequences.threadBusy();
             
         inSequences.joinThreads();
         
