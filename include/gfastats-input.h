@@ -1072,6 +1072,9 @@ public:
 
         }
         
+        lg.verbose("test");
+        exit(1);
+        
         while(inSequences.getInPaths().size() != seqPos) {}
             
         inSequences.joinThreads();
@@ -1087,9 +1090,6 @@ public:
             inSequences.discoverPaths();
             
         }
-        
-        lg.verbose("test");
-        exit(1);
         
         if (!instructions.empty()) {
             
