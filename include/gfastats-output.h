@@ -374,16 +374,6 @@ public:
                 
                 for (InGap inGap : inSequences.getGaps()) {
                     
-                    if (inGap.getgHeader() == "") {
-                        
-                        gHeader = inGap.getuId();
-                        
-                    }else{
-                        
-                        gHeader = inGap.getgHeader();
-                        
-                    }
-                    
                     *stream <<"J\t" // line type
                             <<idsToHeaders[inGap.getsId1()]<<"\t"<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
                             <<idsToHeaders[inGap.getsId2()]<<"\t"<<inGap.getsId2Or()<<"\t"; // sUid2:sid2:ref
