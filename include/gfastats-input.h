@@ -1088,6 +1088,9 @@ public:
             
         }
         
+        lg.verbose("test");
+        exit(1);
+        
         if (!instructions.empty()) {
             
             lg.verbose("\nStarted instruction execution");
