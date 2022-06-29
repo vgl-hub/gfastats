@@ -260,7 +260,7 @@ public:
 
         (this->*(string_to_funcs.at(instruction.action).read))(instruction, arguments);
         
-        verbose("Instruction read");
+        lg.verbose("Instruction read");
         
         return instruction;
         

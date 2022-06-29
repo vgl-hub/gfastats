@@ -28,8 +28,6 @@ void ThreadPool<T>::threadLoop(int i) {
         {
             std::unique_lock<std::mutex> lock(queueMutex);
             
-            verbose("Processing using thread " + std::to_string(i));
-            
             mutexCondition.wait(lock, [this] {
                 return !jobs.empty() || done;
             });
@@ -38,8 +36,11 @@ void ThreadPool<T>::threadLoop(int i) {
             }
             job = jobs.front();
             jobs.pop();
+            
         }
+        
         job();
+
     }
 }
 

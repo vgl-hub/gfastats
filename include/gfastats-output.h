@@ -997,7 +997,7 @@ public:
         
             inSequences.buildEdgeGraph(inSequences.getEdges());
 
-            verbose("Graph DFS");
+            lg.verbose("Graph DFS");
             
             std::vector<InSegment>* inSegments = inSequences.getInSegments();
             std::vector<unsigned int> componentLengths;

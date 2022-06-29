@@ -47,7 +47,7 @@ public:
                 
             }
             
-            verbose("Finished reading SAK instructions");
+            lg.verbose("Finished reading SAK instructions");
             
         }
         
@@ -73,7 +73,7 @@ public:
                 
             }
             
-            verbose("Finished reading BED include list");
+            lg.verbose("Finished reading BED include list");
             
         }
         
@@ -101,7 +101,7 @@ public:
                 
             }
             
-            verbose("Finished reading BED exclude list");
+            lg.verbose("Finished reading BED exclude list");
             
         }
         
@@ -114,7 +114,7 @@ public:
         // start streaming
         stream = make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
         
-        verbose("Created stream object");
+        lg.verbose("Created stream object");
 
         stream->read((char*)(&buffer), 1);
 
@@ -167,7 +167,7 @@ public:
 
         }
         
-        verbose("Detected stream type (" + streamType + ").\nStreaming started.");
+        lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
         
         inSequences.threadPoolInit(maxThreads);
         
@@ -182,7 +182,7 @@ public:
                     while (!stream->eof()) {
                         
                         if(bedIncludeList.size() - bedExcludeList.size() != 0 && bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
-                            verbose("Found all sequences, stop streaming input");
+                            lg.verbose("Found all sequences, stop streaming input");
                             break;
                         
                         }
@@ -206,7 +206,7 @@ public:
                         
                         inSequence.erase(std::remove(inSequence.begin(), inSequence.end(), '\n'), inSequence.end());
                         
-                        verbose("Individual fasta sequence read");
+                        lg.verbose("Individual fasta sequence read");
                         
                         Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList);
                         
@@ -300,36 +300,36 @@ public:
                         if (arguments[2] != "") {
                             
                             version = arguments[2];
-                            verbose("GFA version: " + version);
+                            lg.verbose("GFA version: " + version);
                             
                         }else{
                             
-                            verbose("Failed to parse GFA version. Please check your header.");
+                            lg.verbose("Failed to parse GFA version. Please check your header.");
                             
                         }
                     
                     }else{
                             
-                        verbose("Cannot recognize GFA version from first line. Trying to detect from content.");
+                        lg.verbose("Cannot recognize GFA version from first line. Trying to detect from content.");
                         
                         if (arguments[0] == "S") {
                             
                             if (isInt(arguments[2]) || (arguments[2] == "*" && arguments[3].find(":") == std::string::npos)) {
                                 
                                 version = '2';
-                                verbose("Proposed GFA version: " + version);
+                                lg.verbose("Proposed GFA version: " + version);
                                 
                             }else{
                                 
                                 version = '1';
-                                verbose("Proposed GFA version: " + version);
+                                lg.verbose("Proposed GFA version: " + version);
                                 
                             }
                             
                         }else if (arguments[0] == "G" || arguments[0] == "O") {
                             
                             version = '2';
-                            verbose("Proposed GFA version: " + version);
+                            lg.verbose("Proposed GFA version: " + version);
                             
                         }
                         
@@ -441,7 +441,7 @@ public:
                                     
                                     dist = stoi(arguments[4]);
                                     
-                                    verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
+                                    lg.verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
                                     
                                     gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
                                     
@@ -586,7 +586,7 @@ public:
                                         
                                         if (end != 0) {
                                         
-                                            verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
+                                            lg.verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
                                             
                                         }
                                     
@@ -765,7 +765,7 @@ public:
                                     
                                     dist = stoi(arguments[5]);
                                     
-                                    verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
+                                    lg.verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
                                     
                                     gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
                                     
@@ -911,7 +911,7 @@ public:
                                                     
                                                     path.add(GAP, gId->getuId(), '0', start, end);
                                                     
-                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                    lg.verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
                                                 
                                                 }
                                             
@@ -944,7 +944,7 @@ public:
                                         
                                         if (end != 0) {
                                         
-                                            verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
+                                            lg.verbose("Adding only coordinates " + std::to_string(start) + ":" + std::to_string(end) + "(" + component + ")");
                                             
                                         }
                                     
@@ -1005,7 +1005,7 @@ public:
                                                     
                                                     path.add(GAP, gId->getuId(), '0', start, end);
                                                     
-                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                    lg.verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
                                                 
                                                 }
                                                 
@@ -1017,7 +1017,7 @@ public:
                                                     
                                                     path.add(GAP, gId->getuId(), '0', start, end);
                                                     
-                                                    verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
+                                                    lg.verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
                                                 
                                                 }
                                                 
@@ -1062,7 +1062,8 @@ public:
                 
             }
             
-            verbose("End of file");
+            lg.verbose("End of file");
+            if(verbose_flag) {std::cerr<<"\n";};
                 
         }else{
 
@@ -1089,7 +1090,7 @@ public:
         
         if (!instructions.empty()) {
             
-            verbose("\nStarted instruction execution");
+            lg.verbose("\nStarted instruction execution");
         
             SAK sak; // create a new swiss army knife
             
@@ -1097,7 +1098,7 @@ public:
                 
                 sak.executeInstruction(inSequences, instruction);
                 
-                verbose(instruction.action + " instruction executed");
+                lg.verbose(instruction.action + " instruction executed");
                 
             }
         
@@ -1416,7 +1417,7 @@ public:
         bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
         bool outSeq = false;
         
-        verbose("Processing sequence: " + seqHeader);
+        lg.verbose("Processing sequence: " + seqHeader);
         
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
@@ -1546,7 +1547,7 @@ public:
         
         }else {
             
-            verbose("Sequence entirely removed as a result of BED filter: " + seqHeader);
+            lg.verbose("Sequence entirely removed as a result of BED filter: " + seqHeader);
             
             Sequence sequence {""};
             return sequence;
@@ -1575,7 +1576,7 @@ public:
             
             if(inSequences->getInSegments()->size() == bedIncludeList.size()) { // check if we retrieved all we needed
                 
-                verbose("Found all sequences, stop streaming input");
+                lg.verbose("Found all sequences, stop streaming input");
                 
                 return true;
                 
@@ -1639,7 +1640,7 @@ public:
             
             }else {
                 
-                verbose("Scaffold entirely removed as a result of include: " + *seqHeader);
+                lg.verbose("Scaffold entirely removed as a result of include: " + *seqHeader);
                 
             }
                 
@@ -1693,7 +1694,7 @@ public:
             
             }else {
                 
-                verbose("Scaffold entirely removed as a result of exclude: " + *seqHeader);
+                lg.verbose("Scaffold entirely removed as a result of exclude: " + *seqHeader);
                 
             }
                     
@@ -1705,7 +1706,7 @@ public:
                     
                     if(inSequences->getInSegments()->size() == bedIncludeList.size()) { // check if we retrieved all we needed
                         
-                        verbose("Found all sequences, stop streaming input");
+                        lg.verbose("Found all sequences, stop streaming input");
                         
                         return true;
                         

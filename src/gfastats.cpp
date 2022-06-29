@@ -298,6 +298,7 @@ int main(int argc, char **argv) {
                 
             case 'j': // max threads
                 maxThreads = atoi(optarg);
+                break;
                 
             case 'o': // handle output (file or stdout)
                 outSeq = optarg;
@@ -373,15 +374,16 @@ int main(int argc, char **argv) {
     
     InFile inFile; // initialize sequence input file object
     
-    verbose("File object generated");
+    lg.verbose("File object generated");
     
     InSequences inSequences; // initialize sequence collection object
     
-    verbose("Sequence object generated");
+    lg.verbose("Sequence object generated");
     
     inFile.readFiles(inSequences, iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
     
-    verbose("Finished reading sequences from file to sequence object");
+    lg.verbose("Finished reading sequences from file to sequence object");
+    if(verbose_flag) {std::cerr<<"\n";};
     
     InSegment inSegment; // initialize a single input sequence object for output purposes
     
@@ -431,7 +433,7 @@ int main(int argc, char **argv) {
         
     }
     
-    verbose("Generated output");
+    lg.verbose("Generated output");
     
     exit(EXIT_SUCCESS);
     
