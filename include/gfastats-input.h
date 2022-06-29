@@ -1072,7 +1072,7 @@ public:
 
         }
         
-        while(inSequences.getInPaths().size() != seqPos) {lg.verbose(inSequences.getInPaths().size() + " " + seqPos);}
+        while(inSequences.getInPaths().size() != seqPos) {std::cerr<<inSequences.getInPaths().size()<<" "<<seqPos<<"\n");}
         
         
         exit(1);
