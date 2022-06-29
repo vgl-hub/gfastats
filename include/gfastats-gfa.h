@@ -2702,7 +2702,7 @@ public:
         
         InGap gap;
         
-        gap.newGap(gUId, component1.id, component2.id, '+', '+', dist, gHeader); // define the new gap
+        gap.newGap(gUId, component1.id, component2.id, pId1Or, pId2Or, dist, gHeader); // define the new gap
         
         addGap(gap); // introduce the new gap
         
