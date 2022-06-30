@@ -68,9 +68,8 @@ void ThreadPool<T>::queueJob(const T& job) {
 
 template<class T>
 bool ThreadPool<T>::busy() {
-    bool empty;
-    {
-        std::unique_lock<std::mutex> lock(queueMutex);
+    bool empty = false;
+    while (!empty) {
         empty = jobs.empty();
     }
     return empty;
