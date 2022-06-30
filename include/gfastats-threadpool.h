@@ -16,7 +16,8 @@ private:
 public:
     void init(int maxThreads);
     void queueJob(const T& job);
-    void busy();
+    bool empty();
+    unsigned int queueSize();
     void join();
 };
 
@@ -67,13 +68,10 @@ void ThreadPool<T>::queueJob(const T& job) {
 }
 
 template<class T>
-void ThreadPool<T>::busy() {
-    bool empty = false;
-    while (!empty) {
-        empty = jobs.empty();
-        std::cout<<jobs.size()<<std::endl;
-    }
-}
+bool ThreadPool<T>::empty() {return jobs.empty();}
+
+template<class T>
+unsigned int ThreadPool<T>::queueSize() {return jobs.size();}
 
 template<class T>
 void ThreadPool<T>::join() {

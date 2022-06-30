@@ -78,9 +78,11 @@ struct Log {
     std::string log;
     unsigned int jobId;
     
-    void verbose(std::string msg) { // verbose decorated output
+    void verbose(std::string msg, bool overwrite = false) { // verbose decorated output
         
         if(verbose_flag) {
+            
+            if (overwrite) {std::cerr << "\r" << msg; return;};
             
             std::cerr << msg << " (done in " << std::to_string(elapsedTime()) << " s).\n"; // if you don't cast double to string it will mess up all file output!
             

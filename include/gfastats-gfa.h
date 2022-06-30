@@ -803,19 +803,25 @@ public:
         
     }
     
-    void startThread(std::function<void()> job) {
+    void threadStart(std::function<void()> job) {
         
         threadPool.queueJob(job);
         
     }
 
-    void threadBusy() {
+    bool threadEmpty() {
         
-        threadPool.busy();
+        return threadPool.empty();
         
     }
     
-    void joinThreads() {
+    unsigned int threadQueueSize() {
+        
+        return threadPool.queueSize();
+        
+    }
+    
+    void threadsJoin() {
         
         threadPool.join();
         
@@ -1186,7 +1192,7 @@ public:
             
         if(verbose_flag) {std::cerr<<"\n";};
             
-        startThread([=]{ return traverseInSequence(sequence); });
+        threadStart([=]{ return traverseInSequence(sequence); });
         
 //        for (auto it = logs.begin(); it != logs.end(); it++) {
 //         

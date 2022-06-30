@@ -1072,9 +1072,15 @@ public:
 
         }
         
-        inSequences.threadBusy();
+        while (true) {
             
-        inSequences.joinThreads();
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            lg.verbose("Remaining jobs:" + std::to_string(inSequences.threadQueueSize()), true);
+            if (inSequences.threadEmpty()) break;
+            
+        }
+            
+        inSequences.threadsJoin();
         
         if (rmGaps_flag) {
          
