@@ -909,12 +909,12 @@ public:
         
         path->add(GAP, uId.get(), '0');
         
+        (*iId)++; // number of gaps in the current scaffold
+        uId.next(); // unique numeric identifier
+        
         lck.unlock();
         
         *dist=0;
-        
-        (*iId)++; // number of gaps in the current scaffold
-        uId.next(); // unique numeric identifier
         
         return gap;
         
@@ -942,12 +942,12 @@ public:
         
         path->add(SEGMENT, uId.get(), '+');
         
+        (*iId)++; // number of segments in the current scaffold
+        uId.next(); // unique numeric identifier
+        
         lck.unlock();
         
         *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
-        
-        (*iId)++; // number of segments in the current scaffold
-        uId.next(); // unique numeric identifier
         
         return inSegment;
         
