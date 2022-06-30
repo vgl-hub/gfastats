@@ -969,7 +969,7 @@ public:
                                                     
                                                 }
                                                 
-                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1,sId2](InGap& obj) {return (obj.getsId1() == sId1 && obj.getsId2() == sId2) || (obj.getsId2() == sId1 && obj.getsId2() == sId1);}); // given a uId, find it in gaps
+                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1,sId2](InGap& obj) {return (obj.getsId1() == sId1 && obj.getsId2() == sId2) || (obj.getsId1() == sId2 && obj.getsId2() == sId1);}); // given a uId, find it in gaps
                                                 
                                                 if (gId != inGaps->end()) {
                                                     
