@@ -1074,13 +1074,11 @@ public:
         
         while (true) {
             
-//            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
             lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
             if (inSequences.threadEmpty()) break;
             
         }
-        
-        if(verbose_flag) {std::cerr<<"\n";};
             
         inSequences.threadsJoin();
         
@@ -1557,7 +1555,7 @@ public:
             
             lg.verbose("Sequence entirely removed as a result of BED filter: " + seqHeader);
             
-            Sequence sequence {""};
+            Sequence sequence;
             return sequence;
             
         }
