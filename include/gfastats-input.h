@@ -973,7 +973,7 @@ public:
                                                 
                                                 if (gId != inGaps->end()) {
                                                     
-                                                    std::cout<<getgHeader<<" "<<gId->getDist()<<std::endl;
+                                                    std::cout<<gId->getgHeader()<<" "<<gId->getDist()<<std::endl;
                                                     
                                                     path.add(GAP, gId->getuId(), '0', start, end);
                                                     
