@@ -1074,11 +1074,13 @@ public:
         
         while (true) {
             
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-            lg.verbose("Remaining jobs:" + std::to_string(inSequences.threadQueueSize()), true);
+//            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
             if (inSequences.threadEmpty()) break;
             
         }
+        
+        if(verbose_flag) {std::cerr<<"\n";};
             
         inSequences.threadsJoin();
         

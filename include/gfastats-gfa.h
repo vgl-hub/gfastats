@@ -1194,13 +1194,13 @@ public:
             
         threadStart([=]{ return traverseInSequence(sequence); });
         
-//        for (auto it = logs.begin(); it != logs.end(); it++) {
-//         
-//            it->print();
-//            logs.erase(it--);
-//            if(verbose_flag) {std::cerr<<"\n";};
-//            
-//        }
+        for (auto it = logs.begin(); it != logs.end(); it++) {
+         
+            it->print();
+            logs.erase(it--);
+            if(verbose_flag) {std::cerr<<"\n";};
+            
+        }
         
     }
     
