@@ -973,6 +973,8 @@ public:
                                                 
                                                 if (gId != inGaps->end()) {
                                                     
+                                                    std::cout<<getgHeader<<" "<<gId->getDist()<<std::endl;
+                                                    
                                                     path.add(GAP, gId->getuId(), '0', start, end);
                                                     
                                                     verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
@@ -981,7 +983,7 @@ public:
                                                 
                                             }else{
                                                 
-                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getsId1() == sId1 && obj.getsId2() == sId1;}); // given a uId, find it in gaps
+                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getsId1() == sId1 && obj.getsId2() == sId1;}); // terminal gap
                                                 
                                                 if (gId != inGaps->end()) {
                                                     
