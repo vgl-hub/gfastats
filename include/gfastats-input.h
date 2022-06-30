@@ -973,8 +973,6 @@ public:
                                                 
                                                 if (gId != inGaps->end()) {
                                                     
-                                                    std::cout<<gId->getgHeader()<<" "<<gId->getDist()<<std::endl;
-                                                    
                                                     path.add(GAP, gId->getuId(), '0', start, end);
                                                     
                                                     verbose("Adding gap to path with id:" + std::to_string(gId->getuId()));
