@@ -9,7 +9,7 @@ private:
     std::queue<T> jobs;
     std::mutex queueMutex;
     std::condition_variable mutexCondition;
-    bool done;
+    bool done = false;
 
     void threadLoop(int i);
 
