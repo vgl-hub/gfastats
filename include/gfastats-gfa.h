@@ -809,9 +809,9 @@ public:
         
     }
 
-    bool threadBusy() {
+    void threadBusy() {
         
-        return threadPool.busy();
+        threadPool.busy();
         
     }
     
