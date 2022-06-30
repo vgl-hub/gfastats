@@ -895,6 +895,10 @@ public:
     
     InGap pushbackGap(Log* threadLog, InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
         
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        
+        lck.lock();
+        
         threadLog->add("Processing gap " + *seqHeader+"." + std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
         
         InGap gap;
@@ -904,6 +908,8 @@ public:
         insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
         
         path->add(GAP, uId.get(), '0');
+        
+        lck.unlock();
         
         *dist=0;
         
@@ -915,7 +921,11 @@ public:
     }
     
     InSegment pushbackSegment(Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
-         
+        
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        
+        lck.lock();
+        
         std::string sequenceSubSeq, sequenceQualitySubSeq;
         
         sequenceSubSeq = sequence->substr(sStart, sEnd + 1 - sStart);
@@ -932,6 +942,8 @@ public:
         
         path->add(SEGMENT, uId.get(), '+');
         
+        lck.unlock();
+        
         *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
         
         (*iId)++; // number of segments in the current scaffold
@@ -943,9 +955,6 @@ public:
     
     void traverseInSequence(Sequence sequence) { // traverse the sequence to split at gaps and measure sequence properties
         
-        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-        lck.lock();
-        
         Log threadLog;
         
         threadLog.setId(sequence.seqPos);
@@ -954,7 +963,9 @@ public:
         if(hc_flag) {
             homopolymerCompress(&sequence.sequence, bedCoords, hc_cutoff);
         }
-
+        
+        std::vector<InSegment> newSegments;
+        std::vector<InGap> newGaps;
         unsigned long long int pos = 0, // current position in sequence
         hc_index=0, // used with homopolymer compression
         A = 0, C = 0, G = 0, T = 0,
@@ -965,6 +976,10 @@ public:
         sStart = 0, sEnd = 0; // segment start and end
         char sign = '+';
         bool wasN = false;
+        
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        
+        lck.lock();
 
         InPath path;
         
@@ -985,6 +1000,8 @@ public:
         threadLog.add("Processed sequence: " + sequence.header + " (uId: " + std::to_string(uId.get()) + ")");
 
         uId.next();
+        
+        lck.unlock();
         
         if (sequence.comment != "") {
 
@@ -1019,9 +1036,7 @@ public:
                     if (!wasN && pos>0) { // gap start and gap not at the start of the sequence
 
                         sEnd = pos - 1;
-                        inSegments.push_back(pushbackSegment(&threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
-                        
-                        threadLog.add("Segment added to segment vector");
+                        newSegments.push_back(pushbackSegment(&threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
 
                     }
 
@@ -1029,7 +1044,7 @@ public:
 
                         sign = '-';
 
-                        inGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, pos, &dist, sign, seqLen, -1));
+                        newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, pos, &dist, sign, seqLen, -1));
 
                     }
 
@@ -1074,14 +1089,14 @@ public:
                     if (wasN) { // internal gap end
 
                         sStart = pos;
-                        inGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, pos, &dist, sign, seqLen, 1));
+                        newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, pos, &dist, sign, seqLen, 1));
 
                     }
 
                     if (pos == seqLen) {
 
                         sEnd = pos;
-                        inSegments.push_back(pushbackSegment(&threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+                        newSegments.push_back(pushbackSegment(&threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
 
                     }
 
@@ -1094,7 +1109,17 @@ public:
             pos++;
 
         }
+        
+        lck.lock();
 
+        inGaps.insert(std::end(inGaps), std::begin(newGaps), std::end(newGaps));
+        
+        threadLog.add("Segments added to segment vector");
+        
+        inSegments.insert(std::end(inSegments), std::begin(newSegments), std::end(newSegments));
+        
+        threadLog.add("Gaps added to segment vector");
+        
         inPaths.push_back(path);
 
         threadLog.add("Added fasta sequence as path");
