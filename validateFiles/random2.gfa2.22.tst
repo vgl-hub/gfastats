@@ -13,3 +13,6 @@ J	id1	+	id2	+	3
 J	id2	+	id3	-	2
 J	id7	+	id7	+	5
 P	id12	id1+;id2(1:3)+;id3-	*
+P	path1	id1+	*
+P	path2	id2+	*
+P	path3	id3+	*
