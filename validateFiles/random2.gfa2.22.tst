@@ -6,8 +6,10 @@ S	id3	CTTGATT
 S	id1	ACCTT
 S	id4	CATGACTC
 S	id7	TGAATGAAA
-J	id3	+	id4	-	5	SC:i:1
-J	id1	+	id2	+	3	SC:i:1
-J	id2	+	id3	-	2	SC:i:1
-J	id7	+	id7	+	5	SC:i:1
+L	id1	+	id2	-	3M
+L	id2	-	id1	+	3M
+J	id3	+	id4	-	5
+J	id1	+	id2	+	3
+J	id2	+	id3	-	2
+J	id7	+	id7	+	5
 P	id12	id1+;id2(1:3)+;id3-	*

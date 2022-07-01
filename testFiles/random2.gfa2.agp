@@ -1,5 +1,5 @@
-id12	1	5	1	W	id1	1	5	+
-id12	6	8	2	N	3	id6	yes
-id12	9	14	3	W	id2	1	6	+
-id12	15	16	4	N	2	id8	yes
-id12	17	23	5	W	id3	1	7	-
+id13	1	5	1	W	path1	1	5	+
+id13	6	8	2	N	3	gap1	yes
+id13	9	14	3	W	path2	1	6	+
+id13	15	16	4	N	2	gap2	yes
+id13	17	23	5	W	path3	1	7	-

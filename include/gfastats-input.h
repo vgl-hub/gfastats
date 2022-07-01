@@ -253,7 +253,7 @@ public:
                     
                     std::vector<std::string> arguments, components, tagValues; // process the columns of each row
                     
-                    std::vector<Tag> inSequenceTags;
+                    std::vector<Tag> inTags;
                     Tag tag;
                     
                     getline(*stream, newLine);
@@ -324,7 +324,7 @@ public:
                                     
                                     inSequence = arguments[3];
                                     
-                                    inSequenceTags.clear();
+                                    inTags.clear();
                                     
                                     for (unsigned int i = 4; i < arguments.size(); i++) {
                                         
@@ -335,7 +335,7 @@ public:
                                         tag.type = tagValues[1][0];
                                         tag.content = tagValues[2];
                                     
-                                        inSequenceTags.push_back(tag);
+                                        inTags.push_back(tag);
                                     
                                     }
                                     
@@ -412,9 +412,24 @@ public:
                                     
                                     dist = stoi(arguments[4]);
                                     
+                                    inTags.clear();
+                                    
+                                    for (unsigned int i = 5; i < arguments.size(); i++) {
+                                        
+                                        tagValues = readDelimited(arguments[i], ":");
+                                        
+                                        tag.label[0] = tagValues[0][0];
+                                        tag.label[1] = tagValues[0][1];
+                                        tag.type = tagValues[1][0];
+                                        tag.content = tagValues[2];
+                                    
+                                        inTags.push_back(tag);
+                                    
+                                    }
+                                    
                                     verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
                                     
-                                    gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
+                                    gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader, inTags);
                                     
                                     inSequences.addGap(gap);
                                     
@@ -488,9 +503,24 @@ public:
                                         
                                     }                            
       
-                                    cigar = arguments[8];  
+                                    cigar = arguments[8];
                                     
-                                    edge.newEdge(euId, sId1, sId2, sId1Or, sId2Or, cigar, eHeader);
+                                    inTags.clear();
+                                    
+                                    for (unsigned int i = 9; i < arguments.size(); i++) {
+                                        
+                                        tagValues = readDelimited(arguments[i], ":");
+                                        
+                                        tag.label[0] = tagValues[0][0];
+                                        tag.label[1] = tagValues[0][1];
+                                        tag.type = tagValues[1][0];
+                                        tag.content = tagValues[2];
+                                    
+                                        inTags.push_back(tag);
+                                    
+                                    }
+                                    
+                                    edge.newEdge(euId, sId1, sId2, sId1Or, sId2Or, cigar, eHeader, inTags);
                                     
                                     inSequences.appendEdge(edge);
  
@@ -646,7 +676,7 @@ public:
                                     
                                     inSequence = arguments[2];
                                     
-                                    inSequenceTags.clear();
+                                    inTags.clear();
                                     
                                     for (unsigned int i = 3; i < arguments.size(); i++) {
                                         
@@ -657,11 +687,11 @@ public:
                                         tag.type = tagValues[1][0];
                                         tag.content = tagValues[2];
                                     
-                                        inSequenceTags.push_back(tag);
+                                        inTags.push_back(tag);
                                     
                                     }
                                     
-                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inSequenceTags);
+                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inTags);
                                     
                                     lineN++;
                                     
@@ -735,9 +765,24 @@ public:
                                     
                                     dist = stoi(arguments[5]);
                                     
+                                    inTags.clear();
+                                    
+                                    for (unsigned int i = 6; i < arguments.size(); i++) {
+                                        
+                                        tagValues = readDelimited(arguments[i], ":");
+                                        
+                                        tag.label[0] = tagValues[0][0];
+                                        tag.label[1] = tagValues[0][1];
+                                        tag.type = tagValues[1][0];
+                                        tag.content = tagValues[2];
+                                    
+                                        inTags.push_back(tag);
+                                    
+                                    }
+                                    
                                     verbose("Processing gap " + gHeader + " (uId: " + std::to_string(uId) + ")");
                                     
-                                    gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader);
+                                    gap.newGap(guId, sId1, sId2, sId1Or, sId2Or, dist, gHeader, inTags);
                                     
                                     inSequences.addGap(gap);
                                     
@@ -809,9 +854,24 @@ public:
                                         
                                     }
                                     
-                                    cigar = arguments[5];  
+                                    cigar = arguments[5];
                                     
-                                    edge.newEdge(euId, sId1, sId2, sId1Or, sId2Or, cigar);
+                                    inTags.clear();
+                                    
+                                    for (unsigned int i = 6; i < arguments.size(); i++) {
+                                        
+                                        tagValues = readDelimited(arguments[i], ":");
+                                        
+                                        tag.label[0] = tagValues[0][0];
+                                        tag.label[1] = tagValues[0][1];
+                                        tag.type = tagValues[1][0];
+                                        tag.content = tagValues[2];
+                                    
+                                        inTags.push_back(tag);
+                                    
+                                    }
+                                    
+                                    edge.newEdge(euId, sId1, sId2, sId1Or, sId2Or, cigar, "", inTags);
                                     
                                     inSequences.appendEdge(edge);
  
@@ -1523,7 +1583,7 @@ public:
         
     }
     
-    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
+    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL, std::vector<Tag>* inTags = NULL) {
  
         bedIncludeListHeaders = bedIncludeList.getSeqHeaders();
         bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
@@ -1532,7 +1592,7 @@ public:
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
             
-            inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality, inSequenceTags);
+            inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality, inTags);
             
         }else if(!bedIncludeList.empty() &&
                   bedExcludeList.empty()) {

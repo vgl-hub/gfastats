@@ -305,22 +305,22 @@ private:
     std::string gHeader;
     char sId1Or, sId2Or;
     unsigned int uId, iId, sId1, sId2, dist;
-    std::vector<std::string> tags;
+    std::vector<Tag> tags;
     
     friend class SAK;
     friend class InSequences;
     
 public:
-    void newGap(unsigned int uid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, unsigned int& d, std::string gheader = "", std::vector<std::string> inTags = {"SC:i:1"}) {
+    void newGap(unsigned int uId, unsigned int sId1, unsigned int sId2, const char& sId1or, const char& sId2or, unsigned int& dist, std::string gHeader = "", std::vector<Tag> tags = {}) {
         
-        gHeader = gheader;
-        uId = uid;
-        sId1 = sid1;
-        sId2 = sid2;
-        sId1Or = sid1or;
-        sId2Or = sid2or;
-        dist = d;
-        tags = inTags;
+        this->gHeader = gHeader;
+        this->uId = uId;
+        this->sId1 = sId1;
+        this->sId2 = sId2;
+        this->sId1Or = sId1or;
+        this->sId2Or = sId2or;
+        this->dist = dist;
+        this->tags = tags;
         
     }
 
@@ -386,7 +386,7 @@ public:
         
     }
     
-    std::vector<std::string> getTags() {
+    std::vector<Tag> getTags() {
         
         return tags;
         
@@ -401,20 +401,22 @@ class InEdge {
     std::string cigar, eHeader;
     char sId1Or, sId2Or;
     unsigned int eUId, eId, sId1, sId2;
+    std::vector<Tag> tags;
     
     friend class SAK;
     friend class InSequences;
     
 public:
-    void newEdge(unsigned int eUid, unsigned int sid1, unsigned int sid2, const char& sid1or, const char& sid2or, std::string c = "", std::string h = "") {
+    void newEdge(unsigned int eUId, unsigned int sId1, unsigned int sId2, const char& sId1Or, const char& sId2Or, std::string cigar = "", std::string eHeader = "", std::vector<Tag> tags = {}) {
         
-        eUId = eUid;
-        sId1 = sid1;
-        sId2 = sid2;
-        sId1Or = sid1or;
-        sId2Or = sid2or;
-        cigar = c;
-        eHeader = h;
+        this->eUId = eUId;
+        this->sId1 = sId1;
+        this->sId2 = sId2;
+        this->sId1Or = sId1Or;
+        this->sId2Or = sId2Or;
+        this->cigar = cigar;
+        this->eHeader = eHeader;
+        this->tags = tags;
         
     }
 
@@ -432,6 +434,10 @@ public:
     
     void setsId2(unsigned int i) {
         sId2 = i;
+    }
+    
+    void setSeqTags(std::vector<Tag>* t) {
+        tags = *t;
     }
     
     std::string getCigar() {
@@ -475,6 +481,11 @@ public:
         return sId2Or;
     
     }
+    
+    std::vector<Tag> getTags() {
+        return tags;
+    }
+    
 };
 
 class InPath {
@@ -2659,7 +2670,12 @@ public:
         
         InGap gap;
         
-        gap.newGap(gUId, component1.id, component2.id, component1.orientation, component2.orientation, dist, gHeader); // define the new gap
+        Tag tag;
+        memcpy(tag.label, "SC", sizeof tag.label);
+        tag.type = 'i';
+        tag.content = "1";
+        
+        gap.newGap(gUId, component1.id, component2.id, component1.orientation, component2.orientation, dist, gHeader, {tag}); // define the new gap
         
         addGap(gap); // introduce the new gap
         
