@@ -38,7 +38,7 @@ jobs:
           OS_NAME: macOS
         - OS: ubuntu-latest
           OS_NAME: linux
-        - OS: windows-latest
+        - OS: windows-2019
           OS_NAME: win
     runs-on: ${{ matrix.OS }}
     steps:
