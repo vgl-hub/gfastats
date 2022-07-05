@@ -16,6 +16,13 @@
 #include <algorithm>
 #include <cmath>
 
+struct Sequence {
+    
+    std::string header, comment, sequence, sequenceQuality;
+    unsigned int seqPos;
+    
+};
+
 struct Tag {
     
     char type, label[3] = "";
@@ -56,6 +63,62 @@ struct Bubble {
     unsigned int id0, id1, id2, id3;
 };
 
+double elapsedTime(){ // compute runtime in verbose mode
+    
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+    start = std::chrono::high_resolution_clock::now();
+    
+    return elapsed.count();
+    
+}
+
+struct Log {
+    
+    std::string log;
+    unsigned int jobId;
+    
+    void verbose(std::string msg, bool overwrite = false) { // verbose decorated output
+        
+        if(verbose_flag) {
+            
+            if (overwrite) {std::cerr << "\r" << msg; return;};
+            
+            std::cerr << msg << " (done in " << std::to_string(elapsedTime()) << " s).\n"; // if you don't cast double to string it will mess up all file output!
+            
+            elapsedTime();
+            
+        }
+    }
+    
+    void add(std::string msg) { // verbose decorated output
+        
+        if(verbose_flag) {
+        
+            log += msg + " (done in " + std::to_string(elapsedTime()) + " s).\n"; // if you don't cast double to string it will mess up all file output!
+            
+            elapsedTime();
+            
+        }
+    }
+    
+    void print() {
+        
+        std::cerr << log;
+        log.clear();
+        
+    }
+    
+    void setId (unsigned int i) {
+        
+        jobId = i;
+        
+    }
+    
+};
+
+Log lg;
+
 //templates
 template<typename T, typename... Args> // unique pointer to handle different types of istreams and ostreams
 std::unique_ptr<T> make_unique(Args&&... args) {
@@ -76,27 +139,6 @@ double gfa_round(double d, uint32_t to=2) {
     unsigned int n=1;
     for(; to>0; to--) n *= 10;
     return std::round(d*n)/n;
-}
-
-double elapsedTime(){ // compute runtime in verbose mode
-    
-    auto finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = finish - start;
-    start = std::chrono::high_resolution_clock::now();
-    
-    return elapsed.count();
-    
-}
-
-void verbose(std::string msg) { // verbose decorated output
-    
-    if(verbose_flag) {
-        
-        std::cerr << msg << " (done in " << std::to_string(elapsedTime()) << " s).\n"; // if you don't cast double to string it will mess up all file output!
-        
-        elapsedTime();
-        
-    }
 }
 
 std::vector<unsigned int> intervalSizes(std::vector<unsigned int> &intervalVec){ // compute sizes of a vector of intervals to be read as paired coordinates in 0-bed format
@@ -374,5 +416,7 @@ void homopolymerBedCoords(std::string *sequence, std::vector<std::pair<unsigned 
         bedCoords.push_back({index, sequence->size()});
     }
 }
+
+void traverseInSequence(Sequence sequence);
 
 #endif /* GFASTATS_FUNCTIONS_H */

@@ -30,7 +30,16 @@
 
 #include <chrono>
 #include <memory>
+
 #include <thread>
+#include <mutex>
+std::mutex mtx;
+#include <condition_variable>
+
+#include "gfastats-global.h" // global variables
+#include "gfastats-functions.h" // global functions
+
+#include "gfastats-threadpool.h"
 
 #include <parallel_hashmap/phmap.h>
 
@@ -40,9 +49,6 @@
 #include <zstream/izstream_impl.hpp>
 #include <zstream/ozstream.hpp>
 #include <zstream/ozstream_impl.hpp>
-
-#include "gfastats-global.h" // global variables
-#include "gfastats-functions.h" // global functions
 
 #include "gfastats-gfa.h" // gfa classes
 #include "gfastats-sak.h" // swiss army knife classes

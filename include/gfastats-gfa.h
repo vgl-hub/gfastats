@@ -494,23 +494,22 @@ private:
 //    unsigned long long int lineN; // useful if we wish to sort as is the original input
     std::string pHeader, pComment;
     std::vector<PathComponent> pathComponents;
-    unsigned int pUId, contigN = 0;
+    unsigned int pUId, contigN = 0, seqPos;
     
-    unsigned long long int length = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
+    unsigned long long int length = 0, segmentLength = 0, lowerCount = 0, A = 0, C = 0, G = 0, T = 0;
     
     friend class SAK;
     friend class InSequences;
 
 public:
     
-    void newPath(unsigned int pUid, std::string h, std::string c = "") {
+    void newPath(unsigned int pUid, std::string h, std::string c = "", unsigned int seqpos = 0) {
         
         pHeader = h;
         pComment = c;
         pathComponents.clear();
         pUId = pUid;
-        
-        verbose("Processed sequence: " + pHeader + " (uId: " + std::to_string(pUId) + ")");
+        seqPos = seqpos;
     
     }
 
@@ -584,6 +583,12 @@ public:
     
     }
     
+    unsigned int getSeqPos() {
+        
+        return seqPos;
+    
+    }
+    
     unsigned int getContigN() {
         
         return contigN;
@@ -620,6 +625,12 @@ public:
         
     }
     
+    unsigned long long int getSegmentLen() {
+        
+        return segmentLength;
+        
+    }
+    
     unsigned long long int getLowerCount() {
         
         return lowerCount;
@@ -638,9 +649,21 @@ public:
     
     }
     
+    void increaseGapN() {
+        
+        contigN++;
+    
+    }
+    
     void increaseLen(unsigned long long int n) {
         
         length += n;
+    
+    }
+    
+    void increaseSegmentLen(unsigned long long int n) {
+        
+        segmentLength += n;
     
     }
     
@@ -717,6 +740,9 @@ class InSequences { //collection of InSegment and inGap objects and their summar
     
 private:
     
+    ThreadPool<std::function<void()>> threadPool;
+    std::vector<Log> logs;
+    
     //gfa variables
     std::vector<InSegment> inSegments;
     std::vector<InGap> inGaps;
@@ -756,6 +782,7 @@ private:
     
     unsigned long long int
     totScaffLen = 0,
+    totContigLen = 0,
     totSegmentLen = 0,
     totGapLen = 0,
     totA = 0,
@@ -780,14 +807,51 @@ private:
     
 public:
     UIdGenerator uId; // unique numeric identifier for each feature
+
+    void threadPoolInit(int threadN) {
+        
+        threadPool.init(threadN);
+        
+    }
     
-    void addSegment(unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
+    void threadStart(std::function<void()> job) {
+        
+        threadPool.queueJob(job);
+        
+    }
+
+    bool threadEmpty() {
+        
+        return threadPool.empty();
+        
+    }
+    
+    unsigned int threadQueueSize() {
+        
+        return threadPool.queueSize();
+        
+    }
+    
+    void threadsJoin() {
+        
+        threadPool.join();
+        
+    }
+    
+    std::vector<Log> getLogs() {
+    
+        return logs;
+    
+    }
+
+    InSegment addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
+        
+        threadLog->add("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
         
         unsigned long long int seqSize = 0;
         
         // operations on the segment
-        
-        verbose("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
+        InSegment inSegment;
         
         inSegment.setiId(iId); // set temporary sId internal to scaffold
         
@@ -795,7 +859,7 @@ public:
         
         inSegment.setSeqHeader(&seqHeader);
         
-        if (seqComment != NULL) {
+        if (*seqComment != "") {
             
             inSegment.setSeqComment(*seqComment);
             
@@ -811,34 +875,23 @@ public:
             
             inSegment.setInSequence(sequence);
             
-            verbose("Segment sequence set");
+            threadLog->add("Segment sequence set");
             
             if (sequenceQuality != NULL) {
                 
                 inSegment.setInSequenceQuality(sequenceQuality);
                 
-                verbose("Segment sequence quality set");
+                threadLog->add("Segment sequence quality set");
                 
             }
             
             inSegment.setACGT(A, C, G, T);
             
-            verbose("Increased ACGT counts");
-            
-            totA += *A;
-            totC += *C;
-            totG += *G;
-            totT += *T;
-            
-            verbose("Increased total ACGT counts");
+            threadLog->add("Increased ACGT counts");
             
             inSegment.setLowerCount(lowerCount);
-            
-            verbose("Increased count of lower bases");
-            
-            totLowerCount += *lowerCount;
 
-            verbose("Increased total count of lower bases");
+            threadLog->add("Increased total count of lower bases");
             
             seqSize = *A + *C + *G + *T;
             
@@ -848,214 +901,284 @@ public:
             
             inSegment.setLowerCount(&seqSize);
             
-            verbose("No seq input. Length (" + std::to_string(seqSize) + ") recorded in lower count");
+            threadLog->add("No seq input. Length (" + std::to_string(seqSize) + ") recorded in lower count");
             
         }
         
-        contigLens.push_back(seqSize);
-        
-        verbose("Recorded length of segment");
-        
-        inSegments.push_back(inSegment); // adding segment to segment set
-        
-        verbose("Segment added to segment vector");
+        return inSegment; // adding segment to segment set
         
     }
     
-    void pushbackGap(std::string* seqHeader, unsigned int* iId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
+    InGap pushbackGap(Log* threadLog, InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int* dist, char sign, unsigned int uId1, unsigned int uId2) {
         
-        verbose("Processing gap " + *seqHeader+"." + std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
-        gap.newGap(uId.get(), (pos - *dist == 0) ? uId.peek() : uId.prev(), (pos - seqLen == 0 && n == -1) ? uId.prev() : uId.peek(), '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
+        lck.lock();
         
-        addGap(gap);
+        threadLog->add("Processing gap " + *seqHeader+"." + std::to_string(*iId) + " (uId: " + std::to_string(uId.get()) + ", iId: " + std::to_string(*iId) + ")");
+        
+        InGap gap;
+        
+        gap.newGap(uId.get(), uId1, uId2, '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
         
         insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
         
-        path.add(GAP, uId.get(), '0');
-        
-        *dist=0;
+        path->add(GAP, uId.get(), '0');
         
         (*iId)++; // number of gaps in the current scaffold
         uId.next(); // unique numeric identifier
         
+        lck.unlock();
+        
+        *dist=0;
+        
+        return gap;
+        
     }
     
-    void pushbackSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
-         
+    InSegment pushbackSegment(unsigned int currId, Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
+        
         std::string sequenceSubSeq, sequenceQualitySubSeq;
         
         sequenceSubSeq = sequence->substr(sStart, sEnd + 1 - sStart);
         
-        if (sequenceQuality != NULL) {
+        if (*sequenceQuality != "") {
             
             sequenceQualitySubSeq = sequenceQuality->substr(sStart, sEnd + 1 - sStart);
             
         }
         
-        addSegment(uId.get(), *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
+        InSegment inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
         
-        insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
-        path.add(SEGMENT, uId.get(), '+');
+        lck.lock();
+        
+        insertHash(*seqHeader+"."+std::to_string(*iId), currId);
+        
+        lck.unlock();
+        
+        path->add(SEGMENT, currId, '+');
+        
+        (*iId)++; // number of segments in the current scaffold
         
         *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
         
-        (*iId)++; // number of gaps in the current scaffold
-        uId.next(); // unique numeric identifier
+        return inSegment;
         
     }
     
-    void traverseInSequence(std::string* pHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSequence(Sequence sequence) { // traverse the sequence to split at gaps and measure sequence properties
         
+        Log threadLog;
+        
+        threadLog.setId(sequence.seqPos);
+
         std::vector<std::pair<unsigned long long int, unsigned long long int>> bedCoords;
         if(hc_flag) {
-            homopolymerCompress(sequence, bedCoords, hc_cutoff);
+            homopolymerCompress(&sequence.sequence, bedCoords, hc_cutoff);
         }
-
+        
+        std::vector<InSegment> newSegments;
+        std::vector<InGap> newGaps;
         unsigned long long int pos = 0, // current position in sequence
         hc_index=0, // used with homopolymer compression
         A = 0, C = 0, G = 0, T = 0,
         lowerCount = 0;
         unsigned int
+        currId = 0, nextId = 0, // temporarily store the id of a segment to connect gaps
         dist = 0, // gap size
         iId = 1, // scaffold feature internal identifier
-        sStart = 0, sEnd = 0; // segment start and end
+        sStart = 0, sEnd = 0, // segment start and end
+        count = 1; // hc
         char sign = '+';
         bool wasN = false;
         
-        path.clearPath();
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
-        phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (*pHeader); // get the headers to uIds table to look for the header
+        lck.lock();
+
+        InPath path;
         
+        phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (sequence.header); // get the headers to uIds table to look for the header
+
         if (got == headersToIds.end()) { // this is the first time we see this path name
-            
-            insertHash(*pHeader, uId.get());
-            
+
+            insertHash(sequence.header, uId.get());
+
         }else{
-            
-            fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", pHeader->c_str()); exit(1);
-            
+
+            fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", sequence.header.c_str()); exit(1);
+
         }
         
-        path.newPath(uId.get(), *pHeader);
+        path.newPath(uId.get(), sequence.header, "", sequence.seqPos);
+        
+        threadLog.add("Processed sequence: " + sequence.header + " (uId: " + std::to_string(uId.get()) + ")");
+
+        uId.next();
+        
+        currId = uId.get();
         
         uId.next();
         
-        if (seqComment != NULL) {
-            
-            path.setComment(*seqComment);
-            
-        }
+        lck.unlock();
         
-        unsigned long long int seqLen = sequence->size()-1;
-        for (char &base : *sequence) {
+        if (sequence.comment != "") {
 
-            unsigned int count = 1;
+            path.setComment(sequence.comment);
+
+        }
+
+        unsigned long long int seqLen = sequence.sequence.size()-1;
+        
+        for (char &base : sequence.sequence) {
+
+            count = 1;
             if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
                 count = bedCoords[hc_index].second - bedCoords[hc_index].first;
                 ++hc_index;
             }
-            
+
             if (islower(base)) {
-                
+
                 lowerCount+=count;
-                
+
             }
-            
+
             switch (base) {
-                    
+
                 case 'N':
                 case 'n':
                 case 'X':
                 case 'x': {
-                    
+
                     dist+=count;
-                    
+
                     if (!wasN && pos>0) { // gap start and gap not at the start of the sequence
-                            
+
                         sEnd = pos - 1;
-                        pushbackSegment(pHeader, seqComment, sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequenceQuality);
+                        newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
                         
+                        lck.lock();
+                        
+                        uId.next();
+                        
+                        lck.unlock();
+
                     }
-                    
+
                     if(pos == seqLen) { // end of scaffold, terminal gap
-                        
+
                         sign = '-';
                         
-                        pushbackGap(pHeader, &iId, pos, &dist, sign, seqLen, -1);
-                        
+                        newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, &dist, sign, currId, currId));
+
                     }
-                    
+
                     wasN = true;
-                    
+
                     break;
                 }
                 default: {
-                    
+
                     switch (base) {
                         case 'A':
                         case 'a':{
-                            
+
                             A+=count;
                             break;
-                            
+
                         }
                         case 'C':
                         case 'c':{
-                            
+
                             C+=count;
                             break;
-                            
+
                         }
                         case 'G':
                         case 'g': {
-                            
+
                             G+=count;
                             break;
-                            
+
                         }
                         case 'T':
                         case 't': {
-                            
+
                             T+=count;
                             break;
-                            
+
                         }
-                            
+
                     }
-                    
+
                     if (wasN) { // internal gap end
                         
+                        lck.lock();
+                        
+                        uId.next();
+                        
+                        nextId = uId.get();
+                        
+                        uId.next();
+                        
+                        lck.unlock();
+                        
+                        if (newSegments.size() == 0) currId = nextId;
+
                         sStart = pos;
-                        pushbackGap(pHeader, &iId, pos, &dist, sign, seqLen, 1);
+                        newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, &dist, sign, currId, nextId));
                         
+                        currId = nextId;
+
                     }
-                    
+
                     if (pos == seqLen) {
-                        
+
                         sEnd = pos;
-                        pushbackSegment(pHeader, seqComment, sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequenceQuality);
+                        newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
                         
+                        lck.lock();
+                        
+                        uId.next();
+                        
+                        lck.unlock();
+
                     }
-                    
+
                     wasN = false;
-                    
+
                 }
-                    
+
             }
-            
+
             pos++;
-            
+
         }
         
+        lck.lock();
+
+        inGaps.insert(std::end(inGaps), std::begin(newGaps), std::end(newGaps));
+        
+        threadLog.add("Segments added to segment vector");
+        
+        inSegments.insert(std::end(inSegments), std::begin(newSegments), std::end(newSegments));
+        
+        threadLog.add("Gaps added to segment vector");
+        
         inPaths.push_back(path);
+
+        threadLog.add("Added fasta sequence as path");
         
-        verbose("Added fasta sequence as path");
+        logs.push_back(threadLog);
         
+        lck.unlock();
+
     }
     
-    void traverseInSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSegment(Log* lg, std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // traverse the sequence to split at gaps and measure sequence properties
         
         unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
         unsigned int sUId = 0;
@@ -1132,33 +1255,43 @@ public:
             
         }
                 
-        addSegment(sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags);
+        inSegments.push_back(addSegment(lg, sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags));
         
     }
     
-    void appendSequence(std::string* pHeader, std::string* pComment, std::string* sequence, std::string* sequenceQuality = NULL) { // method to append a new sequence from a fasta
+    void appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
         
-        verbose("Header, comment, sequence and (optionally) quality read");
-        
+        lg.verbose("Header, comment, sequence, and (optionally) quality read");
+            
         if(verbose_flag) {std::cerr<<"\n";};
+            
+        threadStart([=]{ return traverseInSequence(sequence); });
         
-        traverseInSequence(pHeader, pComment, sequence, sequenceQuality);
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
-        verbose("Sequence traversed");
+        lck.lock();
         
-        if(verbose_flag) {std::cerr<<"\n";};
+        for (auto it = logs.begin(); it != logs.end(); it++) {
+         
+            it->print();
+            logs.erase(it--);
+            if(verbose_flag) {std::cerr<<"\n";};
+            
+        }
+        
+        lck.unlock();
         
     }
     
     void appendSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // method to append a new segment from a gfa
         
-        verbose("Header, comment, sequence and (optionally) quality read");
+        lg.verbose("Header, comment, sequence and (optionally) quality read");
         
         if(verbose_flag) {std::cerr<<"\n";};
         
-        traverseInSegment(seqHeader, seqComment, sequence, sequenceQuality, inSequenceTags);
+        traverseInSegment(&lg, seqHeader, seqComment, sequence, sequenceQuality, inSequenceTags);
         
-        verbose("Segment traversed");
+        lg.verbose("Segment traversed");
         
         if(verbose_flag) {std::cerr<<"\n";};
         
@@ -1603,7 +1736,7 @@ public:
     
     unsigned long long int getTotContigLen () {
         
-        unsigned long long int totContigLen = 0;
+        totContigLen = 0;
         
         for (std::vector<unsigned long long int>::iterator contigLen = contigLens.begin(); contigLen != contigLens.end(); contigLen++) {
             
@@ -1629,7 +1762,7 @@ public:
     
     unsigned long long int getTotGapLen() {
         
-        unsigned long long int totGapLen = 0;
+        totGapLen = 0;
         
         for (std::vector<unsigned long long int>::iterator gapLen = gapLens.begin(); gapLen != gapLens.end(); gapLen++) {
             
@@ -1692,17 +1825,9 @@ public:
     //gfa methods
     bool addGap(InGap inGap) {
         
-        recordGapLen(inGap.dist);
-        
-        verbose("Recorded length of gaps in sequence");
-        
-        changeTotGapLen(inGap.dist);
-        
-        verbose("Increased total gap length");
-        
         inGaps.push_back(inGap);
 
-        verbose("Gap added to gap vector");
+        lg.verbose("Gap added to gap vector");
         
         return true;
         
@@ -1712,11 +1837,11 @@ public:
         
         inPaths.push_back(path);
 
-        verbose("Path added to path vector");
+        lg.verbose("Path added to path vector");
         
         pathN++;
         
-        verbose("Increased path counter");
+        lg.verbose("Increased path counter");
         
         return true;
         
@@ -1738,13 +1863,19 @@ public:
         
         inEdges.push_back(edge);
 
-        verbose("Edge added to edge vector");
+        lg.verbose("Edge added to edge vector");
         
         return true;
         
     }
     
     //sorting methods
+
+    void sortPathsByOriginal(){
+        
+        sort(inPaths.begin(), inPaths.end(), [](InPath& one, InPath& two){return one.getSeqPos() < two.getSeqPos();});
+        
+    }
     
     void sortPathsByNameAscending(){
         
@@ -1901,7 +2032,7 @@ public:
     
     void buildGraph(std::vector<InGap> const& gaps) { // graph constructor
         
-        verbose("Started graph construction");
+        lg.verbose("Started graph construction");
         
         adjListFW.clear();
         adjListBW.clear();
@@ -1912,17 +2043,17 @@ public:
         for (auto &gap: gaps) // add edges to the graph
         {
             
-            verbose("Adding forward gap " + std::to_string(gap.uId) + ": " + idsToHeaders[gap.sId1] + "(" + std::to_string(gap.sId1) + ") " + gap.sId1Or + " " + idsToHeaders[gap.sId2] + "(" + std::to_string(gap.sId2) + ") " + gap.sId2Or + " " + std::to_string(gap.dist));
+            lg.verbose("Adding forward gap " + std::to_string(gap.uId) + ": " + idsToHeaders[gap.sId1] + "(" + std::to_string(gap.sId1) + ") " + gap.sId1Or + " " + idsToHeaders[gap.sId2] + "(" + std::to_string(gap.sId2) + ") " + gap.sId2Or + " " + std::to_string(gap.dist));
             
             adjListFW.at(gap.sId1).push_back({gap.sId1Or, gap.sId2, gap.sId2Or, gap.dist, gap.uId}); // insert at gap start gap destination, orientations and weight (gap size)
 
-            verbose("Adding reverse gap " + std::to_string(gap.uId) + ": " + idsToHeaders[gap.sId2] + "(" + std::to_string(gap.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[gap.sId1] + "(" + std::to_string(gap.sId1) + ") " + edge.sId2Or + " " + std::to_string(gap.dist));
+            lg.verbose("Adding reverse gap " + std::to_string(gap.uId) + ": " + idsToHeaders[gap.sId2] + "(" + std::to_string(gap.sId2) + ") " + edge.sId2Or + " " + idsToHeaders[gap.sId1] + "(" + std::to_string(gap.sId1) + ") " + edge.sId2Or + " " + std::to_string(gap.dist));
             
             adjListBW.at(gap.sId2).push_back({gap.sId2Or, gap.sId1, gap.sId1Or, gap.dist, gap.uId}); // undirected graph
             
         }
         
-        verbose("Graph built");
+        lg.verbose("Graph built");
         
         visited.clear();
         
@@ -1932,7 +2063,7 @@ public:
         
         unsigned int sIdx = 0;
         
-        verbose("Started edge graph construction");
+        lg.verbose("Started edge graph construction");
         
         adjEdgeListFW.clear();
         
@@ -1941,7 +2072,7 @@ public:
         for (auto &edge: edges) // add edges to the graph
         {
             
-            verbose("Adding edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or);
+            lg.verbose("Adding edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or);
             
             adjEdgeListFW.at(edge.sId1).push_back({edge.sId1Or, edge.sId2, edge.sId2Or}); // insert at edge start gap destination and orientations
             
@@ -1971,7 +2102,7 @@ public:
             
         }
         
-        verbose("Graph built");
+        lg.verbose("Graph built");
         
         visited.clear();
         
@@ -2002,13 +2133,13 @@ public:
 
                 if(edge.orientation0 != sign){
 
-                    verbose("node: " + idsToHeaders[v] + " --> case a: internal node, multiple edges");
+                    lg.verbose("node: " + idsToHeaders[v] + " --> case a: internal node, multiple edges");
 
                     break;
 
                 }else if (i == adjEdgeListFW.at(v).size()) {
 
-                    verbose("node: " + idsToHeaders[v] + " --> case b: single dead end, multiple edges");
+                    lg.verbose("node: " + idsToHeaders[v] + " --> case b: single dead end, multiple edges");
 
                     deadEnds += 1;
                 }
@@ -2022,7 +2153,7 @@ public:
             deadEnds += 1;
             *componentLength += inSegments[sIdx].getSegmentLen(); 
 
-            verbose("node: " + idsToHeaders[v] + " --> case c: single dead end, single edge");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case c: single dead end, single edge");
 
         }else if(adjEdgeListFW.at(v).size() == 0){ // disconnected component (double dead end)
 
@@ -2031,7 +2162,7 @@ public:
             disconnectedComponents++;
             lengthDisconnectedComponents += inSegments[sIdx].getSegmentLen(); 
 
-            verbose("node: " + idsToHeaders[v] + " --> case d: disconnected component");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case d: disconnected component");
 
         }
 
@@ -2059,7 +2190,7 @@ public:
         
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(adjListFW.at(v).at(0).segmentId == adjListBW.at(v).at(0).segmentId) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
             
-            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
             
             seqRevCom = (adjListFW.at(v).at(0).orientation0 == '+') ? false : true; // check if sequence should be in forward orientation, if not reverse-complement
             
@@ -2080,7 +2211,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
             
-            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
             
             segRevCom = (adjListBW.at(v).at(0).orientation0 == '+') ? false : true;
             
@@ -2088,7 +2219,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
             
-            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
             if(adjListBW.at(v).at(0).segmentId != v) { // make sure you are not using the terminal edge to ascertain direction in case it was edited by sak
             
@@ -2108,7 +2239,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(adjListFW.at(v).at(0).segmentId == adjListBW.at(v).at(0).segmentId) && backward){ // this is an intermediate vertex, only walking back
             
-            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
             
             segRevCom = (adjListBW.at(v).at(0).orientation0 == '+') ? false : true;
             
@@ -2116,11 +2247,11 @@ public:
             
         }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
             
-            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
             
-            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
             
             segRevCom = (adjListFW.at(v).at(0).orientation0 == '+') ? false : true;
             
@@ -2128,7 +2259,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
             
-            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
             
             segRevCom = (adjListFW.at(v).at(0).orientation0 == '+') ? false : true;
             
@@ -2138,7 +2269,7 @@ public:
             
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && adjListFW.at(v).at(0).segmentId == adjListBW.at(v).at(0).segmentId) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
             
-            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
             
             segRevCom = (adjListFW.at(v).at(0).orientation0 == '+') ? false : true;
             
@@ -2235,53 +2366,34 @@ public:
             
             totScaffLen += inPath.getLen();
          
-            verbose("Increased total scaffold length");
+            lg.verbose("Increased total scaffold length");
             
             scaffN++;
             
-            verbose("Increased total scaffold N");
+            lg.verbose("Increased total scaffold N");
             
             contigN += inPath.getContigN();
             
-            verbose("Increased total contig N");
+            lg.verbose("Increased total contig N");
             
             recordScaffLen(inPath.getLen());
             
-            verbose("Recorded length of sequence: " + std::to_string(inPath.getLen()));
+            lg.verbose("Recorded length of sequence: " + std::to_string(inPath.getLen()));
             
             totA += inPath.getA();
             totC += inPath.getC();
             totG += inPath.getG();
             totT += inPath.getT();
             
-            verbose("Increased total ACGT counts");
+            lg.verbose("Increased total ACGT counts");
             
             totLowerCount += inPath.getLowerCount();
 
-            verbose("Increased total count of lower bases");
+            lg.verbose("Increased total count of lower bases");
             
         }
         
-        verbose("Updated scaffold statistics");
-        
-        return true;
-        
-    }
-    
-    bool updateGapLens() {
-        
-        totGapLen = 0;
-        gapLens.clear();
-        
-        for (unsigned int i = 0; i != inGaps.size(); ++i) { // loop through all edges
-        
-            recordGapLen(inGaps[i].getDist());
-            
-            changeTotGapLen(inGaps[i].getDist());
-            
-        }
-        
-        verbose("Updated list of gap lengths");
+        lg.verbose("Updated scaffold statistics");
         
         return true;
         
@@ -2312,13 +2424,13 @@ public:
                     
                         pathIt->pathComponents.erase(pathIt->pathComponents.begin()+gIdx); // remove the gap component from the path
                         
-                        verbose("Removed gap from paths");
+                        lg.verbose("Removed gap from paths");
                         
                         inGaps.erase(gId); // remove the element by position, considering elements that were already removed in the loop
 
                         changeTotGapLen(-gId->getDist()); // update length of gaps
                         
-                        verbose("Removed gap from gap vector");
+                        lg.verbose("Removed gap from gap vector");
                         
                     }
                     
@@ -2340,7 +2452,7 @@ public:
             
         }
         
-        verbose("Recorded length of gaps in sequence");
+        lg.verbose("Recorded length of gaps in sequence");
         
         return true;
         
@@ -2366,7 +2478,7 @@ public:
 
     // instruction methods
     
-    std::vector<InGap> getGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, returns all edges connecting them, if only one contig is provided returns all edges where it appears
+    std::vector<InGap> getGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, returns all gaps connecting them, if only one contig is provided returns all gaps where it appears
  
         std::vector<InGap> gaps;
         
@@ -2387,19 +2499,13 @@ public:
             
         }else{
             
-            auto it = inGaps.begin();
-            
-            while (it != end(inGaps)) {
-
-                auto gId = find_if(it, inGaps.end(), [sUId1](InGap& obj) {return obj.getsId1() == sUId1 || obj.getsId2() == sUId1;}); // check whether an edge containing the node was found
+            for (InGap inGap : inGaps) {
                 
-                if (gId != inGaps.end()) {
-                
-                    gaps.push_back(*gId);
+                if (inGap.getsId1() == sUId1 || inGap.getsId2() == sUId1) {
+                    
+                    gaps.push_back(inGap);
                     
                 }
-                
-                it++;
                 
             }
             
@@ -2409,7 +2515,7 @@ public:
         
     }
     
-    std::vector<unsigned int> removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+    std::vector<unsigned int> removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all gaps connecting them, if only one contig is provided remove all gaps where it appears
         
         std::vector<unsigned int> guIds;
  
@@ -2482,7 +2588,7 @@ public:
             
         }else{
             
-            verbose("Cannot detect node: " + *contig1);
+            lg.verbose("Cannot detect node: " + *contig1);
             
         }
         
@@ -2576,7 +2682,7 @@ public:
         
         if (got == headersToIds.end()) { // this is the first time we see this path
             
-            verbose("Path not found in keys. Creating new path (" + pHeader + ", pUId: " + std::to_string(uId.get()) + ")");
+            lg.verbose("Path not found in keys. Creating new path (" + pHeader + ", pUId: " + std::to_string(uId.get()) + ")");
             
             insertHash(pHeader, uId.get());
             
@@ -2590,7 +2696,7 @@ public:
             pUId1 = got->second;
             path.setpUId(pUId1);
             
-            verbose("Path already exists in keys (" + pHeader + ", pUId: " + std::to_string(pUId1) + "). Joining.");
+            lg.verbose("Path already exists in keys (" + pHeader + ", pUId: " + std::to_string(pUId1) + "). Joining.");
             
         }
         
@@ -2600,7 +2706,7 @@ public:
         
         if (pathIt != inPaths.end()) {
             
-            verbose("Path found in path set (pIUd: " + std::to_string(pUId1) + "). Adding components to new path.");
+            lg.verbose("Path found in path set (pIUd: " + std::to_string(pUId1) + "). Adding components to new path.");
             
             std::vector<PathComponent> pathComponents = pathIt->getComponents();
             
@@ -2635,7 +2741,7 @@ public:
         
         }
         
-        verbose("Adding gap to new path (" + gHeader + ")");
+        lg.verbose("Adding gap to new path (" + gHeader + ")");
         
         path.add(GAP, gUId, '0');
             
@@ -2643,7 +2749,7 @@ public:
         
         if (pathIt != inPaths.end()) {
             
-            verbose("Path found in path set (pIUd: " + std::to_string(pUId2) + "). Adding components to new path.");
+            lg.verbose("Path found in path set (pIUd: " + std::to_string(pUId2) + "). Adding components to new path.");
             
             std::vector<PathComponent> pathComponents = pathIt->getComponents();
             
@@ -2826,7 +2932,7 @@ public:
         
         pathIt->revCom();
         
-        verbose("Path reverse-complemented (" + pathIt->getHeader() + ").");
+        lg.verbose("Path reverse-complemented (" + pathIt->getHeader() + ").");
         
     }
     
@@ -2850,12 +2956,12 @@ public:
         
         if(start == 0 || end == 0) {
 
-            verbose("Nothing to trim. Skipping.");
+            lg.verbose("Nothing to trim. Skipping.");
             return;
 
         }
         
-        verbose("Trimming path (start: " + std::to_string(start) + ", end: " + std::to_string(end) + ")");
+        lg.verbose("Trimming path (start: " + std::to_string(start) + ", end: " + std::to_string(end) + ")");
         
         std::string trimmed;
         
@@ -2863,9 +2969,9 @@ public:
         
         for (std::vector<PathComponent>::iterator component = pathComponents->begin(); component != pathComponents->end(); component++) {
             
-            verbose("New path size before iteration: " + std::to_string(actualSize));
+            lg.verbose("New path size before iteration: " + std::to_string(actualSize));
             
-            verbose("Checking original coordinates of component (uId: " + std::to_string(component->id) + ", start: " + std::to_string(component->start) + ", end: " + std::to_string(component->end) + ")");
+            lg.verbose("Checking original coordinates of component (uId: " + std::to_string(component->id) + ", start: " + std::to_string(component->start) + ", end: " + std::to_string(component->end) + ")");
             
             compOriginalSize = getComponentSize(*component, true);
             
@@ -2873,11 +2979,11 @@ public:
             
             trimmed = compSize != compOriginalSize ? " " : " not ";
                 
-            verbose("Component was" + trimmed + "already trimmed (size: " + std::to_string(compSize) + ")");
+            lg.verbose("Component was" + trimmed + "already trimmed (size: " + std::to_string(compSize) + ")");
                 
             if (traversedSize + compSize < start) {
                 
-                verbose("Start coordinate exceeds component, removing it");
+                lg.verbose("Start coordinate exceeds component, removing it");
                 
                 pathComponents->erase(component);
                 
@@ -2891,19 +2997,19 @@ public:
             
             if (traversedSize + compSize >= start && traversedSize < start - 1 && traversedSize + compSize > end) {
                
-               verbose("Trimming both ends");
+               lg.verbose("Trimming both ends");
                
                trimComponent(*component, start - traversedSize, end - traversedSize);
                
             } else if (traversedSize + compSize >= start && traversedSize < start && traversedSize + compSize <= end) {
                 
-                verbose("Trimming left end");
+                lg.verbose("Trimming left end");
                 
                 trimComponent(*component, start - traversedSize, 0);
                 
             } else if (traversedSize + compSize > end) {
                 
-                verbose("Trimming right end");
+                lg.verbose("Trimming right end");
                 
                 trimComponent(*component, 0, end - traversedSize);
                 
@@ -2913,7 +3019,7 @@ public:
             
                 pathComponents->erase(component + 1, pathComponents->end());
                 
-                verbose("Erased extra components");
+                lg.verbose("Erased extra components");
                 
             }
             
@@ -2933,17 +3039,17 @@ public:
             }
             
             newCompSize = getComponentSize(*component, false);
-            verbose("Component size after trimming: " + std::to_string(newCompSize));
+            lg.verbose("Component size after trimming: " + std::to_string(newCompSize));
             
             actualSize += newCompSize;
-            verbose("Path size after iteration: " + std::to_string(actualSize));
+            lg.verbose("Path size after iteration: " + std::to_string(actualSize));
             
             traversedSize += compSize;
-            verbose("Traversed path: " + std::to_string(traversedSize));
+            lg.verbose("Traversed path: " + std::to_string(traversedSize));
             
         }
             
-        verbose("Final path size: " + std::to_string(actualSize));
+        lg.verbose("Final path size: " + std::to_string(actualSize));
         
         if (actualSize != end-start+1) {fprintf(stderr, "Error: Path size after trimming (%u) differs from expected size after trimming (%u). Terminating.\n", actualSize, end-start+1); exit(1);}
     
@@ -2961,19 +3067,19 @@ public:
                 
                 component.start = (startCom == 0 ? 0 : startCom - 1) + start;
                 
-                verbose("Plus orientation (+). Both start and end coordinates of the component need to be edited as result of subsetting (new start: " + std::to_string(component.start) + ", new end: " + std::to_string(component.end) + ")");
+                lg.verbose("Plus orientation (+). Both start and end coordinates of the component need to be edited as result of subsetting (new start: " + std::to_string(component.start) + ", new end: " + std::to_string(component.end) + ")");
                 
             }else if (start != 0) {
                         
                 component.start = (startCom == 0 ? 0 : startCom - 1) + start;
                     
-                verbose("Plus orientation (+). Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(component.start) + ")");
+                lg.verbose("Plus orientation (+). Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(component.start) + ")");
      
             }else if (end != 0) {
              
                 component.end = (startCom == 0 ? 0 : startCom - 1) + end;
                 
-                verbose("Plus orientation (+). End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(component.end) + ")");
+                lg.verbose("Plus orientation (+). End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(component.end) + ")");
                 
             }
             
@@ -2985,19 +3091,19 @@ public:
                 
                 component.end = (endCom == 0 ? getComponentSize(component, false) : endCom) - start + 1;
 
-                verbose("Minus orientation (-). Both start and end coordinates of the component need to be edited as result of subsetting (new start: " + std::to_string(component.start) + ", new end: " + std::to_string(component.end) + ")");
+                lg.verbose("Minus orientation (-). Both start and end coordinates of the component need to be edited as result of subsetting (new start: " + std::to_string(component.start) + ", new end: " + std::to_string(component.end) + ")");
                 
             }else if (start != 0) {
 
                 component.end = (endCom == 0 ? getComponentSize(component, false) : endCom) - start + 1;
 
-                verbose("Minus orientation (-). End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(component.end) + ")");
+                lg.verbose("Minus orientation (-). End coordinate of the component needs to be edited as result of subsetting (new end: " + std::to_string(component.end) + ")");
 
             }else if (end != 0) {
 
                 component.start = (startCom == 0 ? 0 : startCom - 1) + getComponentSize(component, false) - end + 1;
 
-                verbose("Minus orientation (-). Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(component.start) + ")");
+                lg.verbose("Minus orientation (-). Start coordinate of the component needs to be edited as result of subsetting (new start: " + std::to_string(component.start) + ")");
 
             }
 
@@ -3054,6 +3160,8 @@ public:
                 pathIt->increaseContigN();
                 
                 pathIt->increaseLen(inSegment->getSegmentLen(component->start, component->end));
+                
+                pathIt->increaseSegmentLen(inSegment->getSegmentLen(component->start, component->end));
                 
                 pathIt->increaseLowerCount(inSegment->getLowerCount(component->end - component->start));
                 
@@ -3206,7 +3314,7 @@ public:
 
         if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(adjListFW.at(v).at(0).segmentId == adjListBW.at(v).at(0).segmentId) && !backward) { // if the vertex has exactly one forward and one backward connection and they do not connect to the same vertex (internal node)
 
-            verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case a: internal node, forward direction");
             
             newPath.add(SEGMENT, v, '+');
 
@@ -3214,7 +3322,7 @@ public:
 
         }else if (adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 1){ // this is the final vertex without gaps
 
-            verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case b: end node, forward direction, no final gap");
             
             newPath.add(SEGMENT, v, '-');
 
@@ -3222,7 +3330,7 @@ public:
 
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 2){ // this is the final vertex with terminal gap
 
-            verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case c: end node, forward direction, final gap");
             
             newPath.add(SEGMENT, v, '-');
 
@@ -3236,7 +3344,7 @@ public:
 
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && !(adjListFW.at(v).at(0).segmentId == adjListBW.at(v).at(0).segmentId) && backward){ // this is an intermediate vertex, only walking back
 
-            verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case d: intermediate node, backward direction");
             
             newPath.add(SEGMENT, v, '-');
 
@@ -3244,13 +3352,13 @@ public:
 
         }else if(adjListFW.at(v).size() == 0 && adjListBW.at(v).size() == 0){ // disconnected component
             
-            verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case e: disconnected component");
             
             newPath.add(SEGMENT, v, '+');
 
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 0){ // this is the first vertex without gaps
             
-            verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case f: start node, no gaps");
             
             newPath.add(SEGMENT, v, '+');
 
@@ -3262,7 +3370,7 @@ public:
 
         }else if (adjListFW.at(v).size() == 2 && adjListBW.at(v).size() == 1){ // this is the first vertex with a terminal gap
 
-            verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case g: start node, start gap");
 
             newPath.add(SEGMENT, v, '+');
 
@@ -3274,7 +3382,7 @@ public:
 
         }else if (adjListFW.at(v).size() == 1 && adjListBW.at(v).size() == 1 && adjListFW.at(v).at(0).segmentId == adjListBW.at(v).at(0).segmentId) { // if the vertex has exactly one forward and one backward connection and they connect to the same vertex (disconnected component with gap)
 
-            verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
+            lg.verbose("node: " + idsToHeaders[v] + " --> case h: disconnected component with gap");
             
             newPath.add(SEGMENT, v, '+');
 
@@ -3315,15 +3423,15 @@ public:
             
             sUId = segment.getuId();
             
-            verbose("Evaluating for node: " + idsToHeaders[sUId] + " (uId: " + std::to_string(sUId) + ")");
+            lg.verbose("Evaluating for node: " + idsToHeaders[sUId] + " (uId: " + std::to_string(sUId) + ")");
             
             if (!visited[sUId] && !deleted[sUId]) { // check if the node was already visited
                 
-                verbose("The node was not yet visited or deleted");
+                lg.verbose("The node was not yet visited or deleted");
                 
                 if (adjEdgeListFW.at(sUId).size() == 2 && adjEdgeListFW.at(sUId).at(0).orientation0 != adjEdgeListFW.at(sUId).at(1).orientation0) { // if it has exactly two edges with different orientation it could be a het region of the bubble
                     
-                    verbose("Exactly two edges with different orientation found. Could be a het region of the bubble");
+                    lg.verbose("Exactly two edges with different orientation found. Could be a het region of the bubble");
                     
                     // then check the the adjacient nodes
                     sUId1 = adjEdgeListFW.at(sUId).at(0).id;
@@ -3334,19 +3442,19 @@ public:
                     
                     if (adjEdgeListFW.at(sUId1).size() >= 2 && adjEdgeListFW.at(sUId2).size() >= 2) { // both nodes need at least two edges to be a bubble
                         
-                        verbose("Both neighbour nodes have at least two edges");
+                        lg.verbose("Both neighbour nodes have at least two edges");
                         
                         for (auto edge1 : adjEdgeListFW.at(sUId1)) {
                             
                             if (edge1.orientation1 == sId1Or && edge1.id != sUId) { // we are checking edges on the side of the potential bubble for node1, avoiding the original node
                                 
-                                verbose("Evaluating node: " + idsToHeaders[edge1.id] + " (uId: " + std::to_string(edge1.id) + ")");
+                                lg.verbose("Evaluating node: " + idsToHeaders[edge1.id] + " (uId: " + std::to_string(edge1.id) + ")");
                                 
                                 if (edge1.id == sUId2) { // this is a potential insertion
                                     
                                     bubbles.push_back({sUId, sUId1, sUId2, 0});
                                     
-                                    verbose("Candidate insertion found");
+                                    lg.verbose("Candidate insertion found");
                                     
                                 }else{
                                     
@@ -3354,11 +3462,11 @@ public:
                                     
                                         if (edge2.orientation1 == sId2Or && edge1.id == edge2.id) { // we are checking edges on the side of the potential bubble for node2 and that it connects to the same node as node1
                                             
-                                            verbose("Evaluating node: " + idsToHeaders[edge2.id] + " (uId: " + std::to_string(edge2.id) + ")");
+                                            lg.verbose("Evaluating node: " + idsToHeaders[edge2.id] + " (uId: " + std::to_string(edge2.id) + ")");
                                             
                                             bubbles.push_back({sUId, sUId1, sUId2, edge2.id});
                                             
-                                            verbose("Candidate bubble found");
+                                            lg.verbose("Candidate bubble found");
                                             
                                         }
                                         

@@ -303,11 +303,11 @@ public:
                             
                             if ((*inSegments)[sIdx].getInSequenceQuality() != "") {
                             
-                                inSeqQual += (*inSegments)[sIdx].getInSequence(component->start, component->end);
+                                inSeqQual += (*inSegments)[sIdx].getInSequenceQuality(component->start, component->end);
                                 
                             }else{
                                 
-                                inSeqQual += std::string((*inSegments)[sIdx].getInSequence().size(), '!');
+                                inSeqQual += std::string((*inSegments)[sIdx].getInSequenceQuality().size(), '!');
                                 
                             }
                             
@@ -375,8 +375,8 @@ public:
                 for (InEdge inEdge : inSequences.getEdges()) {
                     
                     *stream <<"L\t" // line type
-                            <<idsToHeaders[inEdge.getsId1()]<<"\t"<<inEdge.getsId1Or()<<"\t" // sUid1:sid1:ref
-                            <<idsToHeaders[inEdge.getsId2()]<<"\t"<<inEdge.getsId2Or()<<"\t"; // sUid2:sid2:ref
+                            <<idsToHeaders[inEdge.getsId1()]<<"\t"<<inEdge.getsId1Or()<<"\t"
+                            <<idsToHeaders[inEdge.getsId2()]<<"\t"<<inEdge.getsId2Or()<<"\t";
                     
                     *stream <<inEdge.getCigar(); // CIGAR
                     
@@ -395,8 +395,8 @@ public:
                 for (InGap inGap : inSequences.getGaps()) {
                     
                     *stream <<"J\t" // line type
-                            <<idsToHeaders[inGap.getsId1()]<<"\t"<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
-                            <<idsToHeaders[inGap.getsId2()]<<"\t"<<inGap.getsId2Or()<<"\t"; // sUid2:sid2:ref
+                            <<idsToHeaders[inGap.getsId1()]<<"\t"<<inGap.getsId1Or()<<"\t"
+                            <<idsToHeaders[inGap.getsId2()]<<"\t"<<inGap.getsId2Or()<<"\t";
                     
                     if (inGap.getDist() != 0) {
                         
@@ -466,8 +466,7 @@ public:
                     
                     if (inPath.getComment() != "") {
                     
-                    *stream <<"\tCM:Z:"
-                            <<inPath.getComment();
+                    *stream <<"\tCM:Z:"<<inPath.getComment();
                         
                     }
                     
@@ -1040,7 +1039,7 @@ public:
         
             inSequences.buildEdgeGraph(inSequences.getEdges());
 
-            verbose("Graph DFS");
+            lg.verbose("Graph DFS");
             
             std::vector<InSegment>* inSegments = inSequences.getInSegments();
             std::vector<unsigned int> componentLengths;

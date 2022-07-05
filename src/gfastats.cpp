@@ -43,6 +43,8 @@ int main(int argc, char **argv) {
     static struct option long_options[] = { // struct mapping long options
         {"input-sequence", required_argument, 0, 'f'},
         
+        {"threads", required_argument, 0, 'j'},
+        
         {"agp-to-path", required_argument, 0, 'a'}, // agp to path conversion
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
         {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
@@ -78,7 +80,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:a:b:e:f:i:k:o:s:tvh",
+        c = getopt_long(argc, argv, "-:a:b:e:f:i:j:k:o:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) { // if pipe wasn't assigned already
@@ -278,6 +280,11 @@ int main(int argc, char **argv) {
                 stats_flag = 1;
                 break;
                 
+            case 'j': // max threads
+                maxThreads = atoi(optarg);
+                stats_flag = 1;
+                break;
+                
             case 'k': // the swiss army knife
                 
                 if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
@@ -325,6 +332,7 @@ int main(int argc, char **argv) {
                 printf("-h --help print help and exit.\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
+                printf("-j --threads <n> numbers of threads (default:max).\n");
                 printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
                 printf("-s --out-size s|c|g  generates size list of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-t --tabular output in tabular format.\n");
@@ -367,15 +375,16 @@ int main(int argc, char **argv) {
     
     InFile inFile; // initialize sequence input file object
     
-    verbose("File object generated");
+    lg.verbose("File object generated");
     
     InSequences inSequences; // initialize sequence collection object
     
-    verbose("Sequence object generated");
+    lg.verbose("Sequence object generated");
     
-    inSequences = inFile.readFiles(iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
+    inFile.readFiles(inSequences, iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
     
-    verbose("Finished reading sequences from file to sequence object");
+    lg.verbose("Finished reading sequences from file to sequence object");
+    if(verbose_flag) {std::cerr<<"\n";};
     
     InSegment inSegment; // initialize a single input sequence object for output purposes
     
@@ -425,7 +434,7 @@ int main(int argc, char **argv) {
         
     }
     
-    verbose("Generated output");
+    lg.verbose("Generated output");
     
     exit(EXIT_SUCCESS);
     
