@@ -1139,8 +1139,21 @@ public:
             if (inSequences.threadEmpty()) break;
             
         }
+        
+        if(verbose_flag) {std::cerr<<"\n\n";};
             
         inSequences.threadsJoin();
+        
+        std::vector<Log> logs = inSequences.getLogs();
+        
+        //consolidate log
+        for (auto it = logs.begin(); it != logs.end(); it++) {
+         
+            it->print();
+            logs.erase(it--);
+            if(verbose_flag) {std::cerr<<"\n";};
+            
+        }
         
         if (rmGaps_flag) {
          

@@ -838,6 +838,11 @@ public:
         
     }
     
+    std::vector<Log> getLogs() {
+    
+        return logs;
+    
+    }
 
     InSegment addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
         
@@ -904,7 +909,7 @@ public:
         
     }
     
-    InGap pushbackGap(Log* threadLog, InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int pos, unsigned int* dist, char sign, unsigned int seqLen, int n) {
+    InGap pushbackGap(Log* threadLog, InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int* dist, char sign, unsigned int uId1, unsigned int uId2) {
         
         std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
@@ -914,7 +919,7 @@ public:
         
         InGap gap;
         
-        gap.newGap(uId.get(), (pos - *dist == 0) ? uId.peek() : uId.prev(), (pos - seqLen == 0 && n == -1) ? uId.prev() : uId.peek(), '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
+        gap.newGap(uId.get(), uId1, uId2, '+', sign, *dist, *seqHeader+"."+std::to_string(*iId));
         
         insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
         
@@ -931,11 +936,7 @@ public:
         
     }
     
-    InSegment pushbackSegment(Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
-        
-        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-        
-        lck.lock();
+    InSegment pushbackSegment(unsigned int currId, Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL) {
         
         std::string sequenceSubSeq, sequenceQualitySubSeq;
         
@@ -947,16 +948,19 @@ public:
             
         }
         
-        InSegment inSegment = addSegment(threadLog, uId.get(), *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
+        InSegment inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
         
-        insertHash(*seqHeader+"."+std::to_string(*iId), uId.get());
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
-        path->add(SEGMENT, uId.get(), '+');
+        lck.lock();
         
-        (*iId)++; // number of segments in the current scaffold
-        uId.next(); // unique numeric identifier
+        insertHash(*seqHeader+"."+std::to_string(*iId), currId);
         
         lck.unlock();
+        
+        path->add(SEGMENT, currId, '+');
+        
+        (*iId)++; // number of segments in the current scaffold
         
         *A = 0, *C = 0, *G = 0, *T = 0, *lowerCount = 0;
         
@@ -982,9 +986,11 @@ public:
         A = 0, C = 0, G = 0, T = 0,
         lowerCount = 0;
         unsigned int
+        currId = 0, nextId = 0, // temporarily store the id of a segment to connect gaps
         dist = 0, // gap size
         iId = 1, // scaffold feature internal identifier
-        sStart = 0, sEnd = 0; // segment start and end
+        sStart = 0, sEnd = 0, // segment start and end
+        count = 1; // hc
         char sign = '+';
         bool wasN = false;
         
@@ -1012,6 +1018,10 @@ public:
 
         uId.next();
         
+        currId = uId.get();
+        
+        uId.next();
+        
         lck.unlock();
         
         if (sequence.comment != "") {
@@ -1024,7 +1034,7 @@ public:
         
         for (char &base : sequence.sequence) {
 
-            unsigned int count = 1;
+            count = 1;
             if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
                 count = bedCoords[hc_index].second - bedCoords[hc_index].first;
                 ++hc_index;
@@ -1048,15 +1058,21 @@ public:
                     if (!wasN && pos>0) { // gap start and gap not at the start of the sequence
 
                         sEnd = pos - 1;
-                        newSegments.push_back(pushbackSegment(&threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+                        newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+                        
+                        lck.lock();
+                        
+                        uId.next();
+                        
+                        lck.unlock();
 
                     }
 
                     if(pos == seqLen) { // end of scaffold, terminal gap
 
                         sign = '-';
-
-                        newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, pos, &dist, sign, seqLen, -1));
+                        
+                        newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, &dist, sign, currId, currId));
 
                     }
 
@@ -1099,16 +1115,36 @@ public:
                     }
 
                     if (wasN) { // internal gap end
+                        
+                        lck.lock();
+                        
+                        uId.next();
+                        
+                        nextId = uId.get();
+                        
+                        uId.next();
+                        
+                        lck.unlock();
+                        
+                        if (newSegments.size() == 0) currId = nextId;
 
                         sStart = pos;
-                        newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, pos, &dist, sign, seqLen, 1));
+                        newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, &dist, sign, currId, nextId));
+                        
+                        currId = nextId;
 
                     }
 
                     if (pos == seqLen) {
 
                         sEnd = pos;
-                        newSegments.push_back(pushbackSegment(&threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+                        newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+                        
+                        lck.lock();
+                        
+                        uId.next();
+                        
+                        lck.unlock();
 
                     }
 
@@ -1231,20 +1267,19 @@ public:
             
         threadStart([=]{ return traverseInSequence(sequence); });
         
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        
+        lck.lock();
+        
         for (auto it = logs.begin(); it != logs.end(); it++) {
          
-            std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-            
-            lck.lock();
-            
             it->print();
             logs.erase(it--);
             if(verbose_flag) {std::cerr<<"\n";};
             
-            lck.unlock();
-            
-            
         }
+        
+        lck.unlock();
         
     }
     
@@ -2443,7 +2478,7 @@ public:
 
     // instruction methods
     
-    std::vector<InGap> getGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, returns all edges connecting them, if only one contig is provided returns all edges where it appears
+    std::vector<InGap> getGap(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, returns all gaps connecting them, if only one contig is provided returns all gaps where it appears
  
         std::vector<InGap> gaps;
         
@@ -2464,19 +2499,13 @@ public:
             
         }else{
             
-            auto it = inGaps.begin();
-            
-            while (it != end(inGaps)) {
-
-                auto gId = find_if(it, inGaps.end(), [sUId1](InGap& obj) {return obj.getsId1() == sUId1 || obj.getsId2() == sUId1;}); // check whether an edge containing the node was found
+            for (InGap inGap : inGaps) {
                 
-                if (gId != inGaps.end()) {
-                
-                    gaps.push_back(*gId);
+                if (inGap.getsId1() == sUId1 || inGap.getsId2() == sUId1) {
+                    
+                    gaps.push_back(inGap);
                     
                 }
-                
-                it++;
                 
             }
             
@@ -2486,7 +2515,7 @@ public:
         
     }
     
-    std::vector<unsigned int> removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all edges connecting them, if only one contig is provided remove all edges where it appears
+    std::vector<unsigned int> removeGaps(std::string* contig1, std::string* contig2 = NULL) { // if two contigs are provided, remove all gaps connecting them, if only one contig is provided remove all gaps where it appears
         
         std::vector<unsigned int> guIds;
  
