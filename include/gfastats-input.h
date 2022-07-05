@@ -1622,7 +1622,7 @@ public:
         
     }
 
-    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
+    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL, std::vector<Tag>* inTags = NULL) {
         
         std::vector<std::string> bedIncludeListHeaders;
         std::vector<std::string> bedExcludeListHeaders;

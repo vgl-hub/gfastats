@@ -1021,6 +1021,7 @@ public:
         }
 
         unsigned long long int seqLen = sequence.sequence.size()-1;
+        
         for (char &base : sequence.sequence) {
 
             unsigned int count = 1;
@@ -1232,9 +1233,16 @@ public:
         
         for (auto it = logs.begin(); it != logs.end(); it++) {
          
+            std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+            
+            lck.lock();
+            
             it->print();
             logs.erase(it--);
             if(verbose_flag) {std::cerr<<"\n";};
+            
+            lck.unlock();
+            
             
         }
         
