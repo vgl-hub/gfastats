@@ -371,6 +371,26 @@ public:
                     *stream<<"\n";
                     
                 }
+
+                for (InEdge inEdge : inSequences.getEdges()) {
+                    
+                    *stream <<"L\t" // line type
+                            <<idsToHeaders[inEdge.getsId1()]<<"\t"<<inEdge.getsId1Or()<<"\t" // sUid1:sid1:ref
+                            <<idsToHeaders[inEdge.getsId2()]<<"\t"<<inEdge.getsId2Or()<<"\t"; // sUid2:sid2:ref
+                    
+                    *stream <<inEdge.getCigar(); // CIGAR
+                    
+                    std::vector<Tag> tags = inEdge.getTags();
+                    
+                    for (Tag &tag : tags) {
+                    
+                        *stream <<"\t"<<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
+                        
+                    }
+                        
+                    *stream <<"\n";
+                    
+                }
                 
                 for (InGap inGap : inSequences.getGaps()) {
                     
@@ -388,9 +408,11 @@ public:
                         
                     }
                     
-                    for (std::string tag : inGap.getTags()) {
-                        
-                        *stream <<"\t"<<tag; // gap tags
+                    std::vector<Tag> tags = inGap.getTags();
+                    
+                    for (Tag &tag : tags) {
+                    
+                        *stream <<"\t"<<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
                         
                     }
                         
@@ -493,6 +515,26 @@ public:
                     
                 }
                 
+                for (InEdge inEdge : inSequences.getEdges()) {
+                    
+                    *stream <<"E\t" // line type
+                            <<idsToHeaders[inEdge.getsId1()]<<"\t"<<inEdge.getsId1Or()<<"\t" // sUid1:sid1:ref
+                            <<idsToHeaders[inEdge.getsId2()]<<"\t"<<inEdge.getsId2Or()<<"\t"; // sUid2:sid2:ref
+                    
+                    *stream <<inEdge.getCigar(); // CIGAR
+                    
+                    std::vector<Tag> tags = inEdge.getTags();
+                    
+                    for (Tag &tag : tags) {
+                    
+                        *stream <<"\t"<<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
+                        
+                    }
+                        
+                    *stream <<"\n";
+                    
+                }
+                
                 for (InGap inGap : inSequences.getGaps()) {
                     
                     if (inGap.getgHeader() == "") {
@@ -509,7 +551,17 @@ public:
                             <<gHeader<<"\t" // id
                             <<idsToHeaders[inGap.getsId1()]<<inGap.getsId1Or()<<"\t" // sUid1:sid1:ref
                             <<idsToHeaders[inGap.getsId2()]<<inGap.getsId2Or()<<"\t" // sUid2:sid2:ref
-                            <<inGap.getDist()<<"\n"; // size
+                            <<inGap.getDist(); // size
+                    
+                    std::vector<Tag> tags = inGap.getTags();
+                    
+                    for (Tag &tag : tags) {
+                    
+                        *stream <<"\t"<<tag.label<<":"<<tag.type<<":"<<tag.content; // tags
+                        
+                    }
+                        
+                    *stream <<"\n";
                     
                 }
                 
