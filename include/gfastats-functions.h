@@ -46,6 +46,10 @@ struct Edge {
     unsigned int id;
     char orientation1;
     
+    bool operator==(const Edge& e) const {
+        return orientation0 == e.orientation0 && orientation1 == e.orientation1 && id == e.id;
+    }
+    
 };
 
 enum PathType { SEGMENT, GAP };

@@ -419,6 +419,10 @@ public:
         this->tags = tags;
         
     }
+    
+    bool operator==(const InEdge& e) const {
+        return sId1 == e.sId1 && sId2 == e.sId2 && sId1Or == e.sId1Or && e.sId2Or == sId2Or;
+    }
 
     void seteUId(unsigned int i) { // absolute id
         eUId = i;
@@ -750,7 +754,7 @@ private:
     std::vector<InPath> inPaths;
     std::vector<std::vector<Gap>> adjListFW;
     std::vector<std::vector<Gap>> adjListBW;
-    std::vector<std::vector<Edge>> adjEdgeListFW;
+    std::vector<std::vector<Edge>> adjEdgeList;
     phmap::flat_hash_map<std::string, unsigned int> headersToIds;
     phmap::flat_hash_map<unsigned int, std::string> idsToHeaders;
     phmap::flat_hash_map<int, bool> visited, deleted;
@@ -1286,8 +1290,6 @@ public:
     void appendSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // method to append a new segment from a gfa
         
         lg.verbose("Header, comment, sequence and (optionally) quality read");
-        
-        if(verbose_flag) {std::cerr<<"\n";};
         
         traverseInSegment(&lg, seqHeader, seqComment, sequence, sequenceQuality, inSequenceTags);
         
@@ -2061,44 +2063,23 @@ public:
 
     void buildEdgeGraph(std::vector<InEdge> const& edges) { // graph constructor
         
-        unsigned int sIdx = 0;
-        
         lg.verbose("Started edge graph construction");
         
-        adjEdgeListFW.clear();
+        adjEdgeList.clear();
         
-        adjEdgeListFW.resize(uId.get()); // resize the adjaciency list to hold all nodes
+        adjEdgeList.resize(uId.get()); // resize the adjaciency list to hold all nodes
         
         for (auto &edge: edges) // add edges to the graph
         {
             
             lg.verbose("Adding edge: " + idsToHeaders[edge.sId1] + "(" + std::to_string(edge.sId1) + ") " + edge.sId1Or + " " + idsToHeaders[edge.sId2] + "(" + std::to_string(edge.sId2) + ") " + edge.sId2Or);
             
-            adjEdgeListFW.at(edge.sId1).push_back({edge.sId1Or, edge.sId2, edge.sId2Or}); // insert at edge start gap destination and orientations
+            adjEdgeList.at(edge.sId1).push_back({edge.sId1Or, edge.sId2, edge.sId2Or}); // insert at edge start gap destination and orientations
             
-            auto sId2 = edge.sId2;
+            Edge rvEdge {edge.sId2Or == '+' ? '-' : '+', edge.sId1, edge.sId1Or == '+' ? '-' : '+'};
             
-            auto sId = find_if(inSegments.begin(), inSegments.end(), [sId2](InSegment& obj) {return obj.getuId() == sId2;}); // given a node Uid, find it
-            
-            if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
-            
-            if (adjEdgeListFW.at(edge.sId2).size() >= sIdx) {
-            
-                auto e = adjEdgeListFW.at(edge.sId2).at(sIdx);
-                    
-                if(e.orientation0 != (edge.sId2Or == '+' ? '-' : '+') && // add backward edge only if is not already present
-                   e.id != edge.sId1 &&
-                   e.orientation1 != (edge.sId1Or == '+' ? '-' : '+')) {
-
-                    adjEdgeListFW.at(edge.sId2).push_back({edge.sId2Or == '+' ? '-' : '+', edge.sId1, edge.sId1Or == '+' ? '-' : '+'}); // assembly are bidirected by definition
-                
-                }
-                
-            }else{
-                
-                adjEdgeListFW.at(edge.sId2).push_back({edge.sId2Or == '+' ? '-' : '+', edge.sId1, edge.sId1Or == '+' ? '-' : '+'}); // assembly are bidirected by definition
-                
-            }
+            if (find(adjEdgeList.at(edge.sId2).begin(), adjEdgeList.at(edge.sId2).end(), rvEdge) == adjEdgeList.at(edge.sId2).end()) // add backward edge only if is not already present
+                adjEdgeList.at(edge.sId2).push_back(rvEdge); // assembly are bidirected by definition
             
         }
         
@@ -2120,14 +2101,14 @@ public:
         
        if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
 
-       if (adjEdgeListFW.at(v).size() > 1) { // if the vertex has more than one edge
+       if (adjEdgeList.at(v).size() > 1) { // if the vertex has more than one edge
 
             *componentLength += inSegments[sIdx].getSegmentLen(); 
 
-            char sign = adjEdgeListFW.at(v).at(0).orientation0;
+            char sign = adjEdgeList.at(v).at(0).orientation0;
             unsigned int i = 0;
 
-            for(auto edge : adjEdgeListFW.at(v)) {
+            for(auto edge : adjEdgeList.at(v)) {
             
                 i++;
 
@@ -2137,7 +2118,7 @@ public:
 
                     break;
 
-                }else if (i == adjEdgeListFW.at(v).size()) {
+                }else if (i == adjEdgeList.at(v).size()) {
 
                     lg.verbose("node: " + idsToHeaders[v] + " --> case b: single dead end, multiple edges");
 
@@ -2148,14 +2129,14 @@ public:
 
             }
 
-        }else if (adjEdgeListFW.at(v).size() == 1){ // this is a single dead end
+        }else if (adjEdgeList.at(v).size() == 1){ // this is a single dead end
 
             deadEnds += 1;
             *componentLength += inSegments[sIdx].getSegmentLen(); 
 
             lg.verbose("node: " + idsToHeaders[v] + " --> case c: single dead end, single edge");
 
-        }else if(adjEdgeListFW.at(v).size() == 0){ // disconnected component (double dead end)
+        }else if(adjEdgeList.at(v).size() == 0){ // disconnected component (double dead end)
 
             deadEnds += 2;
 
@@ -2166,7 +2147,7 @@ public:
 
         }
 
-        for (auto i: adjEdgeListFW[v]) { // recur for all forward vertices adjacent to this vertex
+        for (auto i: adjEdgeList[v]) { // recur for all forward vertices adjacent to this vertex
 
            if (!visited[i.id] && !deleted[i.id]) {
 
@@ -3429,22 +3410,22 @@ public:
                 
                 lg.verbose("The node was not yet visited or deleted");
                 
-                if (adjEdgeListFW.at(sUId).size() == 2 && adjEdgeListFW.at(sUId).at(0).orientation0 != adjEdgeListFW.at(sUId).at(1).orientation0) { // if it has exactly two edges with different orientation it could be a het region of the bubble
+                if (adjEdgeList.at(sUId).size() == 2 && adjEdgeList.at(sUId).at(0).orientation0 != adjEdgeList.at(sUId).at(1).orientation0) { // if it has exactly two edges with different orientation it could be a het region of the bubble
                     
                     lg.verbose("Exactly two edges with different orientation found. Could be a het region of the bubble");
                     
                     // then check the the adjacient nodes
-                    sUId1 = adjEdgeListFW.at(sUId).at(0).id;
-                    sId1Or = adjEdgeListFW.at(sUId).at(0).orientation1;
+                    sUId1 = adjEdgeList.at(sUId).at(0).id;
+                    sId1Or = adjEdgeList.at(sUId).at(0).orientation1;
                     
-                    sUId2 = adjEdgeListFW.at(sUId).at(1).id;
-                    sId2Or = adjEdgeListFW.at(sUId).at(1).orientation1;
+                    sUId2 = adjEdgeList.at(sUId).at(1).id;
+                    sId2Or = adjEdgeList.at(sUId).at(1).orientation1;
                     
-                    if (adjEdgeListFW.at(sUId1).size() >= 2 && adjEdgeListFW.at(sUId2).size() >= 2) { // both nodes need at least two edges to be a bubble
+                    if (adjEdgeList.at(sUId1).size() >= 2 && adjEdgeList.at(sUId2).size() >= 2) { // both nodes need at least two edges to be a bubble
                         
                         lg.verbose("Both neighbour nodes have at least two edges");
                         
-                        for (auto edge1 : adjEdgeListFW.at(sUId1)) {
+                        for (auto edge1 : adjEdgeList.at(sUId1)) {
                             
                             if (edge1.orientation1 == sId1Or && edge1.id != sUId) { // we are checking edges on the side of the potential bubble for node1, avoiding the original node
                                 
@@ -3458,7 +3439,7 @@ public:
                                     
                                 }else{
                                     
-                                    for (auto edge2 : adjEdgeListFW.at(sUId2)) {
+                                    for (auto edge2 : adjEdgeList.at(sUId2)) {
                                     
                                         if (edge2.orientation1 == sId2Or && edge1.id == edge2.id) { // we are checking edges on the side of the potential bubble for node2 and that it connects to the same node as node1
                                             
