@@ -255,6 +255,8 @@ std::string getFileExt(const std::string& FileName) // utility to get file exten
 std::string revCom(std::string seq) { // reverse complement
     auto lambda = [](const char c) {
         switch (c) {
+        case '*':
+            return '*';
         case 'A':
             return 'T';
         case 'G':
