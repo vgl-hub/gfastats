@@ -2577,15 +2577,43 @@ public:
         
     }
     
-    void removePath(unsigned int pUId, bool silent = false) {
+    void removePath(unsigned int pUId, bool all = false, bool silent = false) {
         
         auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
+        
+        if (all) {
+            
+            std::vector<PathComponent> pathComponents = pathIt->getComponents();
+            
+            for (auto &component : pathComponents) {
+                
+                unsigned int cUId = component.id;
+                
+                if (component.type == SEGMENT) {
+
+                    auto sId = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                    
+                    if (sId != inSegments.end())
+                    inSegments.erase(sId);
+
+                }else if (component.type == GAP) {
+                    
+                    auto gId = find_if(inGaps.begin(), inGaps.end(), [cUId](InGap& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                    
+                    if (gId != inGaps.end())
+                    inGaps.erase(gId);
+                    
+                }
+                
+            }
+            
+        }
         
         if (pathIt != inPaths.end()) {
             
             inPaths.erase(pathIt);
             
-        }else if (!silent){
+        }else if (!silent) {
             
             fprintf(stderr, "Warning: the path you are attempting to remove does not exist (pUId: %i). Skipping.\n", pUId);
             
@@ -2610,6 +2638,24 @@ public:
     }
     
     void removePathsFromSegment(unsigned int uId) {
+        
+        for (InPath& inPath : inPaths) {
+            
+            std::vector<PathComponent> pathComponents = inPath.getComponents();
+            
+            auto pathIt = find_if(pathComponents.begin(), pathComponents.end(), [uId](PathComponent& obj) {return obj.id == uId;}); // given a node uId, find if present in the given path
+            
+            if (pathIt != pathComponents.end()) {
+            
+                removePath(inPath.getpUId());
+
+            }
+            
+        }
+        
+    }
+    
+    void removePathComponents(unsigned int uId) {
         
         for (InPath& inPath : inPaths) {
             

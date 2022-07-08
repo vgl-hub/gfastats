@@ -1476,7 +1476,7 @@ public:
                 
             for (unsigned int pUId : oldPaths) { // remove paths left
                 
-                inSequences.removePath(pUId, true); // silently remove the original paths that were not joined or duplicated
+                inSequences.removePath(pUId, false, true); // silently remove the original paths that were not joined or duplicated
                 
             }
             

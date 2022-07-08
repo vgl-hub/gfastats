@@ -33,6 +33,14 @@ The REMOVE instruction removes the paths involving the specified segment.
 REMOVE  segment1
 ```
 
+## EXCLUDE
+
+The EXCLUDE instruction removes the specified path and all its components.
+
+```
+EXCLUDE  path1
+```
+
 ## ERASE
 
 The ERASE instruction trims off the sequence range specified from the given segment.

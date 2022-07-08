@@ -132,6 +132,16 @@ public:
 
         return true;
     }
+    
+    void readExclude(Instruction &instruction, std::vector<std::string> &arguments) {
+        instruction.path1 = arguments[1];
+    }
+
+    bool exclude(InSequences& inSequences, Instruction &instruction) { // removes a segment
+        inSequences.removePath(inSequences.headersToIds[instruction.path1], true); // remove the path and its components
+
+        return true;
+    }
 
     void readErase(Instruction &instruction, std::vector<std::string> &arguments) {  
         size_t pos1 = 0, pos2 = 0;
@@ -229,7 +239,8 @@ private:
         {"RVCP",        {&SAK::readRvcp,        &SAK::rvcp      } },
         {"INVERT",      {&SAK::readInvert,      &SAK::invert    } },
         {"COMPRESS",    {&SAK::readCompress,    &SAK::compress  } },
-        {"DECOMPRESS",  {&SAK::readDecompress,  &SAK::decompress} }
+        {"DECOMPRESS",  {&SAK::readDecompress,  &SAK::decompress} },
+        {"EXCLUDE",     {&SAK::readExclude,     &SAK::exclude   } }
     };
 
 public:
