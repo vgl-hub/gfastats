@@ -952,7 +952,7 @@ public:
 
         if (!tabular_flag) {
         
-            std::cout<<output("+++Summary+++")<<"\n";
+            std::cout<<output("+++Assembly summary+++")<<"\n";
         
         }
         
@@ -1086,6 +1086,24 @@ public:
             
             }
                 
+        }
+        
+        unsigned int readN = inSequences.getReadN();
+
+        if (readN > 0) {
+            
+            if (!tabular_flag) {
+            
+                std::cout<<output("+++Read summary+++")<<"\n";
+            
+            }
+            
+            std::cout<<output("# reads")<<readN<<"\n";
+            std::cout<<output("Total read length")<<inSequences.getTotReadLen()<<"\n";
+            std::cout<<output("Average read length") << gfa_round(inSequences.computeAvgReadLen()) << "\n";
+            inSequences.evalNstars('r'); // read N* statistics
+            std::cout<<output("Read N50")<<inSequences.getReadN50()<<"\n";
+            
         }
 
         return true;

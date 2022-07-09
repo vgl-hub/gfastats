@@ -17,6 +17,8 @@ public:
     
     void readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string sortType, std::string &iReadFileArg) {
         
+        inSequences.threadPoolInit(maxThreads); // initialize threadpool
+        
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
         
         std::unique_ptr<std::istream> stream;
@@ -170,8 +172,6 @@ public:
             }
             
             lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
-            
-            inSequences.threadPoolInit(maxThreads);
             
             if (stream) {
                 
@@ -1162,160 +1162,141 @@ public:
             
         }
         
-//        if (!iReadFileArg.empty()) {
-//
-//            // start streaming
-//            stream = make_unique<std::ifstream>(std::ifstream(iReadFileArg));
-//
-//            lg.verbose("Created stream object for input assembly file");
-//
-//            stream->read((char*)(&buffer), 1);
-//
-//            if (buffer == 0x1f && (stream->peek() == 0x8b)) { // check if pipe is gzipped
-//
-//                isGzip = true;
-//
-//                streamType = "gzip/file";
-//
-//            }
-//
-//            stream->unget();
-//
-//            std::ifstream is(iReadFileArg);
-//
-//            // this stream takes input from a gzip compressed file
-//            zstream::igzstream zfin(is);
-//
-//            if (isGzip) {
-//
-//                stream = make_unique<std::istream>(zfin.rdbuf());
-//
-//
-//            }
-//
-//            if (isPipe && (pipeType == 'f')) { // input is from pipe
-//
-//                std::cin.read((char*)(&buffer), 1);
-//
-//                if (buffer == 0x1f && (std::cin.peek() == 0x8b)) { // check if pipe is gzipped
-//
-//                    // this stream takes input from a gzip compressed pipe
-//                    zstream::igzstream zin(std::cin);
-//
-//                    stream = make_unique<std::istream>(zin.rdbuf());
-//
-//                    std::cout<<"Gz pipe currently not supported\n";
-//
-//                    exit(1);
-//
-//                }else {
-//
-//                    stream = make_unique<std::istream>(std::cin.rdbuf());
-//
-//                    streamType = "plain/pipe";
-//
-//                }
-//
-//                stream->unget();
-//
-//            }
-//
-//            lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
-//
-//            if (stream) {
-//
-//                switch (stream->peek()) {
-//
-//                    case '>': {
-//
-//                        stream->get();
-//
-//                        while (!stream->eof()) {
-//
-//                            getline(*stream, newLine);
-//
-//                            h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-//                            c = strtok(NULL,""); //read comment
-//
-//                            seqHeader = h;
-//
-//                            if (c != NULL) {
-//
-//                                seqComment = std::string(c);
-//
-//                            }
-//
-//                            inSequence.clear();
-//
-//                            getline(*stream, inSequence, '>');
-//
-//                            inSequence.erase(std::remove(inSequence.begin(), inSequence.end(), '\n'), inSequence.end());
-//
-//                            lg.verbose("Individual fasta sequence read");
-//
-//                            Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList);
-//
-//                            if (sequence.header != "") {
-//
-//                                sequence.seqPos = seqPos; // remember the order
-//
-//                                inSequences.appendSequence(sequence);
-//
-//                                seqPos++;
-//
-//                            }
-//
-//                        }
-//
-//                        break;
-//                    }
-//                    case '@': {
-//
-//                        while (getline(*stream, newLine)) { // file input
-//
-//                            newLine.erase(0, 1);
-//
-//                            h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-//                            c = strtok(NULL,""); //read comment
-//
-//                            seqHeader = h;
-//
-//                            if (c != NULL) {
-//
-//                                seqComment = std::string(c);
-//
-//                            }
-//
-//                            getline(*stream, newLine);
-//                            inSequence = newLine;
-//
-//                            getline(*stream, newLine);
-//
-//                            getline(*stream, newLine);
-//                            inSequenceQuality = newLine;
-//
-//                            Sequence sequence = {seqHeader, seqComment, inSequence, inSequenceQuality};
-//
-//                            if (sequence.header != "") {
-//
-//                                sequence.seqPos = seqPos; // remember the order
-//
-//                                inSequences.appendSegment(sequence);
-//                                seqPos++;
-//
-//                            }
-//
-//                        }
-//
-//                        break;
-//
-//                    }
-//
-//                }
-//
-//            }
-//
-//        }
+        if (!iReadFileArg.empty()) {
+
+            // start streaming
+            stream = make_unique<std::ifstream>(std::ifstream(iReadFileArg));
+
+            lg.verbose("Created stream object for input read file");
+
+            stream->read((char*)(&buffer), 1);
+
+            if (buffer == 0x1f && (stream->peek() == 0x8b)) { // check if pipe is gzipped
+
+                isGzip = true;
+
+                streamType = "gzip/file";
+
+            }
+
+            stream->unget();
+
+            std::ifstream is(iReadFileArg);
+
+            // this stream takes input from a gzip compressed file
+            zstream::igzstream zfin(is);
+
+            if (isGzip) {
+
+                stream = make_unique<std::istream>(zfin.rdbuf());
+
+
+            }
+
+            if (isPipe && (pipeType == 'f')) { // input is from pipe
+
+                std::cin.read((char*)(&buffer), 1);
+
+                if (buffer == 0x1f && (std::cin.peek() == 0x8b)) { // check if pipe is gzipped
+
+                    // this stream takes input from a gzip compressed pipe
+                    zstream::igzstream zin(std::cin);
+
+                    stream = make_unique<std::istream>(zin.rdbuf());
+
+                    std::cout<<"Gz pipe currently not supported\n";
+
+                    exit(1);
+
+                }else {
+
+                    stream = make_unique<std::istream>(std::cin.rdbuf());
+
+                    streamType = "plain/pipe";
+
+                }
+
+                stream->unget();
+
+            }
+
+            lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
+
+            if (stream) {
+
+                switch (stream->peek()) {
+
+                    case '>': {
+
+                        stream->get();
+
+                        while (!stream->eof()) {
+
+                            getline(*stream, newLine);
+
+                            h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+                            c = strtok(NULL,""); //read comment
+
+                            seqHeader = h;
+
+                            if (c != NULL) {
+
+                                seqComment = std::string(c);
+
+                            }
+
+                            inSequence.clear();
+
+                            getline(*stream, inSequence, '>');
+
+                            inSequences.appendRead({seqHeader, seqComment, inSequence});
+                            
+                            lg.verbose("Individual fasta sequence read");
+
+                        }
+
+                        break;
+                    }
+                    case '@': {
+
+                        while (getline(*stream, newLine)) { // file input
+
+                            newLine.erase(0, 1);
+
+                            h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+                            c = strtok(NULL,""); //read comment
+
+                            seqHeader = h;
+
+                            if (c != NULL) {
+
+                                seqComment = std::string(c);
+
+                            }else{
+                                
+                                seqComment = "";
+                                
+                            }
+
+                            getline(*stream, inSequence);
+                            getline(*stream, newLine);
+                            getline(*stream, inSequenceQuality);
+
+                            inSequences.appendRead({seqHeader, seqComment, inSequence, inSequenceQuality});
+                            
+                            lg.verbose("Individual fastq sequence read");
+
+                        }
+
+                        break;
+
+                    }
+                        
+                }
+
+            }
+
+        }
         
         while (true) {
             
@@ -1973,7 +1954,6 @@ public:
                     if(inSequences->getInSegments()->size() == bedIncludeList.size()) { // check if we retrieved all we needed
                         
                         lg.verbose("Found all sequences, stop streaming input");
-                        
                         
                     }
                     

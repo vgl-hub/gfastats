@@ -762,6 +762,7 @@ private:
     std::vector<InGap> inGaps;
     std::vector<InEdge> inEdges;
     std::vector<InPath> inPaths;
+    std::vector<InSegment> inReads;
     std::vector<std::vector<Gap>> adjListFW;
     std::vector<std::vector<Gap>> adjListBW;
     std::vector<std::vector<Edge>> adjEdgeList;
@@ -786,6 +787,8 @@ private:
     
     std::vector<unsigned long long int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> gapLstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    
+    std::vector<unsigned long long int> readNstars    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
     double scaffAuN = 0, scaffAuNG = 0, contigAuN = 0, contigAuNG = 0, gapAuN = 0;
     
@@ -1194,7 +1197,7 @@ public:
 
     }
     
-    void traverseInSegment(Sequence sequence, std::vector<Tag> inSequenceTags) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSegment(Sequence sequence, std::vector<Tag> inSequenceTags) { // traverse the segment
         
         Log threadLog;
         
@@ -1287,9 +1290,67 @@ public:
         
     }
     
-    void appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
+    void traverseInRead(Sequence sequence) { // traverse the read
         
-        lg.verbose("Header, comment, sequence, and (optionally) quality read");
+        Log threadLog;
+        
+        threadLog.setId(sequence.seqPos);
+        
+        unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
+        
+        for (char &base : sequence.sequence) {
+            
+            if (islower(base)) {
+                
+                lowerCount++;
+                
+            }
+                    
+            switch (base) {
+                case 'A':
+                case 'a':{
+                    
+                    A++;
+                    break;
+                    
+                }
+                case 'C':
+                case 'c':{
+                    
+                    C++;
+                    break;
+                    
+                }
+                case 'G':
+                case 'g': {
+                    
+                    G++;
+                    break;
+                    
+                }
+                case 'T':
+                case 't': {
+                    
+                    T++;
+                    break;
+                    
+                }
+                    
+                default: {
+                    break;
+                }
+                    
+            }
+                
+        }
+        
+        inReads.push_back(addSegment(&threadLog, 0, 0, sequence.header, &sequence.comment, &sequence.sequence, &A, &C, &G, &T, &lowerCount, sequence.seqPos, &sequence.sequenceQuality));
+        
+        logs.push_back(threadLog);
+        
+    }
+    
+    void appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
             
         threadStart([=]{ return traverseInSequence(sequence); });
         
@@ -1313,9 +1374,31 @@ public:
     
     void appendSegment(Sequence sequence, std::vector<Tag> inSequenceTags) { // method to append a new segment from a gfa
         
-        lg.verbose("Header, comment, sequence and (optionally) quality read");
+        lg.verbose("Segment read");
         
         threadStart([=]{ return traverseInSegment(sequence, inSequenceTags); });
+        
+        if(verbose_flag) {std::cerr<<"\n";};
+        
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        
+        lck.lock();
+        
+        for (auto it = logs.begin(); it != logs.end(); it++) {
+         
+            it->print();
+            logs.erase(it--);
+            if(verbose_flag) {std::cerr<<"\n";};
+            
+        }
+        
+        lck.unlock();
+        
+    }
+    
+    void appendRead(Sequence sequence) { // method to append a new segment from a gfa
+        
+        threadStart([=]{ return traverseInRead(sequence); });
         
         if(verbose_flag) {std::cerr<<"\n";};
         
@@ -1462,6 +1545,21 @@ public:
             case 'g': {
                 
                 computeNstars(gapLens, gapNstars, gapLstars);
+                break;
+                
+            }
+                
+            case 'r': {
+                
+                std::vector<unsigned long long int> readLens;
+                
+                for (InSegment& read : inReads) {
+                    
+                    readLens.push_back(read.getA() + read.getC() + read.getG() + read.getT());
+                
+                }
+                
+                computeNstars(readLens, readNstars, gapLstars);
                 break;
                 
             }
@@ -3564,6 +3662,42 @@ public:
     }
     
     // end of gfa methods
+    
+    // read methods
+    
+    unsigned int getReadN() {
+        
+        return inReads.size();
+        
+    }
+    
+    unsigned long long int getTotReadLen() {
+        
+        unsigned long long int totReadLen = 0;
+        
+        for (InSegment& read : inReads) {
+            
+            totReadLen += read.getA() + read.getC() + read.getG() + read.getT();
+            
+        }
+        
+        return totReadLen;
+        
+    }
+    
+    double computeAvgReadLen() {
+        
+        return (double) getTotReadLen()/getReadN();
+        
+    }
+    
+    unsigned long long int getReadN50() {
+        
+        return readNstars[4];
+        
+    }
+    
+    // end of read methods
     
 };
 
