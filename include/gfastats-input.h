@@ -1302,7 +1302,7 @@ public:
             
             if (inSequences.threadEmpty()) {inSequences.threadsJoin(); break;}
             lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             
         }
         
