@@ -1344,9 +1344,15 @@ public:
                 
         }
         
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        
+        lck.lock();
+        
         inReads.push_back(addSegment(&threadLog, 0, 0, sequence.header, &sequence.comment, &sequence.sequence, &A, &C, &G, &T, &lowerCount, sequence.seqPos, &sequence.sequenceQuality));
         
         logs.push_back(threadLog);
+        
+        lck.unlock();
         
     }
     
