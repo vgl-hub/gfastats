@@ -70,7 +70,7 @@ private:
     std::string inSequence;
     std::string inSequenceQuality;
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
-    unsigned int uId = 0, iId = 0;
+    unsigned int uId = 0, iId = 0, seqPos = 0;
     std::vector<Tag> tags;
     
     friend class SAK;
@@ -107,6 +107,10 @@ public:
         iId = i;
     }
     
+    void setSeqPos(unsigned int i) { // temporary id, internal to scaffold
+        seqPos = i;
+    }
+    
     std::string getSeqHeader() {
         return seqHeader;
     }
@@ -137,6 +141,12 @@ public:
         
         return start != 0 || end != 0 ? inSequenceQuality.substr(start-1, end-start+1) : inSequenceQuality;
         
+    }
+    
+    unsigned int getSeqPos() {
+        
+        return seqPos;
+    
     }
     
     unsigned long long int getSegmentLen(unsigned long long int start = 0, unsigned long long int end = 0) {
@@ -848,7 +858,7 @@ public:
     
     }
 
-    InSegment addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
+    InSegment addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) {
         
         threadLog->add("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
         
@@ -860,6 +870,8 @@ public:
         inSegment.setiId(iId); // set temporary sId internal to scaffold
         
         inSegment.setuId(uId); // set absolute id
+        
+        inSegment.setSeqPos(seqPos); // set original order
         
         inSegment.setSeqHeader(&seqHeader);
         
@@ -952,7 +964,7 @@ public:
             
         }
         
-        InSegment inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, &sequenceQualitySubSeq);
+        InSegment inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, 0, &sequenceQualitySubSeq);
         
         std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
@@ -1182,12 +1194,16 @@ public:
 
     }
     
-    void traverseInSegment(Log* lg, std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // traverse the sequence to split at gaps and measure sequence properties
+    void traverseInSegment(Sequence sequence, std::vector<Tag> inSequenceTags) { // traverse the sequence to split at gaps and measure sequence properties
+        
+        Log threadLog;
+        
+        threadLog.setId(sequence.seqPos);
         
         unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
         unsigned int sUId = 0;
         
-        for (char &base : *sequence) {
+        for (char &base : sequence.sequence) {
             
             if (islower(base)) {
                 
@@ -1227,9 +1243,9 @@ public:
                     
                 case '*': {
                     
-                    auto tag = find_if(inSequenceTags->begin(), inSequenceTags->end(), [](Tag& obj) {return checkTag(obj.label, "LN");}); // find if length tag is present in the case sequence is missing
+                    auto tag = find_if(inSequenceTags.begin(), inSequenceTags.end(), [](Tag& obj) {return checkTag(obj.label, "LN");}); // find if length tag is present in the case sequence is missing
                     
-                    if (tag != inSequenceTags->end()) {
+                    if (tag != inSequenceTags.end()) {
                         
                         lowerCount = stol(tag->content);
                         
@@ -1243,11 +1259,15 @@ public:
                 
         }
         
-        phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (*seqHeader); // get the headers to uIds table to look for the header
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+        
+        lck.lock();
+        
+        phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (sequence.header); // get the headers to uIds table to look for the header
         
         if (got == headersToIds.end()) { // this is the first time we see this segment
             
-            insertHash(*seqHeader, uId.get());
+            insertHash(sequence.header, uId.get());
             
             sUId = uId.get();
             
@@ -1259,15 +1279,15 @@ public:
             
         }
                 
-        inSegments.push_back(addSegment(lg, sUId, 0, *seqHeader, seqComment, sequence, &A, &C, &G, &T, &lowerCount, sequenceQuality, inSequenceTags));
+        inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence.header, &sequence.comment, &sequence.sequence, &A, &C, &G, &T, &lowerCount, sequence.seqPos, &sequence.sequenceQuality, &inSequenceTags));
+        
+        lck.unlock();
         
     }
     
     void appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
         
         lg.verbose("Header, comment, sequence, and (optionally) quality read");
-            
-        if(verbose_flag) {std::cerr<<"\n";};
             
         threadStart([=]{ return traverseInSequence(sequence); });
         
@@ -1287,15 +1307,25 @@ public:
         
     }
     
-    void appendSegment(std::string* seqHeader, std::string* seqComment, std::string* sequence, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL) { // method to append a new segment from a gfa
+    void appendSegment(Sequence sequence, std::vector<Tag> inSequenceTags) { // method to append a new segment from a gfa
         
         lg.verbose("Header, comment, sequence and (optionally) quality read");
         
-        traverseInSegment(&lg, seqHeader, seqComment, sequence, sequenceQuality, inSequenceTags);
+        threadStart([=]{ return traverseInSegment(sequence, inSequenceTags); });
         
-        lg.verbose("Segment traversed");
+        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
-        if(verbose_flag) {std::cerr<<"\n";};
+        lck.lock();
+        
+        for (auto it = logs.begin(); it != logs.end(); it++) {
+         
+            it->print();
+            logs.erase(it--);
+            if(verbose_flag) {std::cerr<<"\n";};
+            
+        }
+        
+        lck.unlock();
         
     }
     
@@ -1873,6 +1903,12 @@ public:
     
     //sorting methods
 
+    void sortSegmentsByOriginal(){
+        
+        sort(inSegments.begin(), inSegments.end(), [](InSegment& one, InSegment& two){return one.getSeqPos() < two.getSeqPos();});
+        
+    }
+    
     void sortPathsByOriginal(){
         
         sort(inPaths.begin(), inPaths.end(), [](InPath& one, InPath& two){return one.getSeqPos() < two.getSeqPos();});
@@ -2343,7 +2379,7 @@ public:
         
         for (InPath& inPath : inPaths) { // loop through all paths
             
-            walkPath(inPath.getpUId());
+            walkPath(&inPath);
             
             totScaffLen += inPath.getLen();
          
@@ -3166,13 +3202,11 @@ public:
         
     }
     
-    void walkPath(unsigned int pUId) {
+    void walkPath(InPath* path) {
         
         unsigned int cUId = 0, gapLen = 0;
-
-        auto pathIt = find_if(inPaths.begin(), inPaths.end(), [pUId](InPath& obj) {return obj.getpUId() == pUId;}); // given a path pUId, find it
         
-        std::vector<PathComponent> pathComponents = pathIt->getComponents();
+        std::vector<PathComponent> pathComponents = path->getComponents();
         
         for (std::vector<PathComponent>::iterator component = pathComponents.begin(); component != pathComponents.end(); component++) {
                 
@@ -3184,23 +3218,23 @@ public:
                 
                 contigLens.push_back(inSegment->getSegmentLen(component->start, component->end));
                 
-                pathIt->increaseContigN();
+                path->increaseContigN();
                 
-                pathIt->increaseLen(inSegment->getSegmentLen(component->start, component->end));
+                path->increaseLen(inSegment->getSegmentLen(component->start, component->end));
                 
-                pathIt->increaseSegmentLen(inSegment->getSegmentLen(component->start, component->end));
+                path->increaseSegmentLen(inSegment->getSegmentLen(component->start, component->end));
                 
-                pathIt->increaseLowerCount(inSegment->getLowerCount(component->end - component->start));
+                path->increaseLowerCount(inSegment->getLowerCount(component->end - component->start));
                 
                 if (component->start == 0 || component->end == 0) {
                 
-                    pathIt->increaseA(component->orientation == '+' ? inSegment->getA() : inSegment->getT());
+                    path->increaseA(component->orientation == '+' ? inSegment->getA() : inSegment->getT());
                     
-                    pathIt->increaseC(component->orientation == '+' ? inSegment->getC() : inSegment->getG());
+                    path->increaseC(component->orientation == '+' ? inSegment->getC() : inSegment->getG());
                     
-                    pathIt->increaseG(component->orientation == '+' ? inSegment->getG() : inSegment->getC());
+                    path->increaseG(component->orientation == '+' ? inSegment->getG() : inSegment->getC());
                     
-                    pathIt->increaseT(component->orientation == '+' ? inSegment->getT() : inSegment->getA());
+                    path->increaseT(component->orientation == '+' ? inSegment->getT() : inSegment->getA());
                     
                 }else{
                     
@@ -3214,28 +3248,28 @@ public:
                                 case 'A':
                                 case 'a':{
                                     
-                                    pathIt->increaseA(1);
+                                    path->increaseA(1);
                                     break;
                                     
                                 }
                                 case 'C':
                                 case 'c':{
                                     
-                                    pathIt->increaseC(1);
+                                    path->increaseC(1);
                                     break;
                                     
                                 }
                                 case 'G':
                                 case 'g': {
                                     
-                                    pathIt->increaseG(1);
+                                    path->increaseG(1);
                                     break;
                                     
                                 }
                                 case 'T':
                                 case 't': {
                                     
-                                    pathIt->increaseT(1);
+                                    path->increaseT(1);
                                     break;
                                     
                                 }
@@ -3252,28 +3286,28 @@ public:
                                 case 'A':
                                 case 'a':{
                                     
-                                    pathIt->increaseT(1);
+                                    path->increaseT(1);
                                     break;
                                     
                                 }
                                 case 'C':
                                 case 'c':{
                                     
-                                    pathIt->increaseG(1);
+                                    path->increaseG(1);
                                     break;
                                     
                                 }
                                 case 'G':
                                 case 'g': {
                                     
-                                    pathIt->increaseC(1);
+                                    path->increaseC(1);
                                     break;
                                     
                                 }
                                 case 'T':
                                 case 't': {
                                     
-                                    pathIt->increaseA(1);
+                                    path->increaseA(1);
                                     break;
                                     
                                 }
@@ -3300,7 +3334,7 @@ public:
                     
                 }
                 
-                pathIt->increaseLen(inGap->getDist(component->start - component->end));
+                path->increaseLen(inGap->getDist(component->start - component->end));
                 
             }
             

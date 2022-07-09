@@ -15,7 +15,7 @@ class InFile {
     
 public:
     
-    void readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string  sortType) {
+    void readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string sortType, std::string &iReadFileArg) {
         
         std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
         
@@ -114,7 +114,7 @@ public:
         // start streaming
         stream = make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
         
-        lg.verbose("Created stream object");
+        lg.verbose("Created stream object for input assembly file");
 
         stream->read((char*)(&buffer), 1);
 
@@ -140,7 +140,7 @@ public:
         
         }
         
-        if (isPipe && (pipeType == 's')) { // input is from pipe
+        if (isPipe && (pipeType == 'f')) { // input is from pipe
             
             std::cin.read((char*)(&buffer), 1);
 
@@ -208,7 +208,7 @@ public:
                         
                         lg.verbose("Individual fasta sequence read");
                         
-                        Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList);
+                        Sequence sequence = includeExcludeSeq(seqHeader, seqComment, &inSequence, bedIncludeList, bedExcludeList);
                         
                         if (sequence.header != "") {
                             
@@ -249,7 +249,7 @@ public:
                         getline(*stream, newLine);
                         inSequenceQuality = newLine;
 
-                        Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList, inSequenceQuality);
+                        Sequence sequence = includeExcludeSeq(seqHeader, seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
                         
                         if (sequence.header != "") {
                             
@@ -368,14 +368,29 @@ public:
                                     
                                     }
                                     
-                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    Sequence sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                                     
-                                    lineN++;
+                                    if (sequence.header != "") {
+                                        
+                                        sequence.seqPos = seqPos; // remember the order
+                                    
+                                        inSequences.appendSegment(sequence, inTags);
+                                        seqPos++;
+                                        
+                                    }
                                     
                                     break;
                                     
                                 }
                                 case 'G': {
+                                    
+                                    while (true) {
+                                        
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                                        lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
+                                        if (inSequences.threadEmpty()) break;
+                                        
+                                    }
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
@@ -470,6 +485,14 @@ public:
 
                                 case 'E': {
                                     
+                                    while (true) {
+                                        
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                                        lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
+                                        if (inSequences.threadEmpty()) break;
+                                        
+                                    }
+                                    
                                     arguments = readDelimited(newLine, "\t");
                                     
                                     eHeader = arguments[1];
@@ -560,6 +583,14 @@ public:
                                 }
                                     
                                 case 'O': {
+                                    
+                                    while (true) {
+                                        
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                                        lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
+                                        if (inSequences.threadEmpty()) break;
+                                        
+                                    }
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
@@ -721,15 +752,30 @@ public:
                                     
                                     }
                                     
-                                    stopStream = includeExcludeAppendSegment(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inTags);
+                                    Sequence sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inTags);
                                     
-                                    lineN++;
+                                    if (sequence.header != "") {
+                                        
+                                        sequence.seqPos = seqPos; // remember the order
+                                    
+                                        inSequences.appendSegment(sequence, inTags);
+                                        seqPos++;
+                                        
+                                    }
                                     
                                     break;
                                     
                                 }
                                     
                                 case 'J': {
+                                    
+                                    while (true) {
+                                        
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                                        lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
+                                        if (inSequences.threadEmpty()) break;
+                                        
+                                    }
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
@@ -824,6 +870,14 @@ public:
 
                                 case 'L': {
                                     
+                                    while (true) {
+                                        
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                                        lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
+                                        if (inSequences.threadEmpty()) break;
+                                        
+                                    }
+                                    
                                     arguments = readDelimited(newLine, "\t");
 
                                     uId = inSequences.getuId();
@@ -912,6 +966,14 @@ public:
                                 }
 
                                 case 'P': {
+                                    
+                                    while (true) {
+                                        
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                                        lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
+                                        if (inSequences.threadEmpty()) break;
+                                        
+                                    }
                                     
                                     arguments = readDelimited(newLine, "\t");
                                     
@@ -1132,9 +1194,164 @@ public:
 
         }
         
+//        if (!iReadFileArg.empty()) {
+//
+//            // start streaming
+//            stream = make_unique<std::ifstream>(std::ifstream(iReadFileArg));
+//
+//            lg.verbose("Created stream object for input assembly file");
+//
+//            stream->read((char*)(&buffer), 1);
+//
+//            if (buffer == 0x1f && (stream->peek() == 0x8b)) { // check if pipe is gzipped
+//
+//                isGzip = true;
+//
+//                streamType = "gzip/file";
+//
+//            }
+//
+//            stream->unget();
+//
+//            std::ifstream is(iReadFileArg);
+//
+//            // this stream takes input from a gzip compressed file
+//            zstream::igzstream zfin(is);
+//
+//            if (isGzip) {
+//
+//                stream = make_unique<std::istream>(zfin.rdbuf());
+//
+//
+//            }
+//
+//            if (isPipe && (pipeType == 'f')) { // input is from pipe
+//
+//                std::cin.read((char*)(&buffer), 1);
+//
+//                if (buffer == 0x1f && (std::cin.peek() == 0x8b)) { // check if pipe is gzipped
+//
+//                    // this stream takes input from a gzip compressed pipe
+//                    zstream::igzstream zin(std::cin);
+//
+//                    stream = make_unique<std::istream>(zin.rdbuf());
+//
+//                    std::cout<<"Gz pipe currently not supported\n";
+//
+//                    exit(1);
+//
+//                }else {
+//
+//                    stream = make_unique<std::istream>(std::cin.rdbuf());
+//
+//                    streamType = "plain/pipe";
+//
+//                }
+//
+//                stream->unget();
+//
+//            }
+//
+//            lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
+//
+//            if (stream) {
+//
+//                switch (stream->peek()) {
+//
+//                    case '>': {
+//
+//                        stream->get();
+//
+//                        while (!stream->eof()) {
+//
+//                            getline(*stream, newLine);
+//
+//                            h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+//                            c = strtok(NULL,""); //read comment
+//
+//                            seqHeader = h;
+//
+//                            if (c != NULL) {
+//
+//                                seqComment = std::string(c);
+//
+//                            }
+//
+//                            inSequence.clear();
+//
+//                            getline(*stream, inSequence, '>');
+//
+//                            inSequence.erase(std::remove(inSequence.begin(), inSequence.end(), '\n'), inSequence.end());
+//
+//                            lg.verbose("Individual fasta sequence read");
+//
+//                            Sequence sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList);
+//
+//                            if (sequence.header != "") {
+//
+//                                sequence.seqPos = seqPos; // remember the order
+//
+//                                inSequences.appendSequence(sequence);
+//
+//                                seqPos++;
+//
+//                            }
+//
+//                        }
+//
+//                        break;
+//                    }
+//                    case '@': {
+//
+//                        while (getline(*stream, newLine)) { // file input
+//
+//                            newLine.erase(0, 1);
+//
+//                            h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+//                            c = strtok(NULL,""); //read comment
+//
+//                            seqHeader = h;
+//
+//                            if (c != NULL) {
+//
+//                                seqComment = std::string(c);
+//
+//                            }
+//
+//                            getline(*stream, newLine);
+//                            inSequence = newLine;
+//
+//                            getline(*stream, newLine);
+//
+//                            getline(*stream, newLine);
+//                            inSequenceQuality = newLine;
+//
+//                            Sequence sequence = {seqHeader, seqComment, inSequence, inSequenceQuality};
+//
+//                            if (sequence.header != "") {
+//
+//                                sequence.seqPos = seqPos; // remember the order
+//
+//                                inSequences.appendSegment(sequence);
+//                                seqPos++;
+//
+//                            }
+//
+//                        }
+//
+//                        break;
+//
+//                    }
+//
+//                }
+//
+//            }
+//
+//        }
+        
         while (true) {
             
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
             if (inSequences.threadEmpty()) break;
             
@@ -1154,6 +1371,8 @@ public:
             if(verbose_flag) {std::cerr<<"\n";};
             
         }
+        
+        inSequences.sortSegmentsByOriginal();
         
         if (rmGaps_flag) {
          
@@ -1486,7 +1705,7 @@ public:
         
     }
     
-    Sequence includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string inSequenceQuality = "") {
+    Sequence includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL) {
         
         std::vector<std::string> bedIncludeListHeaders;
         std::vector<std::string> bedExcludeListHeaders;
@@ -1528,11 +1747,11 @@ public:
                 
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
-                    inSequence.erase(offset, cBegin-prevCEnd);
+                    inSequence->erase(offset, cBegin-prevCEnd);
                     
-                    if (inSequenceQuality != "") {
+                    if (inSequenceQuality != NULL) {
                     
-                        inSequenceQuality.erase(offset, cBegin-prevCEnd);
+                        inSequenceQuality->erase(offset, cBegin-prevCEnd);
                     
                     }
                         
@@ -1546,15 +1765,15 @@ public:
                 
             }
                 
-            if (outSeq && inSequence.size()>0) {
+            if (outSeq && inSequence->size()>0) {
                 
                 if (offset>0) {
                 
-                    inSequence.erase(offset, inSequence.size()-offset);
+                    inSequence->erase(offset, inSequence->size()-offset);
                     
-                    if (inSequenceQuality != "") {
+                    if (inSequenceQuality != NULL) {
                     
-                        inSequenceQuality.erase(offset, inSequenceQuality.size()-offset);
+                        inSequenceQuality->erase(offset, inSequenceQuality->size()-offset);
                         
                     }
                     
@@ -1588,11 +1807,11 @@ public:
                 
                 if (!(cBegin == 0 && cEnd == 0)) {
                     
-                    inSequence.erase(cBegin-offset, cEnd-cBegin);
+                    inSequence->erase(cBegin-offset, cEnd-cBegin);
                     
-                    if (inSequenceQuality != "") {
+                    if (inSequenceQuality != NULL) {
                     
-                        inSequenceQuality.erase(cBegin-offset, cEnd-cBegin);
+                        inSequenceQuality->erase(cBegin-offset, cEnd-cBegin);
                         
                     }
                         
@@ -1619,9 +1838,9 @@ public:
                     
         }
         
-        if (outSeq && inSequence.size()>0) {
+        if (outSeq && inSequence->size()>0) {
         
-            Sequence sequence {seqHeader, seqComment, inSequence, inSequenceQuality};
+            Sequence sequence {seqHeader, seqComment, *inSequence, inSequenceQuality != NULL ? *inSequenceQuality : ""};
             return sequence;
         
         }else {
@@ -1635,7 +1854,7 @@ public:
         
     }
 
-    bool includeExcludeAppendSegment(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL, std::vector<Tag>* inTags = NULL) {
+    Sequence includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality = NULL, std::vector<Tag>* inTags = NULL) {
         
         std::vector<std::string> bedIncludeListHeaders;
         std::vector<std::string> bedExcludeListHeaders;
@@ -1643,12 +1862,14 @@ public:
  
         bedIncludeListHeaders = bedIncludeList.getSeqHeaders();
         bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
-        bool outSeq;
+        bool outSeq = false;
+        
+        lg.verbose("Processing sequence: " + *seqHeader);
         
         if   (bedIncludeList.empty() &&
               bedExcludeList.empty()) {
             
-            inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality, inTags);
+            outSeq = true;
             
         }else if(!bedIncludeList.empty() &&
                   bedExcludeList.empty()) {
@@ -1657,7 +1878,7 @@ public:
                 
                 lg.verbose("Found all sequences, stop streaming input");
                 
-                return true;
+                outSeq = true;
                 
             }
             
@@ -1715,11 +1936,11 @@ public:
                     
                 }
                 
-                inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
+                outSeq = true;
             
             }else {
                 
-                lg.verbose("Scaffold entirely removed as a result of include: " + *seqHeader);
+                lg.verbose("Sequence entirely removed as a result of include: " + *seqHeader);
                 
             }
                 
@@ -1769,11 +1990,11 @@ public:
                 
             if (outSeq && inSequence->size()>0) {
             
-                inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
+                outSeq = true;
             
             }else {
                 
-                lg.verbose("Scaffold entirely removed as a result of exclude: " + *seqHeader);
+                lg.verbose("Sequence entirely removed as a result of exclude: " + *seqHeader);
                 
             }
                     
@@ -1787,15 +2008,24 @@ public:
                         
                         lg.verbose("Found all sequences, stop streaming input");
                         
-                        return true;
                         
                     }
                     
-                    inSequences->appendSegment(seqHeader, seqComment, inSequence, inSequenceQuality);
-                    
         }
         
-        return false;
+        if (outSeq && inSequence->size()>0) {
+        
+            Sequence sequence {*seqHeader, seqComment != NULL ? *seqComment : "", *inSequence};
+            return sequence;
+        
+        }else {
+            
+            lg.verbose("Sequence entirely removed as a result of BED filter: " + *seqHeader);
+            
+            Sequence sequence;
+            return sequence;
+            
+        }
         
     }
     

@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
     std::string iAgpFileArg; // input agp
     std::string iBedIncludeFileArg; // input bed file of coordinates to include
     std::string iBedExcludeFileArg; // input bed file of coordinates to exclude
+    std::string iReadFileArg; // input reads to evaluate
     
     std::string sortType = "none"; // type of sorting (default: none)
     
@@ -42,6 +43,7 @@ int main(int argc, char **argv) {
     
     static struct option long_options[] = { // struct mapping long options
         {"input-sequence", required_argument, 0, 'f'},
+        {"input-reads", required_argument, 0, 'r'},
         
         {"threads", required_argument, 0, 'j'},
         
@@ -80,7 +82,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:a:b:e:f:i:j:k:o:s:tvh",
+        c = getopt_long(argc, argv, "-:a:b:e:f:i:j:k:o:r:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) { // if pipe wasn't assigned already
@@ -252,7 +254,7 @@ int main(int argc, char **argv) {
                 
                 if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 's'; // pipe input is a sequence
+                    pipeType = 'f'; // pipe input is a sequence
                 
                 }else{ // input is a regular file
                     
@@ -306,6 +308,22 @@ int main(int argc, char **argv) {
                 outFile_flag = 1;
                 break;
                 
+            case 'r': // input reads
+                
+                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                
+                    pipeType = 'r'; // pipe input is a sequence
+                
+                }else{ // input is a regular file
+                    
+                    ifFileExists(optarg);
+                    iReadFileArg = optarg;
+                    stats_flag = true;
+                    
+                }
+                    
+                break;
+                
             case 's': // output size of features
                 sizeOutType = *optarg;
                 outSize_flag = 1;
@@ -328,12 +346,13 @@ int main(int argc, char **argv) {
                 printf("-a --agp-to-path <file> converts input agp to path and replaces existing paths.\n");
                 printf("-b --out-coord a|s|c|g generates bed coordinates of given feature (agp|scaffolds|contigs|gaps default:agp).\n");
                 printf("-e --exclude-bed <file> opposite of --include-bed. They can be combined (no coordinates).\n");
-                printf("-f --fasta <file> input file (fasta, fastq, gfa [.gz]). Also as first positional argument.\n");
+                printf("-f --input-sequence <file> input file (fasta, fastq, gfa [.gz]). Also as first positional argument.\n");
                 printf("-h --help print help and exit.\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
                 printf("-j --threads <n> numbers of threads (default:max).\n");
                 printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
+                printf("-r --reads <file> input file (fasta, fastq [.gz]). Optional reads. Summary statistics will be generated.\n");
                 printf("-s --out-size s|c|g  generates size list of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
@@ -381,7 +400,7 @@ int main(int argc, char **argv) {
     
     lg.verbose("Sequence object generated");
     
-    inFile.readFiles(inSequences, iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType); // read the sequence input file object into the sequence collection object
+    inFile.readFiles(inSequences, iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType, iReadFileArg); // read the sequence input file object into the sequence collection object
     
     lg.verbose("Finished reading sequences from file to sequence object");
     if(verbose_flag) {std::cerr<<"\n";};
