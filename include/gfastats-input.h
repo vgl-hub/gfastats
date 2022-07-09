@@ -386,9 +386,9 @@ public:
                                     
                                     while (true) {
                                         
-                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
                                         if (inSequences.threadEmpty()) break;
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         
                                     }
                                     
@@ -487,9 +487,9 @@ public:
                                     
                                     while (true) {
                                         
-                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
                                         if (inSequences.threadEmpty()) break;
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         
                                     }
                                     
@@ -586,9 +586,9 @@ public:
                                     
                                     while (true) {
                                         
-                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
                                         if (inSequences.threadEmpty()) break;
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         
                                     }
                                     
@@ -771,9 +771,9 @@ public:
                                     
                                     while (true) {
                                         
-                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
                                         if (inSequences.threadEmpty()) break;
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         
                                     }
                                     
@@ -872,9 +872,9 @@ public:
                                     
                                     while (true) {
                                         
-                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
                                         if (inSequences.threadEmpty()) break;
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         
                                     }
                                     
@@ -969,9 +969,9 @@ public:
                                     
                                     while (true) {
                                         
-                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
                                         if (inSequences.threadEmpty()) break;
+                                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
                                         
                                     }
                                     
@@ -1351,9 +1351,9 @@ public:
         
         while (true) {
             
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
             if (inSequences.threadEmpty()) break;
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             
         }
         
