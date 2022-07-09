@@ -11,24 +11,27 @@
 #include <chrono>
 
 //global
-static auto start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
+extern std::chrono::time_point<std::chrono::high_resolution_clock> start;
 
 // flags are global variables
-static short int tabular_flag;
-static int verbose_flag;
-static int seqReport_flag;
-static int outSequence_flag;
-static int nstarReport_flag;
-static int outSize_flag;
-static int outCoord_flag;
-static int outFile_flag;
-static int outBubbles_flag;
-static int stats_flag;
-static int cmd_flag;
-static int rmGaps_flag;
-static int discoverPaths_flag;
-static int hc_flag;
-static int hc_cutoff;
-static int maxThreads = 0;
+extern short int tabular_flag;
+extern int verbose_flag;
+extern int seqReport_flag;
+extern int outSequence_flag;
+extern int nstarReport_flag;
+extern int outSize_flag;
+extern int outCoord_flag;
+extern int outFile_flag;
+extern int outBubbles_flag;
+extern int stats_flag;
+extern int cmd_flag;
+extern int rmGaps_flag;
+extern int discoverPaths_flag;
+extern int hc_flag;
+extern int hc_cutoff;
+extern int maxThreads;
+
+extern Log lg;
+extern std::mutex mtx;
 
 #endif /* GFASTATS_GLOBAL_H */

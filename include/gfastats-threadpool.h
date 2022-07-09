@@ -1,5 +1,5 @@
-#ifndef GFASTATS_THREADPOOLING
-#define GFASTATS_THREADPOOLING
+#ifndef GFASTATS_THREADPOOL
+#define GFASTATS_THREADPOOL
 
 template<class T>
 class ThreadPool {
@@ -89,4 +89,4 @@ void ThreadPool<T>::join() {
     threads.clear();
 }
 
-#endif //GFASTATS_THREADPOOLING
+#endif //GFASTATS_THREADPOOL

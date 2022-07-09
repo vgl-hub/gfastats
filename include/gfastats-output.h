@@ -124,13 +124,13 @@ public:
 
         if (gzip && outFile) { // if the requested output is gzip compressed and should be outputted to a file
             
-            stream = make_unique<std::ostream>(zfout.rdbuf()); // then we use the stream for gzip compressed file outputs
+            stream = std::make_unique<std::ostream>(zfout.rdbuf()); // then we use the stream for gzip compressed file outputs
             
             zfout.addHeader();
                         
         }else if (!gzip && outFile){ // else if no compression is requested
             
-            stream = make_unique<std::ostream>(ofs.rdbuf());  // we use the stream regular file outputs
+            stream = std::make_unique<std::ostream>(ofs.rdbuf());  // we use the stream regular file outputs
             
         }else{ // else the output is not written to a file
             
@@ -140,7 +140,7 @@ public:
             
             if (gzip) { // if the output to stdout needs to be compressed we use the appropriate stream
                 
-                stream = make_unique<std::ostream>(zout.rdbuf());
+                stream = std::make_unique<std::ostream>(zout.rdbuf());
                 
                 zout.addHeader();
             
@@ -148,7 +148,7 @@ public:
                 
                 std::cout.flush();
                 
-                stream = make_unique<std::ostream>(std::cout.rdbuf());
+                stream = std::make_unique<std::ostream>(std::cout.rdbuf());
                 
             }
         }

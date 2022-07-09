@@ -35,7 +35,7 @@ Importantly, the filtered input can be outputted in any \*fa\* (fasta, fastq, gf
 
 ## Installation
 
-Either download one of the releases or `git clone https://github.com/vgl-hub/gfastats.git` and `make` in `gfastats` folder.
+Either download one of the releases or `git clone https://github.com/vgl-hub/gfastats.git` and `make -j8` in `gfastats` folder.
 
 ## Usage
 

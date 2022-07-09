@@ -33,10 +33,12 @@
 
 #include <thread>
 #include <mutex>
-std::mutex mtx;
 #include <condition_variable>
 
+#include "gfastats-log.h"
+
 #include "gfastats-global.h" // global variables
+#include "gfastats-struct.h"
 #include "gfastats-functions.h" // global functions
 
 #include "gfastats-threadpool.h"
@@ -53,7 +55,7 @@ std::mutex mtx;
 #include "gfastats-gfa.h" // gfa classes
 #include "gfastats-sak.h" // swiss army knife classes
 
-#include "gfastats-input.h" // input classes
 #include "gfastats-output.h" // output classes
+#include "gfastats-input.h"
 
 #endif /* GFASTATS_H */

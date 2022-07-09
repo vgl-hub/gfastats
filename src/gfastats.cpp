@@ -6,7 +6,31 @@
 
 #include <gfastats.h>
 
-std::string version = "1.2.1";
+std::string version = "1.3.0";
+
+//global
+auto start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
+
+// flags are global variables
+short int tabular_flag;
+int verbose_flag;
+int seqReport_flag;
+int outSequence_flag;
+int nstarReport_flag;
+int outSize_flag;
+int outCoord_flag;
+int outFile_flag;
+int outBubbles_flag;
+int stats_flag;
+int cmd_flag;
+int rmGaps_flag;
+int discoverPaths_flag;
+int hc_flag;
+int hc_cutoff;
+int maxThreads = 0;
+
+Log lg;
+std::mutex mtx;
 
 int main(int argc, char **argv) {
     
