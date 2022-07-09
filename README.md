@@ -90,4 +90,4 @@ Gfastats: conversion, evaluation and manipulation of genome sequences using asse
 
 Giulio Formenti, Linelle Abueg, Angelo Brajuka, Nadolina Brajuka, Cristo Gallardo, Alice Giani, Olivier Fedrigo, Erich D. Jarvis
 
-doi: https://doi.org/10.1101/2022.03.24.485682
+doi: https://doi.org/10.1093/bioinformatics/btac460
