@@ -1275,7 +1275,7 @@ public:
             
         }else{
             
-            fprintf(stderr, "Error: segment name already exists (%s). Terminating.\n", sequence.header.c_str()); exit(1);
+            sUId = got->second;
             
         }
                 

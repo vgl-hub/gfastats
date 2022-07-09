@@ -269,6 +269,8 @@ public:
                     }
                     default: {
                         
+                        std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+                        
                         std::string h_col1, h_col2, h_col3, s, version, gHeader, eHeader, cigar, startS, endS;
                         char sId1Or, sId2Or;
                         
@@ -279,8 +281,9 @@ public:
                         phmap::flat_hash_map<std::string, unsigned int> hash;
                         phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
                         
-                        unsigned int lineN = 1;
                         unsigned int uId = 0, guId = 0, euId = 0;
+                        
+                        bool isSegment = false;
                         
                         std::vector<std::string> arguments, components, tagValues; // process the columns of each row
                         
@@ -386,13 +389,7 @@ public:
                                     }
                                     case 'G': {
                                         
-                                        while (true) {
-                                            
-                                            if (inSequences.threadEmpty()) {inSequences.threadsJoin(); break;}
-                                            lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
-                                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                                            
-                                        }
+                                        lck.lock();
                                         
                                         if(verbose_flag) {std::cerr<<"\n\n";};
                                         
@@ -481,7 +478,7 @@ public:
                                         
                                         inSequences.addGap(gap);
                                         
-                                        lineN++;
+                                        lck.unlock();
                                                      
                                         break;
                                         
@@ -489,13 +486,7 @@ public:
 
                                     case 'E': {
                                         
-                                        while (true) {
-                                            
-                                            if (inSequences.threadEmpty()) {inSequences.threadsJoin(); break;}
-                                            lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
-                                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                                            
-                                        }
+                                        lck.lock();
                                         
                                         if(verbose_flag) {std::cerr<<"\n\n";};
                                         
@@ -581,8 +572,8 @@ public:
                                         edge.newEdge(euId, sId1, sId2, sId1Or, sId2Or, cigar, eHeader, inTags);
                                         
                                         inSequences.appendEdge(edge);
-     
-                                        lineN++;
+                                        
+                                        lck.unlock();
                                                      
                                         break;
                                         
@@ -590,13 +581,7 @@ public:
                                         
                                     case 'O': {
                                         
-                                        while (true) {
-                                            
-                                            if (inSequences.threadEmpty()) {inSequences.threadsJoin(); break;}
-                                            lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
-                                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                                            
-                                        }
+                                        lck.lock();
                                         
                                         if(verbose_flag) {std::cerr<<"\n\n";};
                                         
@@ -633,6 +618,11 @@ public:
                                             if (sId1Or == '+' || sId1Or == '-') { // only segments have orientation
                                             
                                                 component.pop_back();
+                                                isSegment = true;
+                                                
+                                            }else{
+                                                
+                                                isSegment = false;
                                                 
                                             }
                                             
@@ -663,7 +653,7 @@ public:
                                             
                                             got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
                                             
-                                            if (got == hash.end()) { // this is the first time we see this segment
+                                            if (got == hash.end()) { // this is the first time we see this component
                                                 
                                                 uId = inSequences.getuId();
                                                 
@@ -678,25 +668,14 @@ public:
                                                 sId1 = got->second;
                                                 
                                             }
-                                            
-                                            std::vector<InSegment>* inSegments = inSequences.getInSegments();
-                                            std::vector<InGap>* inGaps = inSequences.getInGaps();
-                                            
-                                            auto sId = find_if(inSegments->begin(), inSegments->end(), [sId1](InSegment& obj) {return obj.getuId() == sId1;}); // given a uId, find it in nodes
                                         
-                                            if (sId != inSegments->end()) {
+                                            if (isSegment) {
                                                 
                                                 path.add(SEGMENT, sId1, sId1Or, start, end);
                                                  
                                             }else{
                                                 
-                                                auto gId = find_if(inGaps->begin(), inGaps->end(), [sId1](InGap& obj) {return obj.getuId() == sId1;}); // given a uId, find it in gaps
-                                                
-                                                if (gId != inGaps->end()) {
-                                                
-                                                    path.add(GAP, sId1, '0', start, end);
-                                                
-                                                }
+                                                path.add(GAP, sId1, '0', start, end);
                                                 
                                             }
                                             
@@ -717,9 +696,8 @@ public:
                                         }
                                         
                                         inSequences.addPath(path);
-                                        seqPos++;
                                         
-                                        lineN++;
+                                        lck.unlock();
                                         
                                         break;
                                         
@@ -777,13 +755,7 @@ public:
                                         
                                     case 'J': {
                                         
-                                        while (true) {
-                                            
-                                            if (inSequences.threadEmpty()) {inSequences.threadsJoin(); break;}
-                                            lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
-                                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                                            
-                                        }
+                                        lck.lock();
                                         
                                         if(verbose_flag) {std::cerr<<"\n\n";};
                                         
@@ -872,7 +844,7 @@ public:
                                         
                                         inSequences.addGap(gap);
                                         
-                                        lineN++;
+                                        lck.unlock();
                                                      
                                         break;
                                         
@@ -880,13 +852,7 @@ public:
 
                                     case 'L': {
                                         
-                                        while (true) {
-                                            
-                                            if (inSequences.threadEmpty()) {inSequences.threadsJoin(); break;}
-                                            lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
-                                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                                            
-                                        }
+                                        lck.lock();
                                         
                                         if(verbose_flag) {std::cerr<<"\n\n";};
                                         
@@ -970,8 +936,8 @@ public:
                                         edge.newEdge(euId, sId1, sId2, sId1Or, sId2Or, cigar, "", inTags);
                                         
                                         inSequences.appendEdge(edge);
-     
-                                        lineN++;
+                                        
+                                        lck.unlock();
                                                      
                                         break;
                                         
@@ -979,13 +945,7 @@ public:
 
                                     case 'P': {
                                         
-                                        while (true) {
-                                            
-                                            if (inSequences.threadEmpty()) {inSequences.threadsJoin(); break;}
-                                            lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
-                                            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-                                            
-                                        }
+                                        lck.lock();
                                         
                                         if(verbose_flag) {std::cerr<<"\n\n";};
                                         
@@ -1104,16 +1064,9 @@ public:
                                                 
                                             }
                                             
-                                            std::vector<InSegment>* inSegments = inSequences.getInSegments();
                                             std::vector<InGap>* inGaps = inSequences.getInGaps();
-                                            
-                                            auto sId = find_if(inSegments->begin(), inSegments->end(), [sId1](InSegment& obj) {return obj.getuId() == sId1;}); // given a uId, find it in nodes
-                                        
-                                            if (sId != inSegments->end()) {
                                                 
-                                                path.add(SEGMENT, sId1, sId1Or, start, end);
-                                                 
-                                            }
+                                            path.add(SEGMENT, sId1, sId1Or, start, end);
                                             
                                             if (std::next(it, 1) != std::end(components)){
                                                 
@@ -1178,9 +1131,8 @@ public:
                                         }
                                         
                                         inSequences.addPath(path);
-                                        seqPos++;
                                         
-                                        lineN++;
+                                        lck.unlock();
                                         
                                         break;
                                         
