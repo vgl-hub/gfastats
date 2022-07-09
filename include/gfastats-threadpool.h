@@ -51,6 +51,9 @@ void ThreadPool<T>::init(int maxThreads) {
     if(maxThreads == 0) maxThreads = std::thread::hardware_concurrency();
     if(maxThreads == 0 || maxThreads == 1) maxThreads = 2;
     threads.resize(maxThreads-1);
+    
+    lg.verbose("Generating threadpool with " + std::to_string(maxThreads-1) + " threads");
+    
     for(int i=0; i<maxThreads-1; ++i) {
         threads[i] = std::thread(&ThreadPool::threadLoop, this, i);
     }
