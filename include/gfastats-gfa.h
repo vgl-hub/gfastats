@@ -1275,11 +1275,13 @@ public:
             
         }else{
             
-            sUId = got->second;
+            fprintf(stderr, "Error: segment name already exists (%s). Terminating.\n", sequence.header.c_str()); exit(1);
             
         }
                 
         inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence.header, &sequence.comment, &sequence.sequence, &A, &C, &G, &T, &lowerCount, sequence.seqPos, &sequence.sequenceQuality, &inSequenceTags));
+        
+        logs.push_back(threadLog);
         
         lck.unlock();
         
@@ -1290,6 +1292,8 @@ public:
         lg.verbose("Header, comment, sequence, and (optionally) quality read");
             
         threadStart([=]{ return traverseInSequence(sequence); });
+        
+        if(verbose_flag) {std::cerr<<"\n";};
         
         std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
@@ -1312,6 +1316,8 @@ public:
         lg.verbose("Header, comment, sequence and (optionally) quality read");
         
         threadStart([=]{ return traverseInSegment(sequence, inSequenceTags); });
+        
+        if(verbose_flag) {std::cerr<<"\n";};
         
         std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
         
