@@ -26,7 +26,6 @@
 #include <algorithm>
 #include <string>
 
-#include "zlib.h"
 #include "zstream_common.hpp"
 
 namespace zstream {

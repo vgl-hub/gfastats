@@ -57,6 +57,9 @@ int main(int argc, char **argv) {
         std::string cmd = "\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile;
 #endif
         int value = system(cmd.c_str());
+        if (value) {
+            ostream << "Command executed.";
+        }
         ++i;
     };
 

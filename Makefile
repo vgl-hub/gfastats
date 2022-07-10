@@ -16,7 +16,7 @@ LDFLAGS= -pthread
 $(TARGET): | $(BUILD_PATH) gf validate regenerate random_fasta
 
 gf: | $(BUILD_PATH) main input functions log struct
-	$(CC) $(CFLAGS) $(LIBS) $(LDFLAGS) -o $(BUILD_PATH)/$(TARGET) *.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(BUILD_PATH)/$(TARGET) *.o $(LIBS)
 	$(RM) -r *.o
 
 main:
