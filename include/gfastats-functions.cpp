@@ -15,8 +15,7 @@
 
 double elapsedTime(){ // compute runtime in verbose mode
     
-    auto finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed = finish - start;
+    std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - start;
     start = std::chrono::high_resolution_clock::now();
     
     return elapsed.count();

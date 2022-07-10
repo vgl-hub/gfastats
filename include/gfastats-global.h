@@ -10,8 +10,8 @@
 
 #include <chrono>
 
-//global
-extern std::chrono::time_point<std::chrono::high_resolution_clock> start;
+//global time
+extern std::chrono::high_resolution_clock::time_point start;
 
 // flags are global variables
 extern short int tabular_flag;
