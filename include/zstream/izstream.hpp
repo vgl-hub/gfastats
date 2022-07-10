@@ -21,6 +21,8 @@
 #ifndef INPUT_ZIP_STREAM_HPP
 #define INPUT_ZIP_STREAM_HPP
 
+#include "zlib.h"
+
 namespace zstream {
 
 /** \brief A stream decorator that takes compressed input and unzips it to a istream.

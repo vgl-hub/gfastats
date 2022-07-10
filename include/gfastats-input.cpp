@@ -30,7 +30,7 @@
 
 #include "gfastats-threadpool.h"
 #include "gfastats-gfa.h"
-#include "gfastats-sak.h" // swiss army knife classes
+#include "gfastats-sak.h" // swiss army knife
 
 #include "zlib.h"
 #include <zstream/zstream_common.hpp>
