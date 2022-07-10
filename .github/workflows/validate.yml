@@ -16,7 +16,7 @@ jobs:
           - os: ubuntu-latest
             command: ".github/workflows/val.sh"
             chmod: true
-          - os: windows-2019
+          - os: windows-latest
             command: ".github/workflows/val.bat"
     runs-on: ${{ matrix.os }}
     steps:
@@ -25,7 +25,7 @@ jobs:
     - name: Set up MinGW
       uses: egor-tensin/setup-mingw@v2
       with:
-        platform: x64
+        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest' }}
     - name: Build
       run: make -j
     - name: Validate
