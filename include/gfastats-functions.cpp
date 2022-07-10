@@ -315,5 +315,3 @@ void homopolymerBedCoords(std::string *sequence, std::vector<std::pair<unsigned 
         bedCoords.push_back({index, sequence->size()});
     }
 }
-
-void traverseInSequence(Sequence sequence);

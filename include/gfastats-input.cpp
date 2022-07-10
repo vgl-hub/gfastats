@@ -6,20 +6,19 @@
 //
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <string>
 #include <thread>
 #include <mutex>
-
 #include <vector>
 #include <queue>
 #include <stack>
-#include <iostream>
-#include <parallel_hashmap/phmap.h>
-#include <unistd.h>
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
+#include <parallel_hashmap/phmap.h>
 
 #include "gfastats-struct.h"
 #include "gfastats-functions.h" // global functions
