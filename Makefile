@@ -15,7 +15,7 @@ LDFLAGS= -pthread
 
 $(TARGET): | $(BUILD_PATH) gf validate regenerate random_fasta
 
-gf: | $(BUILD_PATH) main input functions log struct
+gf: | $(BUILD_PATH) main input functions log struct bed gfa gfa-lines uid-generator
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(BUILD_PATH)/$(TARGET) *.o $(LIBS)
 	$(RM) -r *.o
 
@@ -29,6 +29,14 @@ log:
 	$(CC) $(CFLAGS) -c include/gfastats-log.cpp
 struct:
 	$(CC) $(CFLAGS) -c include/gfastats-struct.cpp
+bed:
+	$(CC) $(CFLAGS) -c include/bed.cpp
+gfa:
+	$(CC) $(CFLAGS) -c include/gfa.cpp
+gfa-lines:
+	$(CC) $(CFLAGS) -c include/gfa-lines.cpp
+uid-generator:
+	$(CC) $(CFLAGS) -c include/uid-generator.cpp
 
 validate: | $(BUILD_PATH)
 	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TEST_TARGET) $(SOURCE_PATH)/$(TEST_TARGET).cpp $(LIBS)

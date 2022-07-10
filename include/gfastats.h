@@ -36,6 +36,7 @@
 #include <condition_variable>
 
 #include "gfastats-log.h"
+#include "uid-generator.h"
 
 #include "gfastats-global.h" // global variables
 #include "gfastats-struct.h"
@@ -52,7 +53,10 @@
 #include <zstream/ozstream.hpp>
 #include <zstream/ozstream_impl.hpp>
 
-#include "gfastats-gfa.h" // gfa classes
+#include "bed.h"
+#include "gfa-lines.h"
+
+#include "gfa.h" // gfa classes
 #include "gfastats-sak.h" // swiss army knife classes
 
 #include "gfastats-output.h" // output classes

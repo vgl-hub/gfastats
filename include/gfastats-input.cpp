@@ -26,10 +26,13 @@
 
 #include "gfastats-log.h"
 #include "gfastats-global.h"
+#include "uid-generator.h"
 
+#include "bed.h"
+#include "gfa-lines.h"
 
 #include "gfastats-threadpool.h"
-#include "gfastats-gfa.h"
+#include "gfa.h"
 #include "gfastats-sak.h" // swiss army knife
 
 #include "zlib.h"
