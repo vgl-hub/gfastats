@@ -11,17 +11,17 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: windows-latest
+          - os: macos-latest
+            command: ".github/workflows/val.sh"
+          - os: ubuntu-latest
+            command: ".github/workflows/val.sh"
+            chmod: true
+          - os: windows-2019
             command: ".github/workflows/val.bat"
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    - uses: msys2/setup-msys2@v2
-      with:
-        msystem: MINGW64
-        update: true
-        install: git mingw-w64-x86_64-toolchain
     - name: Build
       run: make -j
     - name: Validate
