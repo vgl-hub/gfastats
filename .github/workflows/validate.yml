@@ -21,7 +21,7 @@ jobs:
       with:
         msystem: MINGW64
         update: true
-        install: git mingw-w64-x86_64-zlib
+        install: git mingw-w64-x86_64-toolchain
     - name: Build
       run: make -j
     - name: Validate
