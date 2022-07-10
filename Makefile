@@ -20,15 +20,15 @@ gf: | $(BUILD_PATH) main input functions log struct
 	$(RM) -r *.o
 
 main:
-	$(CC) $(CFLAGS) -c $(SOURCE_PATH)/$(TARGET).cpp
+	$(CC) $(CFLAGS) $(LIBS) -c $(SOURCE_PATH)/$(TARGET).cpp
 input:
-	$(CC) $(CFLAGS) -c include/gfastats-input.cpp
+	$(CC) $(CFLAGS) $(LIBS) -c include/gfastats-input.cpp
 functions:
-	$(CC) $(CFLAGS) -c include/gfastats-functions.cpp
+	$(CC) $(CFLAGS) $(LIBS) -c include/gfastats-functions.cpp
 log:
-	$(CC) $(CFLAGS) -c include/gfastats-log.cpp
+	$(CC) $(CFLAGS) $(LIBS) -c include/gfastats-log.cpp
 struct:
-	$(CC) $(CFLAGS) -c include/gfastats-struct.cpp
+	$(CC) $(CFLAGS) $(LIBS) -c include/gfastats-struct.cpp
 
 validate: | $(BUILD_PATH)
 	$(CC) $(CFLAGS) -o $(BUILD_PATH)/$(TEST_TARGET) $(SOURCE_PATH)/$(TEST_TARGET).cpp $(LIBS)

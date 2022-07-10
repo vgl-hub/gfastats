@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
 #else
         std::string cmd = "\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile;
 #endif
-        system(cmd.c_str());
+        (void)system(cmd.c_str());
         ++i;
     };
 
