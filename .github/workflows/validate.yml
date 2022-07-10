@@ -22,10 +22,11 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
-    - name: Set up MinGW
-      uses: mingw-w64-x86_64-toolchain
-      with:
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest' }}
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git mingw-w64-x86_64-zlib
     - name: Build
       run: make -j
     - name: Validate
