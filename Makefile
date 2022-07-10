@@ -13,7 +13,7 @@ SOURCE_PATH = src
 LIBS += -lz
 LDFLAGS= -pthread
 
-$(TARGET): | $(BUILD_PATH) gf validate regenerate random_fasta
+$(TARGET): | $(BUILD_PATH) head validate regenerate random_fasta
 
 head: | $(BUILD_PATH) main input output functions log struct bed gfa gfa-lines uid-generator
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(BUILD_PATH)/$(TARGET) *.o $(LIBS)
