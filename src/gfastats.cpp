@@ -9,7 +9,7 @@
 std::string version = "1.3.0";
 
 //global
-auto start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
+std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
 
 // flags are global variables
 short int tabular_flag;
