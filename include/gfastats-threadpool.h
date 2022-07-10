@@ -1,6 +1,8 @@
 #ifndef GFASTATS_THREADPOOL
 #define GFASTATS_THREADPOOL
 
+#include <condition_variable>
+
 template<class T>
 class ThreadPool {
 private:

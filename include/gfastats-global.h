@@ -8,6 +8,7 @@
 #ifndef GFASTATS_GLOBAL_H
 #define GFASTATS_GLOBAL_H
 
+#include <stdlib.h>
 #include <chrono>
 
 //global time
