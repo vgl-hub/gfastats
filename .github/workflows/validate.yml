@@ -23,10 +23,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
     - uses: msys2/setup-msys2@v2
-        with:
-            msystem: MINGW64
-            update: true
-            install: git mingw-w64-x86_64-zlib
+      with:
+        msystem: MINGW64
+        update: true
+        install: git mingw-w64-x86_64-zlib
     - name: Build
       run: make -j
     - name: Validate
