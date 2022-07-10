@@ -23,7 +23,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
     - name: Set up MinGW
-      uses: egor-tensin/setup-mingw@v2
+      uses: mingw-w64-x86_64-toolchain
       with:
         if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest' }}
     - name: Build
