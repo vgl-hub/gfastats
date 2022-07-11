@@ -304,7 +304,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                     InEdge edge;
                     InPath path;
                     unsigned int sId1 = 0, sId2 = 0, dist = 0, start = 0, end = 0, gapN = 0;
-                    phmap::flat_hash_map<std::string, unsigned int> hash;
+                    phmap::flat_hash_map<std::string, unsigned int>* hash;
                     phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
                     
                     unsigned int uId = 0, guId = 0, euId = 0;
@@ -438,9 +438,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    got = hash->find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
                                     
-                                    if (got == hash.end()) { // this is the first time we see this segment
+                                    if (got == hash->end()) { // this is the first time we see this segment
                                         
                                         uId = inSequences.getuId();
                                         
@@ -463,9 +463,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    got = hash->find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
                                     
-                                    if (got == hash.end()) { // this is the first time we see this segment
+                                    if (got == hash->end()) { // this is the first time we see this segment
                                         
                                         uId = inSequences.getuId();
                                         
@@ -535,9 +535,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
+                                    got = hash->find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
                                     
-                                    if (got == hash.end()) { // this is the first time we see this segment
+                                    if (got == hash->end()) { // this is the first time we see this segment
                                         
                                         uId = inSequences.getuId();
                                         
@@ -560,9 +560,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    got = hash->find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
                                     
-                                    if (got == hash.end()) { // this is the first time we see this segment
+                                    if (got == hash->end()) { // this is the first time we see this segment
                                         
                                         uId = inSequences.getuId();
                                         
@@ -619,9 +619,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table to look for the header
+                                    got = hash->find(seqHeader); // get the headers to uIds table to look for the header
                                     
-                                    if (got == hash.end()) { // this is the first time we see this header
+                                    if (got == hash->end()) { // this is the first time we see this header
                                         
                                         inSequences.insertHash(seqHeader, uId);
                                         
@@ -677,9 +677,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                         hash = inSequences.getHash1();
                                         
-                                        got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                        got = hash->find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
                                         
-                                        if (got == hash.end()) { // this is the first time we see this component
+                                        if (got == hash->end()) { // this is the first time we see this component
                                             
                                             uId = inSequences.getuId();
                                             
@@ -805,9 +805,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    got = hash->find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
                                     
-                                    if (got == hash.end()) { // this is the first time we see this segment
+                                    if (got == hash->end()) { // this is the first time we see this segment
                                         
                                         uId = inSequences.getuId();
                                         
@@ -829,9 +829,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                    got = hash->find(seqHeader); // get the headers to uIds table (remove sequence orientation in the gap first)
                                     
-                                    if (got == hash.end()) { // this is the first time we see this segment
+                                    if (got == hash->end()) { // this is the first time we see this segment
                                         
                                         uId = inSequences.getuId();
                                         
@@ -896,9 +896,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
+                                    got = hash->find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
                                     
-                                    if (got == hash.end()) { // this is the first time we see this segment
+                                    if (got == hash->end()) { // this is the first time we see this segment
                                         
                                         uId = inSequences.getuId();
                                         
@@ -922,9 +922,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
+                                    got = hash->find(seqHeader); // get the headers to uIds table (remove sequence orientation in the edge first)
                                     
-                                    if (got == hash.end()) { // this is the first time we see this segment
+                                    if (got == hash->end()) { // this is the first time we see this segment
                                         
                                         uId = inSequences.getuId();
                                         
@@ -985,9 +985,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     hash = inSequences.getHash1();
                                     
-                                    got = hash.find(seqHeader); // get the headers to uIds table to look for the header
+                                    got = hash->find(seqHeader); // get the headers to uIds table to look for the header
                                     
-                                    if (got == hash.end()) { // this is the first time we see this header
+                                    if (got == hash->end()) { // this is the first time we see this header
                                         
                                         inSequences.insertHash(seqHeader, uId);
                                         
@@ -1013,9 +1013,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                                 
                                                 component.pop_back();
                                                 
-                                                got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                                got = hash->find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
                                                 
-                                                if (got == hash.end()) { // this is the first time we see this segment
+                                                if (got == hash->end()) { // this is the first time we see this segment
                                                     
                                                     fprintf(stderr, "Error1: cannot find next component in path (%s). Terminating.\n", component.c_str()); exit(1);
                                                     
@@ -1072,9 +1072,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                         hash = inSequences.getHash1();
                                         
-                                        got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                        got = hash->find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
                                         
-                                        if (got == hash.end()) { // this is the first time we see this segment
+                                        if (got == hash->end()) { // this is the first time we see this segment
                                             
                                             uId = inSequences.getuId();
                                             
@@ -1102,9 +1102,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                             
                                                 component.pop_back();
                                                 
-                                                got = hash.find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
+                                                got = hash->find(component); // get the headers to uIds table (remove sequence orientation in the gap first)
                                                 
-                                                if (got == hash.end()) { // this is the first time we see this segment
+                                                if (got == hash->end()) { // this is the first time we see this segment
                                                     
                                                     fprintf(stderr, "Error: cannot find next component in path (%s). Terminating.\n", component.c_str()); exit(1);
                                                     
@@ -1422,7 +1422,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
         char pId1Or = '+', pId2Or;
         
         unsigned int pUId = 0, pUId1 = 0, pUId2 = 0, gUId = 0, dist = 0, seqLen, pathLen, start1 = 0, end1 = 0, start2 = 0, end2 = 0;
-        phmap::flat_hash_map<std::string, unsigned int> hash;
+        phmap::flat_hash_map<std::string, unsigned int>* hash;
         phmap::flat_hash_map<std::string, unsigned int>::const_iterator got;
         
         std::vector<std::string> arguments; // line arguments
@@ -1479,9 +1479,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                 
                 hash = inSequences.getHash1();
                 
-                got = hash.find(pHeader1); // get the headers to uIds table
+                got = hash->find(pHeader1); // get the headers to uIds table
                 
-                if (got != hash.end()) { // this is not the first time we see this path
+                if (got != hash->end()) { // this is not the first time we see this path
                     
                     pUId1 = got->second;
                     
@@ -1553,9 +1553,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
 
                 hash = inSequences.getHash1();
                 
-                got = hash.find(pHeader1); // get the headers to uIds table (remove sequence orientation in the gap first)
+                got = hash->find(pHeader1); // get the headers to uIds table (remove sequence orientation in the gap first)
                 
-                if (got == hash.end()) { // this is the first time we see this path
+                if (got == hash->end()) { // this is the first time we see this path
                     
                     fprintf(stderr, "Warning: sequence missing from the path set (%s). Skipping.\n", pHeader1.c_str()); // if the preceding sequence was not found we do not introduce a gap
                     
@@ -1569,13 +1569,13 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                     
                     hash = inSequences.getHash1();
                     
-                    got = hash.find("gap"+std::to_string(gUId)); // get the headers to uIds table
+                    got = hash->find("gap"+std::to_string(gUId)); // get the headers to uIds table
                     
-                    while (got != hash.end()) { // this is not the first time we see this path
+                    while (got != hash->end()) { // this is not the first time we see this path
                         
                         gUId++;
                         
-                        got = hash.find("gap"+std::to_string(gUId)); // get the headers to uIds table
+                        got = hash->find("gap"+std::to_string(gUId)); // get the headers to uIds table
                         
                         inSequences.uId.next();
                     }
@@ -1614,9 +1614,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                 
                 hash = inSequences.getHash1();
                 
-                got = hash.find(pHeader2); // get the headers to uIds table (remove sequence orientation in the gap first)
+                got = hash->find(pHeader2); // get the headers to uIds table (remove sequence orientation in the gap first)
                 
-                if (got != hash.end()) { // this is not the first time we see this path
+                if (got != hash->end()) { // this is not the first time we see this path
                     
                     pUId2 = got->second;
                     

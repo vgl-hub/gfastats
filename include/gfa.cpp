@@ -1369,15 +1369,15 @@ unsigned int InSequences::getuId() {
 
 }
 
-phmap::flat_hash_map<std::string, unsigned int> InSequences::getHash1() {
+phmap::flat_hash_map<std::string, unsigned int>* InSequences::getHash1() {
 
-    return headersToIds;
+    return &headersToIds;
 
 }
 
-phmap::flat_hash_map<unsigned int, std::string> InSequences::getHash2() {
+phmap::flat_hash_map<unsigned int, std::string>* InSequences::getHash2() {
 
-    return idsToHeaders;
+    return &idsToHeaders;
 
 }
 

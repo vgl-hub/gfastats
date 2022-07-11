@@ -275,9 +275,9 @@ public:
     
     unsigned int getuId();
     
-    phmap::flat_hash_map<std::string, unsigned int> getHash1();
+    phmap::flat_hash_map<std::string, unsigned int>* getHash1();
 
-    phmap::flat_hash_map<unsigned int, std::string> getHash2();
+    phmap::flat_hash_map<unsigned int, std::string>* getHash2();
     
     void buildGraph(std::vector<InGap> const& gaps);
 

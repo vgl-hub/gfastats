@@ -357,7 +357,7 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
             
             std::string seqHeader, gHeader, pHeader;
             
-            phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
+            phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = *inSequences.getHash2();
             
             std::vector<InSegment>* inSegments = inSequences.getInSegments();
             
@@ -499,7 +499,7 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
             
             std::string seqHeader, gHeader, pHeader;
             
-            phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
+            phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = *inSequences.getHash2();
             
             std::vector<InSegment>* inSegments = inSequences.getInSegments();
             
@@ -1090,7 +1090,7 @@ bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize,
         
         if (outBubbles_flag) {
             
-            phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = inSequences.getHash2();
+            phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = *inSequences.getHash2();
             
             for (Bubble bubble : *inSequences.getBubbles()) { // loop through all nodes
                 
