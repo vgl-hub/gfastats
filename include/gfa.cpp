@@ -380,6 +380,8 @@ void InSequences::traverseInSequence(Sequence* sequence) { // traverse the seque
 
     }
     
+    delete sequence;
+    
     lck.lock();
 
     inGaps.insert(std::end(inGaps), std::begin(newGaps), std::end(newGaps));
@@ -491,6 +493,8 @@ void InSequences::traverseInSegment(Sequence* sequence, std::vector<Tag> inSeque
     
     lck.unlock();
     
+    delete sequence;
+    
 }
 
 void InSequences::traverseInRead(Sequence* sequence) { // traverse the read
@@ -556,6 +560,8 @@ void InSequences::traverseInRead(Sequence* sequence) { // traverse the read
     logs.push_back(threadLog);
     
     lck.unlock();
+    
+    delete sequence;
     
 }
 
