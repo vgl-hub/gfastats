@@ -1,6 +1,6 @@
 testFiles/random2.noseq.gfa 
 embedded
-+++Summary+++: 
++++Assembly summary+++: 
 # scaffolds: 1
 Total scaffold length: 26
 Average scaffold length: 26.00

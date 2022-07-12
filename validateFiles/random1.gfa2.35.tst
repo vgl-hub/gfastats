@@ -1,6 +1,6 @@
 testFiles/random1.gfa2 -k testFiles/random1.gfa2.instructions.sak
 embedded
-+++Summary+++: 
++++Assembly summary+++: 
 # scaffolds: 4
 Total scaffold length: 40
 Average scaffold length: 10.00

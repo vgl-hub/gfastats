@@ -190,15 +190,15 @@ InSegment InSequences::pushbackSegment(unsigned int currId, Log* threadLog, InPa
     
 }
 
-void InSequences::traverseInSequence(Sequence sequence) { // traverse the sequence to split at gaps and measure sequence properties
+void InSequences::traverseInSequence(Sequence* sequence) { // traverse the sequence to split at gaps and measure sequence properties
     
     Log threadLog;
     
-    threadLog.setId(sequence.seqPos);
+    threadLog.setId(sequence->seqPos);
 
     std::vector<std::pair<unsigned long long int, unsigned long long int>> bedCoords;
     if(hc_flag) {
-        homopolymerCompress(&sequence.sequence, bedCoords, hc_cutoff);
+        homopolymerCompress(&sequence->sequence, bedCoords, hc_cutoff);
     }
     
     std::vector<InSegment> newSegments;
@@ -222,21 +222,21 @@ void InSequences::traverseInSequence(Sequence sequence) { // traverse the sequen
 
     InPath path;
     
-    phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (sequence.header); // get the headers to uIds table to look for the header
+    phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (sequence->header); // get the headers to uIds table to look for the header
 
     if (got == headersToIds.end()) { // this is the first time we see this path name
 
-        insertHash(sequence.header, uId.get());
+        insertHash(sequence->header, uId.get());
 
     }else{
 
-        fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", sequence.header.c_str()); exit(1);
+        fprintf(stderr, "Error: path name already exists (%s). Terminating.\n", sequence->header.c_str()); exit(1);
 
     }
     
-    path.newPath(uId.get(), sequence.header, "", sequence.seqPos);
+    path.newPath(uId.get(), sequence->header, "", sequence->seqPos);
     
-    threadLog.add("Processed sequence: " + sequence.header + " (uId: " + std::to_string(uId.get()) + ")");
+    threadLog.add("Processed sequence: " + sequence->header + " (uId: " + std::to_string(uId.get()) + ")");
 
     uId.next();
     
@@ -246,15 +246,15 @@ void InSequences::traverseInSequence(Sequence sequence) { // traverse the sequen
     
     lck.unlock();
     
-    if (sequence.comment != "") {
+    if (sequence->comment != "") {
 
-        path.setComment(sequence.comment);
+        path.setComment(sequence->comment);
 
     }
 
-    unsigned long long int seqLen = sequence.sequence.size()-1;
+    unsigned long long int seqLen = sequence->sequence.size()-1;
     
-    for (char &base : sequence.sequence) {
+    for (char &base : sequence->sequence) {
 
         count = 1;
         if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
@@ -280,7 +280,7 @@ void InSequences::traverseInSequence(Sequence sequence) { // traverse the sequen
                 if (!wasN && pos>0) { // gap start and gap not at the start of the sequence
 
                     sEnd = pos - 1;
-                    newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+                    newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence->header, &sequence->comment, &sequence->sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence->sequenceQuality));
                     
                     lck.lock();
                     
@@ -294,7 +294,7 @@ void InSequences::traverseInSequence(Sequence sequence) { // traverse the sequen
 
                     sign = '-';
                     
-                    newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, &dist, sign, currId, currId));
+                    newGaps.push_back(pushbackGap(&threadLog, &path, &sequence->header, &iId, &dist, sign, currId, currId));
 
                 }
 
@@ -351,7 +351,7 @@ void InSequences::traverseInSequence(Sequence sequence) { // traverse the sequen
                     if (newSegments.size() == 0) currId = nextId;
 
                     sStart = pos;
-                    newGaps.push_back(pushbackGap(&threadLog, &path, &sequence.header, &iId, &dist, sign, currId, nextId));
+                    newGaps.push_back(pushbackGap(&threadLog, &path, &sequence->header, &iId, &dist, sign, currId, nextId));
                     
                     currId = nextId;
 
@@ -360,7 +360,7 @@ void InSequences::traverseInSequence(Sequence sequence) { // traverse the sequen
                 if (pos == seqLen) {
 
                     sEnd = pos;
-                    newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence.header, &sequence.comment, &sequence.sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence.sequenceQuality));
+                    newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence->header, &sequence->comment, &sequence->sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence->sequenceQuality));
                     
                     lck.lock();
                     
@@ -400,16 +400,16 @@ void InSequences::traverseInSequence(Sequence sequence) { // traverse the sequen
 
 }
 
-void InSequences::traverseInSegment(Sequence sequence, std::vector<Tag> inSequenceTags) { // traverse the segment
+void InSequences::traverseInSegment(Sequence* sequence, std::vector<Tag> inSequenceTags) { // traverse the segment
     
     Log threadLog;
     
-    threadLog.setId(sequence.seqPos);
+    threadLog.setId(sequence->seqPos);
     
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     unsigned int sUId = 0;
     
-    for (char &base : sequence.sequence) {
+    for (char &base : sequence->sequence) {
         
         if (islower(base)) {
             
@@ -469,11 +469,11 @@ void InSequences::traverseInSegment(Sequence sequence, std::vector<Tag> inSequen
     
     lck.lock();
     
-    phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (sequence.header); // get the headers to uIds table to look for the header
+    phmap::flat_hash_map<std::string, unsigned int>::const_iterator got = headersToIds.find (sequence->header); // get the headers to uIds table to look for the header
     
     if (got == headersToIds.end()) { // this is the first time we see this segment
         
-        insertHash(sequence.header, uId.get());
+        insertHash(sequence->header, uId.get());
         
         sUId = uId.get();
         
@@ -485,7 +485,7 @@ void InSequences::traverseInSegment(Sequence sequence, std::vector<Tag> inSequen
         
     }
             
-    inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence.header, &sequence.comment, &sequence.sequence, &A, &C, &G, &T, &lowerCount, sequence.seqPos, &sequence.sequenceQuality, &inSequenceTags));
+    inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence->header, &sequence->comment, &sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, &sequence->sequenceQuality, &inSequenceTags));
     
     logs.push_back(threadLog);
     
@@ -493,15 +493,15 @@ void InSequences::traverseInSegment(Sequence sequence, std::vector<Tag> inSequen
     
 }
 
-void InSequences::traverseInRead(Sequence sequence) { // traverse the read
+void InSequences::traverseInRead(Sequence* sequence) { // traverse the read
     
     Log threadLog;
     
-    threadLog.setId(sequence.seqPos);
+    threadLog.setId(sequence->seqPos);
     
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     
-    for (char &base : sequence.sequence) {
+    for (char &base : sequence->sequence) {
         
         if (islower(base)) {
             
@@ -551,7 +551,7 @@ void InSequences::traverseInRead(Sequence sequence) { // traverse the read
     
     lck.lock();
     
-    inReads.push_back(addSegment(&threadLog, 0, 0, sequence.header, &sequence.comment, &sequence.sequence, &A, &C, &G, &T, &lowerCount, sequence.seqPos, &sequence.sequenceQuality));
+    inReads.push_back(addSegment(&threadLog, 0, 0, sequence->header, &sequence->comment, &sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, &sequence->sequenceQuality));
     
     logs.push_back(threadLog);
     
@@ -559,7 +559,7 @@ void InSequences::traverseInRead(Sequence sequence) { // traverse the read
     
 }
 
-void InSequences::appendSequence(Sequence sequence) { // method to append a new sequence from a fasta
+void InSequences::appendSequence(Sequence* sequence) { // method to append a new sequence from a fasta
         
     threadStart([=]{ return traverseInSequence(sequence); });
     
@@ -581,7 +581,7 @@ void InSequences::appendSequence(Sequence sequence) { // method to append a new 
     
 }
 
-void InSequences::appendSegment(Sequence sequence, std::vector<Tag> inSequenceTags) { // method to append a new segment from a gfa
+void InSequences::appendSegment(Sequence* sequence, std::vector<Tag> inSequenceTags) { // method to append a new segment from a gfa
     
     lg.verbose("Segment read");
     
@@ -605,7 +605,7 @@ void InSequences::appendSegment(Sequence sequence, std::vector<Tag> inSequenceTa
     
 }
 
-void InSequences::appendRead(Sequence sequence) { // method to append a new segment from a gfa
+void InSequences::appendRead(Sequence* sequence) { // method to append a new segment from a gfa
     
     threadStart([=]{ return traverseInRead(sequence); });
     

@@ -52,7 +52,7 @@ random_fasta: | $(BUILD_PATH)
 $(BUILD_PATH):
 	mkdir -p $@
 	
-debug: CXXFLAGS += -DDEBUG
+debug: CXXFLAGS += -DDEBUG -O0
 debug: head
 
 clean:

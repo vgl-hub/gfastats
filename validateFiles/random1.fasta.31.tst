@@ -1,6 +1,6 @@
 testFiles/random1.fasta -a testFiles/random1.agp --stats
 embedded
-+++Summary+++: 
++++Assembly summary+++: 
 # scaffolds: 2
 Total scaffold length: 47
 Average scaffold length: 23.50

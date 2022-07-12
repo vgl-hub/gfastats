@@ -1,6 +1,6 @@
 testFiles/random1.fasta -k testFiles/random1.instructions.sak
 embedded
-+++Summary+++: 
++++Assembly summary+++: 
 # scaffolds: 2
 Total scaffold length: 55
 Average scaffold length: 27.50

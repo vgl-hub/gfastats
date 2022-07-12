@@ -1,6 +1,6 @@
 testFiles/random3.sorting.fasta 
 embedded
-+++Summary+++: 
++++Assembly summary+++: 
 # scaffolds: 4
 Total scaffold length: 16
 Average scaffold length: 4.00

@@ -236,11 +236,11 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                         
                         lg.verbose("Individual fasta sequence read");
                         
-                        Sequence sequence = includeExcludeSeq(seqHeader, seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, &inSequence, bedIncludeList, bedExcludeList);
                         
-                        if (sequence.header != "") {
+                        if (sequence->header != "") {
                             
-                            sequence.seqPos = seqPos; // remember the order
+                            sequence->seqPos = seqPos; // remember the order
                             
                             inSequences.appendSequence(sequence);
                             
@@ -277,11 +277,11 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                         getline(*stream, newLine);
                         inSequenceQuality = newLine;
 
-                        Sequence sequence = includeExcludeSeq(seqHeader, seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
+                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
                         
-                        if (sequence.header != "") {
+                        if (sequence != NULL) {
                             
-                            sequence.seqPos = seqPos; // remember the order
+                            sequence->seqPos = seqPos; // remember the order
                         
                             inSequences.appendSequence(sequence);
                             seqPos++;
@@ -399,11 +399,11 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     }
                                     
-                                    Sequence sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
                                     
-                                    if (sequence.header != "") {
+                                    if (sequence != NULL) {
                                         
-                                        sequence.seqPos = seqPos; // remember the order
+                                        sequence->seqPos = seqPos; // remember the order
                                     
                                         inSequences.appendSegment(sequence, inTags);
                                         seqPos++;
@@ -764,11 +764,11 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     }
                                     
-                                    Sequence sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inTags);
+                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inTags);
                                     
-                                    if (sequence.header != "") {
+                                    if (sequence != NULL) {
                                         
-                                        sequence.seqPos = seqPos; // remember the order
+                                        sequence->seqPos = seqPos; // remember the order
                                     
                                         inSequences.appendSegment(sequence, inTags);
                                         seqPos++;
@@ -1275,7 +1275,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
 
                         getline(*stream, inSequence, '>');
 
-                        inSequences.appendRead({seqHeader, seqComment, inSequence});
+                        inSequences.appendRead(new Sequence {seqHeader, seqComment, inSequence});
                         
                         lg.verbose("Individual fasta sequence read");
 
@@ -1308,7 +1308,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                         getline(*stream, newLine);
                         getline(*stream, inSequenceQuality);
 
-                        inSequences.appendRead({seqHeader, seqComment, inSequence, inSequenceQuality});
+                        inSequences.appendRead(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
                         
                         lg.verbose("Individual fastq sequence read");
 
@@ -1678,7 +1678,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     
 }
 
-Sequence InFile::includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality) {
+Sequence* InFile::includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality) {
     
     std::vector<std::string> bedIncludeListHeaders;
     std::vector<std::string> bedExcludeListHeaders;
@@ -1813,21 +1813,19 @@ Sequence InFile::includeExcludeSeq(std::string seqHeader, std::string seqComment
     
     if (outSeq && inSequence->size()>0) {
     
-        Sequence sequence {seqHeader, seqComment, *inSequence, inSequenceQuality != NULL ? *inSequenceQuality : ""};
-        return sequence;
+        return new Sequence {seqHeader, seqComment, *inSequence, inSequenceQuality != NULL ? *inSequenceQuality : ""};
     
     }else {
         
         lg.verbose("Sequence entirely removed as a result of BED filter: " + seqHeader);
         
-        Sequence sequence;
-        return sequence;
+        return NULL;
         
     }
     
 }
 
-Sequence InFile::includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality, std::vector<Tag>* inTags) {
+Sequence* InFile::includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality, std::vector<Tag>* inTags) {
     
     std::vector<std::string> bedIncludeListHeaders;
     std::vector<std::string> bedExcludeListHeaders;
@@ -1987,15 +1985,13 @@ Sequence InFile::includeExcludeSeg(InSequences* inSequences, std::string* seqHea
     
     if (outSeq && inSequence->size()>0) {
     
-        Sequence sequence {*seqHeader, seqComment != NULL ? *seqComment : "", *inSequence};
-        return sequence;
+        return new Sequence {*seqHeader, seqComment != NULL ? *seqComment : "", *inSequence};
     
     }else {
         
         lg.verbose("Sequence entirely removed as a result of BED filter: " + *seqHeader);
         
-        Sequence sequence;
-        return sequence;
+        return NULL;
         
     }
     

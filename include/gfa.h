@@ -101,17 +101,17 @@ public:
     
     InSegment pushbackSegment(unsigned int currId, Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL);
     
-    void traverseInSequence(Sequence sequence);
+    void traverseInSequence(Sequence* sequence);
     
-    void traverseInSegment(Sequence sequence, std::vector<Tag> inSequenceTags);
+    void traverseInSegment(Sequence* sequence, std::vector<Tag> inSequenceTags);
     
-    void traverseInRead(Sequence sequence);
+    void traverseInRead(Sequence* sequence);
     
-    void appendSequence(Sequence sequence);
+    void appendSequence(Sequence* sequence);
     
-    void appendSegment(Sequence sequence, std::vector<Tag> inSequenceTags);
+    void appendSegment(Sequence* sequence, std::vector<Tag> inSequenceTags);
     
-    void appendRead(Sequence sequence);
+    void appendRead(Sequence* sequence);
     
     InSegment *getInSegment(unsigned int sId);
     

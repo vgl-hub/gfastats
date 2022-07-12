@@ -1,6 +1,6 @@
 testFiles/random1.fasta --homopolymer-compress 5
 embedded
-+++Summary+++: 
++++Assembly summary+++: 
 # scaffolds: 5
 Total scaffold length: 50
 Average scaffold length: 10.00
