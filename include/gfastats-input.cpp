@@ -1280,8 +1280,18 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                         std::string* inSequence = new std::string;
 
                         getline(*stream, *inSequence, '>');
+                        
+                        readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence});
 
-//                        inSequences.appendRead(new Sequence {seqHeader, seqComment, inSequence});
+                        if (seqPos % batchSize == 0) {
+
+                            readBatch->batchN = seqPos/batchSize;
+                            
+                            inSequences.appendReads(readBatch);
+                            
+                            readBatch = new Sequences;
+                            
+                        }
                         
                         lg.verbose("Individual fasta sequence read");
 
