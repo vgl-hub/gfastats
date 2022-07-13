@@ -16,11 +16,11 @@ private:
     std::vector<Log> logs;
     
     //gfa variables
-    std::vector<InSegment> inSegments;
+    std::vector<InSegment*> inSegments;
     std::vector<InGap> inGaps;
     std::vector<InEdge> inEdges;
     std::vector<InPath> inPaths;
-    std::vector<InSegment> inReads;
+    std::vector<InSegment*> inReads;
     std::vector<std::vector<Gap>> adjListFW;
     std::vector<std::vector<Gap>> adjListBW;
     std::vector<std::vector<Edge>> adjEdgeList;
@@ -81,6 +81,9 @@ private:
     friend class SAK;
     
 public:
+    
+    ~InSequences();
+    
     UIdGenerator uId; // unique numeric identifier for each feature
 
     void threadPoolInit(int threadN);
@@ -95,11 +98,11 @@ public:
     
     std::vector<Log> getLogs();
 
-    InSegment addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL);
+    InSegment* addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL);
     
     InGap pushbackGap(Log* threadLog, InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int* dist, char sign, unsigned int uId1, unsigned int uId2);
     
-    InSegment pushbackSegment(unsigned int currId, Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL);
+    InSegment* pushbackSegment(unsigned int currId, Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality = NULL);
     
     void traverseInSequence(Sequence* sequence);
     
@@ -115,7 +118,7 @@ public:
     
     InSegment *getInSegment(unsigned int sId);
     
-    std::vector<InSegment>* getInSegments();
+    std::vector<InSegment*>* getInSegments();
     
     std::vector<InGap>* getInGaps();
     

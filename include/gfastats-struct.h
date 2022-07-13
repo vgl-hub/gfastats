@@ -3,8 +3,11 @@
 
 struct Sequence {
     
-    std::string header, comment, sequence, sequenceQuality;
+    std::string header, comment;
+    std::string* sequence = NULL, *sequenceQuality = NULL;
     unsigned int seqPos;
+    
+    ~Sequence();
     
 };
 

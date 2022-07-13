@@ -5,8 +5,8 @@ class InSegment { // DNA sequence with no gaps
 private:
     std::string seqHeader;
     std::string seqComment;
-    std::string inSequence;
-    std::string inSequenceQuality;
+    std::string* inSequence = NULL;
+    std::string* inSequenceQuality = NULL;
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     unsigned int uId = 0, iId = 0, seqPos = 0;
     std::vector<Tag> tags;
@@ -16,6 +16,8 @@ private:
     friend class Report;
     
 public:
+    
+    ~InSegment();
     
     void setSeqHeader(std::string* h);
     

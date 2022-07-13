@@ -28,6 +28,15 @@
 #include "uid-generator.h"
 #include "gfa.h"
 
+InSequences::~InSequences()
+{
+    for (InSegment* p : inSegments)
+        delete p;
+
+    for (InSegment* p : inReads)
+        delete p;
+}
+
 void InSequences::threadPoolInit(int threadN) {
     
     threadPool.init(threadN);
@@ -64,54 +73,54 @@ std::vector<Log> InSequences::getLogs() {
 
 }
 
-InSegment InSequences::addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality, std::vector<Tag>* inSequenceTags) {
+InSegment* InSequences::addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality, std::vector<Tag>* inSequenceTags) {
     
     threadLog->add("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
     
     unsigned long long int seqSize = 0;
     
     // operations on the segment
-    InSegment inSegment;
+    InSegment* inSegment = new InSegment;
     
-    inSegment.setiId(iId); // set temporary sId internal to scaffold
+    inSegment->setiId(iId); // set temporary sId internal to scaffold
     
-    inSegment.setuId(uId); // set absolute id
+    inSegment->setuId(uId); // set absolute id
     
-    inSegment.setSeqPos(seqPos); // set original order
+    inSegment->setSeqPos(seqPos); // set original order
     
-    inSegment.setSeqHeader(&seqHeader);
+    inSegment->setSeqHeader(&seqHeader);
     
     if (*seqComment != "") {
         
-        inSegment.setSeqComment(*seqComment);
+        inSegment->setSeqComment(*seqComment);
         
     }
     
     if (inSequenceTags != NULL) {
         
-        inSegment.setSeqTags(inSequenceTags);
+        inSegment->setSeqTags(inSequenceTags);
         
     }
     
     if (*sequence != "*") {
         
-        inSegment.setInSequence(sequence);
+        inSegment->setInSequence(sequence);
         
         threadLog->add("Segment sequence set");
         
         if (sequenceQuality != NULL) {
             
-            inSegment.setInSequenceQuality(sequenceQuality);
+            inSegment->setInSequenceQuality(sequenceQuality);
             
             threadLog->add("Segment sequence quality set");
             
         }
         
-        inSegment.setACGT(A, C, G, T);
+        inSegment->setACGT(A, C, G, T);
         
         threadLog->add("Increased ACGT counts");
         
-        inSegment.setLowerCount(lowerCount);
+        inSegment->setLowerCount(lowerCount);
 
         threadLog->add("Increased total count of lower bases");
         
@@ -121,7 +130,7 @@ InSegment InSequences::addSegment(Log* threadLog, unsigned int uId, unsigned int
         
         seqSize = *lowerCount;
         
-        inSegment.setLowerCount(&seqSize);
+        inSegment->setLowerCount(&seqSize);
         
         threadLog->add("No seq input. Length (" + std::to_string(seqSize) + ") recorded in lower count");
         
@@ -158,19 +167,20 @@ InGap InSequences::pushbackGap(Log* threadLog, InPath* path, std::string* seqHea
     
 }
 
-InSegment InSequences::pushbackSegment(unsigned int currId, Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality) {
+InSegment* InSequences::pushbackSegment(unsigned int currId, Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality) {
     
-    std::string sequenceSubSeq, sequenceQualitySubSeq;
+    std::string* sequenceSubSeq = new std::string;
+    std::string* sequenceQualitySubSeq = new std::string;
     
-    sequenceSubSeq = sequence->substr(sStart, sEnd + 1 - sStart);
+    *sequenceSubSeq = sequence->substr(sStart, sEnd + 1 - sStart);
     
-    if (*sequenceQuality != "") {
+    if (sequenceQuality != NULL) {
         
-        sequenceQualitySubSeq = sequenceQuality->substr(sStart, sEnd + 1 - sStart);
+        *sequenceQualitySubSeq = sequenceQuality->substr(sStart, sEnd + 1 - sStart);
         
     }
     
-    InSegment inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, &sequenceSubSeq, A, C, G, T, lowerCount, 0, &sequenceQualitySubSeq);
+    InSegment* inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, sequenceSubSeq, A, C, G, T, lowerCount, 0, sequenceQualitySubSeq);
     
     std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
     
@@ -198,10 +208,10 @@ void InSequences::traverseInSequence(Sequence* sequence) { // traverse the seque
 
     std::vector<std::pair<unsigned long long int, unsigned long long int>> bedCoords;
     if(hc_flag) {
-        homopolymerCompress(&sequence->sequence, bedCoords, hc_cutoff);
+        homopolymerCompress(sequence->sequence, bedCoords, hc_cutoff);
     }
     
-    std::vector<InSegment> newSegments;
+    std::vector<InSegment*> newSegments;
     std::vector<InGap> newGaps;
     unsigned long long int pos = 0, // current position in sequence
     hc_index=0, // used with homopolymer compression
@@ -215,6 +225,8 @@ void InSequences::traverseInSequence(Sequence* sequence) { // traverse the seque
     count = 1; // hc
     char sign = '+';
     bool wasN = false;
+    
+    sequence->sequence->erase(std::remove(sequence->sequence->begin(), sequence->sequence->end(), '\n'), sequence->sequence->end());
     
     std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
     
@@ -252,9 +264,9 @@ void InSequences::traverseInSequence(Sequence* sequence) { // traverse the seque
 
     }
 
-    unsigned long long int seqLen = sequence->sequence.size()-1;
+    unsigned long long int seqLen = sequence->sequence->size()-1;
     
-    for (char &base : sequence->sequence) {
+    for (char &base : *sequence->sequence) {
 
         count = 1;
         if(hc_flag && hc_index < bedCoords.size() && pos == bedCoords[hc_index].first) {
@@ -280,7 +292,7 @@ void InSequences::traverseInSequence(Sequence* sequence) { // traverse the seque
                 if (!wasN && pos>0) { // gap start and gap not at the start of the sequence
 
                     sEnd = pos - 1;
-                    newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence->header, &sequence->comment, &sequence->sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence->sequenceQuality));
+                    newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence->header, &sequence->comment, sequence->sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequence->sequenceQuality));
                     
                     lck.lock();
                     
@@ -360,7 +372,7 @@ void InSequences::traverseInSequence(Sequence* sequence) { // traverse the seque
                 if (pos == seqLen) {
 
                     sEnd = pos;
-                    newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence->header, &sequence->comment, &sequence->sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, &sequence->sequenceQuality));
+                    newSegments.push_back(pushbackSegment(currId, &threadLog, &path, &sequence->header, &sequence->comment, sequence->sequence, &iId, &A, &C, &G, &T, &lowerCount, sStart, sEnd, sequence->sequenceQuality));
                     
                     lck.lock();
                     
@@ -411,7 +423,7 @@ void InSequences::traverseInSegment(Sequence* sequence, std::vector<Tag> inSeque
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     unsigned int sUId = 0;
     
-    for (char &base : sequence->sequence) {
+    for (char &base : *sequence->sequence) {
         
         if (islower(base)) {
             
@@ -487,13 +499,11 @@ void InSequences::traverseInSegment(Sequence* sequence, std::vector<Tag> inSeque
         
     }
             
-    inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence->header, &sequence->comment, &sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, &sequence->sequenceQuality, &inSequenceTags));
+    inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, sequence->sequenceQuality, &inSequenceTags));
     
     logs.push_back(threadLog);
     
     lck.unlock();
-    
-    delete sequence;
     
 }
 
@@ -505,7 +515,7 @@ void InSequences::traverseInRead(Sequence* sequence) { // traverse the read
     
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     
-    for (char &base : sequence->sequence) {
+    for (char &base : *sequence->sequence) {
         
         if (islower(base)) {
             
@@ -555,13 +565,11 @@ void InSequences::traverseInRead(Sequence* sequence) { // traverse the read
     
     lck.lock();
     
-    inReads.push_back(addSegment(&threadLog, 0, 0, sequence->header, &sequence->comment, &sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, &sequence->sequenceQuality));
+    inReads.push_back(addSegment(&threadLog, 0, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, sequence->sequenceQuality));
     
     logs.push_back(threadLog);
     
     lck.unlock();
-    
-    delete sequence;
     
 }
 
@@ -635,7 +643,7 @@ void InSequences::appendRead(Sequence* sequence) { // method to append a new seg
 
 InSegment* InSequences::getInSegment(unsigned int sId) {
     
-    auto inSegment = find_if(inSegments.begin(), inSegments.end(), [sId](InSegment& obj) {return obj.getuId() == sId;}); // given a uId, find it in nodes
+    auto inSegment = find_if(inSegments.begin(), inSegments.end(), [sId](InSegment* obj) {return obj->getuId() == sId;}); // given a uId, find it in nodes
     
     if (inSegment == inSegments.end()) {
     
@@ -643,11 +651,11 @@ InSegment* InSequences::getInSegment(unsigned int sId) {
         
     }
         
-    return &(*inSegment);
+    return *inSegment;
     
 }
 
-std::vector<InSegment>* InSequences::getInSegments() {
+std::vector<InSegment*>* InSequences::getInSegments() {
     
     return &inSegments;
     
@@ -687,9 +695,9 @@ unsigned long long int InSequences::getTotScaffLen() {
 
 unsigned long long int InSequences::getTotSegmentLen() {
     
-    for (std::vector<InSegment>::iterator inSegment = inSegments.begin(); inSegment != inSegments.end(); inSegment++) {
+    for (std::vector<InSegment*>::iterator inSegment = inSegments.begin(); inSegment != inSegments.end(); inSegment++) {
         
-        totSegmentLen += inSegment->getA() + inSegment->getC() + inSegment->getG() + inSegment->getT();
+        totSegmentLen += (*inSegment)->getA() + (*inSegment)->getC() + (*inSegment)->getG() + (*inSegment)->getT();
         
     }
 
@@ -768,9 +776,9 @@ void InSequences::evalNstars(char type, unsigned long long int gSize) { // switc
             
             std::vector<unsigned long long int> readLens;
             
-            for (InSegment& read : inReads) {
+            for (InSegment* read : inReads) {
                 
-                readLens.push_back(read.getA() + read.getC() + read.getG() + read.getT());
+                readLens.push_back(read->getA() + read->getC() + read->getG() + read->getT());
             
             }
             
@@ -1224,7 +1232,7 @@ bool InSequences::appendEdge(InEdge edge) {
 
 void InSequences::sortSegmentsByOriginal(){
     
-    sort(inSegments.begin(), inSegments.end(), [](InSegment& one, InSegment& two){return one.getSeqPos() < two.getSeqPos();});
+    sort(inSegments.begin(), inSegments.end(), [](InSegment* one, InSegment* two){return one->getSeqPos() < two->getSeqPos();});
     
 }
 
@@ -1302,11 +1310,11 @@ void InSequences::sortPathsBySize(bool largest){
             
             if (component->type == SEGMENT) {
             
-                auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                 
                 if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
                 
-                size1 += inSegments[sIdx].getInSequence().size();
+                size1 += inSegments[sIdx]->getInSequence().size();
                 
             }else{
                 
@@ -1328,11 +1336,11 @@ void InSequences::sortPathsBySize(bool largest){
             
             if (component->type == SEGMENT) {
             
-                auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                auto sId = find_if(inSegments.begin(), inSegments.end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                 
                 if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
                 
-                size2 += inSegments[sIdx].getInSequence().size();
+                size2 += inSegments[sIdx]->getInSequence().size();
                 
             }else{
                 
@@ -1452,13 +1460,13 @@ void InSequences::dfsEdges(unsigned int v, unsigned int* componentLength) { // D
 
    unsigned int sIdx = 0;
 
-   auto sId = find_if(inSegments.begin(), inSegments.end(), [v](InSegment& obj) {return obj.getuId() == v;}); // given a node Uid, find it
+   auto sId = find_if(inSegments.begin(), inSegments.end(), [v](InSegment* obj) {return obj->getuId() == v;}); // given a node Uid, find it
     
    if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
 
    if (adjEdgeList.at(v).size() > 1) { // if the vertex has more than one edge
 
-        *componentLength += inSegments[sIdx].getSegmentLen();
+        *componentLength += inSegments[sIdx]->getSegmentLen();
 
         char sign = adjEdgeList.at(v).at(0).orientation0;
         unsigned int i = 0;
@@ -1487,7 +1495,7 @@ void InSequences::dfsEdges(unsigned int v, unsigned int* componentLength) { // D
     }else if (adjEdgeList.at(v).size() == 1){ // this is a single dead end
 
         deadEnds += 1;
-        *componentLength += inSegments[sIdx].getSegmentLen();
+        *componentLength += inSegments[sIdx]->getSegmentLen();
 
         lg.verbose("node: " + idsToHeaders[v] + " --> case c: single dead end, single edge");
 
@@ -1496,7 +1504,7 @@ void InSequences::dfsEdges(unsigned int v, unsigned int* componentLength) { // D
         deadEnds += 2;
 
         disconnectedComponents++;
-        lengthDisconnectedComponents += inSegments[sIdx].getSegmentLen();
+        lengthDisconnectedComponents += inSegments[sIdx]->getSegmentLen();
 
         lg.verbose("node: " + idsToHeaders[v] + " --> case d: disconnected component");
 
@@ -1520,7 +1528,7 @@ void InSequences::dfsScaffolds(unsigned int v, unsigned int* scaffSize, unsigned
     
     bool seqRevCom = false, segRevCom = false;
     
-    auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment& obj) {return obj.getuId() == v;}); // given a vertex id, search it in the segment vector
+    auto it = find_if(inSegments.begin(), inSegments.end(), [&v](InSegment* obj) {return obj->getuId() == v;}); // given a vertex id, search it in the segment vector
     
     if (it != inSegments.end()) {idx = std::distance(inSegments.begin(), it);} // if found, get its index
     
@@ -1615,21 +1623,21 @@ void InSequences::dfsScaffolds(unsigned int v, unsigned int* scaffSize, unsigned
         
     }
     
-    *scaffSize += inSegments[idx].getInSequence().size();
+    *scaffSize += inSegments[idx]->getInSequence().size();
     
     if (!segRevCom) {
         
-        a = inSegments[idx].getA();
-        c = inSegments[idx].getC();
-        g = inSegments[idx].getG();
-        t = inSegments[idx].getT();
+        a = inSegments[idx]->getA();
+        c = inSegments[idx]->getC();
+        g = inSegments[idx]->getG();
+        t = inSegments[idx]->getT();
         
     }else {
         
-        a = inSegments[idx].getT();
-        c = inSegments[idx].getG();
-        g = inSegments[idx].getC();
-        t = inSegments[idx].getA();
+        a = inSegments[idx]->getT();
+        c = inSegments[idx]->getG();
+        g = inSegments[idx]->getC();
+        t = inSegments[idx]->getA();
         
     }
     
@@ -1638,7 +1646,7 @@ void InSequences::dfsScaffolds(unsigned int v, unsigned int* scaffSize, unsigned
     *G += g;
     *T += t;
     
-    *lowerCount += inSegments[idx].getLowerCount();
+    *lowerCount += inSegments[idx]->getLowerCount();
     
     for (auto i: adjListFW[v]) { // recur for all forward vertices adjacent to this vertex
         
@@ -1916,7 +1924,7 @@ bool InSequences::deleteSegment(std::string* contig1) {
         
         unsigned int sIdx = 0, sUId = headersToIds[*contig1];
     
-        auto sId = find_if(inSegments.begin(), inSegments.end(), [sUId](InSegment& obj) {return obj.getuId() == sUId;}); // given a node uId, find it
+        auto sId = find_if(inSegments.begin(), inSegments.end(), [sUId](InSegment* obj) {return obj->getuId() == sUId;}); // given a node uId, find it
     
         if (sId != inSegments.end()) {sIdx = std::distance(inSegments.begin(), sId);} // gives us the segment index
     
@@ -1946,7 +1954,7 @@ void InSequences::removePath(unsigned int pUId, bool all, bool silent) {
             
             if (component.type == SEGMENT) {
 
-                auto sId = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+                auto sId = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment* obj) {return obj->getuId() == cUId;}); // given a node Uid, find it
                 
                 if (sId != inSegments.end())
                 inSegments.erase(sId);
@@ -2499,9 +2507,9 @@ int InSequences::getComponentSize(PathComponent& component, bool original) {
     
     if (component.type == SEGMENT) {
     
-        auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+        auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment* obj) {return obj->getuId() == cUId;}); // given a node Uid, find it
         
-        return original ? inSegment->getSegmentLen() : inSegment->getSegmentLen(component.start, component.end);
+        return original ? (*inSegment)->getSegmentLen() : (*inSegment)->getSegmentLen(component.start, component.end);
         
     }else{
         
@@ -2533,31 +2541,31 @@ void InSequences::walkPath(InPath* path) {
     
         if (component->type == SEGMENT) {
             
-            auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment& obj) {return obj.getuId() == cUId;}); // given a node Uid, find it
+            auto inSegment = find_if(inSegments.begin(), inSegments.end(), [cUId](InSegment* obj) {return obj->getuId() == cUId;}); // given a node Uid, find it
             
-            contigLens.push_back(inSegment->getSegmentLen(component->start, component->end));
+            contigLens.push_back((*inSegment)->getSegmentLen(component->start, component->end));
             
             path->increaseContigN();
             
-            path->increaseLen(inSegment->getSegmentLen(component->start, component->end));
+            path->increaseLen((*inSegment)->getSegmentLen(component->start, component->end));
             
-            path->increaseSegmentLen(inSegment->getSegmentLen(component->start, component->end));
+            path->increaseSegmentLen((*inSegment)->getSegmentLen(component->start, component->end));
             
-            path->increaseLowerCount(inSegment->getLowerCount(component->end - component->start));
+            path->increaseLowerCount((*inSegment)->getLowerCount(component->end - component->start));
             
             if (component->start == 0 || component->end == 0) {
             
-                path->increaseA(component->orientation == '+' ? inSegment->getA() : inSegment->getT());
+                path->increaseA(component->orientation == '+' ? (*inSegment)->getA() : (*inSegment)->getT());
                 
-                path->increaseC(component->orientation == '+' ? inSegment->getC() : inSegment->getG());
+                path->increaseC(component->orientation == '+' ? (*inSegment)->getC() : (*inSegment)->getG());
                 
-                path->increaseG(component->orientation == '+' ? inSegment->getG() : inSegment->getC());
+                path->increaseG(component->orientation == '+' ? (*inSegment)->getG() : (*inSegment)->getC());
                 
-                path->increaseT(component->orientation == '+' ? inSegment->getT() : inSegment->getA());
+                path->increaseT(component->orientation == '+' ? (*inSegment)->getT() : (*inSegment)->getA());
                 
             }else{
                 
-                std::string sequence = inSegment->getInSequence(component->start, component->end);
+                std::string sequence = (*inSegment)->getInSequence(component->start, component->end);
                 
                 if (component->orientation == '+') {
                 
@@ -2665,19 +2673,19 @@ void InSequences::discoverPaths() {
     
     buildGraph(inGaps);
     
-    for (InSegment inSegment : inSegments) {
+    for (InSegment* inSegment : inSegments) {
         
-        if (!visited[inSegment.getuId()]) {
+        if (!visited[inSegment->getuId()]) {
             
             InPath path;
             
-            path.newPath(uId.get(), inSegment.getSeqHeader() + "_path");
+            path.newPath(uId.get(), inSegment->getSeqHeader() + "_path");
             
-            insertHash(inSegment.getSeqHeader() + "_path", uId.get());
+            insertHash(inSegment->getSeqHeader() + "_path", uId.get());
             
             uId.next();
             
-            dfsPath(inSegment.getuId(), path);
+            dfsPath(inSegment->getuId(), path);
             
             addPath(path);
             
@@ -2799,9 +2807,9 @@ void InSequences::findBubbles () {
     
     buildEdgeGraph(inEdges);
     
-    for (InSegment segment : inSegments) {
+    for (InSegment* segment : inSegments) {
         
-        sUId = segment.getuId();
+        sUId = segment->getuId();
         
         lg.verbose("Evaluating for node: " + idsToHeaders[sUId] + " (uId: " + std::to_string(sUId) + ")");
         
@@ -2890,9 +2898,9 @@ unsigned long long int InSequences::getTotReadLen() {
     
     unsigned long long int totReadLen = 0;
     
-    for (InSegment& read : inReads) {
+    for (InSegment* read : inReads) {
         
-        totReadLen += read.getA() + read.getC() + read.getG() + read.getT();
+        totReadLen += read->getA() + read->getC() + read->getG() + read->getT();
         
     }
     

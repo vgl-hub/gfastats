@@ -153,7 +153,7 @@ public:
     }
 
     bool erase(InSequences& inSequences, Instruction &instruction) { // erases a portion of sequence
-        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]].trimSegment(instruction.start1, instruction.end1); // trim segment
+        inSequences.inSegments[inSequences.headersToIds[instruction.contig1]]->trimSegment(instruction.start1, instruction.end1); // trim segment
         return true;
     }
 
@@ -163,11 +163,11 @@ public:
 
     bool rvcp(InSequences& inSequences, Instruction &instruction) { // reverse complement sequence
         unsigned int uId = inSequences.headersToIds[instruction.contig1], sIdx = 0;
-        auto sId = find_if(inSequences.inSegments.begin(), inSequences.inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node uId, find it
+        auto sId = find_if(inSequences.inSegments.begin(), inSequences.inSegments.end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node uId, find it
 
         if (sId != inSequences.inSegments.end()) {sIdx = std::distance(inSequences.inSegments.begin(), sId);} // gives us the segment index
         
-        inSequences.inSegments[sIdx].rvcpSegment(); // rvcp segment
+        inSequences.inSegments[sIdx]->rvcpSegment(); // rvcp segment
         
         return true;
     }
@@ -178,10 +178,10 @@ public:
 
     bool invert(InSequences& inSequences, Instruction &instruction) { // invert sequence
         unsigned int uId = inSequences.headersToIds[instruction.contig1], sIdx = 0;
-        auto sId = find_if(inSequences.inSegments.begin(), inSequences.inSegments.end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node uId, find it
+        auto sId = find_if(inSequences.inSegments.begin(), inSequences.inSegments.end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node uId, find it
 
         if (sId != inSequences.inSegments.end()) {sIdx = std::distance(inSequences.inSegments.begin(), sId);} // gives us the segment index
-        inSequences.inSegments[sIdx].invertSegment(); // invert segment
+        inSequences.inSegments[sIdx]->invertSegment(); // invert segment
         
         return true;
     }
@@ -198,7 +198,7 @@ public:
             exit(1);
         }
         int id = got->second;
-        return &(inSequences.getInSegment(id)->inSequence);
+        return (inSequences.getInSegment(id)->inSequence);
     }
 
     bool compress(InSequences &inSequences, Instruction &instruction) {
@@ -225,7 +225,6 @@ public:
 
 private:
     InSequences inSequences;
-    InSegment inSegment1, inSegment2, inSegmentNew;
     std::string sId1Header, sId2Header;
     std::stack<std::vector<std::pair<unsigned long long int, unsigned long long int>>> compressStack; // decompress uses indices of corresponding compresses, last compress = first decompress
 

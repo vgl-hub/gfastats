@@ -36,7 +36,7 @@ bool Report::seqReport(InSequences &inSequences, InSegment &inSegment, int &outS
     std::cout << std::fixed; // disables scientific notation
     std::cout << std::setprecision(2); // 2 decimal poinst
     counter = 0;
-    std::vector<InSegment>* inSegments = inSequences.getInSegments();
+    std::vector<InSegment*>* inSegments = inSequences.getInSegments();
     
     std::cout<<output("Seq\tHeader\tComment\tTotal segment length\tA\tC\tG\tT\tGC content %\t# soft-masked bases");
     
@@ -46,22 +46,22 @@ bool Report::seqReport(InSequences &inSequences, InSegment &inSegment, int &outS
 
     }
     
-    for (InSegment inSegment : *inSegments) {
+    for (InSegment* inSegment : *inSegments) {
         
         std::cout   <<"\n"<<counter+1<<"\t"
-                    <<inSegment.getSeqHeader()<<"\t"
-                    <<inSegment.getSeqComment()<<"\t"
-                    <<inSegment.getSegmentLen()<<"\t"
-                    <<inSegment.getA()<<"\t"
-                    <<inSegment.getC()<<"\t"
-                    <<inSegment.getG()<<"\t"
-                    <<inSegment.getT()<<"\t"
-                    <<inSegment.computeGCcontent()<<"\t"
-                    <<inSegment.getLowerCount();
+                    <<inSegment->getSeqHeader()<<"\t"
+                    <<inSegment->getSeqComment()<<"\t"
+                    <<inSegment->getSegmentLen()<<"\t"
+                    <<inSegment->getA()<<"\t"
+                    <<inSegment->getC()<<"\t"
+                    <<inSegment->getG()<<"\t"
+                    <<inSegment->getT()<<"\t"
+                    <<inSegment->computeGCcontent()<<"\t"
+                    <<inSegment->getLowerCount();
 
         if (outSequence_flag) {
 
-            std::cout<<inSegment.getInSequence()<<"\t"<<inSegment.getInSequenceQuality()<<"\n";
+            std::cout<<inSegment->getInSequence()<<"\t"<<inSegment->getInSequenceQuality()<<"\n";
 
         }
         
@@ -177,7 +177,7 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
             std::string pHeader;
             std::string inSeq; // the new sequence being built
             std::vector<InPath> inPaths = inSequences.getInPaths();
-            std::vector<InSegment>* inSegments = inSequences.getInSegments();
+            std::vector<InSegment*>* inSegments = inSequences.getInSegments();
             std::vector<InGap>* inGaps = inSequences.getInGaps();
             std::vector<PathComponent> pathComponents;
             
@@ -215,17 +215,17 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
                     
                     if (component->type == SEGMENT) {
                     
-                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                         
                         if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                         
                         if (component->orientation == '+') {
                         
-                            inSeq += (*inSegments)[sIdx].getInSequence(component->start, component->end);
+                            inSeq += (*inSegments)[sIdx]->getInSequence(component->start, component->end);
                             
                         }else{
                             
-                            inSeq += revCom((*inSegments)[sIdx].getInSequence(component->start, component->end));
+                            inSeq += revCom((*inSegments)[sIdx]->getInSequence(component->start, component->end));
                             
                         }
                         
@@ -266,7 +266,7 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
             std::string pHeader;
             std::string inSeq, inSeqQual; // the new sequence being built and its quality
             std::vector<InPath> inPaths = inSequences.getInPaths();
-            std::vector<InSegment>* inSegments = inSequences.getInSegments();
+            std::vector<InSegment*>* inSegments = inSequences.getInSegments();
             std::vector<InGap>* inGaps = inSequences.getInGaps();
             std::vector<PathComponent> pathComponents;
             
@@ -304,27 +304,27 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
                     
                     if (component->type == SEGMENT) {
                     
-                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                         
                         if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                         
                         if (component->orientation == '+') {
                         
-                            inSeq += (*inSegments)[sIdx].getInSequence(component->start, component->end);
+                            inSeq += (*inSegments)[sIdx]->getInSequence(component->start, component->end);
                             
                         }else{
                             
-                            inSeq += revCom((*inSegments)[sIdx].getInSequence(component->start, component->end));
+                            inSeq += revCom((*inSegments)[sIdx]->getInSequence(component->start, component->end));
                             
                         }
                         
-                        if ((*inSegments)[sIdx].getInSequenceQuality() != "") {
+                        if ((*inSegments)[sIdx]->getInSequenceQuality() != "") {
                         
-                            inSeqQual += (*inSegments)[sIdx].getInSequenceQuality(component->start, component->end);
+                            inSeqQual += (*inSegments)[sIdx]->getInSequenceQuality(component->start, component->end);
                             
                         }else{
                             
-                            inSeqQual += std::string((*inSegments)[sIdx].getInSequenceQuality().size(), '!');
+                            inSeqQual += std::string((*inSegments)[sIdx]->getInSequenceQuality().size(), '!');
                             
                         }
                         
@@ -359,19 +359,19 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
             
             phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = *inSequences.getHash2();
             
-            std::vector<InSegment>* inSegments = inSequences.getInSegments();
+            std::vector<InSegment*>* inSegments = inSequences.getInSegments();
             
             *stream<<"H\tVN:Z:1.2\n";
             
-            for (InSegment inSegment : *inSegments) {
+            for (InSegment* inSegment : *inSegments) {
                 
-                seqHeader = inSegment.getSeqHeader();
+                seqHeader = inSegment->getSeqHeader();
                 
                 *stream <<"S\t" // line type
                         <<seqHeader<<"\t" // header
-                        <<inSegment.getInSequence(); // sequence
+                        <<inSegment->getInSequence(); // sequence
                 
-                std::vector<Tag> tags = inSegment.getTags();
+                std::vector<Tag> tags = inSegment->getTags();
                 
                 for (Tag &tag : tags) {
                 
@@ -379,9 +379,9 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
                     
                 }
                 
-                if (inSegment.getInSequenceQuality() != "") {
+                if (inSegment->getInSequenceQuality() != "") {
                     
-                    *stream <<"\tQL:Z:"<<inSegment.getInSequenceQuality(); // optional quality
+                    *stream <<"\tQL:Z:"<<inSegment->getInSequenceQuality(); // optional quality
                     
                 }
                 
@@ -501,20 +501,20 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
             
             phmap::flat_hash_map<unsigned int, std::string> idsToHeaders = *inSequences.getHash2();
             
-            std::vector<InSegment>* inSegments = inSequences.getInSegments();
+            std::vector<InSegment*>* inSegments = inSequences.getInSegments();
             
             *stream<<"H\tVN:Z:2.0\n";
             
-            for (InSegment inSegment : *inSegments) {
+            for (InSegment* inSegment : *inSegments) {
                 
-                seqHeader = inSegment.getSeqHeader();
+                seqHeader = inSegment->getSeqHeader();
                 
                 *stream <<"S\t" // line type
                         <<seqHeader<<"\t" // header
-                        <<inSegment.getSegmentLen()<<"\t" // seq length
-                        <<inSegment.getInSequence(); // sequence
+                        <<inSegment->getSegmentLen()<<"\t" // seq length
+                        <<inSegment->getInSequence(); // sequence
                 
-                std::vector<Tag> tags = inSegment.getTags();
+                std::vector<Tag> tags = inSegment->getTags();
                 
                 for (Tag &tag : tags) {
                 
@@ -522,9 +522,9 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
                     
                 }
                 
-                if (inSegment.getInSequenceQuality() != "") {
+                if (inSegment->getInSequenceQuality() != "") {
                     
-                    *stream <<"\tQL:Z:"<<inSegment.getInSequenceQuality(); // optional quality
+                    *stream <<"\tQL:Z:"<<inSegment->getInSequenceQuality(); // optional quality
                     
                 }
                 
@@ -705,11 +705,11 @@ bool Report::outSize(InSequences &inSequences, InSegment &inSegment, char &sizeO
             
         case 'c': { // contigs
             
-            std::vector<InSegment>* inSegments = inSequences.getInSegments();
+            std::vector<InSegment*>* inSegments = inSequences.getInSegments();
             
-            for (InSegment inSegment : *inSegments) {
+            for (InSegment* inSegment : *inSegments) {
                 
-                std::cout<<inSegment.getSeqHeader()<<"\t"<<inSegment.getInSequence().size()<<"\n";
+                std::cout<<inSegment->getSeqHeader()<<"\t"<<inSegment->getInSequence().size()<<"\n";
 
             }
             
@@ -751,7 +751,7 @@ bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOu
 
     std::string pHeader;
     std::vector<InPath> inPaths = inSequences.getInPaths();
-    std::vector<InSegment>* inSegments = inSequences.getInSegments();
+    std::vector<InSegment*>* inSegments = inSequences.getInSegments();
     std::vector<InGap>* inGaps = inSequences.getInGaps();
     std::vector<PathComponent> pathComponents;
 
@@ -781,11 +781,11 @@ bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOu
                     
                     if (component.type == SEGMENT) {
                     
-                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                         
                         if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                         
-                        pos += (*inSegments)[sIdx].getInSequence().size();
+                        pos += (*inSegments)[sIdx]->getInSequence().size();
                         
                     }else{
                         
@@ -814,13 +814,13 @@ bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOu
                     
                     if (component.type == SEGMENT) {
                     
-                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                         
                         if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                         
                         std::cout<<pHeader<<"\t"<<pos;
                         
-                        pos += (*inSegments)[sIdx].getInSequence().size();
+                        pos += (*inSegments)[sIdx]->getInSequence().size();
                         
                         std::cout<<"\t"<<pos<<"\n";
                         
@@ -848,11 +848,11 @@ bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOu
                     
                     if (component.type == SEGMENT) {
                     
-                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                         
                         if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                         
-                        pos += (*inSegments)[sIdx].getInSequence().size();
+                        pos += (*inSegments)[sIdx]->getInSequence().size();
                         
                     }else{
                         
@@ -883,20 +883,20 @@ bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOu
                     
                     if (component.type == SEGMENT) {
 
-                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                         
                         if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
 
-                        InSegment *seg = &(inSegments->at(sIdx));
+                        InSegment* seg = inSegments->at(sIdx);
 
                         std::vector<std::pair<unsigned int, unsigned int>> bedCoords;
-                        homopolymerBedCoords(&(seg->inSequence), bedCoords, 1);
+                        homopolymerBedCoords(seg->inSequence, bedCoords, 1);
 
                         for(const auto &pair : bedCoords) {
                             std::cout << pHeader << "\t" << pair.first+pos << "\t" << pair.second+pos << std::endl;
                         }
 
-                        pos += seg->inSequence.size();
+                        pos += seg->inSequence->size();
 
                     }else{
                         
@@ -924,17 +924,17 @@ bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOu
                     
                     if (component.type == SEGMENT) {
                     
-                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment& obj) {return obj.getuId() == uId;}); // given a node Uid, find it
+                        auto sId = find_if(inSegments->begin(), inSegments->end(), [uId](InSegment* obj) {return obj->getuId() == uId;}); // given a node Uid, find it
                         
                         if (sId != inSegments->end()) {sIdx = std::distance(inSegments->begin(), sId);} // gives us the segment index
                         
                         std::cout<<pHeader<<"\t"<<pos+1;
                         
-                        pos += (*inSegments)[sIdx].getInSequence().size();
+                        pos += (*inSegments)[sIdx]->getInSequence().size();
                         
                         counter++;
                         
-                        std::cout<<"\t"<<pos<<"\t"<<counter<<"\tW\t"<<(*inSegments)[sIdx].getSeqHeader()<<"\t1\t"<<(*inSegments)[sIdx].getInSequence().size()<<"\t"<<component.orientation<<"\n";
+                        std::cout<<"\t"<<pos<<"\t"<<counter<<"\tW\t"<<(*inSegments)[sIdx]->getSeqHeader()<<"\t1\t"<<(*inSegments)[sIdx]->getInSequence().size()<<"\t"<<component.orientation<<"\n";
                         
                     }else{
                         
@@ -1058,15 +1058,15 @@ bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize,
 
         lg.verbose("Graph DFS");
         
-        std::vector<InSegment>* inSegments = inSequences.getInSegments();
+        std::vector<InSegment*>* inSegments = inSequences.getInSegments();
         std::vector<unsigned int> componentLengths;
         unsigned int componentLength = 0;
         
-        for (InSegment inSegment : *inSegments) { // loop through all nodes
+        for (InSegment* inSegment : *inSegments) { // loop through all nodes
             
-            if (!inSequences.getVisited(inSegment.getuId()) && !inSequences.getDeleted(inSegment.getuId())) { // check if the node was already visited
+            if (!inSequences.getVisited(inSegment->getuId()) && !inSequences.getDeleted(inSegment->getuId())) { // check if the node was already visited
                 
-                inSequences.dfsEdges(inSegment.getuId(), &componentLength); // if not, visit all connected components recursively
+                inSequences.dfsEdges(inSegment->getuId(), &componentLength); // if not, visit all connected components recursively
                 connectedComponents++;
                 componentLengths.push_back(componentLength);
                 componentLength = 0;

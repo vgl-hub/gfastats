@@ -45,7 +45,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     
     inSequences.threadPoolInit(maxThreads); // initialize threadpool
     
-    std::string newLine, seqHeader, seqComment, inSequence, inSequenceQuality, line, bedHeader;
+    std::string newLine, seqHeader, seqComment, line, bedHeader;
     
     std::unique_ptr<std::istream> stream;
     
@@ -228,15 +228,13 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                             
                         }
                         
-                        inSequence.clear();
+                        std::string* inSequence = new std::string;
                         
-                        getline(*stream, inSequence, '>');
-                        
-                        inSequence.erase(std::remove(inSequence.begin(), inSequence.end(), '\n'), inSequence.end());
+                        getline(*stream, *inSequence, '>');
                         
                         lg.verbose("Individual fasta sequence read");
                         
-                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList);
                         
                         if (sequence->header != "") {
                             
@@ -269,15 +267,15 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                             
                         }
                         
-                        getline(*stream, newLine);
-                        inSequence = newLine;
+                        std::string* inSequence = new std::string;
+                        getline(*stream, *inSequence);
                         
                         getline(*stream, newLine);
                         
-                        getline(*stream, newLine);
-                        inSequenceQuality = newLine;
+                        std::string* inSequenceQuality = new std::string;
+                        getline(*stream, *inSequenceQuality);
 
-                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, &inSequence, bedIncludeList, bedExcludeList, &inSequenceQuality);
+                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList, inSequenceQuality);
                         
                         if (sequence != NULL) {
                             
@@ -382,7 +380,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     seqHeader = arguments[1];
                                     
-                                    inSequence = arguments[3];
+                                    std::string* inSequence = new std::string;
+                                    
+                                    *inSequence = arguments[3];
                                     
                                     inTags.clear();
                                     
@@ -399,7 +399,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     }
                                     
-                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList);
+                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, bedIncludeList, bedExcludeList);
                                     
                                     if (sequence != NULL) {
                                         
@@ -747,7 +747,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     seqHeader = arguments[1];
                                     
-                                    inSequence = arguments[2];
+                                    std::string* inSequence = new std::string;
+                                    
+                                    *inSequence = arguments[2];
                                     
                                     inTags.clear();
                                     
@@ -764,7 +766,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     }
                                     
-                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, &inSequence, bedIncludeList, bedExcludeList, NULL, &inTags);
+                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, bedIncludeList, bedExcludeList, NULL, &inTags);
                                     
                                     if (sequence != NULL) {
                                         
@@ -1270,10 +1272,10 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                             seqComment = std::string(c);
 
                         }
+                        
+                        std::string* inSequence = new std::string;
 
-                        inSequence.clear();
-
-                        getline(*stream, inSequence, '>');
+                        getline(*stream, *inSequence, '>');
 
                         inSequences.appendRead(new Sequence {seqHeader, seqComment, inSequence});
                         
@@ -1303,10 +1305,14 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                             seqComment = "";
                             
                         }
-
-                        getline(*stream, inSequence);
+                        
+                        std::string* inSequence = new std::string;
+                        getline(*stream, *inSequence);
+                        
                         getline(*stream, newLine);
-                        getline(*stream, inSequenceQuality);
+                        
+                        std::string* inSequenceQuality = new std::string;
+                        getline(*stream, *inSequenceQuality);
 
                         inSequences.appendRead(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
                         
@@ -1417,6 +1423,8 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     }
 
     if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
+        
+        inSequences.updateStats();
         
         std::string pHeaderNew, pHeader1, pHeader2, gHeader, instruction, coord1, coord2;
         char pId1Or = '+', pId2Or;
@@ -1813,7 +1821,7 @@ Sequence* InFile::includeExcludeSeq(std::string seqHeader, std::string seqCommen
     
     if (outSeq && inSequence->size()>0) {
     
-        return new Sequence {seqHeader, seqComment, *inSequence, inSequenceQuality != NULL ? *inSequenceQuality : ""};
+        return new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality};
     
     }else {
         
@@ -1985,7 +1993,7 @@ Sequence* InFile::includeExcludeSeg(InSequences* inSequences, std::string* seqHe
     
     if (outSeq && inSequence->size()>0) {
     
-        return new Sequence {*seqHeader, seqComment != NULL ? *seqComment : "", *inSequence};
+        return new Sequence {*seqHeader, seqComment != NULL ? *seqComment : "", inSequence};
     
     }else {
         

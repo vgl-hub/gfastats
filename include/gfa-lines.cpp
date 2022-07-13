@@ -4,6 +4,12 @@
 #include "gfastats-struct.h"
 #include "gfastats-functions.h"
 #include "gfa-lines.h"
+
+InSegment::~InSegment()
+{
+    delete inSequence;
+    delete inSequenceQuality;
+}
     
 void InSegment::setSeqHeader(std::string* h) {
     seqHeader = *h;
@@ -14,11 +20,11 @@ void InSegment::setSeqComment(std::string c) {
 }
 
 void InSegment::setInSequence(std::string* s) {
-    inSequence = *s;
+    inSequence = s;
 }
 
 void InSegment::setInSequenceQuality(std::string* q) {
-    inSequenceQuality = *q;
+    inSequenceQuality = q;
 }
 
 void InSegment::setSeqTags(std::vector<Tag>* t) {
@@ -51,13 +57,13 @@ std::vector<Tag> InSegment::getTags() {
 
 std::string InSegment::getInSequence(unsigned int start, unsigned int end) {
     
-    if (inSequence == "") {
+    if (inSequence == NULL) {
         
         return "*";
         
     }else{
     
-        return start != 0 || end != 0 ? inSequence.substr(start-1, end-start+1) : inSequence;
+        return start != 0 || end != 0 ? inSequence->substr(start-1, end-start+1) : *inSequence;
         
     }
     
@@ -65,7 +71,15 @@ std::string InSegment::getInSequence(unsigned int start, unsigned int end) {
 
 std::string InSegment::getInSequenceQuality(unsigned int start, unsigned int end) {
     
-    return start != 0 || end != 0 ? inSequenceQuality.substr(start-1, end-start+1) : inSequenceQuality;
+    if (inSequenceQuality != NULL) {
+    
+        return start != 0 || end != 0 ? inSequenceQuality->substr(start-1, end-start+1) : *inSequenceQuality;
+        
+    }else{
+        
+        return "";
+        
+    }
     
 }
 
@@ -77,7 +91,7 @@ unsigned int InSegment::getSeqPos() {
 
 unsigned long long int InSegment::getSegmentLen(unsigned long long int start, unsigned long long int end) {
     
-    if (inSequence == "") {
+    if (inSequence == NULL) {
         
         return lowerCount;
         
@@ -144,7 +158,7 @@ unsigned int InSegment::getLowerCount(unsigned long long int start, unsigned lon
         
         unsigned long long int lowerCountSubset = 0;
         
-        for (char base : inSequence) { // need to fix this loop
+        for (char base : *inSequence) { // need to fix this loop
             
             if (islower(base)) {
                 
@@ -169,7 +183,7 @@ double InSegment::computeGCcontent() {
 
 bool InSegment::trimSegment(unsigned int start, unsigned int end) {
     
-    for(char& base : inSequence.substr(start, end-start)) {
+    for(char& base : inSequence->substr(start, end-start)) {
         
         switch (base) {
             case 'A':
@@ -205,11 +219,11 @@ bool InSegment::trimSegment(unsigned int start, unsigned int end) {
         
     }
     
-    inSequence.erase(start, end-start);
+    inSequence->erase(start, end-start);
     
-    if (inSequenceQuality.size()>0) {
+    if (inSequenceQuality->size()>0) {
     
-        inSequenceQuality.erase(start, end-start);
+        inSequenceQuality->erase(start, end-start);
     
     }
     
@@ -218,7 +232,7 @@ bool InSegment::trimSegment(unsigned int start, unsigned int end) {
 
 bool InSegment::rvcpSegment() {
 
-    inSequence = revCom(inSequence);
+    *inSequence = revCom(*inSequence);
 
     return true;
     
@@ -226,8 +240,8 @@ bool InSegment::rvcpSegment() {
 
 bool InSegment::invertSegment() {
 
-    inSequence = rev(inSequence);
-    inSequenceQuality = rev(inSequenceQuality);
+    *inSequence = rev(*inSequence);
+    *inSequenceQuality = rev(*inSequenceQuality);
 
     return true;
     
