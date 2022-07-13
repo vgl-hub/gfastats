@@ -1191,6 +1191,8 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     }
     
     if (!iReadFileArg.empty()) {
+        
+        unsigned int batchSize = 10000;
 
         // start streaming
         stream = std::make_unique<std::ifstream>(std::ifstream(iReadFileArg));
@@ -1318,9 +1320,9 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                         
                         readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
                         
-                        if (seqPos % 1000 == 0) {
+                        if (seqPos % batchSize == 0) {
 
-                            readBatch->batchN = seqPos/1000;
+                            readBatch->batchN = seqPos/batchSize;
                             
                             inSequences.appendReads(readBatch);
                             
@@ -1336,7 +1338,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
 
                 }
                 
-                readBatch->batchN = seqPos/1000 + 1;
+                readBatch->batchN = seqPos/batchSize + 1;
                 
                 inSequences.appendReads(readBatch);
                     
