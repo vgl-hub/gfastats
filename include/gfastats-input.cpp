@@ -1249,6 +1249,8 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
         }
 
         lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
+        
+        Sequences* readBatch = new Sequences;
 
         if (stream) {
 
@@ -1277,7 +1279,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
 
                         getline(*stream, *inSequence, '>');
 
-                        inSequences.appendRead(new Sequence {seqHeader, seqComment, inSequence});
+//                        inSequences.appendRead(new Sequence {seqHeader, seqComment, inSequence});
                         
                         lg.verbose("Individual fasta sequence read");
 
@@ -1313,16 +1315,30 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                         
                         std::string* inSequenceQuality = new std::string;
                         getline(*stream, *inSequenceQuality);
-
-                        inSequences.appendRead(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
                         
-                        lg.verbose("Individual fastq sequence read");
+                        readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
+                        
+                        if (seqPos % 1000 == 0) {
+
+                            readBatch->batchN = seqPos/1000;
+                            
+                            inSequences.appendReads(readBatch);
+                            
+                            readBatch = new Sequences;
+                            
+                        }
+                        
+                        lg.verbose("Individual fastq sequence read: " + seqHeader);
 
                     }
 
                     break;
 
                 }
+                
+                readBatch->batchN = seqPos/1000 + 1;
+                
+                inSequences.appendReads(readBatch);
                     
             }
 

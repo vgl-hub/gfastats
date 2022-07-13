@@ -108,13 +108,15 @@ public:
     
     void traverseInSegment(Sequence* sequence, std::vector<Tag> inSequenceTags);
     
-    void traverseInRead(Sequence* sequence);
+    void traverseInReads(Sequences* sequence);
+    
+    InSegment* traverseInRead(Log* threadLog, Sequence* sequence, unsigned int seqPos);
     
     void appendSequence(Sequence* sequence);
     
     void appendSegment(Sequence* sequence, std::vector<Tag> inSequenceTags);
     
-    void appendRead(Sequence* sequence);
+    void appendReads(Sequences* sequence);
     
     InSegment *getInSegment(unsigned int sId);
     

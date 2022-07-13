@@ -507,11 +507,37 @@ void InSequences::traverseInSegment(Sequence* sequence, std::vector<Tag> inSeque
     
 }
 
-void InSequences::traverseInRead(Sequence* sequence) { // traverse the read
-    
+void InSequences::traverseInReads(Sequences* sequences) { // traverse the read
+
     Log threadLog;
     
-    threadLog.setId(sequence->seqPos);
+    threadLog.setId(sequences->batchN);
+    
+    std::vector<InSegment*> inReadsBatch;
+    
+    unsigned int readN = 0;
+    
+    for (Sequence* sequence : sequences->sequences) {
+        
+        inReadsBatch.push_back(traverseInRead(&threadLog, sequence, sequences->batchN+readN++));
+        
+    }
+    
+    delete sequences;
+    
+    std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
+    
+    lck.lock();
+    
+    inReads.insert(std::end(inReads), std::begin(inReadsBatch), std::end(inReadsBatch));
+    
+    logs.push_back(threadLog);
+    
+    lck.unlock();
+    
+}
+
+InSegment* InSequences::traverseInRead(Log* threadLog, Sequence* sequence, unsigned int seqPos) { // traverse a single read
     
     unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
     
@@ -561,15 +587,7 @@ void InSequences::traverseInRead(Sequence* sequence) { // traverse the read
             
     }
     
-    std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-    
-    lck.lock();
-    
-    inReads.push_back(addSegment(&threadLog, 0, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, sequence->sequenceQuality));
-    
-    logs.push_back(threadLog);
-    
-    lck.unlock();
+    return addSegment(threadLog, 0, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, seqPos, sequence->sequenceQuality);
     
 }
 
@@ -619,9 +637,9 @@ void InSequences::appendSegment(Sequence* sequence, std::vector<Tag> inSequenceT
     
 }
 
-void InSequences::appendRead(Sequence* sequence) { // method to append a new segment from a gfa
+void InSequences::appendReads(Sequences* sequences) { // read a collection of reads
     
-    threadStart([=]{ return traverseInRead(sequence); });
+    threadStart([=]{ return traverseInReads(sequences); });
     
     if(verbose_flag) {std::cerr<<"\n";};
     

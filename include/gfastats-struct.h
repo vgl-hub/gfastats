@@ -1,13 +1,22 @@
 #ifndef GFASTATS_STRUCT
 #define GFASTATS_STRUCT
 
-struct Sequence {
+struct Sequence { // a generic sequence container
     
     std::string header, comment;
     std::string* sequence = NULL, *sequenceQuality = NULL;
     unsigned int seqPos;
     
     ~Sequence();
+    
+};
+
+struct Sequences { // a collection of sequences
+    
+    std::vector<Sequence*> sequences;
+    unsigned int batchN;
+    
+    ~Sequences();
     
 };
 

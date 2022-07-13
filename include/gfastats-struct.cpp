@@ -1,5 +1,13 @@
 #include <string>
+#include <vector>
 #include "gfastats-struct.h"
+
+Sequences::~Sequences()
+{
+    for (Sequence* p : sequences)
+        delete p;
+    
+}
 
 Sequence::~Sequence()
 {
