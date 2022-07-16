@@ -30,7 +30,7 @@
 #include "bed.h"
 #include "gfa-lines.h"
 
-#include "gfastats-threadpool.h"
+#include "threadpool.h"
 #include "gfa.h"
 #include "gfastats-sak.h" // swiss army knife
 
@@ -40,10 +40,16 @@
 #include <zstream/izstream_impl.hpp>
 
 #include "gfastats-input.h"
+
+void Input::load(UserInput userInput) {
     
-void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::string &iSakFileArg, std::string &iAgpFileArg, std::string &iBedIncludeFileArg, std::string &iBedExcludeFileArg, BedCoordinates &bedIncludeList, bool isPipe, char &pipeType, std::string sortType, std::string &iReadFileArg) {
+    this->userInput = userInput;
     
-    inSequences.threadPoolInit(maxThreads); // initialize threadpool
+}
+    
+void Input::read(InSequences& inSequences) {
+    
+    threadPool.init(maxThreads); // initialize threadpool
     
     std::string newLine, seqHeader, seqComment, line, bedHeader;
     
@@ -53,15 +59,15 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     
     unsigned int begin = 0, end = 0;
 
-    if (!iSakFileArg.empty() || (isPipe && (pipeType == 'k'))) {
+    if (!userInput.iSakFileArg.empty() || userInput.pipeType == 'k') {
         
-        if (isPipe && (pipeType == 'k')) {
+        if (userInput.pipeType == 'k') {
             
             stream = std::make_unique<std::istream>(std::cin.rdbuf());
             
         }else{
             
-            stream = std::make_unique<std::ifstream>(std::ifstream(iSakFileArg));
+            stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iSakFileArg));
             
         }
         
@@ -79,15 +85,15 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
         
     }
     
-    if (!iBedIncludeFileArg.empty() || (isPipe && (pipeType == 'i'))) {
+    if (!userInput.iBedIncludeFileArg.empty() || userInput.pipeType == 'i') {
         
-        if (isPipe && (pipeType == 'i')) {
+        if (userInput.pipeType == 'i') {
             
             stream = std::make_unique<std::istream>(std::cin.rdbuf());
             
         }else{
             
-            stream = std::make_unique<std::ifstream>(std::ifstream(iBedIncludeFileArg));
+            stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iBedIncludeFileArg));
             
         }
         
@@ -96,7 +102,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
             std::istringstream iss(line);
             iss >> bedHeader >> begin >> end;
             
-            bedIncludeList.pushCoordinates(bedHeader, begin, end);
+            userInput.bedIncludeList.pushCoordinates(bedHeader, begin, end);
             begin = 0, end = 0;
             
         }
@@ -107,15 +113,15 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     
     BedCoordinates bedExcludeList;
     
-    if (!iBedExcludeFileArg.empty() || (isPipe && (pipeType == 'e'))) {
+    if (!userInput.iBedExcludeFileArg.empty() || userInput.pipeType == 'e') {
         
-        if (isPipe && (pipeType == 'e')) {
+        if (userInput.pipeType == 'e') {
             
             stream = std::make_unique<std::istream>(std::cin.rdbuf());
             
         }else{
             
-            stream = std::make_unique<std::ifstream>(std::ifstream(iBedExcludeFileArg));
+            stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iBedExcludeFileArg));
             
         }
         
@@ -139,10 +145,10 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     bool stopStream = false, isGzip = false;
     unsigned int seqPos = 0; // to keep track of the original sequence order
     
-    if (!iSeqFileArg.empty()) {
+    if (!userInput.iSeqFileArg.empty() || userInput.pipeType == 'f') {
     
         // start streaming
-        stream = std::make_unique<std::ifstream>(std::ifstream(iSeqFileArg));
+        stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iSeqFileArg));
         
         lg.verbose("Created stream object for input assembly file");
 
@@ -158,7 +164,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
 
         stream->unget();
         
-        std::ifstream is(iSeqFileArg);
+        std::ifstream is(userInput.iSeqFileArg);
         
         // this stream takes input from a gzip compressed file
         zstream::igzstream zfin(is);
@@ -170,7 +176,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
         
         }
         
-        if (isPipe && (pipeType == 'f')) { // input is from pipe
+        if (userInput.pipeType == 'f') { // input is from pipe
             
             std::cin.read((char*)(&buffer), 1);
 
@@ -209,7 +215,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                     
                     while (!stream->eof()) {
                         
-                        if(bedIncludeList.size() - bedExcludeList.size() != 0 && bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
+                        if(userInput.bedIncludeList.size() - bedExcludeList.size() != 0 && userInput.bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
                             lg.verbose("Found all sequences, stop streaming input");
                             break;
                         
@@ -234,7 +240,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                         
                         lg.verbose("Individual fasta sequence read");
                         
-                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList);
+                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, userInput.bedIncludeList, bedExcludeList);
                         
                         if (sequence->header != "") {
                             
@@ -275,7 +281,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                         std::string* inSequenceQuality = new std::string;
                         getline(*stream, *inSequenceQuality);
 
-                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, bedIncludeList, bedExcludeList, inSequenceQuality);
+                        Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, userInput.bedIncludeList, bedExcludeList, inSequenceQuality);
                         
                         if (sequence != NULL) {
                             
@@ -399,7 +405,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     }
                                     
-                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, bedIncludeList, bedExcludeList);
+                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, bedExcludeList);
                                     
                                     if (sequence != NULL) {
                                         
@@ -766,7 +772,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                                     
                                     }
                                     
-                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, bedIncludeList, bedExcludeList, NULL, &inTags);
+                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, bedExcludeList, NULL, &inTags);
                                     
                                     if (sequence != NULL) {
                                         
@@ -1183,19 +1189,19 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
                 
         }else{
 
-            fprintf(stderr, "Stream not successful: %s", iSeqFileArg.c_str());
+            fprintf(stderr, "Stream not successful: %s", userInput.iSeqFileArg.c_str());
             exit(1);
 
         }
         
     }
     
-    if (!iReadFileArg.empty()) {
+    if (!userInput.iReadFileArg.empty()) {
         
         unsigned int batchSize = 10000;
 
         // start streaming
-        stream = std::make_unique<std::ifstream>(std::ifstream(iReadFileArg));
+        stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iReadFileArg));
 
         lg.verbose("Created stream object for input read file");
 
@@ -1211,7 +1217,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
 
         stream->unget();
 
-        std::ifstream is(iReadFileArg);
+        std::ifstream is(userInput.iReadFileArg);
 
         // this stream takes input from a gzip compressed file
         zstream::igzstream zfin(is);
@@ -1223,7 +1229,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
 
         }
 
-        if (isPipe && (pipeType == 'f')) { // input is from pipe
+        if (userInput.pipeType == 'f') { // input is from pipe
 
             std::cin.read((char*)(&buffer), 1);
 
@@ -1360,8 +1366,8 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     
     while (true) {
         
-        if (inSequences.threadEmpty()) {inSequences.threadsJoin(); break;}
-        lg.verbose("Remaining jobs: " + std::to_string(inSequences.threadQueueSize()), true);
+        if (threadPool.empty()) {threadPool.join(); break;}
+        lg.verbose("Remaining jobs: " + std::to_string(threadPool.queueSize()), true);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         
     }
@@ -1409,25 +1415,25 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     
     }
     
-    if (sortType == "ascending") {
+    if (userInput.sortType == "ascending") {
         
         inSequences.sortPathsByNameAscending();
         
-    }else if (sortType == "descending") {
+    }else if (userInput.sortType == "descending") {
         
         inSequences.sortPathsByNameDescending();
         
-    }else if (sortType == "largest") {
+    }else if (userInput.sortType == "largest") {
         
         inSequences.sortPathsBySize(0);
 
-    }else if (sortType == "smallest") {
+    }else if (userInput.sortType == "smallest") {
         
         inSequences.sortPathsBySize(1);
         
-    }else if (sortType != "none" && ifFileExists(sortType.c_str())){
+    }else if (userInput.sortType != "none" && ifFileExists(userInput.sortType.c_str())){
             
-        stream = std::make_unique<std::ifstream>(std::ifstream(sortType));
+        stream = std::make_unique<std::ifstream>(std::ifstream(userInput.sortType));
         
         std::string header;
         std::vector<std::string> headerList;
@@ -1450,7 +1456,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
         
     }
 
-    if (!iAgpFileArg.empty() || (isPipe && (pipeType == 'a'))) {
+    if (!userInput.iAgpFileArg.empty() || userInput.pipeType == 'a') {
         
         inSequences.updateStats();
         
@@ -1472,13 +1478,13 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
             
         }
         
-        if (isPipe && (pipeType == 'a')) {
+        if (userInput.pipeType == 'a') {
             
             stream = std::make_unique<std::istream>(std::cin.rdbuf());
             
         }else{
             
-            stream = std::make_unique<std::ifstream>(std::ifstream(iAgpFileArg));
+            stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iAgpFileArg));
             
         }
 
@@ -1714,7 +1720,7 @@ void InFile::readFiles(InSequences &inSequences, std::string &iSeqFileArg, std::
     
 }
 
-Sequence* InFile::includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality) {
+Sequence* Input::includeExcludeSeq(std::string seqHeader, std::string seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality) {
     
     std::vector<std::string> bedIncludeListHeaders;
     std::vector<std::string> bedExcludeListHeaders;
@@ -1861,7 +1867,7 @@ Sequence* InFile::includeExcludeSeq(std::string seqHeader, std::string seqCommen
     
 }
 
-Sequence* InFile::includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality, std::vector<Tag>* inTags) {
+Sequence* Input::includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality, std::vector<Tag>* inTags) {
     
     std::vector<std::string> bedIncludeListHeaders;
     std::vector<std::string> bedExcludeListHeaders;

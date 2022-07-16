@@ -1,7 +1,7 @@
 #ifndef GFASTATS_THREADPOOL
 #define GFASTATS_THREADPOOL
 
-#include <condition_variable>
+extern Log lg;
 
 template<class T>
 class ThreadPool {
@@ -21,6 +21,9 @@ public:
     bool empty();
     unsigned int queueSize();
     void join();
+
+friend class InSequences;
+    
 };
 
 template<class T>

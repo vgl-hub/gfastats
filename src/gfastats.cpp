@@ -29,8 +29,8 @@ int hc_flag;
 int hc_cutoff;
 int maxThreads = 0;
 
-Log lg;
 std::mutex mtx;
+ThreadPool<std::function<void()>> threadPool;
 
 int main(int argc, char **argv) {
     
@@ -38,15 +38,6 @@ int main(int argc, char **argv) {
     short unsigned int pos_op = 1; // optional arguments
     unsigned long long int gSize = 0; // expected genome size, with 0 NG/LG* statistics are not computed
     int splitLength = 0; // line length for fasta output
-    
-    std::string iSeqFileArg; // input file to evaluate
-    std::string iSakFileArg; // input of instructions for the swiss army knife
-    std::string iAgpFileArg; // input agp
-    std::string iBedIncludeFileArg; // input bed file of coordinates to include
-    std::string iBedExcludeFileArg; // input bed file of coordinates to exclude
-    std::string iReadFileArg; // input reads to evaluate
-    
-    std::string sortType = "none"; // type of sorting (default: none)
     
     std::string outSeq = "fasta"; // default output type
     
@@ -56,7 +47,8 @@ int main(int argc, char **argv) {
     BedCoordinates bedInclude; // if include coordinates are provided as positional argument
     
     bool isPipe = false; // to check if input is from pipe
-    char pipeType = 'n'; // default pipe type null
+    
+    UserInput userInput; // initialize input object
     
     if (argc == 1) { // gfastats with no arguments
             
@@ -152,14 +144,14 @@ int main(int argc, char **argv) {
             default: // handle positional arguments
                 if (pos_op == 1) { // only one positional argument given
                     
-                    if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                    if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                     
-                        pipeType = 's'; // pipe input is a sequence
+                        userInput.pipeType = 'f'; // pipe input is a sequence
                     
                     }else{ // input is a regular file
                         
                         ifFileExists(optarg);
-                        iSeqFileArg = optarg;
+                        userInput.iSeqFileArg = optarg;
                         
                     }
                     
@@ -215,7 +207,7 @@ int main(int argc, char **argv) {
                             
                     if (std::find(options.begin(), options.end(), optarg) != options.end() || ifFileExists(optarg)){
                         
-                        sortType = optarg;
+                        userInput.sortType = optarg;
                         
                     }else{printf("Error: unrecognized sorting option (%s).\n", optarg); exit(1);}
                     
@@ -239,14 +231,14 @@ int main(int argc, char **argv) {
                 
             case 'a': // agp to paths
                 
-                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'a'; // pipe input is agp
+                    userInput.pipeType = 'a'; // pipe input is agp
                 
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    iAgpFileArg = optarg;
+                    userInput.iAgpFileArg = optarg;
                     
                 }
                     
@@ -260,14 +252,14 @@ int main(int argc, char **argv) {
                 
             case 'e': // bed exclude
                 
-                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'e'; // pipe input is an exclude bed
+                    userInput.pipeType = 'e'; // pipe input is an exclude bed
                 
                 }else{ // input is a regular file
                 
                     ifFileExists(optarg);
-                    iBedExcludeFileArg = optarg;
+                    userInput.iBedExcludeFileArg = optarg;
                     
                 }
                     
@@ -276,14 +268,14 @@ int main(int argc, char **argv) {
                 
             case 'f': // input sequence
                 
-                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'f'; // pipe input is a sequence
+                    userInput.pipeType = 'f'; // pipe input is a sequence
                 
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    iSeqFileArg = optarg;
+                    userInput.iSeqFileArg = optarg;
                     stats_flag = true;
                     
                 }
@@ -292,14 +284,14 @@ int main(int argc, char **argv) {
                 
             case 'i': // bed include
                 
-                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'i'; // pipe input is an include bed
+                    userInput.pipeType = 'i'; // pipe input is an include bed
                 
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    iBedIncludeFileArg = optarg;
+                    userInput.iBedIncludeFileArg = optarg;
                     
                 }
                     
@@ -313,14 +305,14 @@ int main(int argc, char **argv) {
                 
             case 'k': // the swiss army knife
                 
-                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'k'; // pipe input is a set of instructions for the swiss army knife
+                    userInput.pipeType = 'k'; // pipe input is a set of instructions for the swiss army knife
                 
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    iSakFileArg = optarg;
+                    userInput.iSakFileArg = optarg;
                     
                 }
                     
@@ -334,14 +326,14 @@ int main(int argc, char **argv) {
                 
             case 'r': // input reads
                 
-                if (isPipe && pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
-                    pipeType = 'r'; // pipe input is a sequence
+                    userInput.pipeType = 'r'; // pipe input is a sequence
                 
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    iReadFileArg = optarg;
+                    userInput.iReadFileArg = optarg;
                     stats_flag = true;
                     
                 }
@@ -408,6 +400,8 @@ int main(int argc, char **argv) {
         
     }
     
+    lg.verbose("Input variables assigned");
+    
     if (cmd_flag) { // print command line
         for (unsigned short int arg_counter = 0; arg_counter < argc; arg_counter++) {
             printf("%s ", argv[arg_counter]);
@@ -416,17 +410,19 @@ int main(int argc, char **argv) {
         
     }
     
-    InFile inFile; // initialize sequence input file object
-    
     lg.verbose("File object generated");
     
     InSequences inSequences; // initialize sequence collection object
     
     lg.verbose("Sequence object generated");
     
-    inFile.readFiles(inSequences, iSeqFileArg, iSakFileArg, iAgpFileArg, iBedIncludeFileArg, iBedExcludeFileArg, bedInclude, isPipe, pipeType, sortType, iReadFileArg); // read the sequence input file object into the sequence collection object
+    Input in;
     
-    lg.verbose("Finished reading sequences from file to sequence object");
+    in.load(userInput); // load user input
+    
+    in.read(inSequences); // read input content to inSequences containes
+    
+    lg.verbose("Finished reading input files");
     if(verbose_flag) {std::cerr<<"\n";};
     
     InSegment inSegment; // initialize a single input sequence object for output purposes

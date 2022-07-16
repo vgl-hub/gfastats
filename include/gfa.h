@@ -11,8 +11,7 @@
 class InSequences { //collection of InSegment and inGap objects and their summary statistics
     
 private:
-    
-    ThreadPool<std::function<void()>> threadPool;
+
     std::vector<Log> logs;
     
     //gfa variables
@@ -79,22 +78,13 @@ private:
     std::vector<Bubble> bubbles;
     
     friend class SAK;
+    friend class Threadpool;
     
 public:
     
     ~InSequences();
     
     UIdGenerator uId; // unique numeric identifier for each feature
-
-    void threadPoolInit(int threadN);
-    
-    void threadStart(std::function<void()> job);
-
-    bool threadEmpty();
-    
-    unsigned int threadQueueSize();
-    
-    void threadsJoin();
     
     std::vector<Log> getLogs();
 

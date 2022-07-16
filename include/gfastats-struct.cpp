@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+
 #include "gfastats-struct.h"
 
 Sequences::~Sequences()

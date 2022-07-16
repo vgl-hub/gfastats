@@ -10,6 +10,11 @@
 
 #include <mutex>
 #include <chrono>
+#include <queue>
+#include <thread>
+
+#include "gfastats-log.h"
+#include "threadpool.h"
 
 //global time
 extern std::chrono::high_resolution_clock::time_point start;
@@ -34,5 +39,6 @@ extern int maxThreads;
 
 extern Log lg;
 extern std::mutex mtx;
+extern ThreadPool<std::function<void()>> threadPool;
 
 #endif /* GFASTATS_GLOBAL_H */

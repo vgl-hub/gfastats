@@ -21,7 +21,7 @@
 #include "bed.h"
 #include "gfa-lines.h"
 
-#include "gfastats-threadpool.h"
+#include "threadpool.h"
 #include "gfa.h"
 #include "gfastats-sak.h" // swiss army knife
 

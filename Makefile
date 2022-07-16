@@ -23,25 +23,25 @@ head: | $(BUILD_PATH) main input output functions log struct bed gfa gfa-lines u
 link:
 	$(link)
 
-main:
+main: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c $(SOURCE_PATH)/$(TARGET).cpp -o $(BUILD_PATH)/o/$(TARGET).o
-input:
+input: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfastats-input.cpp -o $(BUILD_PATH)/o/gfastats-input.o
-output:
+output: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfastats-output.cpp -o $(BUILD_PATH)/o/gfastats-output.o
-functions:
+functions: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfastats-functions.cpp -o $(BUILD_PATH)/o/gfastats-functions.o
-log:
+log: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfastats-log.cpp -o $(BUILD_PATH)/o/gfastats-log.o
-struct:
+struct: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfastats-struct.cpp -o $(BUILD_PATH)/o/gfastats-struct.o
-bed:
+bed: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/bed.cpp -o $(BUILD_PATH)/o/bed.o
-gfa:
+gfa: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfa.cpp -o $(BUILD_PATH)/o/gfa.o
-gfa-lines:
+gfa-lines: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfa-lines.cpp -o $(BUILD_PATH)/o/gfa-lines.o
-uid-generator:
+uid-generator: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/uid-generator.cpp -o $(BUILD_PATH)/o/uid-generator.o
 
 validate: | $(BUILD_PATH)

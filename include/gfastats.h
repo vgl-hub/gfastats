@@ -36,13 +36,15 @@
 #include <condition_variable>
 
 #include "gfastats-log.h"
+Log lg;
+
 #include "uid-generator.h"
 
 #include "gfastats-global.h" // global variables
 #include "gfastats-struct.h"
 #include "gfastats-functions.h" // global functions
 
-#include "gfastats-threadpool.h"
+#include "threadpool.h"
 
 #include <parallel_hashmap/phmap.h>
 

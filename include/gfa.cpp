@@ -23,7 +23,7 @@
 #include "gfastats-log.h"
 #include "gfastats-global.h"
 
-#include "gfastats-threadpool.h"
+#include "threadpool.h"
 
 #include "uid-generator.h"
 #include "gfa.h"
@@ -35,36 +35,6 @@ InSequences::~InSequences()
 
     for (InSegment* p : inReads)
         delete p;
-}
-
-void InSequences::threadPoolInit(int threadN) {
-    
-    threadPool.init(threadN);
-    
-}
-
-void InSequences::threadStart(std::function<void()> job) {
-    
-    threadPool.queueJob(job);
-    
-}
-
-bool InSequences::threadEmpty() {
-    
-    return threadPool.empty();
-    
-}
-
-unsigned int InSequences::threadQueueSize() {
-    
-    return threadPool.queueSize();
-    
-}
-
-void InSequences::threadsJoin() {
-    
-    threadPool.join();
-    
 }
 
 std::vector<Log> InSequences::getLogs() {
@@ -593,7 +563,7 @@ InSegment* InSequences::traverseInRead(Log* threadLog, Sequence* sequence, unsig
 
 void InSequences::appendSequence(Sequence* sequence) { // method to append a new sequence from a fasta
         
-    threadStart([=]{ return traverseInSequence(sequence); });
+    threadPool.queueJob([=]{ return traverseInSequence(sequence); });
     
     if(verbose_flag) {std::cerr<<"\n";};
     
@@ -617,7 +587,7 @@ void InSequences::appendSegment(Sequence* sequence, std::vector<Tag> inSequenceT
     
     lg.verbose("Segment read");
     
-    threadStart([=]{ return traverseInSegment(sequence, inSequenceTags); });
+    threadPool.queueJob([=]{ return traverseInSegment(sequence, inSequenceTags); });
     
     if(verbose_flag) {std::cerr<<"\n";};
     
@@ -639,7 +609,7 @@ void InSequences::appendSegment(Sequence* sequence, std::vector<Tag> inSequenceT
 
 void InSequences::appendReads(Sequences* sequences) { // read a collection of reads
     
-    threadStart([=]{ return traverseInReads(sequences); });
+    threadPool.queueJob([=]{ return traverseInReads(sequences); });
     
     if(verbose_flag) {std::cerr<<"\n";};
     
