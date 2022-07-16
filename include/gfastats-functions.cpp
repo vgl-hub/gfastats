@@ -13,6 +13,8 @@
 #include <gfastats-global.h>
 #include "gfastats-struct.h"
 
+//functions
+
 double elapsedTime(){ // compute runtime in verbose mode
     
     std::chrono::duration<double> elapsed = std::chrono::high_resolution_clock::now() - start;
@@ -22,7 +24,18 @@ double elapsedTime(){ // compute runtime in verbose mode
     
 }
 
-//functions
+bool isGzip(std::unique_ptr<std::istream>& stream) {
+    
+    unsigned char buffer[2];
+    
+    stream->read((char*)(&buffer[0]), 1);
+    buffer[1] = stream->peek();
+    stream->unget();
+    
+    return (buffer[0] == 0x1f && buffer[1] == 0x8b) ? true : false;
+    
+}
+
 bool checkTag(const char tag1[2], std::string tag2) {
     return tag1 == tag2;
 }

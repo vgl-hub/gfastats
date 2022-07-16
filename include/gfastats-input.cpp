@@ -141,47 +141,25 @@ void Input::read(InSequences& inSequences) {
     
     // stream read variable definition
     std::string firstLine, streamType = "plain/file";
-    unsigned char buffer;
-    bool stopStream = false, isGzip = false;
+    bool stopStream = false, gzip = false;
     unsigned int seqPos = 0; // to keep track of the original sequence order
     
     if (!userInput.iSeqFileArg.empty() || userInput.pipeType == 'f') {
     
-        // start streaming
+        // file stream
         stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iSeqFileArg));
-        
-        lg.verbose("Created stream object for input assembly file");
-
-        stream->read((char*)(&buffer), 1);
-
-        if (buffer == 0x1f && (stream->peek() == 0x8b)) { // check if pipe is gzipped
-
-            isGzip = true;
-            
-            streamType = "gzip/file";
-
-        }
-
-        stream->unget();
         
         std::ifstream is(userInput.iSeqFileArg);
         
         // this stream takes input from a gzip compressed file
         zstream::igzstream zfin(is);
         
-        if (isGzip) {
-                
-            stream = std::make_unique<std::istream>(zfin.rdbuf());
-            
-        
-        }
-        
         if (userInput.pipeType == 'f') { // input is from pipe
-            
-            std::cin.read((char*)(&buffer), 1);
 
-            if (buffer == 0x1f && (std::cin.peek() == 0x8b)) { // check if pipe is gzipped
+            stream = std::make_unique<std::istream>(std::cin.rdbuf());
 
+            if (isGzip(stream)) { // check if pipe is gzipped
+                
                 // this stream takes input from a gzip compressed pipe
                 zstream::igzstream zin(std::cin);
                 
@@ -190,17 +168,32 @@ void Input::read(InSequences& inSequences) {
                 std::cout<<"Gz pipe currently not supported\n";
                 
                 exit(1);
+                
 
             }else {
-
-                stream = std::make_unique<std::istream>(std::cin.rdbuf());
                 
                 streamType = "plain/pipe";
+                
+                stream = std::make_unique<std::istream>(std::cin.rdbuf());
 
             }
-            
-            stream->unget();
 
+        }else{
+        
+            gzip = isGzip(stream);
+            
+            lg.verbose("Created stream object for input assembly file");
+
+            if (gzip) { // check if stream is gzipped
+
+                gzip = true;
+
+                streamType = "gzip/file";
+                    
+                stream = std::make_unique<std::istream>(zfin.rdbuf());
+            
+            }
+            
         }
         
         lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
@@ -1185,7 +1178,22 @@ void Input::read(InSequences& inSequences) {
             }
             
             lg.verbose("End of file");
-            if(verbose_flag) {std::cerr<<"\n";};
+            
+            if (gzip) {
+            
+                zfin.read_footer();
+                
+                if (zfin.check_crc()) {
+                    
+                    lg.verbose("Crc check successful");
+                    
+                }else{
+                    
+                    lg.verbose("Warning: crc check unsuccessful. Check input file");
+                    
+                }
+                
+            }
                 
         }else{
 
@@ -1200,60 +1208,54 @@ void Input::read(InSequences& inSequences) {
         
         unsigned int batchSize = 10000;
 
-        // start streaming
+        // file stream
         stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iReadFileArg));
-
-        lg.verbose("Created stream object for input read file");
-
-        stream->read((char*)(&buffer), 1);
-
-        if (buffer == 0x1f && (stream->peek() == 0x8b)) { // check if pipe is gzipped
-
-            isGzip = true;
-
-            streamType = "gzip/file";
-
-        }
-
-        stream->unget();
-
-        std::ifstream is(userInput.iReadFileArg);
-
+        
+        std::ifstream is(userInput.iSeqFileArg);
+        
         // this stream takes input from a gzip compressed file
         zstream::igzstream zfin(is);
-
-        if (isGzip) {
-
-            stream = std::make_unique<std::istream>(zfin.rdbuf());
-
-
-        }
-
+        
         if (userInput.pipeType == 'f') { // input is from pipe
 
-            std::cin.read((char*)(&buffer), 1);
+            stream = std::make_unique<std::istream>(std::cin.rdbuf());
 
-            if (buffer == 0x1f && (std::cin.peek() == 0x8b)) { // check if pipe is gzipped
-
+            if (isGzip(stream)) { // check if pipe is gzipped
+                
                 // this stream takes input from a gzip compressed pipe
                 zstream::igzstream zin(std::cin);
-
+                
                 stream = std::make_unique<std::istream>(zin.rdbuf());
-
+                
                 std::cout<<"Gz pipe currently not supported\n";
-
+                
                 exit(1);
+                
 
             }else {
-
-                stream = std::make_unique<std::istream>(std::cin.rdbuf());
-
+                
                 streamType = "plain/pipe";
+                
+                stream = std::make_unique<std::istream>(std::cin.rdbuf());
 
             }
 
-            stream->unget();
+        }else{
+        
+            gzip = isGzip(stream);
+            
+            lg.verbose("Created stream object for input assembly file");
 
+            if (gzip) { // check if stream is gzipped
+
+                gzip = true;
+
+                streamType = "gzip/file";
+                    
+                stream = std::make_unique<std::istream>(zfin.rdbuf());
+            
+            }
+            
         }
 
         lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");

@@ -196,7 +196,7 @@ public:
 	 When you have finished reading the compressed data, call read_footer to read the uncompressed data crc.
 	 This method compares it to the crc of the uncompressed data.
 
-	 \return true if crc check is succesful
+	 \return true if crc check is successful
 	 */
 	bool check_crc() const {
 		return this->get_crc() == m_gzip_crc;
