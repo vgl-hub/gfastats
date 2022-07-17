@@ -73,7 +73,7 @@ public:
 	}
 
 	/// returns the number of uncompressed bytes
-	long get_out_size() const {
+    unsigned long get_out_size() const {
 		return m_zip_stream.total_out;
 	}
 
@@ -130,7 +130,7 @@ public:
 	}
 
 	/// returns the uncompressed data size
-	long get_out_size() const {
+    unsigned long get_out_size() const {
 		return m_buf.get_out_size();
 	}
 
