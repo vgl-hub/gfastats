@@ -73,7 +73,7 @@ public:
 	}
 
 	/// returns the number of uncompressed bytes
-	unsigned int get_out_size() const {
+	long get_out_size() const {
 		return m_zip_stream.total_out;
 	}
 
@@ -223,7 +223,7 @@ protected:
 	static void read_long(istream_reference in_, unsigned int& x_);
 	int check_header();
 	unsigned int m_gzip_crc;
-	unsigned int m_gzip_data_size;
+	long unsigned int m_gzip_data_size;
 };
 
 template<typename Elem, typename Tr = std::char_traits<Elem>,
