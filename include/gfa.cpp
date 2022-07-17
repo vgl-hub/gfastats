@@ -14,10 +14,10 @@
 #include <fstream>
 #include <sstream>
 
+#include "bed.h"
 #include "gfastats-struct.h"
 #include "gfastats-functions.h" // global functions
 
-#include "bed.h"
 #include "gfa-lines.h"
 
 #include "gfastats-log.h"

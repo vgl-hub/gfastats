@@ -17,7 +17,7 @@ link = $(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD_PATH)/$(TARGET) $(BUILD_PATH)/o/
 
 $(TARGET): | $(BUILD_PATH) head validate regenerate random_fasta
 
-head: | $(BUILD_PATH) main input output functions log struct bed gfa gfa-lines uid-generator
+head: | $(BUILD_PATH) main input output functions log struct bed gfa gfa-lines uid-generator stream-obj
 	$(link)
 	
 link:
@@ -43,6 +43,8 @@ gfa-lines: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfa-lines.cpp -o $(BUILD_PATH)/o/gfa-lines.o
 uid-generator: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/uid-generator.cpp -o $(BUILD_PATH)/o/uid-generator.o
+stream-obj: $(BUILD_PATH)
+	$(CXX) $(CXXFLAGS) -c include/stream-obj.cpp -o $(BUILD_PATH)/o/stream-obj.o
 
 validate: | $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -o $(BUILD_PATH)/$(TEST_TARGET) $(SOURCE_PATH)/$(TEST_TARGET).cpp $(LIBS)

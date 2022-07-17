@@ -184,10 +184,12 @@ public:
 			size_t input_buffer_size_ = detail::default_buffer_size) :
 			zip_istreambase_type(istream_, window_size_, read_buffer_size_,
 					input_buffer_size_), istream_type(this->rdbuf()), m_gzip_crc(
-					0), m_gzip_data_size(0) {
-		if (this->rdbuf()->get_zerr() == Z_OK)
-			check_header();
-	}
+					0), m_gzip_data_size(0) {}
+            
+    void open() {
+        if (this->rdbuf()->get_zerr() == Z_OK)
+            check_header();
+    }
 
 	/// reads the gzip header
 	void read_footer();
@@ -196,7 +198,7 @@ public:
 	 When you have finished reading the compressed data, call read_footer to read the uncompressed data crc.
 	 This method compares it to the crc of the uncompressed data.
 
-	 \return true if crc check is successful
+	 \return true if crc check is succesful
 	 */
 	bool check_crc() const {
 		return this->get_crc() == m_gzip_crc;

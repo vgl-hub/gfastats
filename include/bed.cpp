@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <string>
+
 #include "bed.h"
 
 void BedCoordinates::pushCoordinates(std::string h, unsigned int b, unsigned int e) { // reading coordinates

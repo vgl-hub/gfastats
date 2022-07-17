@@ -9,8 +9,10 @@
 #include <unistd.h>
 #include <string>
 
-#include <gfastats-log.h>
-#include <gfastats-global.h>
+#include "gfastats-log.h"
+#include "gfastats-global.h"
+
+#include "bed.h"
 #include "gfastats-struct.h"
 
 //functions
@@ -21,18 +23,6 @@ double elapsedTime(){ // compute runtime in verbose mode
     start = std::chrono::high_resolution_clock::now();
     
     return elapsed.count();
-    
-}
-
-bool isGzip(std::unique_ptr<std::istream>& stream) {
-    
-    unsigned char buffer[2];
-    
-    stream->read((char*)(&buffer[0]), 1);
-    buffer[1] = stream->peek();
-    stream->unget();
-    
-    return (buffer[0] == 0x1f && buffer[1] == 0x8b) ? true : false;
     
 }
 

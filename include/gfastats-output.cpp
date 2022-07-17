@@ -11,6 +11,7 @@
 
 #include <parallel_hashmap/phmap.h>
 
+#include "bed.h"
 #include "gfastats-struct.h"
 #include "gfastats-functions.h" // global functions
 
@@ -18,7 +19,6 @@
 #include "gfastats-global.h"
 #include "uid-generator.h"
 
-#include "bed.h"
 #include "gfa-lines.h"
 
 #include "threadpool.h"

@@ -1,8 +1,6 @@
 #ifndef GFASTATS_STRUCT
 #define GFASTATS_STRUCT
 
-#include "bed.h"
-
 struct UserInput { // a container for user input
   
     //files
@@ -19,6 +17,8 @@ struct UserInput { // a container for user input
     //options
     char pipeType = 'n'; // default pipe type null
     std::string sortType = "none"; // type of sorting (default: none)
+    
+    std::string file(char type);
     
 };
 

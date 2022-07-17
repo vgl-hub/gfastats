@@ -1,7 +1,38 @@
+#include <stdlib.h>
 #include <string>
 #include <vector>
 
+#include "bed.h"
 #include "gfastats-struct.h"
+
+std::string UserInput::file(char type) {
+    
+    std::string filename;
+    
+    switch (type) {
+        case 'f':
+            filename = iSeqFileArg;
+            break;
+        case 'r':
+            filename = iReadFileArg;
+            break;
+        case 'i':
+            filename = iBedIncludeFileArg;
+            break;
+        case 'e':
+            filename = iBedExcludeFileArg;
+            break;
+        case 'a':
+            filename = iAgpFileArg;
+            break;
+        case 'k':
+            filename = iSakFileArg;
+            break;
+    }
+    
+    return filename;
+    
+}
 
 Sequences::~Sequences()
 {

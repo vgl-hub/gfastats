@@ -10,8 +10,6 @@
 
 double elapsedTime(); // compute runtime in verbose mode
 
-bool isGzip(std::unique_ptr<std::istream>& stream);
-
 bool checkTag(const char tag1[2], std::string tag2);
 
 bool isInt(const std::string &str);

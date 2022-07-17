@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+
+#include "bed.h"
 #include "gfastats-struct.h"
 #include "gfastats-functions.h"
 #include "gfa-lines.h"

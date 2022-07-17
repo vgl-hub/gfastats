@@ -40,6 +40,8 @@ Log lg;
 
 #include "uid-generator.h"
 
+#include "bed.h"
+
 #include "gfastats-global.h" // global variables
 #include "gfastats-struct.h"
 #include "gfastats-functions.h" // global functions
@@ -55,7 +57,6 @@ Log lg;
 #include <zstream/ozstream.hpp>
 #include <zstream/ozstream_impl.hpp>
 
-#include "bed.h"
 #include "gfa-lines.h"
 
 #include "gfa.h" // gfa classes

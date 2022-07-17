@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 
+#include "bed.h"
 #include "gfastats-struct.h"
 #include "gfastats-functions.h"
 #include "gfastats-log.h"

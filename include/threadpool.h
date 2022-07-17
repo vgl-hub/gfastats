@@ -1,5 +1,5 @@
-#ifndef GFASTATS_THREADPOOL
-#define GFASTATS_THREADPOOL
+#ifndef THREADPOOL
+#define THREADPOOL
 
 extern Log lg;
 
@@ -94,4 +94,4 @@ void ThreadPool<T>::join() {
     threads.clear();
 }
 
-#endif //GFASTATS_THREADPOOL
+#endif //THREADPOOL

@@ -20,6 +20,7 @@
 
 #include <parallel_hashmap/phmap.h>
 
+#include "bed.h"
 #include "gfastats-struct.h"
 #include "gfastats-functions.h" // global functions
 
@@ -27,7 +28,6 @@
 #include "gfastats-global.h"
 #include "uid-generator.h"
 
-#include "bed.h"
 #include "gfa-lines.h"
 
 #include "threadpool.h"
@@ -38,6 +38,8 @@
 #include <zstream/zstream_common.hpp>
 #include <zstream/izstream.hpp>
 #include <zstream/izstream_impl.hpp>
+
+#include "stream-obj.h"
 
 #include "gfastats-input.h"
 
@@ -51,9 +53,11 @@ void Input::read(InSequences& inSequences) {
     
     threadPool.init(maxThreads); // initialize threadpool
     
+    StreamObj streamObj;
+    
     std::string newLine, seqHeader, seqComment, line, bedHeader;
     
-    std::unique_ptr<std::istream> stream;
+    std::shared_ptr<std::istream> stream;
     
     std::vector<Instruction> instructions;
     
@@ -61,15 +65,7 @@ void Input::read(InSequences& inSequences) {
 
     if (!userInput.iSakFileArg.empty() || userInput.pipeType == 'k') {
         
-        if (userInput.pipeType == 'k') {
-            
-            stream = std::make_unique<std::istream>(std::cin.rdbuf());
-            
-        }else{
-            
-            stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iSakFileArg));
-            
-        }
+        stream = streamObj.openStream(userInput, 'k');
         
         SAK sak; // create a new swiss army knife
         
@@ -87,15 +83,7 @@ void Input::read(InSequences& inSequences) {
     
     if (!userInput.iBedIncludeFileArg.empty() || userInput.pipeType == 'i') {
         
-        if (userInput.pipeType == 'i') {
-            
-            stream = std::make_unique<std::istream>(std::cin.rdbuf());
-            
-        }else{
-            
-            stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iBedIncludeFileArg));
-            
-        }
+        stream = streamObj.openStream(userInput, 'i');
         
         while (getline(*stream, line)) {
             
@@ -115,15 +103,7 @@ void Input::read(InSequences& inSequences) {
     
     if (!userInput.iBedExcludeFileArg.empty() || userInput.pipeType == 'e') {
         
-        if (userInput.pipeType == 'e') {
-            
-            stream = std::make_unique<std::istream>(std::cin.rdbuf());
-            
-        }else{
-            
-            stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iBedExcludeFileArg));
-            
-        }
+        stream = streamObj.openStream(userInput, 'e');
         
         while (getline(*stream, line)) {
             
@@ -140,63 +120,16 @@ void Input::read(InSequences& inSequences) {
     }
     
     // stream read variable definition
-    std::string firstLine, streamType = "plain/file";
-    bool stopStream = false, gzip = false;
+    std::string firstLine;
+    bool stopStream = false;
     unsigned int seqPos = 0; // to keep track of the original sequence order
     
     if (!userInput.iSeqFileArg.empty() || userInput.pipeType == 'f') {
-    
-        // file stream
-        stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iSeqFileArg));
         
-        std::ifstream is(userInput.iSeqFileArg);
+        stream = streamObj.openStream(userInput, 'f');
         
-        // this stream takes input from a gzip compressed file
-        zstream::igzstream zfin(is);
-        
-        if (userInput.pipeType == 'f') { // input is from pipe
-
-            stream = std::make_unique<std::istream>(std::cin.rdbuf());
-
-            if (isGzip(stream)) { // check if pipe is gzipped
-                
-                // this stream takes input from a gzip compressed pipe
-                zstream::igzstream zin(std::cin);
-                
-                stream = std::make_unique<std::istream>(zin.rdbuf());
-                
-                std::cout<<"Gz pipe currently not supported\n";
-                
-                exit(1);
-                
-
-            }else {
-                
-                streamType = "plain/pipe";
-                
-                stream = std::make_unique<std::istream>(std::cin.rdbuf());
-
-            }
-
-        }else{
-        
-            gzip = isGzip(stream);
-            
-            lg.verbose("Created stream object for input assembly file");
-
-            if (gzip) { // check if stream is gzipped
-
-                gzip = true;
-
-                streamType = "gzip/file";
-                    
-                stream = std::make_unique<std::istream>(zfin.rdbuf());
-            
-            }
-            
-        }
-        
-        lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
+        lg.verbose("Created stream object for input assembly file");
+        lg.verbose("Detected stream type (" + streamObj.type() + ").\nStreaming started.");
         
         if (stream) {
             
@@ -1178,22 +1111,6 @@ void Input::read(InSequences& inSequences) {
             }
             
             lg.verbose("End of file");
-            
-            if (gzip) {
-            
-                zfin.read_footer();
-                
-                if (zfin.check_crc()) {
-                    
-                    lg.verbose("Crc check successful");
-                    
-                }else{
-                    
-                    lg.verbose("Warning: crc check unsuccessful. Check input file");
-                    
-                }
-                
-            }
                 
         }else{
 
@@ -1205,61 +1122,11 @@ void Input::read(InSequences& inSequences) {
     }
     
     if (!userInput.iReadFileArg.empty()) {
-        
+
         unsigned int batchSize = 10000;
-
-        // file stream
-        stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iReadFileArg));
         
-        std::ifstream is(userInput.iSeqFileArg);
-        
-        // this stream takes input from a gzip compressed file
-        zstream::igzstream zfin(is);
-        
-        if (userInput.pipeType == 'f') { // input is from pipe
+        stream = streamObj.openStream(userInput, 'r');
 
-            stream = std::make_unique<std::istream>(std::cin.rdbuf());
-
-            if (isGzip(stream)) { // check if pipe is gzipped
-                
-                // this stream takes input from a gzip compressed pipe
-                zstream::igzstream zin(std::cin);
-                
-                stream = std::make_unique<std::istream>(zin.rdbuf());
-                
-                std::cout<<"Gz pipe currently not supported\n";
-                
-                exit(1);
-                
-
-            }else {
-                
-                streamType = "plain/pipe";
-                
-                stream = std::make_unique<std::istream>(std::cin.rdbuf());
-
-            }
-
-        }else{
-        
-            gzip = isGzip(stream);
-            
-            lg.verbose("Created stream object for input assembly file");
-
-            if (gzip) { // check if stream is gzipped
-
-                gzip = true;
-
-                streamType = "gzip/file";
-                    
-                stream = std::make_unique<std::istream>(zfin.rdbuf());
-            
-            }
-            
-        }
-
-        lg.verbose("Detected stream type (" + streamType + ").\nStreaming started.");
-        
         Sequences* readBatch = new Sequences;
 
         if (stream) {
@@ -1284,23 +1151,23 @@ void Input::read(InSequences& inSequences) {
                             seqComment = std::string(c);
 
                         }
-                        
+
                         std::string* inSequence = new std::string;
 
                         getline(*stream, *inSequence, '>');
-                        
+
                         readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence});
 
                         if (seqPos % batchSize == 0) {
 
                             readBatch->batchN = seqPos/batchSize;
-                            
+
                             inSequences.appendReads(readBatch);
-                            
+
                             readBatch = new Sequences;
-                            
+
                         }
-                        
+
                         lg.verbose("Individual fasta sequence read");
 
                     }
@@ -1323,31 +1190,31 @@ void Input::read(InSequences& inSequences) {
                             seqComment = std::string(c);
 
                         }else{
-                            
+
                             seqComment = "";
-                            
+
                         }
-                        
+
                         std::string* inSequence = new std::string;
                         getline(*stream, *inSequence);
-                        
+
                         getline(*stream, newLine);
-                        
+
                         std::string* inSequenceQuality = new std::string;
                         getline(*stream, *inSequenceQuality);
-                        
+
                         readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
-                        
+
                         if (seqPos % batchSize == 0) {
 
                             readBatch->batchN = seqPos/batchSize;
-                            
+
                             inSequences.appendReads(readBatch);
-                            
+
                             readBatch = new Sequences;
-                            
+
                         }
-                        
+
                         lg.verbose("Individual fastq sequence read: " + seqHeader);
 
                     }
@@ -1355,11 +1222,11 @@ void Input::read(InSequences& inSequences) {
                     break;
 
                 }
-                
+
                 readBatch->batchN = seqPos/batchSize + 1;
-                
+
                 inSequences.appendReads(readBatch);
-                    
+
             }
 
         }
@@ -1480,15 +1347,7 @@ void Input::read(InSequences& inSequences) {
             
         }
         
-        if (userInput.pipeType == 'a') {
-            
-            stream = std::make_unique<std::istream>(std::cin.rdbuf());
-            
-        }else{
-            
-            stream = std::make_unique<std::ifstream>(std::ifstream(userInput.iAgpFileArg));
-            
-        }
+        stream = streamObj.openStream(userInput, 'a');
 
         std::queue<std::string> nextLines;
         
