@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
         {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.hc.sak", "-ofa -k testFiles/random1.hdc.sak"}},
         {{"random2.noseq.gfa"}, {""}},
         {{"random1.gfa2"}, {"-k testFiles/random1.gfa2.instructions.sak"}},
-        {{"random1.fasta"}, {"-r testFiles/random1.fastq"}},
+        {{"random1.fasta"}, {"Header2", "-r testFiles/random1.fastq"}},
         {{"random4.fasta"}, {""}}
     //  {{set of test file paths}, {list of command line args to run with}}
     };
@@ -59,8 +59,9 @@ int main(int argc, char **argv) {
 #else
         std::string cmd = "\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile;
 #endif
-        int value = system(cmd.c_str());
-        if (value) {
+        bool exit = system(cmd.c_str());
+        if (exit == EXIT_SUCCESS) {
+            ostream << cmd << std::endl;
             ostream << "Command executed.";
         }
         ++i;

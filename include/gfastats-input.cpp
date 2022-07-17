@@ -168,7 +168,7 @@ void Input::read(InSequences& inSequences) {
                         
                         Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, userInput.bedIncludeList, bedExcludeList);
                         
-                        if (sequence->header != "") {
+                        if (sequence != NULL) {
                             
                             sequence->seqPos = seqPos; // remember the order
                             
@@ -214,6 +214,7 @@ void Input::read(InSequences& inSequences) {
                             sequence->seqPos = seqPos; // remember the order
                         
                             inSequences.appendSequence(sequence);
+                            
                             seqPos++;
                             
                         }

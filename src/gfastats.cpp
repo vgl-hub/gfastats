@@ -44,8 +44,6 @@ int main(int argc, char **argv) {
     char sizeOutType = 's'; // default output type with size flag (scaffold)
     char bedOutType = 'a'; // default output type with bed flag (agp)
     
-    BedCoordinates bedInclude; // if include coordinates are provided as positional argument
-    
     bool isPipe = false; // to check if input is from pipe
     
     UserInput userInput; // initialize input object
@@ -189,7 +187,7 @@ int main(int argc, char **argv) {
                             
                         }
                         
-                        bedInclude.pushCoordinates(header, stoi(cBegin), stoi(cEnd)); pos_op++;
+                        userInput.bedIncludeList.pushCoordinates(header, stoi(cBegin), stoi(cEnd)); pos_op++;
                         
                     }
                     
