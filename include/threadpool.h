@@ -15,7 +15,7 @@ private:
     std::condition_variable mutexCondition;
     bool done = false;
 
-    void threadLoop(int i);
+    void threadLoop();
 
 public:
     void init(int maxThreads);
@@ -29,7 +29,7 @@ friend class InSequences;
 };
 
 template<class T>
-void ThreadPool<T>::threadLoop(int i) {
+void ThreadPool<T>::threadLoop() {
     
     while (true) {
         T job;
@@ -62,7 +62,7 @@ void ThreadPool<T>::init(int maxThreads) {
     lg.verbose("Generating threadpool with " + std::to_string(maxThreads-1) + " threads");
     
     for(int i=0; i<maxThreads-1; ++i) {
-        threads[i] = std::thread(&ThreadPool::threadLoop, this, i);
+        threads[i] = std::thread(&ThreadPool::threadLoop, this);
     }
     this->maxThreads = maxThreads;
     done = false;

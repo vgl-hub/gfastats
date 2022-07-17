@@ -125,7 +125,7 @@ public:
 	}
 
 	/// returns the uncompressed data crc
-	long get_crc() const {
+	unsigned long get_crc() const {
 		return m_buf.get_crc();
 	}
 

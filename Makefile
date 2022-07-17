@@ -1,7 +1,8 @@
 CXX = g++
 INCLUDE_DIR = -I./include
+WARNINGS = -Wall
 
-CXXFLAGS = -g -Wall -std=gnu++14 -O3 $(INCLUDE_DIR)
+CXXFLAGS = -g -std=gnu++14 -O3 $(INCLUDE_DIR) $(WARNINGS)
 
 TARGET = gfastats
 TEST_TARGET = gfastats-validate
