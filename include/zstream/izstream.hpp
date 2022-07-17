@@ -223,7 +223,7 @@ protected:
 	static void read_long(istream_reference in_, unsigned int& x_);
 	int check_header();
 	unsigned int m_gzip_crc;
-	long unsigned int m_gzip_data_size;
+	unsigned int m_gzip_data_size;
 };
 
 template<typename Elem, typename Tr = std::char_traits<Elem>,
