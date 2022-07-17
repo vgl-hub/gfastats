@@ -12,6 +12,7 @@
 #include <chrono>
 #include <queue>
 #include <thread>
+#include <functional>
 
 #include "gfastats-log.h"
 #include "threadpool.h"

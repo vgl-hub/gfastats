@@ -1,6 +1,8 @@
 #ifndef THREADPOOL
 #define THREADPOOL
 
+#include <condition_variable>
+
 extern Log lg;
 
 template<class T>
