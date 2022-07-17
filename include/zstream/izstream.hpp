@@ -68,7 +68,7 @@ public:
 	}
 
 	/// returns the crc of the uncompressed data so far 
-	unsigned int get_crc() const {
+	unsigned long int get_crc() const {
 		return m_crc;
 	}
 
@@ -93,7 +93,7 @@ private:
 	int m_err;
 	byte_vector_type m_input_buffer;
 	char_vector_type m_buffer;
-	long m_crc;
+	unsigned long m_crc;
 };
 
 /*! \brief Base class for unzip istreams
@@ -201,7 +201,7 @@ public:
 	 \return true if crc check is succesful
 	 */
 	bool check_crc() const {
-		return this->get_crc() == m_gzip_crc;
+		return this->get_crc() == (unsigned long) m_gzip_crc;
 	}
 
 	/// return data size check
