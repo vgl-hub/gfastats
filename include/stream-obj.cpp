@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <memory>
+#include <cstring>
 
 #include "bed.h"
 #include "gfastats-struct.h"
