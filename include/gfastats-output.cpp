@@ -318,7 +318,7 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
                             
                         }
                         
-                        if ((*inSegments)[sIdx]->getInSequenceQuality() != "*") {
+                        if ((*inSegments)[sIdx]->getInSequenceQuality() != "") {
                         
                             inSeqQual += (*inSegments)[sIdx]->getInSequenceQuality(component->start, component->end);
                             
@@ -379,7 +379,7 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
                     
                 }
                 
-                if (inSegment->getInSequenceQuality() != "*") {
+                if (inSegment->getInSequenceQuality() != "") {
                     
                     *stream <<"\tQL:Z:"<<inSegment->getInSequenceQuality(); // optional quality
                     
@@ -522,7 +522,7 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
                     
                 }
                 
-                if (inSegment->getInSequenceQuality() != "*") {
+                if (inSegment->getInSequenceQuality() != "") {
                     
                     *stream <<"\tQL:Z:"<<inSegment->getInSequenceQuality(); // optional quality
                     
