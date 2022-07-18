@@ -139,7 +139,7 @@ void Input::read(InSequences& inSequences) {
                     
                 case '>': {
                     
-//                    stream->get();
+                    stream->get();
                     
                     while (getline(*stream, newLine)) {
                         
