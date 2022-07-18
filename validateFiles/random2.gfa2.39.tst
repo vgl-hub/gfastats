@@ -1,6 +1,5 @@
 testFiles/random2.gfa2 -o fasta
 embedded
-fasta fasta fasta
 >id12
 ACCTTNNNTCANNAATCAAG
 >path1

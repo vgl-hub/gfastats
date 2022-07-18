@@ -1,6 +1,5 @@
 testFiles/random2.gfa2 -o gfa2
 embedded
-gfa2 gfa2 gfa2
 H	VN:Z:2.0
 S	id2	6	TCAAGG
 S	id3	7	CTTGATT

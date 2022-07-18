@@ -1,6 +1,5 @@
 testFiles/random2.noseq.gfa -o gfa2
 embedded
-gfa2 gfa2 gfa2
 H	VN:Z:2.0
 S	11	5	*	LN:i:5	QL:Z:?@97?
 S	12	6	*	LN:i:6	QL:Z:@6?84@

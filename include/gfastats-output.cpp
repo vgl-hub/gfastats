@@ -105,8 +105,6 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
     std::string path = rmFileExt(outSeq);
     std::string ext = getFileExt("." + outSeq);
     
-    std::cout<<outSeq<<" "<<path<<" "<<ext<<std::endl;
-    
     // depending on use input get output format
     if(getFileExt(ext) == ".gz") {
         

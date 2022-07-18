@@ -1,6 +1,5 @@
 testFiles/random1.fasta -ofa -k testFiles/random1.hdc.sak
 embedded
-fa fa fa
 >Header1 5bp sequence with no gaps and 2 lowercase bases
 CGacT
 >Header2 5bp sequence with internal 1bp non-canonical gap
