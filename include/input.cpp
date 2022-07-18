@@ -141,15 +141,13 @@ void Input::read(InSequences& inSequences) {
                     
                     stream->get();
                     
-                    while (!stream->eof()) {
+                    while (getline(*stream, newLine)) {
                         
                         if(userInput.bedIncludeList.size() - bedExcludeList.size() != 0 && userInput.bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
                             lg.verbose("Found all sequences, stop streaming input");
                             break;
                         
                         }
-                        
-                        getline(*stream, newLine);
                         
                         h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
                         c = strtok(NULL,""); //read comment
@@ -187,6 +185,12 @@ void Input::read(InSequences& inSequences) {
                 case '@': {
                     
                     while (getline(*stream, newLine)) { // file input
+                        
+                        if(userInput.bedIncludeList.size() - bedExcludeList.size() != 0 && userInput.bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
+                            lg.verbose("Found all sequences, stop streaming input");
+                            break;
+                        
+                        }
                         
                         newLine.erase(0, 1);
                         
