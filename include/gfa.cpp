@@ -472,7 +472,7 @@ void InSequences::traverseInSegment(Sequence* sequence, std::vector<Tag> inSeque
         
     }
             
-    inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, NULL, &inSequenceTags));
+    inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, sequence->sequenceQuality, &inSequenceTags));
     
     logs.push_back(threadLog);
     
