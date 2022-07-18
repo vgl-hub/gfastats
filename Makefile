@@ -18,7 +18,7 @@ link = $(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD_PATH)/$(TARGET) $(BUILD_PATH)/o/
 
 $(TARGET): | $(BUILD_PATH) head validate regenerate random_fasta
 
-head: | $(BUILD_PATH) main input output functions log struct bed gfa gfa-lines uid-generator stream-obj
+head: | $(BUILD_PATH) main input input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj
 	$(link)
 	
 link:
@@ -27,7 +27,11 @@ link:
 main: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c $(SOURCE_PATH)/$(TARGET).cpp -o $(BUILD_PATH)/o/$(TARGET).o
 input: $(BUILD_PATH)
-	$(CXX) $(CXXFLAGS) -c include/gfastats-input.cpp -o $(BUILD_PATH)/o/gfastats-input.o
+	$(CXX) $(CXXFLAGS) -c include/input.cpp -o $(BUILD_PATH)/o/input.o
+input-agp: $(BUILD_PATH)
+	$(CXX) $(CXXFLAGS) -c include/input-agp.cpp -o $(BUILD_PATH)/o/input-agp.o
+input-filters: $(BUILD_PATH)
+	$(CXX) $(CXXFLAGS) -c include/input-filters.cpp -o $(BUILD_PATH)/o/input-filters.o
 output: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfastats-output.cpp -o $(BUILD_PATH)/o/gfastats-output.o
 functions: $(BUILD_PATH)

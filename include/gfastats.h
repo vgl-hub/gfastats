@@ -63,6 +63,6 @@ Log lg;
 #include "gfastats-sak.h" // swiss army knife classes
 
 #include "gfastats-output.h" // output classes
-#include "gfastats-input.h"
+#include "input.h"
 
 #endif /* GFASTATS_H */
