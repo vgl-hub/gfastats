@@ -79,7 +79,7 @@ std::string InSegment::getInSequenceQuality(unsigned int start, unsigned int end
         
     }else{
         
-        return "";
+        return "*";
         
     }
     

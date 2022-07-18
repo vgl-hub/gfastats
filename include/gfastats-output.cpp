@@ -318,13 +318,13 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
                             
                         }
                         
-                        if ((*inSegments)[sIdx]->getInSequenceQuality() != "") {
+                        if ((*inSegments)[sIdx]->getInSequenceQuality() != "*") {
                         
                             inSeqQual += (*inSegments)[sIdx]->getInSequenceQuality(component->start, component->end);
                             
                         }else{
                             
-                            inSeqQual += std::string((*inSegments)[sIdx]->getInSequenceQuality().size(), '!');
+                            inSeqQual += std::string((*inSegments)[sIdx]->getInSequence().size(), '!');
                             
                         }
                         
