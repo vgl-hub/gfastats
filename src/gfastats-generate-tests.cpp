@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     std::string exePath = getExePath(argv[0]);
 
     const std::map<std::set<std::string>, std::vector<std::string>> ext_args = {
-        {{"fasta", "fasta.gz", "fastq", "fastq.gz"}, {"", "-b a", "-b c", "-b s", "--homopolymer-compress 5"}},
+        {{"fasta", "fasta.gz", "fastq", "fastq.gz"}, {"", "-b a", "-b c", "-b s", "--homopolymer-compress 1 -ofa"}},
         {{"gfa", "gfa.gz", "gfa2"}, {"-o gfa2", "-o gfa", "-o fasta"}}
     //  {{set of test file extensions}, {list of command line args to run with}}
     };
