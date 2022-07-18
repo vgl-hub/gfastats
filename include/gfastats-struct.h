@@ -25,7 +25,7 @@ struct UserInput { // a container for user input
 struct Sequence { // a generic sequence container
     
     std::string header, comment;
-    std::string* sequence = NULL, *sequenceQuality = new std::string;
+    std::string* sequence = NULL, *sequenceQuality = NULL;
     unsigned int seqPos;
     
     ~Sequence();
