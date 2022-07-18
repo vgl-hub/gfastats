@@ -2,9 +2,15 @@
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <memory>
 #include <cstring>
+
+#include <queue>
+#include <thread>
+#include <condition_variable>
+#include <mutex>
 
 #include "bed.h"
 #include "gfastats-struct.h"
@@ -14,12 +20,11 @@
 #include <zstream/izstream.hpp>
 #include <zstream/izstream_impl.hpp>
 
+#include "gfastats-global.h"
 #include "gfastats-log.h"
-extern Log lg;
 
+#include "threadpool.h"
 #include "stream-obj.h"
-
-
 
 std::string StreamObj::type() {
     
@@ -44,6 +49,72 @@ bool StreamObj::isGzip(std::streambuf* buffer) {
     
 }
 
+//void StreamObj::decompressBuf(std::streambuf* buffer) {
+//    
+//    int chars = 0;
+//    
+//    std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
+//    
+//    while (true) {
+//        
+//        if (decompress) {
+//        
+//            lck.lock();
+//                                    
+//            chars = buffer->sgetn(content, 1024);
+//            std::cout<<"decompress: "<<chars<<" "<<std::endl;
+//
+//            strm.str(content);
+//            
+//            decompress = false;
+//            
+//            if (chars < 1024) {
+//                done = true;
+//                return;
+//            }
+//            
+//            lck.unlock();
+//            
+//        }
+//    
+//    }
+//    
+//}
+//
+//void StreamObj::readBuf(std::streambuf* buffer) {
+//    
+//    int chars = 0;
+//    
+//    std::unique_lock<std::mutex> lck(mtx, std::defer_lock);
+//    
+//    while (true) {
+//        
+//        if (!decompress) {
+//        
+//            lck.lock();
+//            
+//            std::string line;
+//
+//            getline(strm,line);
+//            
+//            std::cout<<line<<std::endl;
+//
+//            if (!strm.eof())
+//                decompress = true;
+//            else
+//                return;
+//            
+//            if (done)
+//                decompress = false;
+//            
+//            lck.unlock();
+//            
+//        }
+//        
+//    }
+//    
+//}
+
 std::shared_ptr<std::istream> StreamObj::openStream(UserInput &userInput, char type) {
     
     file = userInput.pipeType != type ? true : false;
@@ -61,8 +132,13 @@ std::shared_ptr<std::istream> StreamObj::openStream(UserInput &userInput, char t
         if (gzip) {
             
             zfin.open();
-
+            
+//            threadPool.queueJob([=]{ return decompressBuf(zfin.rdbuf()); });
+            
+//            buffer = strm.rdbuf();
+            
             buffer = zfin.rdbuf();
+
 
         }
 

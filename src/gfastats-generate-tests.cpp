@@ -1,6 +1,8 @@
-#include <gfastats-validate.h>
+#include <stdlib.h>
 #include <map>
 #include <cstdio>
+
+#include "gfastats-validate.h"
 
 int main(int argc, char **argv) {
     std::cout << "WARNING: only run this program if gfastats is in a working state" << std::endl;
@@ -45,35 +47,13 @@ int main(int argc, char **argv) {
 
     const std::set<std::string> exclude {"agp", "sak"};
 
-    int i = 0;
-
-    auto genTest = [&i, &exePath](const std::string &file, const std::string &args){
-        std::string tstFile = "validateFiles/"+file+"."+std::to_string(i)+".tst";
-        std::cout << "generating: " << tstFile << std::endl;
-        std::ofstream ostream;
-        ostream.open(tstFile);
-        ostream << "testFiles/" << file << " " << args << "\nembedded" << std::endl;
-        ostream.close();
-#ifdef _WIN32
-        std::string cmd = "\"\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile+"\"";
-#else
-        std::string cmd = "\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile;
-#endif
-        bool exit = system(cmd.c_str());
-        if (exit == EXIT_SUCCESS) {
-            ostream << cmd << std::endl;
-            ostream << "Command executed.";
-        }
-        ++i;
-    };
-
     for(const std::string &file : list_dir("testFiles")) {
         std::string ext = getFileExt(file);
         if(exclude.count(ext)) continue;
         for(auto pair : ext_args) {
             if(!pair.first.count(ext)) continue;
             for(auto args : pair.second) {
-                genTest(file, args);
+                genTest(exePath, file, args);
             }
         }
     }
@@ -85,10 +65,10 @@ int main(int argc, char **argv) {
             if(!fstream) continue;
             fstream.close();
             for(const std::string &args : pair.second) {
-                genTest(file, args);
+                genTest(exePath, file, args);
             }
         }
     }
 
-    std::exit(0);
+    std::exit(EXIT_SUCCESS);
 }

@@ -60,4 +60,26 @@ void get_recursive(const std::string &path, std::set<std::string> &paths) {
     }
 }
 
+int i = 0;
+
+void genTest(std::string exePath, const std::string &file, const std::string &args){
+    std::string tstFile = "validateFiles/"+file+"."+std::to_string(i)+".tst";
+    std::cout << "generating: " << tstFile << std::endl;
+    std::ofstream ostream;
+    ostream.open(tstFile);
+    ostream << "testFiles/" << file << " " << args << "\nembedded" << std::endl;
+    ostream.close();
+#ifdef _WIN32
+    std::string cmd = "\"\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile+"\"";
+#else
+    std::string cmd = "\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile;
+#endif
+    int exit = system(cmd.c_str());
+    if (exit == EXIT_SUCCESS) {
+        ostream << cmd << std::endl;
+        ostream << "Command executed.";
+    }
+    ++i;
+};
+
 #endif // #ifndef GFASTATS_VALIDATE_H
