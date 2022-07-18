@@ -170,20 +170,20 @@ std::shared_ptr<std::istream> StreamObj::returnStream() {
 
 void StreamObj::closeStream() {
 
-    if (gzip) {
-
-        zfin.read_footer();
-
-        if (zfin.check_crc()) {
-
-            lg.verbose("Crc check successful");
-
-        }else{
-
-            lg.verbose("Warning: crc check unsuccessful. Check input file");
-
-        }
-
-    }
+//    if (gzip) {
+//
+//        zfin.read_footer();
+//
+//        if (zfin.check_crc()) {
+//
+//            lg.verbose("Crc check successful");
+//
+//        }else{
+//
+//            lg.verbose("Warning: crc check unsuccessful. Check input file");
+//
+//        }
+//
+//    }
 
 }
