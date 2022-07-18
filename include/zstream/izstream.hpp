@@ -187,7 +187,7 @@ public:
 					0), m_gzip_data_size(0) {}
             
     void open() {
-        if (this->rdbuf()->get_zerr() == Z_OK)
+//        if (this->rdbuf()->get_zerr() == Z_OK)
             check_header();
     }
 
