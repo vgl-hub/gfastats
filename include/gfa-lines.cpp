@@ -243,8 +243,13 @@ bool InSegment::rvcpSegment() {
 bool InSegment::invertSegment() {
 
     *inSequence = rev(*inSequence);
-    *inSequenceQuality = rev(*inSequenceQuality);
-
+    
+    if (inSequenceQuality != NULL) {
+    
+        *inSequenceQuality = rev(*inSequenceQuality);
+    
+    }
+        
     return true;
     
 }

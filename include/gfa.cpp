@@ -140,13 +140,16 @@ InGap InSequences::pushbackGap(Log* threadLog, InPath* path, std::string* seqHea
 InSegment* InSequences::pushbackSegment(unsigned int currId, Log* threadLog, InPath* path, std::string* seqHeader, std::string* seqComment, std::string* sequence, unsigned int* iId, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned long long int sStart, unsigned long long int sEnd, std::string* sequenceQuality) {
     
     std::string* sequenceSubSeq = new std::string;
-    std::string* sequenceQualitySubSeq = new std::string;
     
     *sequenceSubSeq = sequence->substr(sStart, sEnd + 1 - sStart);
     
     if (sequenceQuality != NULL) {
         
+        std::string* sequenceQualitySubSeq = new std::string;
+        
         *sequenceQualitySubSeq = sequenceQuality->substr(sStart, sEnd + 1 - sStart);
+        
+        sequenceQuality = sequenceQualitySubSeq;
         
     }else{
         
@@ -154,7 +157,7 @@ InSegment* InSequences::pushbackSegment(unsigned int currId, Log* threadLog, InP
         
     }
     
-    InSegment* inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, sequenceSubSeq, A, C, G, T, lowerCount, 0, sequenceQualitySubSeq);
+    InSegment* inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, sequenceSubSeq, A, C, G, T, lowerCount, 0, sequenceQuality);
     
     std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
     
