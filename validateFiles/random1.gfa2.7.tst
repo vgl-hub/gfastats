@@ -1,5 +1,6 @@
 testFiles/random1.gfa2 -o fasta
 embedded
+fasta fasta fasta
 >Header1
 CGacT
 >Header2

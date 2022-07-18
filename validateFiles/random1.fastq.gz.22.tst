@@ -1,4 +1,4 @@
-testFiles/random1.fasta.gz --homopolymer-compress 5
+testFiles/random1.fastq.gz --homopolymer-compress 5
 embedded
 +++Assembly summary+++: 
 # scaffolds: 5

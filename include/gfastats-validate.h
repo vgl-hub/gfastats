@@ -21,10 +21,31 @@ std::string getExePath(const std::string &argv0) {
     return exePath;
 }
 
-std::string getFileExt(const std::string& FileName) // utility to get file extension
+std::string rmFileExt(const std::string path) { // utility to strip file extension from file
+    if (path == "." || path == "..")
+        return path;
+
+    size_t pos = path.find_last_of("\\/.");
+    if (pos != std::string::npos && path[pos] == '.')
+        return path.substr(0, pos);
+
+    return path;
+}
+
+std::string getFileExt(std::string fileName) // utility to get file extension
 {
-    if(FileName.find_last_of(".") != std::string::npos)
-        return FileName.substr(FileName.find_last_of(".")+1);
+    if(fileName.find_last_of(".") != std::string::npos) {
+        
+        if(fileName.substr(fileName.find_last_of(".")+1) == "gz") {
+            
+            fileName = rmFileExt(fileName);
+            
+            return getFileExt(fileName) + ".gz";
+            
+        }
+        
+        return fileName.substr(fileName.find_last_of(".")+1);
+    }
     return "";
 }
 

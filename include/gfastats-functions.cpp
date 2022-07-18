@@ -130,7 +130,7 @@ void textWrap(std::string input, std::ostream& output, int width) { // generic t
     
 }
 
-std::string rmFileExt(const std::string& path) { // utility to strip file extension from file
+std::string rmFileExt(const std::string path) { // utility to strip file extension from file
     if (path == "." || path == "..")
         return path;
 
@@ -141,10 +141,20 @@ std::string rmFileExt(const std::string& path) { // utility to strip file extens
     return path;
 }
 
-std::string getFileExt(const std::string& FileName) // utility to get file extension
+std::string getFileExt(std::string fileName) // utility to get file extension
 {
-    if(FileName.find_last_of(".") != std::string::npos)
-        return FileName.substr(FileName.find_last_of(".")+1);
+    if(fileName.find_last_of(".") != std::string::npos) {
+        
+        if(fileName.substr(fileName.find_last_of(".")+1) == "gz") {
+            
+            fileName = rmFileExt(fileName);
+            
+            return getFileExt(fileName) + ".gz";
+            
+        }
+        
+        return fileName.substr(fileName.find_last_of(".")+1);
+    }
     return "";
 }
 

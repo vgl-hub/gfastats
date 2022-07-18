@@ -1,5 +1,6 @@
 testFiles/random2.gfa -o gfa
 embedded
+gfa gfa gfa
 H	VN:Z:1.2
 S	11	ACCTT	LN:i:5	QL:Z:?@97?
 S	12	TCAAGG	LN:i:6	QL:Z:@6?84@

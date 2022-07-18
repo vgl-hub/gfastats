@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
         {{"random1.gfa2"}, {"-k testFiles/random1.gfa2.instructions.sak"}},
         {{"random1.fasta"}, {"Header2", "-r testFiles/random1.fastq"}},
         {{"random4.fasta"}, {""}},
-        {{"random1.fasta.gz"}, {"--verbose"}}
+        {{"random1.fasta.gz"}, {"-ofa"}}
         
     //  {{set of test file paths}, {list of command line args to run with}}
     };

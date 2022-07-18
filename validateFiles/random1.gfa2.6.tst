@@ -1,5 +1,6 @@
 testFiles/random1.gfa2 -o gfa
 embedded
+gfa gfa gfa
 H	VN:Z:1.2
 S	Header1.1	CGacT
 S	Header2.1	CGA

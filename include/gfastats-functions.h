@@ -26,9 +26,9 @@ bool ifFileExists(const char * optarg); // check if file exists
 
 void textWrap(std::string input, std::ostream& output, int width); // generic text wrapper (useful for fasta output)
 
-std::string rmFileExt(const std::string& path); // utility to strip file extension from file
+std::string rmFileExt(const std::string path); // utility to strip file extension from file
 
-std::string getFileExt(const std::string& FileName); // utility to get file extension
+std::string getFileExt(std::string fileName); // utility to get file extension
 
 std::string revCom(std::string seq); // reverse complement
 
