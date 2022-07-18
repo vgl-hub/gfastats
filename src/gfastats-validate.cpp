@@ -9,7 +9,6 @@ build/bin/gfastats-validate validateFiles/random1.fasta0.tst
 
 */
 
-#include <gfastats-validate.h>
 #include <algorithm>
 #include <fstream>
 #include <string>
@@ -20,6 +19,8 @@ build/bin/gfastats-validate validateFiles/random1.fasta0.tst
 #include <map>
 #include <set>
 #include <regex>
+
+#include <validate.h>
 
 bool printCommand = false;
 const std::string tmp = "tmp.txt";
