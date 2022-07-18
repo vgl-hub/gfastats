@@ -151,10 +151,6 @@ InSegment* InSequences::pushbackSegment(unsigned int currId, Log* threadLog, InP
         
         sequenceQuality = sequenceQualitySubSeq;
         
-    }else{
-        
-        sequenceQualitySubSeq = NULL;
-        
     }
     
     InSegment* inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, sequenceSubSeq, A, C, G, T, lowerCount, 0, sequenceQuality);
