@@ -1,4 +1,4 @@
-testFiles/random1.fasta -ofa -k testFiles/random1.hc.sak
+testFiles/random1.fasta.gz --homopolymer-compress 1 -ofa
 embedded
 >Header1 5bp sequence with no gaps and 2 lowercase bases
 CGacT

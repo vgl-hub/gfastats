@@ -125,6 +125,8 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
         
     }
     
+    lg.verbose("Writing ouput: " + ext);
+    
     // here we create a smart pointer to handle any kind of output stream
     std::unique_ptr<std::ostream> stream;
     

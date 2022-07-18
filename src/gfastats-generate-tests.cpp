@@ -2,7 +2,7 @@
 #include <map>
 #include <cstdio>
 
-#include "gfastats-validate.h"
+#include "validate.h"
 
 int main(int argc, char **argv) {
     std::cout << "WARNING: only run this program if gfastats is in a working state" << std::endl;
@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 
     const std::map<std::set<std::string>, std::vector<std::string>> ext_args = {
         {{"fasta", "fasta.gz", "fastq", "fastq.gz"}, {"", "-b a", "-b c", "-b s", "--homopolymer-compress 1 -ofa"}},
-        {{"gfa", "gfa.gz", "gfa2"}, {"-o gfa2", "-o gfa", "-o fasta"}}
+        {{"gfa", "gfa.gz", "gfa2", "gfa2.gz"}, {"-o gfa2", "-o gfa", "-o fasta"}}
     //  {{set of test file extensions}, {list of command line args to run with}}
     };
 
