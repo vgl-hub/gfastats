@@ -183,7 +183,7 @@ public:
 			size_t read_buffer_size_ = detail::default_buffer_size,
 			size_t input_buffer_size_ = detail::default_buffer_size) :
 			zip_istreambase_type(istream_, window_size_, read_buffer_size_,
-					input_buffer_size_), istream_type(this->rdbuf()), m_gzip_crc(
+					input_buffer_size_), istream_type(NULL), m_gzip_crc(
 					0), m_gzip_data_size(0) {}
             
     void open() {
