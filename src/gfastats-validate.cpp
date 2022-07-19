@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
     std::string line;
     std::ifstream istream, exp, actOutput, *expOutput;
     for(const auto &input_file : input_files) {
-#ifndef _WIN32
+#ifdef _WIN32
         if(getFileExt(input_file) == "fasta.gz" || getFileExt(input_file) == "gfa.gz")
             continue;
 #endif
