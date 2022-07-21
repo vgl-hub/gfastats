@@ -31,11 +31,10 @@ friend class InSequences;
 template<class T>
 void ThreadPool<T>::threadLoop() {
     
-    std::unique_lock<std::mutex> lock(queueMutex);
-    
     while (true) {
         T job;
         {
+            std::unique_lock<std::mutex> lock(queueMutex);
             
             mutexCondition.wait(lock, [this] {
                 return !jobs.empty() || done;

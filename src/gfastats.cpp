@@ -422,21 +422,9 @@ int main(int argc, char **argv) {
     
     in.load(userInput); // load user input
     
-    threadPool.init(maxThreads); // initialize threadpool
-    
     in.read(inSequences); // read input content to inSequences container
     
-    threadPool.init(maxThreads); // initialize threadpool
-    
     in.read(inReads); // read input content to inReads container
-    
-    while (true) {
-        
-        if (threadPool.empty()) {threadPool.join(); break;}
-        lg.verbose("Remaining jobs: " + std::to_string(threadPool.queueSize()), true);
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        
-    }
 
     if(verbose_flag) {std::cerr<<"\n\n";};
 
