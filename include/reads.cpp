@@ -124,7 +124,7 @@ void InReads::load(UserInput userInput) {
                     getline(*stream, *inSequenceQuality);
 
                     readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
-//                    seqPos++;
+                    seqPos++;
 
                     if (seqPos % batchSize == 0) {
 
