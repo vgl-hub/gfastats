@@ -54,7 +54,7 @@ void Input::load(UserInput userInput) {
 
 void Input::read(InReads& inReads) {
     
-    if (!userInput.iReadFileArg.empty()) {return;}
+    if (userInput.iReadFileArg.empty()) {return;}
         
     threadPool.init(maxThreads); // initialize threadpool
 
@@ -72,7 +72,7 @@ void Input::read(InReads& inReads) {
     
 void Input::read(InSequences& inSequences) {
     
-    if (!userInput.iSeqFileArg.empty()) {return;}
+    if (userInput.iSeqFileArg.empty()) {return;}
     
     threadPool.init(maxThreads); // initialize threadpool
 
