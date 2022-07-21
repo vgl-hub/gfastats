@@ -424,6 +424,8 @@ int main(int argc, char **argv) {
     
     in.read(inSequences); // read input content to inSequences container
     
+    threadPool.init(maxThreads); // initialize threadpool
+    
     in.read(inReads); // read input content to inReads container
     
     while (true) {
