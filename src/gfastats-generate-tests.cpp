@@ -4,7 +4,7 @@
 
 #include "validate.h"
 
-int main(int argc, char **argv) {
+int main(int, char **argv) {
     std::cout << "WARNING: only run this program if gfastats is in a working state" << std::endl;
     std::cout << "WARNING: previous validate files will be deleted" << std::endl;
     std::cout << "continue? (Y/N) ";

@@ -194,6 +194,8 @@ int main(int argc, char **argv) {
                 }
                 else{printf("Error: too many positional arguments (%s).\n",optarg);exit(1);}
                 
+                break;
+                
             case 0: // case for long options without short options
                 
                 if (strcmp(long_options[option_index].name,"line-length") == 0)
