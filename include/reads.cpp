@@ -164,17 +164,17 @@ void InReads::appendReads(Sequences* readBatch) { // read a collection of reads
     
     std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
     
-    lck.lock();
-    
-    for (auto it = logs.begin(); it != logs.end(); it++) {
-     
-        it->print();
-        logs.erase(it--);
-        if(verbose_flag) {std::cerr<<"\n";};
-        
-    }
-    
-    lck.unlock();
+//    lck.lock();
+//    
+//    for (auto it = logs.begin(); it != logs.end(); it++) {
+//     
+//        it->print();
+//        logs.erase(it--);
+//        if(verbose_flag) {std::cerr<<"\n";};
+//        
+//    }
+//    
+//    lck.unlock();
     
 }
 
