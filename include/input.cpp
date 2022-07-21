@@ -54,25 +54,25 @@ void Input::load(UserInput userInput) {
 
 void Input::read(InReads& inReads) {
     
-    if (!userInput.iReadFileArg.empty()) {
+    if (!userInput.iReadFileArg.empty()) {return;}
         
-        threadPool.init(maxThreads); // initialize threadpool
+    threadPool.init(maxThreads); // initialize threadpool
 
-        inReads.load(userInput);
+    inReads.load(userInput);
+    
+    while (true) {
         
-        while (true) {
-            
-            if (threadPool.empty()) {threadPool.join(); break;}
-            lg.verbose("Remaining jobs: " + std::to_string(threadPool.queueSize()), true);
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            
-        }
-
+        if (threadPool.empty()) {threadPool.join(); break;}
+        lg.verbose("Remaining jobs: " + std::to_string(threadPool.queueSize()), true);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
     }
 
 }
     
 void Input::read(InSequences& inSequences) {
+    
+    if (!userInput.iSeqFileArg.empty()) {return;}
     
     threadPool.init(maxThreads); // initialize threadpool
 
