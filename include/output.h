@@ -5,8 +5,8 @@
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef GFASTATS_OUTPUT_H
-#define GFASTATS_OUTPUT_H
+#ifndef OUTPUT_H
+#define OUTPUT_H
 
 //classes
 class Report {
@@ -23,10 +23,10 @@ public:
     
     bool outCoord(InSequences &inSequences, InSegment &inSegment, char bedOutType);
     
-    bool reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType);
+    bool reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType, InReads& inReads);
     
     bool nstarReport(InSequences &inSequences, unsigned long long int gSize);
     
 };
 
-#endif /* GFASTATS_OUTPUT_H */
+#endif /* OUTPUT_H */

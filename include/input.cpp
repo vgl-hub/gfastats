@@ -29,6 +29,7 @@
 #include "uid-generator.h"
 
 #include "gfa-lines.h"
+#include "reads.h"
 
 #include "threadpool.h"
 #include "gfa.h"
@@ -50,20 +51,18 @@ void Input::load(UserInput userInput) {
     this->userInput = userInput;
     
 }
+
+void Input::read(InReads& inReads) {
+    
+    if (!userInput.iReadFileArg.empty()) {
+
+        inReads.load(userInput);
+
+    }
+
+}
     
 void Input::read(InSequences& inSequences) {
-    
-    threadPool.init(maxThreads); // initialize threadpool
-    
-    StreamObj streamObj;
-    
-    std::string newLine, seqHeader, seqComment, line, bedHeader;
-    
-    std::shared_ptr<std::istream> stream;
-    
-    std::vector<Instruction> instructions;
-    
-    unsigned int begin = 0, end = 0;
 
     if (!userInput.iSakFileArg.empty() || userInput.pipeType == 'k') {
         
@@ -120,11 +119,6 @@ void Input::read(InSequences& inSequences) {
         lg.verbose("Finished reading BED exclude list");
         
     }
-    
-    // stream read variable definition
-    std::string firstLine;
-    bool stopStream = false;
-    unsigned int seqPos = 0; // to keep track of the original sequence order
     
     if (!userInput.iSeqFileArg.empty() || userInput.pipeType == 'f') {
         
@@ -1126,118 +1120,6 @@ void Input::read(InSequences& inSequences) {
 
         }
         
-    }
-    
-    if (!userInput.iReadFileArg.empty()) {
-
-        unsigned int batchSize = 10000;
-        
-        stream = streamObj.openStream(userInput, 'r');
-
-        Sequences* readBatch = new Sequences;
-
-        if (stream) {
-
-            switch (stream->peek()) {
-
-                case '>': {
-
-                    stream->get();
-
-                    while (!stream->eof()) {
-
-                        getline(*stream, newLine);
-
-                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-                        c = strtok(NULL,""); //read comment
-
-                        seqHeader = h;
-
-                        if (c != NULL) {
-
-                            seqComment = std::string(c);
-
-                        }
-
-                        std::string* inSequence = new std::string;
-
-                        getline(*stream, *inSequence, '>');
-
-                        readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence});
-
-                        if (seqPos % batchSize == 0) {
-
-                            readBatch->batchN = seqPos/batchSize;
-
-                            inSequences.appendReads(readBatch);
-
-                            readBatch = new Sequences;
-
-                        }
-
-                        lg.verbose("Individual fasta sequence read");
-
-                    }
-
-                    break;
-                }
-                case '@': {
-
-                    while (getline(*stream, newLine)) { // file input
-
-                        newLine.erase(0, 1);
-
-                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-                        c = strtok(NULL,""); //read comment
-
-                        seqHeader = h;
-
-                        if (c != NULL) {
-
-                            seqComment = std::string(c);
-
-                        }else{
-
-                            seqComment = "";
-
-                        }
-
-                        std::string* inSequence = new std::string;
-                        getline(*stream, *inSequence);
-
-                        getline(*stream, newLine);
-
-                        std::string* inSequenceQuality = new std::string;
-                        getline(*stream, *inSequenceQuality);
-
-                        readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
-
-                        if (seqPos % batchSize == 0) {
-
-                            readBatch->batchN = seqPos/batchSize;
-
-                            inSequences.appendReads(readBatch);
-
-                            readBatch = new Sequences;
-
-                        }
-
-                        lg.verbose("Individual fastq sequence read: " + seqHeader);
-
-                    }
-
-                    break;
-
-                }
-
-                readBatch->batchN = seqPos/batchSize + 1;
-
-                inSequences.appendReads(readBatch);
-
-            }
-
-        }
-
     }
     
     while (true) {

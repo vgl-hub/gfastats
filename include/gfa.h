@@ -19,7 +19,6 @@ private:
     std::vector<InGap> inGaps;
     std::vector<InEdge> inEdges;
     std::vector<InPath> inPaths;
-    std::vector<InSegment*> inReads;
     std::vector<std::vector<Gap>> adjListFW;
     std::vector<std::vector<Gap>> adjListBW;
     std::vector<std::vector<Edge>> adjEdgeList;
@@ -44,8 +43,6 @@ private:
     
     std::vector<unsigned long long int> gapNstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::vector<unsigned int> gapLstars     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    
-    std::vector<unsigned long long int> readNstars    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
     double scaffAuN = 0, scaffAuNG = 0, contigAuN = 0, contigAuNG = 0, gapAuN = 0;
     
@@ -87,8 +84,6 @@ public:
     UIdGenerator uId; // unique numeric identifier for each feature
     
     std::vector<Log> getLogs();
-
-    InSegment* addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL);
     
     InGap pushbackGap(Log* threadLog, InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int* dist, char sign, unsigned int uId1, unsigned int uId2);
     
@@ -98,15 +93,9 @@ public:
     
     void traverseInSegment(Sequence* sequence, std::vector<Tag> inSequenceTags);
     
-    void traverseInReads(Sequences* sequence);
-    
-    InSegment* traverseInRead(Log* threadLog, Sequence* sequence, unsigned int seqPos);
-    
     void appendSequence(Sequence* sequence);
     
     void appendSegment(Sequence* sequence, std::vector<Tag> inSequenceTags);
-    
-    void appendReads(Sequences* sequence);
     
     InSegment *getInSegment(unsigned int sId);
     
@@ -137,10 +126,6 @@ public:
     void recordGapLen(unsigned int gapLen);
     
     void evalNstars(char type, unsigned long long int gSize = 0);
-    
-    void computeNstars(std::vector<unsigned long long int>& lens, // compute N/L* statistics, vector of all lengths
-                       std::vector<unsigned long long int>& Nstars,      std::vector<unsigned int>& Lstars, // required arguments are passed by reference
-                       std::vector<unsigned long long int>* NGstars = 0, std::vector<unsigned int>* LGstars = 0, unsigned long long int gSize = 0);
     
     void evalAuN(char type, unsigned long long int gSize = 0);
     
@@ -353,20 +338,6 @@ public:
     void findBubbles();
     
     std::vector<Bubble>* getBubbles();
-    
-    // end of gfa methods
-    
-    // read methods
-    
-    unsigned int getReadN();
-    
-    unsigned long long int getTotReadLen();
-    
-    double computeAvgReadLen();
-    
-    unsigned long long int getReadN50();
-    
-    // end of read methods
     
 };
 

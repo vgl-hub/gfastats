@@ -328,3 +328,42 @@ void homopolymerBedCoords(std::string *sequence, std::vector<std::pair<unsigned 
         bedCoords.push_back({index, sequence->size()});
     }
 }
+
+void computeNstars(std::vector<unsigned long long int>& lens, // compute N/L* statistics, vector of all lengths
+                   std::vector<unsigned long long int>& Nstars,      std::vector<unsigned int>& Lstars, // required arguments are passed by reference
+                   std::vector<unsigned long long int>* NGstars, std::vector<unsigned int>* LGstars, unsigned long long int gSize) { // optional arguments are passed by pointer
+    
+    sort(lens.begin(), lens.end(), std::greater<unsigned long long int>()); // sort lengths Z-A
+    
+    unsigned long long int sum = 0, totLen = 0;
+    
+    for(std::vector<unsigned long long int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
+        totLen += *it;
+    
+    short int N = 1, NG = 1;
+    
+    for(unsigned int i = 0; i < lens.size(); i++) { // for each length
+        
+        sum += lens[i]; // increase sum
+        
+        while (sum >= ((double) totLen / 10 * N) && N<= 10) { // conditionally add length.at or pos to each N/L* bin
+            
+            Nstars[N-1] = lens[i];
+            Lstars[N-1] = i + 1;
+            
+            N = N + 1;
+            
+        }
+        
+        while (gSize > 0 && (sum >= ((double) gSize / 10 * NG)) && NG<= 10) { // if not computing gap statistics repeat also for NG/LG* statistics
+            
+            (*NGstars)[NG-1] = lens[i];
+            (*LGstars)[NG-1] = i + 1;
+            
+            NG = NG + 1;
+            
+        }
+        
+    }
+    
+}

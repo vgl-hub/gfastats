@@ -14,14 +14,13 @@
 #include <fstream>
 #include <sstream>
 
+#include "gfastats-log.h"
+#include "gfastats-global.h"
+
 #include "bed.h"
 #include "gfastats-struct.h"
 #include "gfastats-functions.h" // global functions
-
 #include "gfa-lines.h"
-
-#include "gfastats-log.h"
-#include "gfastats-global.h"
 
 #include "threadpool.h"
 
@@ -30,84 +29,16 @@
 
 InSequences::~InSequences()
 {
+    
     for (InSegment* p : inSegments)
         delete p;
-
-    for (InSegment* p : inReads)
-        delete p;
+    
 }
 
 std::vector<Log> InSequences::getLogs() {
 
     return logs;
 
-}
-
-InSegment* InSequences::addSegment(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality, std::vector<Tag>* inSequenceTags) {
-    
-    threadLog->add("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
-    
-    unsigned long long int seqSize = 0;
-    
-    // operations on the segment
-    InSegment* inSegment = new InSegment;
-    
-    inSegment->setiId(iId); // set temporary sId internal to scaffold
-    
-    inSegment->setuId(uId); // set absolute id
-    
-    inSegment->setSeqPos(seqPos); // set original order
-    
-    inSegment->setSeqHeader(&seqHeader);
-    
-    if (*seqComment != "") {
-        
-        inSegment->setSeqComment(*seqComment);
-        
-    }
-    
-    if (inSequenceTags != NULL) {
-        
-        inSegment->setSeqTags(inSequenceTags);
-        
-    }
-    
-    if (*sequence != "*") {
-        
-        inSegment->setInSequence(sequence);
-        
-        threadLog->add("Segment sequence set");
-        
-        if (sequenceQuality != NULL) {
-            
-            inSegment->setInSequenceQuality(sequenceQuality);
-            
-            threadLog->add("Segment sequence quality set");
-            
-        }
-        
-        inSegment->setACGT(A, C, G, T);
-        
-        threadLog->add("Increased ACGT counts");
-        
-        inSegment->setLowerCount(lowerCount);
-
-        threadLog->add("Increased total count of lower bases");
-        
-        seqSize = *A + *C + *G + *T;
-        
-    }else{
-        
-        seqSize = *lowerCount;
-        
-        inSegment->setLowerCount(&seqSize);
-        
-        threadLog->add("No seq input. Length (" + std::to_string(seqSize) + ") recorded in lower count");
-        
-    }
-    
-    return inSegment; // adding segment to segment set
-    
 }
 
 InGap InSequences::pushbackGap(Log* threadLog, InPath* path, std::string* seqHeader, unsigned int* iId, unsigned int* dist, char sign, unsigned int uId1, unsigned int uId2) {
@@ -153,7 +84,9 @@ InSegment* InSequences::pushbackSegment(unsigned int currId, Log* threadLog, InP
         
     }
     
-    InSegment* inSegment = addSegment(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, sequenceSubSeq, A, C, G, T, lowerCount, 0, sequenceQuality);
+    InSegment* inSegment = new InSegment;
+    
+    inSegment->set(threadLog, currId, *iId, *seqHeader+"."+std::to_string(*iId), seqComment, sequenceSubSeq, A, C, G, T, lowerCount, 0, sequenceQuality);
     
     std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
     
@@ -471,96 +404,16 @@ void InSequences::traverseInSegment(Sequence* sequence, std::vector<Tag> inSeque
         sUId = got->second;
         
     }
+    
+    InSegment* inSegment = new InSegment;
+    
+    inSegment->set(&threadLog, sUId, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, sequence->sequenceQuality, &inSequenceTags);
             
-    inSegments.push_back(addSegment(&threadLog, sUId, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, sequence->seqPos, sequence->sequenceQuality, &inSequenceTags));
+    inSegments.push_back(inSegment);
     
     logs.push_back(threadLog);
     
     lck.unlock();
-    
-}
-
-void InSequences::traverseInReads(Sequences* sequences) { // traverse the read
-
-    Log threadLog;
-    
-    threadLog.setId(sequences->batchN);
-    
-    std::vector<InSegment*> inReadsBatch;
-    
-    unsigned int readN = 0;
-    
-    for (Sequence* sequence : sequences->sequences) {
-        
-        inReadsBatch.push_back(traverseInRead(&threadLog, sequence, sequences->batchN+readN++));
-        
-    }
-    
-    delete sequences;
-    
-    std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-    
-    lck.lock();
-    
-    inReads.insert(std::end(inReads), std::begin(inReadsBatch), std::end(inReadsBatch));
-    
-    logs.push_back(threadLog);
-    
-    lck.unlock();
-    
-}
-
-InSegment* InSequences::traverseInRead(Log* threadLog, Sequence* sequence, unsigned int seqPos) { // traverse a single read
-    
-    unsigned long long int A = 0, C = 0, G = 0, T = 0, lowerCount = 0;
-    
-    for (char &base : *sequence->sequence) {
-        
-        if (islower(base)) {
-            
-            lowerCount++;
-            
-        }
-                
-        switch (base) {
-            case 'A':
-            case 'a':{
-                
-                A++;
-                break;
-                
-            }
-            case 'C':
-            case 'c':{
-                
-                C++;
-                break;
-                
-            }
-            case 'G':
-            case 'g': {
-                
-                G++;
-                break;
-                
-            }
-            case 'T':
-            case 't': {
-                
-                T++;
-                break;
-                
-            }
-                
-            default: {
-                break;
-            }
-                
-        }
-            
-    }
-    
-    return addSegment(threadLog, 0, 0, sequence->header, &sequence->comment, sequence->sequence, &A, &C, &G, &T, &lowerCount, seqPos, sequence->sequenceQuality);
     
 }
 
@@ -591,28 +444,6 @@ void InSequences::appendSegment(Sequence* sequence, std::vector<Tag> inSequenceT
     lg.verbose("Segment read");
     
     threadPool.queueJob([=]{ return traverseInSegment(sequence, inSequenceTags); });
-    
-    if(verbose_flag) {std::cerr<<"\n";};
-    
-    std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
-    
-    lck.lock();
-    
-    for (auto it = logs.begin(); it != logs.end(); it++) {
-     
-        it->print();
-        logs.erase(it--);
-        if(verbose_flag) {std::cerr<<"\n";};
-        
-    }
-    
-    lck.unlock();
-    
-}
-
-void InSequences::appendReads(Sequences* sequences) { // read a collection of reads
-    
-    threadPool.queueJob([=]{ return traverseInReads(sequences); });
     
     if(verbose_flag) {std::cerr<<"\n";};
     
@@ -763,61 +594,6 @@ void InSequences::evalNstars(char type, unsigned long long int gSize) { // switc
             
         }
             
-        case 'r': {
-            
-            std::vector<unsigned long long int> readLens;
-            
-            for (InSegment* read : inReads) {
-                
-                readLens.push_back(read->getA() + read->getC() + read->getG() + read->getT());
-            
-            }
-            
-            computeNstars(readLens, readNstars, gapLstars);
-            break;
-            
-        }
-            
-    }
-    
-}
-
-
-void InSequences::computeNstars(std::vector<unsigned long long int>& lens, // compute N/L* statistics, vector of all lengths
-                   std::vector<unsigned long long int>& Nstars,      std::vector<unsigned int>& Lstars, // required arguments are passed by reference
-                   std::vector<unsigned long long int>* NGstars, std::vector<unsigned int>* LGstars, unsigned long long int gSize) { // optional arguments are passed by pointer
-    
-    sort(lens.begin(), lens.end(), std::greater<unsigned long long int>()); // sort lengths Z-A
-    
-    unsigned long long int sum = 0, totLen = 0;
-    
-    for(std::vector<unsigned long long int>::iterator it = lens.begin(); it != lens.end(); ++it) // find total length
-        totLen += *it;
-    
-    short int N = 1, NG = 1;
-    
-    for(unsigned int i = 0; i < lens.size(); i++) { // for each length
-        
-        sum += lens[i]; // increase sum
-        
-        while (sum >= ((double) totLen / 10 * N) && N<= 10) { // conditionally add length.at or pos to each N/L* bin
-            
-            Nstars[N-1] = lens[i];
-            Lstars[N-1] = i + 1;
-            
-            N = N + 1;
-            
-        }
-        
-        while (gSize > 0 && (sum >= ((double) gSize / 10 * NG)) && NG<= 10) { // if not computing gap statistics repeat also for NG/LG* statistics
-            
-            (*NGstars)[NG-1] = lens[i];
-            (*LGstars)[NG-1] = i + 1;
-            
-            NG = NG + 1;
-            
-        }
-        
     }
     
 }
@@ -2872,41 +2648,5 @@ void InSequences::findBubbles () {
 std::vector<Bubble>* InSequences::getBubbles () {
     
     return &bubbles;
-    
-}
-
-// end of gfa methods
-
-// read methods
-
-unsigned int InSequences::getReadN() {
-    
-    return inReads.size();
-    
-}
-
-unsigned long long int InSequences::getTotReadLen() {
-    
-    unsigned long long int totReadLen = 0;
-    
-    for (InSegment* read : inReads) {
-        
-        totReadLen += read->getA() + read->getC() + read->getG() + read->getT();
-        
-    }
-    
-    return totReadLen;
-    
-}
-
-double InSequences::computeAvgReadLen() {
-    
-    return (double) getTotReadLen()/getReadN();
-    
-}
-
-unsigned long long int InSequences::getReadN50() {
-    
-    return readNstars[4];
     
 }

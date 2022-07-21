@@ -15,7 +15,7 @@ class StreamObj {
     std::ifstream ifs;
     zstream::igzstream zfin, zin;
     bool file = false, gzip = false;
-    std::istringstream strm;
+//    std::istringstream strm;
     char* content = new char[10000];
     std::condition_variable mutexCondition;
 //    bool decompress = true, done = false;

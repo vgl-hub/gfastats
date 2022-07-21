@@ -18,7 +18,7 @@ link = $(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD_PATH)/$(TARGET) $(BUILD_PATH)/o/
 
 $(TARGET): | $(BUILD_PATH) head validate regenerate random_fasta
 
-head: | $(BUILD_PATH) main input input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj
+head: | $(BUILD_PATH) main input input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj reads
 	$(link)
 	
 link:
@@ -33,7 +33,7 @@ input-agp: $(BUILD_PATH)
 input-filters: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/input-filters.cpp -o $(BUILD_PATH)/o/input-filters.o
 output: $(BUILD_PATH)
-	$(CXX) $(CXXFLAGS) -c include/gfastats-output.cpp -o $(BUILD_PATH)/o/gfastats-output.o
+	$(CXX) $(CXXFLAGS) -c include/output.cpp -o $(BUILD_PATH)/o/output.o
 functions: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/gfastats-functions.cpp -o $(BUILD_PATH)/o/gfastats-functions.o
 log: $(BUILD_PATH)
@@ -50,6 +50,8 @@ uid-generator: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/uid-generator.cpp -o $(BUILD_PATH)/o/uid-generator.o
 stream-obj: $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -c include/stream-obj.cpp -o $(BUILD_PATH)/o/stream-obj.o
+reads: $(BUILD_PATH)
+	$(CXX) $(CXXFLAGS) -c include/reads.cpp -o $(BUILD_PATH)/o/reads.o
 
 validate: | $(BUILD_PATH)
 	$(CXX) $(CXXFLAGS) -o $(BUILD_PATH)/$(TEST_TARGET) $(SOURCE_PATH)/$(TEST_TARGET).cpp $(LIBS)

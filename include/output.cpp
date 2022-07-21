@@ -13,7 +13,7 @@
 
 #include "bed.h"
 #include "gfastats-struct.h"
-#include "gfastats-functions.h" // global functions
+#include "gfastats-functions.h"
 
 #include "gfastats-log.h"
 #include "gfastats-global.h"
@@ -23,14 +23,16 @@
 
 #include "threadpool.h"
 #include "gfa.h"
-#include "gfastats-sak.h" // swiss army knife
+#include "gfastats-sak.h"
 
 #include "zlib.h"
 #include <zstream/zstream_common.hpp>
 #include <zstream/ozstream.hpp>
 #include <zstream/ozstream_impl.hpp>
 
-#include "gfastats-output.h"
+#include "reads.h"
+
+#include "output.h"
 
 bool Report::seqReport(InSequences &inSequences, InSegment &inSegment, int &outSequence_flag) { // method to output the summary statistics for each sequence
     std::cout << std::fixed; // disables scientific notation
@@ -963,7 +965,7 @@ bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOu
     return true;
 }
 
-bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType) { // method to output all summary statistics for the entire sequence set
+bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType, InReads& inReads) { // method to output all summary statistics for the entire sequence set
     std::cout << std::fixed; // disables scientific notation
     std::cout << std::setprecision(2); // 2 decimal poinst
 
@@ -1105,23 +1107,7 @@ bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize,
             
     }
     
-    unsigned int readN = inSequences.getReadN();
-
-    if (readN > 0) {
-        
-        if (!tabular_flag) {
-        
-            std::cout<<output("+++Read summary+++")<<"\n";
-        
-        }
-        
-        std::cout<<output("# reads")<<readN<<"\n";
-        std::cout<<output("Total read length")<<inSequences.getTotReadLen()<<"\n";
-        std::cout<<output("Average read length") << gfa_round(inSequences.computeAvgReadLen()) << "\n";
-        inSequences.evalNstars('r'); // read N* statistics
-        std::cout<<output("Read N50")<<inSequences.getReadN50()<<"\n";
-        
-    }
+    inReads.report();
 
     return true;
     

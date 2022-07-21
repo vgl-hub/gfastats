@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+#include "gfastats-log.h"
+
 #include "bed.h"
 #include "gfastats-struct.h"
 #include "gfastats-functions.h"
@@ -11,6 +13,68 @@ InSegment::~InSegment()
 {
     delete inSequence;
     delete inSequenceQuality;
+}
+
+void InSegment::set(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality, std::vector<Tag>* inSequenceTags) {
+    
+    threadLog->add("Processing segment: " + seqHeader + " (uId: " + std::to_string(uId) + ", iId: " + std::to_string(iId) + ")");
+    
+    unsigned long long int seqSize = 0;
+    
+    this->setiId(iId); // set temporary sId internal to scaffold
+    
+    this->setuId(uId); // set absolute id
+    
+    this->setSeqPos(seqPos); // set original order
+    
+    this->setSeqHeader(&seqHeader);
+    
+    if (*seqComment != "") {
+        
+        this->setSeqComment(*seqComment);
+        
+    }
+    
+    if (inSequenceTags != NULL) {
+        
+        this->setSeqTags(inSequenceTags);
+        
+    }
+    
+    if (*sequence != "*") {
+        
+        this->setInSequence(sequence);
+        
+        threadLog->add("Segment sequence set");
+        
+        if (sequenceQuality != NULL) {
+            
+            this->setInSequenceQuality(sequenceQuality);
+            
+            threadLog->add("Segment sequence quality set");
+            
+        }
+        
+        this->setACGT(A, C, G, T);
+        
+        threadLog->add("Increased ACGT counts");
+        
+        this->setLowerCount(lowerCount);
+
+        threadLog->add("Increased total count of lower bases");
+        
+        seqSize = *A + *C + *G + *T;
+        
+    }else{
+        
+        seqSize = *lowerCount;
+        
+        this->setLowerCount(&seqSize);
+        
+        threadLog->add("No seq input. Length (" + std::to_string(seqSize) + ") recorded in lower count");
+        
+    }
+    
 }
     
 void InSegment::setSeqHeader(std::string* h) {

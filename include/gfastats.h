@@ -62,7 +62,10 @@ Log lg;
 #include "gfa.h" // gfa classes
 #include "gfastats-sak.h" // swiss army knife classes
 
-#include "gfastats-output.h" // output classes
+#include "reads.h"
+#include "stream-obj.h"
+
+#include "output.h" // output classes
 #include "input.h"
 
 #endif /* GFASTATS_H */

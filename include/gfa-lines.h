@@ -19,6 +19,8 @@ public:
     
     ~InSegment();
     
+    void set(Log* threadLog, unsigned int uId, unsigned int iId, std::string seqHeader, std::string* seqComment, std::string* sequence, unsigned long long int* A, unsigned long long int* C, unsigned long long int* G, unsigned long long int* T, unsigned long long int* lowerCount, unsigned int seqPos, std::string* sequenceQuality = NULL, std::vector<Tag>* inSequenceTags = NULL);
+    
     void setSeqHeader(std::string* h);
     
     void setSeqComment(std::string c);

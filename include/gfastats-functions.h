@@ -51,6 +51,8 @@ unsigned int homopolymerRunsCount(const std::string &sequence, unsigned int thre
 // bed coords of uncompressed sequence
 void homopolymerBedCoords(std::string *sequence, std::vector<std::pair<unsigned int, unsigned int>> &bedCoords, unsigned int cutoff);
 
-void traverseInSequence(Sequence sequence);
+void computeNstars(std::vector<unsigned long long int>& lens, // compute N/L* statistics, vector of all lengths
+                   std::vector<unsigned long long int>& Nstars,      std::vector<unsigned int>& Lstars, // required arguments are passed by reference
+                   std::vector<unsigned long long int>* NGstars = NULL, std::vector<unsigned int>* LGstars = NULL, unsigned long long int gSize = 0);
 
 #endif /* GFASTATS_FUNCTIONS_H */

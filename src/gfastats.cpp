@@ -408,17 +408,44 @@ int main(int argc, char **argv) {
         
     }
     
-    lg.verbose("File object generated");
-    
     InSequences inSequences; // initialize sequence collection object
     
     lg.verbose("Sequence object generated");
+    
+    InReads inReads; // initialize sequence collection object
+    
+    lg.verbose("Read object generated");
     
     Input in;
     
     in.load(userInput); // load user input
     
-    in.read(inSequences); // read input content to inSequences containes
+    threadPool.init(maxThreads); // initialize threadpool
+    
+    in.read(inSequences); // read input content to inSequences container
+    
+    in.read(inReads); // read input content to inReads container
+    
+    while (true) {
+        
+        if (threadPool.empty()) {threadPool.join(); break;}
+        lg.verbose("Remaining jobs: " + std::to_string(threadPool.queueSize()), true);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        
+    }
+
+    if(verbose_flag) {std::cerr<<"\n\n";};
+
+    std::vector<Log> logs = inSequences.getLogs();
+
+    //consolidate log
+    for (auto it = logs.begin(); it != logs.end(); it++) {
+     
+        it->print();
+        logs.erase(it--);
+        if(verbose_flag) {std::cerr<<"\n";};
+        
+    }
     
     lg.verbose("Finished reading input files");
     if(verbose_flag) {std::cerr<<"\n";};
@@ -461,7 +488,7 @@ int main(int argc, char **argv) {
     
     if (stats_flag) { // output summary statistics
         
-        report.reportStats(inSequences, gSize, bedOutType);
+        report.reportStats(inSequences, gSize, bedOutType, inReads);
         
     }
     
