@@ -125,6 +125,8 @@ void InReads::load(UserInput userInput) {
                     if (seqPos % batchSize == 0) {
 
                         readBatch->batchN = seqPos/batchSize;
+                        
+                        lg.verbose("Processing batch N: " + readBatch->batchN);
 
                         appendReads(readBatch);
 
