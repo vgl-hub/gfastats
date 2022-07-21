@@ -34,7 +34,7 @@ InReads::~InReads()
 
 void InReads::load(UserInput userInput) {
 
-    unsigned int batchSize = 10000;
+    unsigned int batchSize = 100;
     
     StreamObj streamObj;
     
