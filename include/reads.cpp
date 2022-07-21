@@ -74,10 +74,13 @@ void InReads::load(UserInput userInput) {
                     getline(*stream, *inSequence, '>');
 
                     readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence});
+                    seqPos++;
 
                     if (seqPos % batchSize == 0) {
 
                         readBatch->batchN = seqPos/batchSize;
+                        
+                        lg.verbose("Processing batch N: " + std::to_string(readBatch->batchN));
 
                         appendReads(readBatch);
 
@@ -85,7 +88,7 @@ void InReads::load(UserInput userInput) {
 
                     }
 
-                    lg.verbose("Individual fasta sequence read" + seqHeader);
+                    lg.verbose("Individual fasta sequence read: " + seqHeader);
 
                 }
 
@@ -121,12 +124,13 @@ void InReads::load(UserInput userInput) {
                     getline(*stream, *inSequenceQuality);
 
                     readBatch->sequences.push_back(new Sequence {seqHeader, seqComment, inSequence, inSequenceQuality});
+                    seqPos++;
 
                     if (seqPos % batchSize == 0) {
 
                         readBatch->batchN = seqPos/batchSize;
                         
-                        lg.verbose("Processing batch N: " + readBatch->batchN);
+                        lg.verbose("Processing batch N: " + std::to_string(readBatch->batchN));
 
                         appendReads(readBatch);
 
@@ -143,6 +147,8 @@ void InReads::load(UserInput userInput) {
             }
 
             readBatch->batchN = seqPos/batchSize + 1;
+                
+            lg.verbose("Processing batch N: " + std::to_string(readBatch->batchN));
 
             appendReads(readBatch);
 
