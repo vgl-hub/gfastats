@@ -1,4 +1,4 @@
-testFiles/random1.fasta -r testFiles/random1.fastq.gz
+testFiles/random1.fastq -r testFiles/random1.fastq.gz
 embedded
 +++Assembly summary+++: 
 # scaffolds: 5

@@ -146,13 +146,13 @@ void InReads::load(UserInput userInput) {
 
             }
 
-            readBatch->batchN = seqPos/batchSize + 1;
-                
-            lg.verbose("Processing batch N: " + std::to_string(readBatch->batchN));
-
-            appendReads(readBatch);
-
         }
+        
+        readBatch->batchN = seqPos/batchSize + 1;
+            
+        lg.verbose("Processing batch N: " + std::to_string(readBatch->batchN));
+
+        appendReads(readBatch);
 
     }
 
