@@ -15,15 +15,15 @@ private:
     unsigned int counter = 0;
     
 public:
-    bool seqReport(InSequences &inSequences, InSegment &inSegment, int &outSequence_flag);
+    bool seqReport(InSequences &inSequences, int &outSequence_flag);
     
-    bool outFile(InSequences &inSequences, InSegment &inSegment, int splitLength, std::string &outSeq);
+    bool outFile(InSequences &inSequences, int splitLength, std::string &outSeq);
     
-    bool outSize(InSequences &inSequences, InSegment &inSegment, char &sizeOutType);
+    bool outSize(InSequences &inSequences, char &sizeOutType);
     
-    bool outCoord(InSequences &inSequences, InSegment &inSegment, char bedOutType);
+    bool outCoord(InSequences &inSequences, char bedOutType);
     
-    bool reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType, InReads& inReads);
+    bool reportStats(InSequences &inSequences, unsigned long long int gSize, InReads& inReads);
     
     bool nstarReport(InSequences &inSequences, unsigned long long int gSize);
     

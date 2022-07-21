@@ -26,7 +26,7 @@ struct Sequence { // a generic sequence container
     
     std::string header, comment;
     std::string* sequence = NULL, *sequenceQuality = NULL;
-    unsigned int seqPos;
+    unsigned int seqPos = 0;
     
     ~Sequence();
     

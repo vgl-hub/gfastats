@@ -34,9 +34,6 @@ public:
 
 class SAK { // the swiss army knife
 public:
-    void read(Instruction &instruction, std::vector<std::string> &arguments) {
-        return;
-    }
 
     void readJoin(Instruction &instruction, std::vector<std::string> &arguments) {
         size_t pos = 0, pos2 = 0, pos3 = 0;

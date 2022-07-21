@@ -450,15 +450,13 @@ int main(int argc, char **argv) {
     lg.verbose("Finished reading input files");
     if(verbose_flag) {std::cerr<<"\n";};
     
-    InSegment inSegment; // initialize a single input sequence object for output purposes
-    
     Report report;
     
     if (seqReport_flag || outSequence_flag) { // report results for each sequence
         
         stats_flag = false;
         
-        report.seqReport(inSequences, inSegment, outSequence_flag);
+        report.seqReport(inSequences, outSequence_flag);
         
     }
     
@@ -466,7 +464,7 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outFile(inSequences, inSegment, splitLength, outSeq);
+        report.outFile(inSequences, splitLength, outSeq);
         
     }
     
@@ -474,7 +472,7 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outSize(inSequences, inSegment, sizeOutType);
+        report.outSize(inSequences, sizeOutType);
         
     }
     
@@ -482,13 +480,13 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outCoord(inSequences, inSegment, bedOutType);
+        report.outCoord(inSequences, bedOutType);
         
     }
     
     if (stats_flag) { // output summary statistics
         
-        report.reportStats(inSequences, gSize, bedOutType, inReads);
+        report.reportStats(inSequences, gSize, inReads);
         
     }
     

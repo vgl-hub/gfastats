@@ -699,7 +699,7 @@ void Input::read(InSequences& inSequences) {
                                     
                                     }
                                     
-                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, bedExcludeList, NULL, &inTags);
+                                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, bedExcludeList, NULL);
                                     
                                     if (sequence != NULL) {
                                         
@@ -1124,7 +1124,7 @@ void Input::read(InSequences& inSequences) {
     
     while (true) {
         
-        if (threadPool.empty()) {threadPool.join(); break;}
+        if (threadPool.empty()) {break;}
         lg.verbose("Remaining jobs: " + std::to_string(threadPool.queueSize()), true);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         

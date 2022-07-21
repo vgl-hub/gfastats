@@ -34,7 +34,7 @@
 
 #include "output.h"
 
-bool Report::seqReport(InSequences &inSequences, InSegment &inSegment, int &outSequence_flag) { // method to output the summary statistics for each sequence
+bool Report::seqReport(InSequences &inSequences, int &outSequence_flag) { // method to output the summary statistics for each sequence
     std::cout << std::fixed; // disables scientific notation
     std::cout << std::setprecision(2); // 2 decimal poinst
     counter = 0;
@@ -79,7 +79,7 @@ bool Report::seqReport(InSequences &inSequences, InSegment &inSegment, int &outS
     
 }
 
-bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
+bool Report::outFile(InSequences &inSequences, int splitLength, std::string &outSeq) { // method to output new sequence opposed to sequence report
     std::cout << std::fixed; // disables scientific notation
     std::cout << std::setprecision(2); // 2 decimal poinst
 
@@ -673,7 +673,7 @@ bool Report::outFile(InSequences &inSequences, InSegment &inSegment, int splitLe
     
 }
 
-bool Report::outSize(InSequences &inSequences, InSegment &inSegment, char &sizeOutType) { // method to output only the size of the sequences
+bool Report::outSize(InSequences &inSequences, char &sizeOutType) { // method to output only the size of the sequences
     
     std::cout << std::fixed; // disables scientific notation
     std::cout << std::setprecision(2); // 2 decimal poinst
@@ -739,7 +739,7 @@ bool Report::outSize(InSequences &inSequences, InSegment &inSegment, char &sizeO
     
 }
 
-bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOutType) { // method to output the coordinates of each feature
+bool Report::outCoord(InSequences &inSequences, char bedOutType) { // method to output the coordinates of each feature
     std::cout << std::fixed; // disables scientific notation
     std::cout << std::setprecision(2); // 2 decimal poinst
 
@@ -965,7 +965,7 @@ bool Report::outCoord(InSequences &inSequences, InSegment &inSegment, char bedOu
     return true;
 }
 
-bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize, int bedOutType, InReads& inReads) { // method to output all summary statistics for the entire sequence set
+bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize, InReads& inReads) { // method to output all summary statistics for the entire sequence set
     std::cout << std::fixed; // disables scientific notation
     std::cout << std::setprecision(2); // 2 decimal poinst
 

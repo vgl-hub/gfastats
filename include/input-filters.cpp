@@ -184,7 +184,7 @@ Sequence* includeExcludeSeq(std::string seqHeader, std::string seqComment, std::
     
 }
 
-Sequence* includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality, std::vector<Tag>* inTags) {
+Sequence* includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality) {
     
     std::vector<std::string> bedIncludeListHeaders;
     std::vector<std::string> bedExcludeListHeaders;
