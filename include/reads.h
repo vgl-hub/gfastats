@@ -27,7 +27,7 @@ public:
     
     InSegment* traverseInRead(Log* threadLog, Sequence* sequence, unsigned int seqPos);
     
-    void appendReads(Sequences* sequence);
+    void appendReads(Sequences* readBatch);
     
     unsigned long long int getTotReadLen();
     

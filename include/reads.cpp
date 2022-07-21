@@ -85,7 +85,7 @@ void InReads::load(UserInput userInput) {
 
                     }
 
-                    lg.verbose("Individual fasta sequence read");
+                    lg.verbose("Individual fasta sequence read" + seqHeader);
 
                 }
 
@@ -150,11 +150,9 @@ void InReads::load(UserInput userInput) {
 
 }
 
-void InReads::appendReads(Sequences* sequences) { // read a collection of reads
+void InReads::appendReads(Sequences* readBatch) { // read a collection of reads
     
-    threadPool.queueJob([=]{ return traverseInReads(sequences); });
-    
-    if(verbose_flag) {std::cerr<<"\n";};
+    threadPool.queueJob([=]{ return traverseInReads(readBatch); });
     
     std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
     
@@ -172,23 +170,23 @@ void InReads::appendReads(Sequences* sequences) { // read a collection of reads
     
 }
 
-void InReads::traverseInReads(Sequences* sequences) { // traverse the read
+void InReads::traverseInReads(Sequences* readBatch) { // traverse the read
 
     Log threadLog;
     
-    threadLog.setId(sequences->batchN);
+    threadLog.setId(readBatch->batchN);
     
     std::vector<InSegment*> inReadsBatch;
     
     unsigned int readN = 0;
     
-    for (Sequence* sequence : sequences->sequences) {
+    for (Sequence* sequence : readBatch->sequences) {
         
-        inReadsBatch.push_back(traverseInRead(&threadLog, sequence, sequences->batchN+readN++));
+        inReadsBatch.push_back(traverseInRead(&threadLog, sequence, readBatch->batchN+readN++));
         
     }
     
-    delete sequences;
+    delete readBatch;
     
     std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
     
