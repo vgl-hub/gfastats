@@ -5,9 +5,9 @@ WARNINGS = -Wall -Wextra
 CXXFLAGS = -g -std=gnu++14 -O3 $(INCLUDE_DIR) $(WARNINGS)
 
 TARGET = gfastats
-TEST_TARGET = gfastats-validate
-GENERATE_TARGET = gfastats-generate-tests
-RANDOM_FASTA_TARGET = gfastats-generate-random-fasta
+TEST_TARGET = validate
+GENERATE_TARGET = generate-tests
+RANDOM_FASTA_TARGET = generate-random-fasta
 BUILD = build/bin
 SOURCE = src
 INCLUDE = include
@@ -30,13 +30,13 @@ $(BINDIR)%: | $(BINDIR) $(SOURCE)/%.cpp $(INCLUDE)/%.h
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(SOURCE)/$(notdir $@).cpp -o $@
 
 validate: | $(BUILD)
-	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(TEST_TARGET) $(SOURCE)/$(TEST_TARGET).cpp $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(TARGET)-$(TEST_TARGET) $(SOURCE)/$(TEST_TARGET).cpp $(LIBS)
 	
 regenerate: | $(BUILD)
-	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(GENERATE_TARGET) $(SOURCE)/$(GENERATE_TARGET).cpp $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(TARGET)-$(GENERATE_TARGET) $(SOURCE)/$(GENERATE_TARGET).cpp $(LIBS)
 
 random_fasta: | $(BUILD)
-	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(RANDOM_FASTA_TARGET) $(SOURCE)/$(RANDOM_FASTA_TARGET).cpp $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(TARGET)-$(RANDOM_FASTA_TARGET) $(SOURCE)/$(RANDOM_FASTA_TARGET).cpp $(LIBS)
 
 $(BUILD):
 	-mkdir -p $@
