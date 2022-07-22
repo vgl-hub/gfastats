@@ -24,11 +24,8 @@ head: $(INCLUDE)/threadpool.h $(INCLUDE)/global.h $(BINS)
 
 all: head validate regenerate random_fasta
 
-	
-$(BINDIR)%: $(SOURCE)/%.cpp $(INCLUDE)/%.h
+$(BINDIR)%: | $(BINDIR) $(SOURCE)/%.cpp $(INCLUDE)/%.h
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(SOURCE)/$(notdir $@).cpp -o $@
-
-$(BINS): $(BINDIR)
 
 validate: | $(BUILD)
 	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(TEST_TARGET) $(SOURCE)/$(TEST_TARGET).cpp $(LIBS)
