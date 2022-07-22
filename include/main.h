@@ -1,12 +1,12 @@
 //
-//  gfastats.h
+//  main.h
 //
 //
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef GFASTATS_H
-#define GFASTATS_H
+#ifndef MAIN_H
+#define MAIN_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,4 +68,4 @@ Log lg;
 #include "output.h" // output classes
 #include "input.h"
 
-#endif /* GFASTATS_H */
+#endif /* MAIN_H */
