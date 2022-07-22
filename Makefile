@@ -26,10 +26,10 @@ all: head validate regenerate random_fasta
 
 %: $(SOURCE)/%.cpp $(BINDIR)/%
 	
-$(BINS): | $(BINDIR)
-	
 $(BINDIR)/%: $(SOURCE)/%.cpp $(INCLUDE)/%.h
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(SOURCE)/$(notdir $@).cpp -o $@
+
+$(BINS): | $(BINDIR)
 
 validate: | $(BUILD)
 	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(TEST_TARGET) $(SOURCE)/$(TEST_TARGET).cpp $(LIBS)
