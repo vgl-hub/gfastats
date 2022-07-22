@@ -8,41 +8,39 @@ TARGET = gfastats
 TEST_TARGET = gfastats-validate
 GENERATE_TARGET = gfastats-generate-tests
 RANDOM_FASTA_TARGET = gfastats-generate-random-fasta
-BUILD_PATH = build/bin
-SOURCE_PATH = src
-BINDIR := $(BUILD_PATH)/.o
+BUILD = build/bin
+SOURCE = src
+INCLUDE = include
+BINDIR := $(BUILD)/.o
 
 LIBS += -lz
 LDFLAGS= -pthread
 
-OBJS := ${TARGET} input input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj reads
+OBJS := main input input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj reads
 BINS := $(addprefix $(BINDIR)/, $(OBJS))
 
-head: | $(BINS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD_PATH)/$(TARGET) $(wildcard $(BINDIR)/*) $(LIBS)
+head: $(INCLUDE)/main.h $(INCLUDE)/threadpool.h $(INCLUDE)/global.h $(BINS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD)/$(TARGET) $(wildcard $(BINDIR)/*) $(LIBS)
 
 all: head validate regenerate random_fasta
 
 %: include/%.cpp $(BINDIR)/%
 	
-$(BINDIR)/%: include/%.cpp include/%.h
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c include/$(notdir $@).cpp -o $@
+$(BINDIR)/%: $(SOURCE)/%.cpp $(INCLUDE)/%.h
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(SOURCE)/$(notdir $@).cpp -o $@
 
 $(BINS): | $(BINDIR)
 
-$(BUILD_PATH)/.o/$(TARGET): include/$(TARGET).h include/threadpool.h include/global.h
-	$(CXX) $(CXXFLAGS) -c $(SOURCE_PATH)/$(TARGET).cpp -o $@
-
-validate: | $(BUILD_PATH)
-	$(CXX) $(CXXFLAGS) -o $(BUILD_PATH)/$(TEST_TARGET) $(SOURCE_PATH)/$(TEST_TARGET).cpp $(LIBS)
+validate: | $(BUILD)
+	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(TEST_TARGET) $(SOURCE)/$(TEST_TARGET).cpp $(LIBS)
 	
-regenerate: | $(BUILD_PATH)
-	$(CXX) $(CXXFLAGS) -o $(BUILD_PATH)/$(GENERATE_TARGET) $(SOURCE_PATH)/$(GENERATE_TARGET).cpp $(LIBS)
+regenerate: | $(BUILD)
+	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(GENERATE_TARGET) $(SOURCE)/$(GENERATE_TARGET).cpp $(LIBS)
 
-random_fasta: | $(BUILD_PATH)
-	$(CXX) $(CXXFLAGS) -o $(BUILD_PATH)/$(RANDOM_FASTA_TARGET) $(SOURCE_PATH)/$(RANDOM_FASTA_TARGET).cpp $(LIBS)
+random_fasta: | $(BUILD)
+	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(RANDOM_FASTA_TARGET) $(SOURCE)/$(RANDOM_FASTA_TARGET).cpp $(LIBS)
 
-$(BUILD_PATH):
+$(BUILD):
 	-mkdir -p $@
 
 $(BINDIR):
