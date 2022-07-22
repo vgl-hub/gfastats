@@ -23,8 +23,6 @@ head: $(INCLUDE)/threadpool.h $(INCLUDE)/global.h $(BINS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD)/$(TARGET) $(wildcard $(BINDIR)/*) $(LIBS)
 
 all: head validate regenerate random_fasta
-
-%: $(SOURCE)/%.cpp $(BINDIR)/%
 	
 $(BINDIR)%: $(SOURCE)/%.cpp $(INCLUDE)/%.h | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(SOURCE)/$(notdir $@).cpp -o $@
