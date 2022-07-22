@@ -30,7 +30,7 @@ $(BINDIR)/%: include/%.cpp include/%.h
 
 $(BINS): | $(BINDIR)
 
-$(BUILD_PATH)/.o/$(TARGET):
+$(BUILD_PATH)/.o/$(TARGET): include/$(TARGET).h include/threadpool.h include/global.h
 	$(CXX) $(CXXFLAGS) -c $(SOURCE_PATH)/$(TARGET).cpp -o $@
 
 validate: | $(BUILD_PATH)
