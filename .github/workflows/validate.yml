@@ -23,7 +23,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
     - name: Build
-      run: make -j
+      run: make all -j
     - name: Validate
       run: |
         chmod +x .github/workflows/val.sh
