@@ -19,7 +19,7 @@ LDFLAGS= -pthread
 OBJS := main input input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj reads
 BINS := $(addprefix $(BINDIR)/, $(OBJS))
 
-head: $(INCLUDE)/main.h $(INCLUDE)/threadpool.h $(INCLUDE)/global.h $(BINS)
+head: $(SOURCE)/main.cpp $(INCLUDE)/threadpool.h $(INCLUDE)/global.h $(BINS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD)/$(TARGET) $(wildcard $(BINDIR)/*) $(LIBS)
 
 all: head validate regenerate random_fasta
