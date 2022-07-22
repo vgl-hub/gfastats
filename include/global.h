@@ -1,12 +1,12 @@
 //
-//  gfastats-global.h
+//  global.h
 //  
 //
 //  Created by Giulio Formenti on 12/30/21.
 //
 
-#ifndef GFASTATS_GLOBAL_H
-#define GFASTATS_GLOBAL_H
+#ifndef GLOBAL_H
+#define GLOBAL_H
 
 #include <mutex>
 #include <chrono>
@@ -14,7 +14,7 @@
 #include <thread>
 #include <functional>
 
-#include "gfastats-log.h"
+#include "log.h"
 #include "threadpool.h"
 
 //global time
@@ -42,4 +42,4 @@ extern Log lg;
 extern std::mutex mtx;
 extern ThreadPool<std::function<void()>> threadPool;
 
-#endif /* GFASTATS_GLOBAL_H */
+#endif /* GLOBAL_H */

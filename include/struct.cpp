@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "bed.h"
-#include "gfastats-struct.h"
+#include "struct.h"
 
 std::string UserInput::file(char type) {
     

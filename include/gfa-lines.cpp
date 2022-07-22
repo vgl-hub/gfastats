@@ -2,11 +2,11 @@
 #include <string>
 #include <vector>
 
-#include "gfastats-log.h"
+#include "log.h"
 
 #include "bed.h"
-#include "gfastats-struct.h"
-#include "gfastats-functions.h"
+#include "struct.h"
+#include "functions.h"
 #include "gfa-lines.h"
 
 InSegment::~InSegment()

@@ -1,12 +1,5 @@
-//
-//  gfastats-sak.h
-//
-//
-//  Created by Giulio Formenti on 1/30/22.
-//
-
-#ifndef GFASTATS_SAK_H
-#define GFASTATS_SAK_H
+#ifndef SAK_H
+#define SAK_H
 
 struct Instruction {
     std::string action;
@@ -285,4 +278,4 @@ public:
 
 };
 
-#endif /* GFASTATS_SAK_H */
+#endif /* SAK_H */

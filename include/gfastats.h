@@ -35,16 +35,16 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "gfastats-log.h"
+#include "log.h"
 Log lg;
 
 #include "uid-generator.h"
 
 #include "bed.h"
 
-#include "gfastats-global.h" // global variables
-#include "gfastats-struct.h"
-#include "gfastats-functions.h" // global functions
+#include "global.h" // global variables
+#include "struct.h"
+#include "functions.h" // global functions
 
 #include "threadpool.h"
 
@@ -60,7 +60,7 @@ Log lg;
 #include "gfa-lines.h"
 
 #include "gfa.h" // gfa classes
-#include "gfastats-sak.h" // swiss army knife classes
+#include "sak.h" // swiss army knife classes
 
 #include "reads.h"
 #include "stream-obj.h"

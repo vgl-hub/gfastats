@@ -1,5 +1,5 @@
-#ifndef GFASTATS_LOG_H
-#define GFASTATS_LOG_H
+#ifndef LOG_H
+#define LOG_H
 
 struct Log {
 
@@ -16,4 +16,4 @@ struct Log {
     
 };
 
-#endif /* GFASTATS_LOG_H */
+#endif /* LOG_H */

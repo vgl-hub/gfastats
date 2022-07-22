@@ -13,15 +13,15 @@
 #include <mutex>
 
 #include "bed.h"
-#include "gfastats-struct.h"
+#include "struct.h"
 
 #include "zlib.h"
 #include <zstream/zstream_common.hpp>
 #include <zstream/izstream.hpp>
 #include <zstream/izstream_impl.hpp>
 
-#include "gfastats-global.h"
-#include "gfastats-log.h"
+#include "global.h"
+#include "log.h"
 
 #include "threadpool.h"
 #include "stream-obj.h"

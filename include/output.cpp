@@ -12,18 +12,18 @@
 #include <parallel_hashmap/phmap.h>
 
 #include "bed.h"
-#include "gfastats-struct.h"
-#include "gfastats-functions.h"
+#include "struct.h"
+#include "functions.h"
 
-#include "gfastats-log.h"
-#include "gfastats-global.h"
+#include "log.h"
+#include "global.h"
 #include "uid-generator.h"
 
 #include "gfa-lines.h"
 
 #include "threadpool.h"
 #include "gfa.h"
-#include "gfastats-sak.h"
+#include "sak.h"
 
 #include "zlib.h"
 #include <zstream/zstream_common.hpp>

@@ -12,15 +12,15 @@
 #include <zstream/izstream.hpp>
 #include <zstream/izstream_impl.hpp>
 
-#include "gfastats-log.h"
-#include "gfastats-global.h"
+#include "log.h"
+#include "global.h"
 
 #include "bed.h"
-#include "gfastats-struct.h"
+#include "struct.h"
 #include "gfa-lines.h"
 #include "stream-obj.h"
 
-#include "gfastats-functions.h" // global functions
+#include "functions.h" // global functions
 
 #include "reads.h"
 

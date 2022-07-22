@@ -9,11 +9,11 @@
 #include <unistd.h>
 #include <string>
 
-#include "gfastats-log.h"
-#include "gfastats-global.h"
+#include "log.h"
+#include "global.h"
 
 #include "bed.h"
-#include "gfastats-struct.h"
+#include "struct.h"
 
 //functions
 

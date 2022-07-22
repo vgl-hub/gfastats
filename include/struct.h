@@ -1,5 +1,5 @@
-#ifndef GFASTATS_STRUCT
-#define GFASTATS_STRUCT
+#ifndef STRUCT
+#define STRUCT
 
 struct UserInput { // a container for user input
   
@@ -83,4 +83,4 @@ struct Bubble {
     unsigned int id0, id1, id2, id3;
 };
 
-#endif //GFASTATS_STRUCT
+#endif //STRUCT

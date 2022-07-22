@@ -1,10 +1,3 @@
-//
-//  gfastats-functions.h
-//
-//
-//  Created by Giulio Formenti on 07/16/22.
-//
-
 #ifndef STREAM_OBJ_H
 #define STREAM_OBJ_H
 

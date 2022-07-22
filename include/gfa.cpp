@@ -14,12 +14,12 @@
 #include <fstream>
 #include <sstream>
 
-#include "gfastats-log.h"
-#include "gfastats-global.h"
+#include "log.h"
+#include "global.h"
 
 #include "bed.h"
-#include "gfastats-struct.h"
-#include "gfastats-functions.h" // global functions
+#include "struct.h"
+#include "functions.h" // global functions
 #include "gfa-lines.h"
 
 #include "threadpool.h"
