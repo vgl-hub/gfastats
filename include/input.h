@@ -1,12 +1,5 @@
-//
-//  gfastats-input.h
-//  gfastats
-//
-//  Created by Giulio Formenti on 1/16/22.
-//
-
-#ifndef GFASTATS_INPUT_H
-#define GFASTATS_INPUT_H
+#ifndef INPUT_H
+#define INPUT_H
 
 class Input {
     
@@ -41,4 +34,4 @@ public:
     
 };
 
-#endif /* GFASTATS_INPUT_H */
+#endif /* INPUT_H */

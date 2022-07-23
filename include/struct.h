@@ -84,4 +84,11 @@ struct Bubble {
     unsigned int id0, id1, id2, id3;
 };
 
+struct Alignments { // a collection of sequences
+    
+    std::vector<std::string*> alignments;
+    unsigned int batchN;
+    
+};
+
 #endif //STRUCT
