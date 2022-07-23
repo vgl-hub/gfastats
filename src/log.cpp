@@ -7,8 +7,8 @@
 #include "bed.h"
 #include "struct.h"
 #include "functions.h"
-#include "log.h"
 #include "global.h"
+#include "log.h"
 
 void Log::verbose(std::string msg, bool overwrite) { // verbose decorated output
     

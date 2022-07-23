@@ -1,10 +1,3 @@
-//
-//  global.h
-//  
-//
-//  Created by Giulio Formenti on 12/30/21.
-//
-
 #ifndef GLOBAL_H
 #define GLOBAL_H
 

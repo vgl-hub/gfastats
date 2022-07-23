@@ -10,6 +10,7 @@ struct UserInput { // a container for user input
     std::string iBedIncludeFileArg; // input bed file of coordinates to include
     std::string iBedExcludeFileArg; // input bed file of coordinates to exclude
     std::string iReadFileArg; // input reads to evaluate
+    std::string iAlignFileArg;
     
     //coordinates
     BedCoordinates bedIncludeList;

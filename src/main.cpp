@@ -31,6 +31,7 @@ int maxThreads = 0;
 
 std::mutex mtx;
 ThreadPool<std::function<void()>> threadPool;
+Log lg;
 
 int main(int argc, char **argv) {
     
@@ -350,8 +351,8 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'v': // software version
-                printf("gfastats v%s.\n", version.c_str());
-                printf("Giulio Formenti giulio.formenti@gmail.com.\n");
+                printf("gfastats v%s\n", version.c_str());
+                printf("Giulio Formenti giulio.formenti@gmail.com\n");
                 exit(0);
                 
             case 'h': // help

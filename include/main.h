@@ -1,10 +1,3 @@
-//
-//  main.h
-//
-//
-//  Created by Giulio Formenti on 12/30/21.
-//
-
 #ifndef MAIN_H
 #define MAIN_H
 
@@ -36,7 +29,6 @@
 #include <condition_variable>
 
 #include "log.h"
-Log lg;
 
 #include "uid-generator.h"
 
