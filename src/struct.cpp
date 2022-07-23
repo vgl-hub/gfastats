@@ -28,6 +28,9 @@ std::string UserInput::file(char type) {
         case 'k':
             filename = iSakFileArg;
             break;
+        case 'g':
+            filename = iAlignFileArg;
+            break;
     }
     
     return filename;

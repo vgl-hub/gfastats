@@ -13,7 +13,7 @@ SOURCE = src
 INCLUDE = include
 BINDIR := $(BUILD)/.o
 
-LIBS += -lz
+LIBS = -lz
 LDFLAGS= -pthread
 
 OBJS := main input input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj reads
