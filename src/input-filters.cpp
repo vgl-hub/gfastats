@@ -50,8 +50,7 @@ Sequence* includeExcludeSeq(std::string seqHeader, std::string seqComment, std::
     lg.verbose("Processing sequence: " + seqHeader);
     
     if   (bedIncludeList.empty() &&
-          (bedExcludeList == NULL ||
-          bedExcludeList->empty())) {
+          bedExcludeList.empty()) {
         
         outSeq = true;
         
@@ -204,7 +203,8 @@ Sequence* includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, st
     lg.verbose("Processing sequence: " + *seqHeader);
     
     if   (bedIncludeList.empty() &&
-          bedExcludeList->empty()) {
+          (bedExcludeList == NULL ||
+          bedExcludeList->empty())) {
         
         outSeq = true;
         

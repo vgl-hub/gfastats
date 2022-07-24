@@ -479,7 +479,9 @@ int main(int argc, char **argv) {
     
     if (stats_flag) { // output summary statistics
         
-        report.reportStats(inSequences, gSize, inReads);
+        report.reportStats(inSequences, gSize);
+        
+        inReads.report();
         
     }
     

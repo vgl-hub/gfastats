@@ -23,7 +23,7 @@ public:
     
     bool outCoord(InSequences &inSequences, char bedOutType);
     
-    bool reportStats(InSequences &inSequences, unsigned long long int gSize, InReads& inReads);
+    bool reportStats(InSequences &inSequences, unsigned long long int gSize);
     
     bool nstarReport(InSequences &inSequences, unsigned long long int gSize);
     

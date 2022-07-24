@@ -30,8 +30,6 @@
 #include <zstream/ozstream.hpp>
 #include <zstream/ozstream_impl.hpp>
 
-#include "reads.h"
-
 #include "output.h"
 
 bool Report::seqReport(InSequences &inSequences, int &outSequence_flag) { // method to output the summary statistics for each sequence
@@ -965,7 +963,7 @@ bool Report::outCoord(InSequences &inSequences, char bedOutType) { // method to 
     return true;
 }
 
-bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize, InReads& inReads) { // method to output all summary statistics for the entire sequence set
+bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize) { // method to output all summary statistics for the entire sequence set
     std::cout << std::fixed; // disables scientific notation
     std::cout << std::setprecision(2); // 2 decimal poinst
 
@@ -1106,8 +1104,6 @@ bool Report::reportStats(InSequences &inSequences, unsigned long long int gSize,
         }
             
     }
-    
-    inReads.report();
 
     return true;
     

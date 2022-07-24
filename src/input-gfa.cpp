@@ -150,7 +150,7 @@ void readGFA(InSequences& inSequences, UserInput& userInput, std::shared_ptr<std
                     
                     }
                     
-                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, *bedExcludeList);
+                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, bedExcludeList);
                     
                     if (sequence != NULL) {
                         
@@ -517,7 +517,7 @@ void readGFA(InSequences& inSequences, UserInput& userInput, std::shared_ptr<std
                     
                     }
                     
-                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, *bedExcludeList, NULL);
+                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, bedExcludeList, NULL);
                     
                     if (sequence != NULL) {
                         
