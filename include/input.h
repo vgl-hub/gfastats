@@ -11,7 +11,6 @@ class Input {
     
     // stream read variable definition
     std::string firstLine;
-    bool stopStream = false;
     unsigned int seqPos = 0; // to keep track of the original sequence order
     
     StreamObj streamObj;
