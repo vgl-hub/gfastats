@@ -232,7 +232,7 @@ void Input::read(InSequences& inSequences) {
                 }
                 default: {
                     
-                    readGFA(inSequences, userInput, bedExcludeList, stream);
+                    readGFA(inSequences, userInput, stream, &bedExcludeList);
                     
                 }
                 

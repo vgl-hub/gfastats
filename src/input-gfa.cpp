@@ -36,7 +36,7 @@
 #include "input-filters.h"
 #include "input-gfa.h"
 
-void readGFA(InSequences& inSequences, UserInput& userInput, BedCoordinates bedExcludeList, std::shared_ptr<std::istream> stream) {
+void readGFA(InSequences& inSequences, UserInput& userInput, std::shared_ptr<std::istream> stream, BedCoordinates* bedExcludeList) {
     
     std::unique_lock<std::mutex> lck (mtx, std::defer_lock);
     
@@ -150,7 +150,7 @@ void readGFA(InSequences& inSequences, UserInput& userInput, BedCoordinates bedE
                     
                     }
                     
-                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, bedExcludeList);
+                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, *bedExcludeList);
                     
                     if (sequence != NULL) {
                         
@@ -517,7 +517,7 @@ void readGFA(InSequences& inSequences, UserInput& userInput, BedCoordinates bedE
                     
                     }
                     
-                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, bedExcludeList, NULL);
+                    Sequence* sequence = includeExcludeSeg(&inSequences, &seqHeader, &seqComment, inSequence, userInput.bedIncludeList, *bedExcludeList, NULL);
                     
                     if (sequence != NULL) {
                         
