@@ -184,25 +184,32 @@ Sequence* includeExcludeSeq(std::string seqHeader, std::string seqComment, std::
     
 }
 
-Sequence* includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates bedExcludeList, std::string* inSequenceQuality) {
+Sequence* includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, std::string* seqComment, std::string* inSequence, BedCoordinates bedIncludeList, BedCoordinates* bedExcludeList, std::string* inSequenceQuality) {
     
     std::vector<std::string> bedIncludeListHeaders;
     std::vector<std::string> bedExcludeListHeaders;
     unsigned int pos = 0, cBegin = 0, cEnd = 0, offset = 0, prevCEnd = 0;
 
     bedIncludeListHeaders = bedIncludeList.getSeqHeaders();
-    bedExcludeListHeaders = bedExcludeList.getSeqHeaders();
+    
+    if(bedExcludeList != NULL) {
+    
+        bedExcludeListHeaders = bedExcludeList->getSeqHeaders();
+    
+    }
+        
     bool outSeq = false;
     
     lg.verbose("Processing sequence: " + *seqHeader);
     
     if   (bedIncludeList.empty() &&
-          bedExcludeList.empty()) {
+          bedExcludeList->empty()) {
         
         outSeq = true;
         
     }else if(!bedIncludeList.empty() &&
-              bedExcludeList.empty()) {
+              bedExcludeList != NULL &&
+              bedExcludeList->empty()) {
         
         if(inSequences->getInSegments()->size() == bedIncludeList.size()) { // check if we retrieved all we needed
             
@@ -275,7 +282,8 @@ Sequence* includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, st
         }
             
     }else if(bedIncludeList.empty() &&
-            !bedExcludeList.empty()) {
+             bedExcludeList != NULL &&
+            !bedExcludeList->empty()) {
             
         offset = 0;
         outSeq = true;
@@ -292,8 +300,8 @@ Sequence* includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, st
                 
             }
 
-            cBegin = bedExcludeList.getcBegin(pos);
-            cEnd = bedExcludeList.getcEnd(pos);
+            cBegin = bedExcludeList->getcBegin(pos);
+            cEnd = bedExcludeList->getcEnd(pos);
             
             if (!(cBegin == 0 && cEnd == 0)) {
                 
@@ -330,7 +338,8 @@ Sequence* includeExcludeSeg(InSequences* inSequences, std::string* seqHeader, st
                 
     }else if
             (!bedIncludeList.empty() &&
-             !bedExcludeList.empty() &&
+              bedExcludeList != NULL &&
+             !bedExcludeList->empty() &&
              std::find(bedIncludeListHeaders.begin(), bedIncludeListHeaders.end(), *seqHeader) != bedIncludeListHeaders.end() &&
              std::find(bedExcludeListHeaders.begin(), bedExcludeListHeaders.end(), *seqHeader) == bedExcludeListHeaders.end()) {
                 
