@@ -11,7 +11,6 @@ std::string version = "1.3.1";
 //global
 std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
 
-// flags are global variables
 short int tabular_flag;
 int verbose_flag;
 int seqReport_flag;
@@ -393,13 +392,15 @@ int main(int argc, char **argv) {
         
     }
     
-    InSequences inSequences; // initialize sequence collection object
-    
-    lg.verbose("Sequence object generated");
-    
     Input in;
     
     in.load(userInput); // load user input
+    
+    lg.verbose("Loaded user input");
+    
+    InSequences inSequences; // initialize sequence collection object
+    
+    lg.verbose("Sequence object generated");
     
     in.read(inSequences); // read input content to inSequences container
 
