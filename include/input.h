@@ -29,8 +29,6 @@ public:
     
     void read(InSequences& inSequence);
     
-    void read(InReads& inReads);
-    
 };
 
 #endif /* INPUT_H */

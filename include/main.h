@@ -54,7 +54,6 @@
 #include "gfa.h" // gfa classes
 #include "sak.h" // swiss army knife classes
 
-#include "reads.h"
 #include "stream-obj.h"
 
 #include "output.h" // output classes

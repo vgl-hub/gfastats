@@ -58,7 +58,6 @@ int main(int argc, char **argv) {
     
     static struct option long_options[] = { // struct mapping long options
         {"input-sequence", required_argument, 0, 'f'},
-        {"input-reads", required_argument, 0, 'r'},
         
         {"threads", required_argument, 0, 'j'},
         
@@ -97,7 +96,7 @@ int main(int argc, char **argv) {
         
         int option_index = 0;
         
-        c = getopt_long(argc, argv, "-:a:b:e:f:i:j:k:o:r:s:tvh",
+        c = getopt_long(argc, argv, "-:a:b:e:f:i:j:k:o:s:tvh",
                         long_options, &option_index);
 
         if (optind < argc && !isPipe) { // if pipe wasn't assigned already
@@ -325,22 +324,6 @@ int main(int argc, char **argv) {
                 outFile_flag = 1;
                 break;
                 
-            case 'r': // input reads
-                
-                if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
-                
-                    userInput.pipeType = 'r'; // pipe input is a sequence
-                
-                }else{ // input is a regular file
-                    
-                    ifFileExists(optarg);
-                    userInput.iReadFileArg = optarg;
-                    stats_flag = true;
-                    
-                }
-                    
-                break;
-                
             case 's': // output size of features
                 sizeOutType = *optarg;
                 outSize_flag = 1;
@@ -369,7 +352,6 @@ int main(int argc, char **argv) {
                 printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
                 printf("-j --threads <n> numbers of threads (default:max).\n");
                 printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
-                printf("-r --reads <file> input file (fasta, fastq [.gz]). Optional reads. Summary statistics will be generated.\n");
                 printf("-s --out-size s|c|g  generates size list of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
@@ -415,17 +397,11 @@ int main(int argc, char **argv) {
     
     lg.verbose("Sequence object generated");
     
-    InReads inReads; // initialize sequence collection object
-    
-    lg.verbose("Read object generated");
-    
     Input in;
     
     in.load(userInput); // load user input
     
     in.read(inSequences); // read input content to inSequences container
-    
-    in.read(inReads); // read input content to inReads container
 
     if(verbose_flag) {std::cerr<<"\n\n";};
 
@@ -480,8 +456,6 @@ int main(int argc, char **argv) {
     if (stats_flag) { // output summary statistics
         
         report.reportStats(inSequences, gSize);
-        
-        inReads.report();
         
     }
     

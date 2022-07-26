@@ -16,7 +16,7 @@ BINDIR := $(BUILD)/.o
 LIBS = -lz
 LDFLAGS= -pthread
 
-OBJS := main input input-gfa input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj reads
+OBJS := main input input-gfa input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj
 BINS := $(addprefix $(BINDIR)/, $(OBJS))
 
 head: $(INCLUDE)/threadpool.h $(INCLUDE)/global.h $(BINS)
