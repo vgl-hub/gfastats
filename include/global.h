@@ -33,6 +33,6 @@ extern int maxThreads;
 
 extern Log lg;
 extern std::mutex mtx;
-extern ThreadPool<std::function<void()>> threadPool;
+extern ThreadPool<std::function<bool()>> threadPool;
 
 #endif /* GLOBAL_H */

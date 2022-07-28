@@ -29,7 +29,7 @@ int hc_cutoff;
 int maxThreads = 0;
 
 std::mutex mtx;
-ThreadPool<std::function<void()>> threadPool;
+ThreadPool<std::function<bool()>> threadPool;
 Log lg;
 
 int main(int argc, char **argv) {

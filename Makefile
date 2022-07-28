@@ -1,5 +1,5 @@
 CXX = g++
-INCLUDE_DIR = -I./include
+INCLUDE_DIR = -I./include -Igfalibs/include
 WARNINGS = -Wall -Wextra
 
 CXXFLAGS = -g -std=gnu++14 -O3 $(INCLUDE_DIR) $(WARNINGS)
@@ -16,11 +16,14 @@ BINDIR := $(BUILD)/.o
 LIBS = -lz
 LDFLAGS= -pthread
 
-OBJS := main input input-gfa input-agp input-filters output functions log struct bed gfa gfa-lines uid-generator stream-obj
+#gfalibs
+GFALIBS_DIR := $(CURDIR)/gfalibs
+
+OBJS := main input
 BINS := $(addprefix $(BINDIR)/, $(OBJS))
 
-head: $(INCLUDE)/threadpool.h $(INCLUDE)/global.h $(BINS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD)/$(TARGET) $(wildcard $(BINDIR)/*) $(LIBS)
+head: $(BINS) gfalibs | $(BUILD)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $(BUILD)/$(TARGET) $(wildcard $(BINDIR)/*) $(GFALIBS_DIR)/*.o $(LIBS)
 
 all: head validate regenerate random_fasta
 
@@ -28,6 +31,10 @@ $(OBJS): %: $(SOURCE)/%.cpp $(BINDIR)/%
 	@
 $(BINDIR)%: $(SOURCE)/%.cpp $(INCLUDE)/%.h | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(SOURCE)/$(notdir $@).cpp -o $@
+	
+.PHONY: gfalibs
+gfalibs:
+	$(MAKE) -j -C $(GFALIBS_DIR)
 
 validate: | $(BUILD)
 	$(CXX) $(CXXFLAGS) -o $(BUILD)/$(TARGET)-$(TEST_TARGET) $(SOURCE)/$(TEST_TARGET).cpp $(LIBS)
