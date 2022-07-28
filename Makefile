@@ -27,7 +27,7 @@ head: $(BINS) gfalibs | $(BUILD)
 
 all: head validate regenerate random_fasta
 
-$(OBJS): %: $(SOURCE)/%.cpp $(BINDIR)/%
+$(OBJS): %: $(BINDIR)/%
 	@
 $(BINDIR)%: $(SOURCE)/%.cpp $(INCLUDE)/%.h | $(BINDIR)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(SOURCE)/$(notdir $@).cpp -o $@

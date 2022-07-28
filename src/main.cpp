@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
                         break;
                         
                     case 'o':
-                        outSeq = "fasta"; // default output is fasta is -o option is given without argument
+                        outSeq = "fasta"; // default output is fasta if -o option is given without argument
                         outFile_flag = 1;
                         break;
                         
@@ -434,7 +434,7 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outFile(inSequences, splitLength, outSeq);
+        report.outFile(inSequences, outSeq, splitLength);
         
     }
     
