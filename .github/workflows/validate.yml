@@ -22,8 +22,10 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+        with:
+            submodules: true
     - name: Build
-      run: make all -j --recursive
+      run: make all -j
     - name: Validate
       run: |
         chmod +x .github/workflows/val.sh
