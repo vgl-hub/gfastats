@@ -39,14 +39,14 @@ int main(int argc, char **argv) {
     unsigned long long int gSize = 0; // expected genome size, with 0 NG/LG* statistics are not computed
     int splitLength = 0; // line length for fasta output
     
-    std::string outSeq = "fasta"; // default output type
-    
     char sizeOutType = 's'; // default output type with size flag (scaffold)
     char bedOutType = 'a'; // default output type with bed flag (agp)
     
     bool isPipe = false; // to check if input is from pipe
     
     UserInput userInput; // initialize input object
+    
+    userInput.outSequence = "fasta"; // default output type
     
     if (argc == 1) { // gfastats with no arguments
             
@@ -129,7 +129,7 @@ int main(int argc, char **argv) {
                         break;
                         
                     case 'o':
-                        outSeq = "fasta"; // default output is fasta if -o option is given without argument
+                        userInput.outSequence = "fasta"; // default output is fasta if -o option is given without argument
                         outFile_flag = 1;
                         break;
                         
@@ -319,7 +319,7 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'o': // handle output (file or stdout)
-                outSeq = optarg;
+                userInput.outSequence = optarg;
                 outFile_flag = 1;
                 break;
                 
@@ -434,7 +434,7 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outFile(inSequences, outSeq, splitLength);
+        report.outFile(inSequences, userInput, splitLength);
         
     }
     
