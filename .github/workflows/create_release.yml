@@ -12,7 +12,8 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-            with: submodules: true
+      with:
+            submodules: true
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -46,7 +47,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-              submodules: true
+            submodules: true
       - name: Build
         run: make
       - name: Zip
