@@ -72,6 +72,7 @@ int main(int argc, char **argv) {
  
         {"out-format", required_argument, 0, 'o'},
         {"line-length", required_argument, 0, 0},
+        {"no-sequence", no_argument, &userInput.noSequence, 1},
         {"out-sequence", no_argument, &outSequence_flag, 1},
         {"out-size", required_argument, 0, 's'},
         {"out-coord", required_argument, 0, 'b'},
