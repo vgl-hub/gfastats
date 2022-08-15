@@ -27,6 +27,7 @@ extern int stats_flag;
 extern int cmd_flag;
 extern int rmGaps_flag;
 extern int discoverPaths_flag;
+extern int extractContigs_flag;
 extern int hc_flag;
 extern int hc_cutoff;
 extern int maxThreads;

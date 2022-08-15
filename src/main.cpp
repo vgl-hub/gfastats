@@ -24,6 +24,7 @@ int stats_flag;
 int cmd_flag;
 int rmGaps_flag;
 int discoverPaths_flag;
+int extractContigs_flag;
 int hc_flag;
 int hc_cutoff;
 int maxThreads = 0;
@@ -66,6 +67,7 @@ int main(int argc, char **argv) {
         {"homopolymer-compress", required_argument, &hc_flag, 1},
         {"discover-paths", no_argument, &discoverPaths_flag, 1},
         {"sort", required_argument, 0, 0},
+        {"extract-contigs", no_argument, &extractContigs_flag, 1},
         
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},

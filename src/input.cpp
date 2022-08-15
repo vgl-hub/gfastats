@@ -254,7 +254,14 @@ void Input::read(InSequences& inSequences) {
         
     }
     
-    if (discoverPaths_flag) {
+    if (extractContigs_flag) {
+        
+        inSequences.clearGaps();
+        inSequences.clearPaths();
+        
+    }
+    
+    if (extractContigs_flag || discoverPaths_flag) {
         
         inSequences.discoverPaths();
         
