@@ -91,9 +91,9 @@ void genTest(std::string exePath, const std::string &file, const std::string &ar
     ostream << "testFiles/" << file << " " << args << "\nembedded" << std::endl;
     ostream.close();
 #ifdef _WIN32
-    std::string cmd = "\"\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile+"\"";
+    std::string cmd = "\"\""+exePath+"\" testFiles/"+file+" "+args+" >> "+tstFile+"\"";
 #else
-    std::string cmd = "\""+exePath+"\" "+args+" testFiles/"+file+" >> "+tstFile;
+    std::string cmd = "\""+exePath+"\" testFiles/"+file+" "+args+" >> "+tstFile;
 #endif
     int exit = system(cmd.c_str());
     if (exit == EXIT_SUCCESS) {

@@ -36,11 +36,10 @@ int main(int, char **argv) {
     };
 
     const std::map<std::set<std::string>, std::vector<std::string>> file_args = {
-        {{"random1.fasta", "random1.fasta.gz", "random1.fastq", "random1.fastq.gz", "random1.gfa"}, {"-a testFiles/random1.agp --stats", "-a testFiles/random1.agp --stats -ofa"}},
-        {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.hc.sak", "-ofa -k testFiles/random1.hdc.sak"}},
+        {{"random1.fasta", "random1.fasta.gz", "random1.fastq", "random1.fastq.gz", "random1.gfa"}, {"-a testFiles/random1.agp --stats", "-a testFiles/random1.agp -ofa"}},
+        {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.hc.sak", "-ofa -k testFiles/random1.hdc.sak", "Header2", "-ofa -i testFiles/random1.fasta.bed", "-ofa -e testFiles/random1.fasta.bed"}},
         {{"random2.noseq.gfa"}, {""}},
         {{"random1.gfa2"}, {"-k testFiles/random1.gfa2.instructions.sak"}},
-        {{"random1.fasta"}, {"Header2"}},
         {{"random4.fasta"}, {""}}
         
     //  {{set of test file paths}, {list of command line args to run with}}

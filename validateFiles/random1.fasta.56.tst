@@ -1,4 +1,4 @@
-testFiles/random1.fastq -a testFiles/random1.agp --stats -ofa
+testFiles/random1.fasta -a testFiles/random1.agp -ofa
 embedded
 >newpath1
 GacTNNNNNTCGNNNNNNATNC
