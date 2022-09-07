@@ -6,7 +6,7 @@
 
 #include <main.h>
 
-std::string version = "1.3.1";
+std::string version = "1.3.3";
 
 //global
 std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
