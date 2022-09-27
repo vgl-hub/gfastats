@@ -40,7 +40,6 @@ int main(int argc, char **argv) {
     unsigned long long int gSize = 0; // expected genome size, with 0 NG/LG* statistics are not computed
     int splitLength = 0; // line length for fasta output
     
-    char sizeOutType = 's'; // default output type with size flag (scaffold)
     char bedOutType = 'a'; // default output type with bed flag (agp)
     
     bool isPipe = false; // to check if input is from pipe
@@ -127,7 +126,7 @@ int main(int argc, char **argv) {
                         break;
                         
                     case 's':
-                        sizeOutType = 's'; // default size output is scaffold is -s option is given without argument
+                        bedOutType = 's'; // default size output is scaffold is -s option is given without argument
                         outSize_flag = 1;
                         break;
                         
@@ -327,7 +326,7 @@ int main(int argc, char **argv) {
                 break;
                 
             case 's': // output size of features
-                sizeOutType = *optarg;
+                bedOutType = *optarg;
                 outSize_flag = 1;
                 break;
                 
@@ -441,19 +440,11 @@ int main(int argc, char **argv) {
         
     }
     
-    if (outSize_flag) { // output sequence sizes
+    if (outCoord_flag || outSize_flag) { // output coordinates
         
         stats_flag = false;
         
-        report.outSize(inSequences, sizeOutType);
-        
-    }
-    
-    if (outCoord_flag) { // output coordinates
-        
-        stats_flag = false;
-        
-        report.outCoord(inSequences, bedOutType);
+        report.outCoord(inSequences, bedOutType, outSize_flag);
         
     }
     
