@@ -1,4 +1,4 @@
-testFiles/random1.fasta -s g
+testFiles/random1.fastq -s g
 embedded
 Header2.2	1
 Header3.2	1

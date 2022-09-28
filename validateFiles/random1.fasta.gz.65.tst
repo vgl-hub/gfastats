@@ -1,4 +1,4 @@
-testFiles/random1.fasta -s c
+testFiles/random1.fasta.gz -s c
 embedded
 Header1.1	5
 Header2.1	3
