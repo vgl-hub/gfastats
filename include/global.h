@@ -30,6 +30,7 @@ extern int discoverPaths_flag;
 extern int extractContigs_flag;
 extern int hc_flag;
 extern int hc_cutoff;
+extern int terminalOvlLen;
 extern int maxThreads;
 
 extern Log lg;

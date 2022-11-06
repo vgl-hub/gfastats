@@ -267,6 +267,14 @@ void Input::read(InSequences& inSequences) {
         
     }
     
+    if (terminalOvlLen != 0) {
+        
+        inSequences.discoverTerminalOverlaps(terminalOvlLen);
+        
+    }
+    
+    
+    
     if (!instructions.empty()) {
         
         lg.verbose("\nStarted instruction execution");

@@ -6,7 +6,7 @@
 
 #include <main.h>
 
-std::string version = "1.3.3";
+std::string version = "1.3.6";
 
 //global
 std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
@@ -27,6 +27,7 @@ int discoverPaths_flag;
 int extractContigs_flag;
 int hc_flag;
 int hc_cutoff;
+int terminalOvlLen = 0;
 int maxThreads = 0;
 
 std::mutex mtx;
@@ -65,6 +66,7 @@ int main(int argc, char **argv) {
         {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
         {"homopolymer-compress", required_argument, &hc_flag, 1},
         {"discover-paths", no_argument, &discoverPaths_flag, 1},
+        {"discover-terminal-overlaps", optional_argument, 0, 0},
         {"sort", required_argument, 0, 0},
         {"extract-contigs", no_argument, &extractContigs_flag, 1},
         
@@ -199,8 +201,28 @@ int main(int argc, char **argv) {
                 
             case 0: // case for long options without short options
                 
+                if (strcmp(long_options[option_index].name,"discover-terminal-overlaps") == 0) {
+                    
+                    if (optarg == NULL && optind < argc
+                        && argv[optind][0] != '-')
+                    {
+                        optarg = argv[optind++];
+                    }
+                    
+                    if (optarg != NULL) {
+                        
+                        terminalOvlLen = atoi(optarg);
+                        
+                    }else {
+                        
+                        terminalOvlLen = 1000;
+                        
+                    }
+                    
+                }
+
                 if (strcmp(long_options[option_index].name,"line-length") == 0)
-                  splitLength = atoi(optarg);
+                    splitLength = atoi(optarg);
                 
                 if (strcmp(long_options[option_index].name,"sort") == 0) {
 
@@ -351,14 +373,15 @@ int main(int argc, char **argv) {
                 printf("-h --help print help and exit.\n");
                 printf("-i --include-bed <file> generates output on a subset list of headers or coordinates in 0-based bed format.\n");
                 printf("-k --swiss-army-knife <file> set of instructions provided as an ordered list.\n");
-                printf("-j --threads <n> numbers of threads (default:max).\n");
+                printf("-j --threads <n> numbers of threads (default: max).\n");
                 printf("-o --out-format fasta|fastq|gfa[.gz] outputs selected sequences. If more than the extension is provided the output is written to the specified file (e.g. out.fasta.gz).\n");
                 printf("-s --out-size s|c|g  generates size list of given feature (scaffolds|contigs|gaps default:scaffolds).\n");
                 printf("-t --tabular output in tabular format.\n");
                 printf("-v --version software version.\n");
                 printf("--cmd print $0 to stdout.\n");
                 printf("--discover-paths prototype to induce paths from input.\n");
-                printf("--homopolymer-compress <threshhold> compress all the homopolymers in the input above the given threshhold.\n");
+                printf("--discover-terminal-overlaps <n> append perfect terminal overlaps of minimum length n (default: 1000).\n");
+                printf("--homopolymer-compress <n> compress all the homopolymers longer than n in the input.\n");
                 printf("--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 printf("--nstar-report generates full N* and L* statistics.\n");
                 printf("--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
