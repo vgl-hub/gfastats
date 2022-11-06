@@ -1,35 +1,35 @@
-testFiles/random1.fasta -a testFiles/random1.agp --stats
+testFiles/random1.fasta Header2
 embedded
 +++Assembly summary+++: 
-# scaffolds: 2
-Total scaffold length: 47
-Average scaffold length: 23.50
-Scaffold N50: 25
-Scaffold auN: 23.60
+# scaffolds: 1
+Total scaffold length: 5
+Average scaffold length: 5.00
+Scaffold N50: 5
+Scaffold auN: 5.00
 Scaffold L50: 1
-Largest scaffold: 25
-Smallest scaffold: 22
-# contigs: 6
-Total contig length: 27
-Average contig length: 4.50
-Contig N50: 5
-Contig auN: 7.37
-Contig L50: 2
-Largest contig: 12
+Largest scaffold: 5
+Smallest scaffold: 5
+# contigs: 2
+Total contig length: 4
+Average contig length: 2.00
+Contig N50: 3
+Contig auN: 2.50
+Contig L50: 1
+Largest contig: 3
 Smallest contig: 1
-# gaps in scaffolds: 4
-Total gap length in scaffolds: 20
-Average gap length in scaffolds: 5.00
-Gap N50 in scaffolds: 6
-Gap auN in scaffolds: 6.30
-Gap L50 in scaffolds: 2
-Largest gap in scaffolds: 8
+# gaps in scaffolds: 1
+Total gap length in scaffolds: 1
+Average gap length in scaffolds: 1.00
+Gap N50 in scaffolds: 1
+Gap auN in scaffolds: 1.00
+Gap L50 in scaffolds: 1
+Largest gap in scaffolds: 1
 Smallest gap in scaffolds: 1
-Base composition (A:C:G:T): 4:10:5:8
-GC content %: 55.56
-# soft-masked bases: 5
-# segments: 8
-Total segment length: 40
-Average segment length: 5.00
-# gaps: 9
-# paths: 2
+Base composition (A:C:G:T): 1:1:1:1
+GC content %: 50.00
+# soft-masked bases: 0
+# segments: 2
+Total segment length: 4
+Average segment length: 2.00
+# gaps: 1
+# paths: 1

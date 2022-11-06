@@ -40,7 +40,8 @@ int main(int, char **argv) {
         {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.hc.sak", "-ofa -k testFiles/random1.hdc.sak", "Header2", "-ofa -i testFiles/random1.fasta.bed", "-ofa -e testFiles/random1.fasta.bed"}},
         {{"random2.noseq.gfa"}, {""}},
         {{"random1.gfa2"}, {"-k testFiles/random1.gfa2.instructions.sak"}},
-        {{"random4.fasta"}, {""}}
+        {{"random4.fasta"}, {""}},
+        {{"random5.findovl.gfa"}, {"--discover-terminal-overlaps 3 -ogfa"}}
         
     //  {{set of test file paths}, {list of command line args to run with}}
     };

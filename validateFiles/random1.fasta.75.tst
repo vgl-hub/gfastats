@@ -1,12 +1,35 @@
-testFiles/random1.fasta -ofa -k testFiles/random1.hdc.sak
+testFiles/random1.fasta -k testFiles/random1.instructions.sak
 embedded
->Header1 5bp sequence with no gaps and 2 lowercase bases
-CGacT
->Header2 5bp sequence with internal 1bp non-canonical gap
-CGANT
->Header3 10bp sequence with internal 4bp and 1bp terminal canonical gap
-TGANATNCTN
->Header4 15bp sequence with start 3bp canonical gap and 3 lowercase bases
-NNNTTCCTcgCACtC
->Header5 15bp sequence with terminal 3bp canonical gap
-AACTCGATCACGNNN
++++Assembly summary+++: 
+# scaffolds: 2
+Total scaffold length: 55
+Average scaffold length: 27.50
+Scaffold N50: 35
+Scaffold auN: 29.55
+Scaffold L50: 1
+Largest scaffold: 35
+Smallest scaffold: 20
+# contigs: 5
+Total contig length: 30
+Average contig length: 6.00
+Contig N50: 12
+Contig auN: 10.07
+Contig L50: 2
+Largest contig: 12
+Smallest contig: 1
+# gaps in scaffolds: 6
+Total gap length in scaffolds: 25
+Average gap length in scaffolds: 4.17
+Gap N50 in scaffolds: 5
+Gap auN in scaffolds: 6.12
+Gap L50 in scaffolds: 2
+Largest gap in scaffolds: 10
+Smallest gap in scaffolds: 1
+Base composition (A:C:G:T): 6:11:4:9
+GC content %: 50.00
+# soft-masked bases: 3
+# segments: 8
+Total segment length: 40
+Average segment length: 5.00
+# gaps: 7
+# paths: 2

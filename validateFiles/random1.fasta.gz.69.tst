@@ -1,10 +1,8 @@
-testFiles/random1.fasta.gz -b c
+testFiles/random1.fasta.gz -s g
 embedded
-Header1	0	5
-Header2	0	3
-Header2	4	5
-Header3	0	3
-Header3	4	6
-Header3	7	9
-Header4	3	15
-Header5	0	12
+Header2.2	1
+Header3.2	1
+Header3.4	1
+Header3.6	1
+Header4.1	3
+Header5.2	3
