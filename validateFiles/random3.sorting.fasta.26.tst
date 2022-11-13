@@ -1,6 +1,6 @@
-testFiles/random3.sorting.fasta -b s
+testFiles/random3.sorting.fasta -s c
 embedded
-c	0	4
-d	0	4
-b	0	4
-a	0	4
+c.1	4
+d.1	4
+b.1	4
+a.1	4

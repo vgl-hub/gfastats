@@ -1,10 +1,6 @@
-testFiles/random3.sorting.fasta --homopolymer-compress 1 -ofa
+testFiles/random3.sorting.fasta -b s
 embedded
->c
-ACGT
->d
-CGTA
->b
-GTAC
->a
-TACG
+c	0	4
+d	0	4
+b	0	4
+a	0	4
