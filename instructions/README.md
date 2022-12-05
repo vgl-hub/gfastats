@@ -1,5 +1,7 @@
 # Instruction wiki
 
+Instructions are sequentially executed and each instruction is described by tab-separated columns.
+
 ## JOIN
 
 The JOIN instruction introduces a new gap of 50 bp between `scaffold1` and `scaffold2` (two paths) with id `gap1`, effectively joining the two sequences into a new sequence with id `new_scaffold` and an optional comment.
