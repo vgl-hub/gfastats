@@ -30,7 +30,7 @@ int main(int, char **argv) {
     std::string exePath = getExePath(argv[0]);
 
     const std::map<std::set<std::string>, std::vector<std::string>> ext_args = {
-        {{"fasta", "fasta.gz", "fastq", "fastq.gz"}, {"", "-b a", "-b c", "-b s", "--homopolymer-compress 1 -ofa"}},
+        {{"fasta", "fasta.gz", "fastq", "fastq.gz"}, {"", "-s s", "-s c", "-s g", "-b a", "-b s", "-b c", "-b g", "--homopolymer-compress 1 -ofa"}},
         {{"gfa", "gfa.gz", "gfa2", "gfa2.gz"}, {"-o gfa2", "-o gfa", "-o fasta"}}
     //  {{set of test file extensions}, {list of command line args to run with}}
     };
@@ -40,7 +40,8 @@ int main(int, char **argv) {
         {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.hc.sak", "-ofa -k testFiles/random1.hdc.sak", "Header2", "-ofa -i testFiles/random1.fasta.bed", "-ofa -e testFiles/random1.fasta.bed"}},
         {{"random2.noseq.gfa"}, {""}},
         {{"random1.gfa2"}, {"-k testFiles/random1.gfa2.instructions.sak"}},
-        {{"random4.fasta"}, {""}}
+        {{"random4.fasta"}, {""}},
+        {{"random5.findovl.gfa"}, {"--discover-terminal-overlaps 3 -ogfa"}}
         
     //  {{set of test file paths}, {list of command line args to run with}}
     };
