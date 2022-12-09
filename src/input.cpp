@@ -35,15 +35,6 @@
 #include "input-gfa.h"
 #include "input.h"
 
-std::istream& getline(std::istream& stream, std::string& str)
-{
-  char ch;
-  str.clear();
-  while (stream.get(ch) && ch != '\n')
-    str.push_back(ch);
-  return stream;
-}
-
 void Input::load(UserInput userInput) {
     
     this->userInput = userInput;
