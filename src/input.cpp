@@ -28,16 +28,21 @@
 #include "sak.h"
 
 #include "zlib.h"
-#include <zstream/zstream_common.hpp>
-#include <zstream/izstream.hpp>
-#include <zstream/izstream_impl.hpp>
-
 #include "stream-obj.h"
 
 #include "input-agp.h"
 #include "input-filters.h"
 #include "input-gfa.h"
 #include "input.h"
+
+std::istream& getline(std::istream& stream, std::string& str)
+{
+  char ch;
+  str.clear();
+  while (stream.get(ch) && ch != '\n')
+    str.push_back(ch);
+  return stream;
+}
 
 void Input::load(UserInput userInput) {
     
