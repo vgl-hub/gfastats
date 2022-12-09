@@ -13,8 +13,6 @@ class Input {
     std::string firstLine;
     unsigned int seqPos = 0; // to keep track of the original sequence order
     
-    StreamObj streamObj;
-    
     std::string newLine, seqHeader, seqComment, line, bedHeader;
     
     std::shared_ptr<std::istream> stream;
