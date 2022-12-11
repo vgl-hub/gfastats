@@ -89,3 +89,5 @@ fastlane/test_output
 tmp.txt
 err.txt
 out
+
+*.o

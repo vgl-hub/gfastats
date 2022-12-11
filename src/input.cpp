@@ -73,7 +73,7 @@ void Input::read(InSequences& inSequences) {
         
         SAK sak; // create a new swiss army knife
         
-        while (std::getline(*stream, line)) {
+        while (getline(*stream, line)) {
             
             std::istringstream iss(line);
             
@@ -91,7 +91,7 @@ void Input::read(InSequences& inSequences) {
         
         stream = streamObj.openStream(userInput, 'i');
         
-        while (std::getline(*stream, line)) {
+        while (getline(*stream, line)) {
             
             std::istringstream iss(line);
             iss >> bedHeader >> begin >> end;
@@ -113,7 +113,7 @@ void Input::read(InSequences& inSequences) {
         
         stream = streamObj.openStream(userInput, 'e');
         
-        while (std::getline(*stream, line)) {
+        while (getline(*stream, line)) {
             
             std::istringstream iss(line);
             iss >> bedHeader >> begin >> end;
@@ -141,7 +141,7 @@ void Input::read(InSequences& inSequences) {
                     
                     stream->get();
                     
-                    while (std::getline(*stream, newLine)) {
+                    while (getline(*stream, newLine)) {
                         
                         if(userInput.bedIncludeList.size() - bedExcludeList.size() != 0 && userInput.bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
                             lg.verbose("Found all sequences, stop streaming input");
@@ -162,7 +162,7 @@ void Input::read(InSequences& inSequences) {
                         
                         std::string* inSequence = new std::string;
                         
-                        std::getline(*stream, *inSequence, '>');
+                        getline(*stream, *inSequence, '>');
                         
                         lg.verbose("Individual fasta sequence read");
                         
@@ -184,7 +184,7 @@ void Input::read(InSequences& inSequences) {
                 }
                 case '@': {
                     
-                    while (std::getline(*stream, newLine)) { // file input
+                    while (getline(*stream, newLine)) { // file input
                         
                         if(userInput.bedIncludeList.size() - bedExcludeList.size() != 0 && userInput.bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
                             lg.verbose("Found all sequences, stop streaming input");
@@ -206,12 +206,12 @@ void Input::read(InSequences& inSequences) {
                         }
                         
                         std::string* inSequence = new std::string;
-                        std::getline(*stream, *inSequence);
+                        getline(*stream, *inSequence);
                         
-                        std::getline(*stream, newLine);
+                        getline(*stream, newLine);
                         
                         std::string* inSequenceQuality = new std::string;
-                        std::getline(*stream, *inSequenceQuality);
+                        getline(*stream, *inSequenceQuality);
 
                         Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, userInput.bedIncludeList, bedExcludeList, inSequenceQuality);
                         
@@ -333,7 +333,7 @@ void Input::read(InSequences& inSequences) {
         std::string header;
         std::vector<std::string> headerList;
         
-        while (std::getline(*stream, line)) { // read the file to vector
+        while (getline(*stream, line)) { // read the file to vector
             
             std::istringstream iss(line);
             iss >> header;
