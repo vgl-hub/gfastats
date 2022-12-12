@@ -106,8 +106,6 @@ void Input::read(InSequences& inSequences) {
         
         stream = streamObj.openStream(userInput, 'f');
         
-        std::vector<std::string> arguments;
-        
         if (stream) {
             
             switch (stream->peek()) {
@@ -124,10 +122,16 @@ void Input::read(InSequences& inSequences) {
                         
                         }
                         
-                        arguments = readDelimited(newLine, " ");
-
-                        seqHeader = arguments[0]; //process header line
-                        seqComment = arguments.size() > 1 ? arguments[1] : ""; //read comment
+                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+                        c = strtok(NULL,""); //read comment
+                        
+                        seqHeader = h;
+                        
+                        if (c != NULL) {
+                            
+                            seqComment = std::string(c);
+                            
+                        }
                         
                         std::string* inSequence = new std::string;
                         
@@ -163,10 +167,16 @@ void Input::read(InSequences& inSequences) {
                         
                         newLine.erase(0, 1);
                         
-                        arguments = readDelimited(newLine, " ");
-
-                        seqHeader = arguments[0]; //process header line
-                        seqComment = arguments.size() > 1 ? arguments[1] : "";
+                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
+                        c = strtok(NULL,""); //read comment
+                        
+                        seqHeader = h;
+                        
+                        if (c != NULL) {
+                            
+                            seqComment = std::string(c);
+                            
+                        }
                         
                         std::string* inSequence = new std::string;
                         getline(*stream, *inSequence);
