@@ -1,10 +1,6 @@
 #include <stdlib.h>
 #include <unistd.h>
-#include <thread>
-#include <mutex>
 #include <vector>
-#include <queue>
-#include <stack>
 
 #include <istream>
 #include <fstream>
