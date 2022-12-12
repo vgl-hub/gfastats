@@ -127,7 +127,7 @@ void Input::read(InSequences& inSequences) {
                         arguments = readDelimited(newLine, " ");
 
                         seqHeader = arguments[0]; //process header line
-                        seqComment = arguments[1]; //read comment
+                        seqComment = arguments.size() > 1 ? arguments[1] : ""; //read comment
                         
                         std::string* inSequence = new std::string;
                         
@@ -166,7 +166,7 @@ void Input::read(InSequences& inSequences) {
                         arguments = readDelimited(newLine, " ");
 
                         seqHeader = arguments[0]; //process header line
-                        seqComment = arguments[1]; //read comment
+                        seqComment = arguments.size() > 1 ? arguments[1] : "";
                         
                         std::string* inSequence = new std::string;
                         getline(*stream, *inSequence);
