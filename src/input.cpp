@@ -26,67 +26,12 @@
 #include "gfa.h"
 #include "sak.h"
 
-#include "zlib.h"
 #include "stream-obj.h"
 
 #include "input-agp.h"
 #include "input-filters.h"
 #include "input-gfa.h"
 #include "input.h"
-
-std::istream& getline(std::istream& is, std::string& str) {
-    
-    str.clear();
-    std::ios_base::iostate err = std::ios_base::goodbit;
-    std::streamsize extr = 0;
-    
-    while (true)
-    {
-
-        int i = is.rdbuf()->sbumpc();
-        if (i == EOF)
-            break;
-        ++extr;
-        if (i == '\n')
-            break;
-        str.push_back(i);
-        
-    }
-    
-    if (extr == 0)
-        err |= std::ios_base::failbit;
-    is.setstate(err);
-    
-    return is;
-    
-}
-
-std::istream& getline(std::istream& is, std::string& str, char dlm) {
-    
-    str.clear();
-    std::ios_base::iostate err = std::ios_base::goodbit;
-    std::streamsize extr = 0;
-    
-    while (true)
-    {
-
-        int i = is.rdbuf()->sbumpc();
-        if (i == EOF)
-            break;
-        ++extr;
-        if (i == dlm)
-            break;
-        str.push_back(i);
-        
-    }
-    
-    if (extr == 0)
-        err |= std::ios_base::failbit;
-    is.setstate(err);
-    
-    return is;
-    
-}
 
 void Input::load(UserInput userInput) {
     
