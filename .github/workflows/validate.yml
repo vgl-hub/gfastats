@@ -18,6 +18,7 @@ jobs:
             chmod: true
           - os: windows-2019
             command: ".github/workflows/val.bat"
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code

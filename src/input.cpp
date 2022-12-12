@@ -1,6 +1,5 @@
 #include <stdlib.h>
-#include <unistd.h>
-#include <vector>
+#include <string>
 
 #include <istream>
 #include <fstream>
@@ -8,17 +7,15 @@
 
 #include <parallel_hashmap/phmap.h>
 
-#include "bed.h"
-#include "struct.h"
-#include "functions.h"
-
 #include "log.h"
 #include "global.h"
 #include "uid-generator.h"
 
-#include "gfa-lines.h"
+#include "bed.h"
+#include "struct.h"
+#include "functions.h"
 
-#include "threadpool.h"
+#include "gfa-lines.h"
 #include "gfa.h"
 #include "sak.h"
 
@@ -109,6 +106,8 @@ void Input::read(InSequences& inSequences) {
         
         stream = streamObj.openStream(userInput, 'f');
         
+        std::vector<std::string> arguments;
+        
         if (stream) {
             
             switch (stream->peek()) {
@@ -125,16 +124,10 @@ void Input::read(InSequences& inSequences) {
                         
                         }
                         
-                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-                        c = strtok(NULL,""); //read comment
-                        
-                        seqHeader = h;
-                        
-                        if (c != NULL) {
-                            
-                            seqComment = std::string(c);
-                            
-                        }
+                        arguments = readDelimited(newLine, " ");
+
+                        seqHeader = arguments[0]; //process header line
+                        seqComment = arguments[1]; //read comment
                         
                         std::string* inSequence = new std::string;
                         
@@ -170,16 +163,10 @@ void Input::read(InSequences& inSequences) {
                         
                         newLine.erase(0, 1);
                         
-                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-                        c = strtok(NULL,""); //read comment
-                        
-                        seqHeader = h;
-                        
-                        if (c != NULL) {
-                            
-                            seqComment = std::string(c);
-                            
-                        }
+                        arguments = readDelimited(newLine, " ");
+
+                        seqHeader = arguments[0]; //process header line
+                        seqComment = arguments[1]; //read comment
                         
                         std::string* inSequence = new std::string;
                         getline(*stream, *inSequence);
