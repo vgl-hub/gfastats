@@ -44,8 +44,6 @@
 
 #include "zlib.h"
 #include <zstream/zstream_common.hpp>
-#include <zstream/izstream.hpp>
-#include <zstream/izstream_impl.hpp>
 #include <zstream/ozstream.hpp>
 #include <zstream/ozstream_impl.hpp>
 

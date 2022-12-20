@@ -64,10 +64,10 @@ int main(int argc, char **argv) {
     std::string line;
     std::ifstream istream, exp, actOutput, *expOutput;
     for(const auto &input_file : input_files) {
-#ifdef _WIN32
-        if(input_file.find(".gz") != std::string::npos)
-            continue;
-#endif
+//#ifdef _WIN32
+//        if(input_file.find(".gz") != std::string::npos)
+//            continue;
+//#endif
         istream.open(input_file);
         if(!istream) {
             printFAIL(input_file.c_str(), "couldn't open test file");

@@ -1,36 +1,23 @@
 #include <stdlib.h>
-#include <unistd.h>
 #include <string>
-#include <thread>
-#include <mutex>
-#include <vector>
-#include <queue>
-#include <stack>
 
-#include <iostream>
+#include <istream>
 #include <fstream>
 #include <sstream>
 
 #include <parallel_hashmap/phmap.h>
 
-#include "bed.h"
-#include "struct.h"
-#include "functions.h"
-
 #include "log.h"
 #include "global.h"
 #include "uid-generator.h"
 
-#include "gfa-lines.h"
+#include "bed.h"
+#include "struct.h"
+#include "functions.h"
 
-#include "threadpool.h"
+#include "gfa-lines.h"
 #include "gfa.h"
 #include "sak.h"
-
-#include "zlib.h"
-#include <zstream/zstream_common.hpp>
-#include <zstream/izstream.hpp>
-#include <zstream/izstream_impl.hpp>
 
 #include "stream-obj.h"
 
@@ -53,6 +40,8 @@ void Input::read(InSequences& inSequences) {
 
     if (!userInput.iSakFileArg.empty() || userInput.pipeType == 'k') {
         
+        StreamObj streamObj;
+        
         stream = streamObj.openStream(userInput, 'k');
         
         SAK sak; // create a new swiss army knife
@@ -70,6 +59,8 @@ void Input::read(InSequences& inSequences) {
     }
     
     if (!userInput.iBedIncludeFileArg.empty() || userInput.pipeType == 'i') {
+        
+        StreamObj streamObj;
         
         stream = streamObj.openStream(userInput, 'i');
         
@@ -91,6 +82,8 @@ void Input::read(InSequences& inSequences) {
     
     if (!userInput.iBedExcludeFileArg.empty() || userInput.pipeType == 'e') {
         
+        StreamObj streamObj;
+        
         stream = streamObj.openStream(userInput, 'e');
         
         while (getline(*stream, line)) {
@@ -109,10 +102,9 @@ void Input::read(InSequences& inSequences) {
     
     if (!userInput.iSeqFileArg.empty() || userInput.pipeType == 'f') {
         
-        stream = streamObj.openStream(userInput, 'f');
+        StreamObj streamObj;
         
-        lg.verbose("Created stream object for input assembly file");
-        lg.verbose("Detected stream type (" + streamObj.type() + ").\nStreaming started.");
+        stream = streamObj.openStream(userInput, 'f');
         
         if (stream) {
             
@@ -231,7 +223,6 @@ void Input::read(InSequences& inSequences) {
     }
     
     jobWait(threadPool);
-    threadPool.join();
     
     if(verbose_flag) {std::cerr<<"\n\n";};
     
@@ -339,5 +330,7 @@ void Input::read(InSequences& inSequences) {
     }
         
     inSequences.updateStats();
+    
+    threadPool.join();
     
 }
