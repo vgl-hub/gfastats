@@ -223,6 +223,7 @@ void Input::read(InSequences& inSequences) {
     }
     
     jobWait(threadPool);
+    threadPool.join();
     
     if(verbose_flag) {std::cerr<<"\n\n";};
     
@@ -330,7 +331,5 @@ void Input::read(InSequences& inSequences) {
     }
         
     inSequences.updateStats();
-    
-    threadPool.join();
     
 }
