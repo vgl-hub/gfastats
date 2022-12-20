@@ -9,4 +9,4 @@ TGANATNCTN
 >Header4 15bp sequence with start 3bp canonical gap and 3 lowercase bases
 NNNTCTcgCACtC
 >Header5 15bp sequence with terminal 3bp canonical gap
-ACTCGATCACGN
+ACTCGATCACGNNN
