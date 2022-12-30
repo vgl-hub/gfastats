@@ -6,8 +6,8 @@ S	id3	7	CTTGATT
 S	id1	5	ACCTT
 S	id4	8	CATGACTC
 S	id7	9	TGAATGAAA
-E	id1	+	id2	-	3M
-E	id2	-	id1	+	3M
+E	id10	id1	+	id2	-	3M
+E	id11	id2	-	id1	+	3M
 G	id5	id3+	id4-	5
 G	id6	id1+	id2+	3
 G	id8	id2+	id3-	2

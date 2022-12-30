@@ -328,7 +328,7 @@ void Input::read(InSequences& inSequences) {
         readAgp(inSequences, userInput);
         
     }
-        
+    
     inSequences.updateStats();
     
     threadPool.join();

@@ -1,20 +1,20 @@
 testFiles/random2.noseq.gfa 
 embedded
 +++Assembly summary+++: 
-# scaffolds: 1
-Total scaffold length: 26
-Average scaffold length: 26.00
+# scaffolds: 2
+Total scaffold length: 44
+Average scaffold length: 22.00
 Scaffold N50: 26
-Scaffold auN: 26.00
+Scaffold auN: 22.73
 Scaffold L50: 1
 Largest scaffold: 26
-Smallest scaffold: 26
-# contigs: 3
-Total contig length: 18
+Smallest scaffold: 18
+# contigs: 6
+Total contig length: 36
 Average contig length: 6.00
 Contig N50: 6
 Contig auN: 6.11
-Contig L50: 2
+Contig L50: 3
 Largest contig: 7
 Smallest contig: 5
 # gaps in scaffolds: 2
@@ -27,12 +27,12 @@ Largest gap in scaffolds: 5
 Smallest gap in scaffolds: 3
 Base composition (A:C:G:T): 0:0:0:0
 GC content %: nan
-# soft-masked bases: 18
+# soft-masked bases: 36
 # segments: 3
 Total segment length: 0
 Average segment length: 0.00
 # gaps: 2
-# paths: 1
+# paths: 2
 # edges: 3
 Average degree: 1.00
 # connected components: 1

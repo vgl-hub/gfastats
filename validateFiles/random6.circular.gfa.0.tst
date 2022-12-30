@@ -10,12 +10,12 @@ S	edge_6	0	*	dp:i:0
 S	edge_7	0	*	dp:i:6
 S	edge_8	0	*	dp:i:20
 S	edge_9	0	*	dp:i:0
-E	edge_1	+	edge_1	+	0M	RC:i:0
-E	edge_1	-	edge_1	-	0M	RC:i:18
-E	edge_2	+	edge_2	+	0M	RC:i:0
-E	edge_2	-	edge_2	-	0M	RC:i:0
-E	edge_7	+	edge_7	+	0M	RC:i:32
-E	edge_7	-	edge_7	-	0M	RC:i:40
+E	edge0	edge_1	+	edge_1	+	0M	RC:i:0
+E	edge1	edge_1	-	edge_1	-	0M	RC:i:18
+E	edge2	edge_2	+	edge_2	+	0M	RC:i:0
+E	edge3	edge_2	-	edge_2	-	0M	RC:i:0
+E	edge4	edge_7	+	edge_7	+	0M	RC:i:32
+E	edge5	edge_7	-	edge_7	-	0M	RC:i:40
 O	contig_1	edge_1+
 O	contig_2	edge_2+
 O	contig_3	edge_3+
