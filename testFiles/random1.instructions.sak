@@ -5,3 +5,4 @@ SPLIT	Header2.1	Header2.3	Scaffold3	Scaffold4
 EXCISE	Header3.3	3	newGap4
 INVERT	Header5.1
 REMOVE	Header1.1
+RESIZE	newGap2	10

@@ -21,7 +21,7 @@ SPLIT   segment1+    segment2+    scaffold1   scaffold2 [this is a new scaffold1
 
 ## EXCISE
 
-The EXCISE instruction removes segment1 from its scaffold, leaving it unplaced and adding a gap of the given size with id `gap1` between the original sequences
+The EXCISE instruction removes segment1 from its scaffold, leaving it unplaced and adding a gap of 50bp with id `gap1` between the original sequences
 
 ```
 EXCISE  segment1  50  gap1
@@ -65,6 +65,14 @@ The INVERT instruction inverts segment1 sequence in place
 
 ```
 INVERT  segment1
+```
+
+## RESIZE
+
+The RESIZE instruction resizes the size of gap1 to 50 bp
+
+```
+RESIZE  gap1    50
 ```
 
 ## Yet to be implemented

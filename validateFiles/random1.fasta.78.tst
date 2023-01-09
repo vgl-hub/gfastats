@@ -2,12 +2,12 @@ testFiles/random1.fasta -k testFiles/random1.instructions.sak
 embedded
 +++Assembly summary+++: 
 # scaffolds: 2
-Total scaffold length: 55
-Average scaffold length: 27.50
-Scaffold N50: 35
-Scaffold auN: 29.55
+Total scaffold length: 60
+Average scaffold length: 30.00
+Scaffold N50: 40
+Scaffold auN: 33.33
 Scaffold L50: 1
-Largest scaffold: 35
+Largest scaffold: 40
 Smallest scaffold: 20
 # contigs: 5
 Total contig length: 30
@@ -18,10 +18,10 @@ Contig L50: 2
 Largest contig: 12
 Smallest contig: 1
 # gaps in scaffolds: 6
-Total gap length in scaffolds: 25
-Average gap length in scaffolds: 4.17
-Gap N50 in scaffolds: 5
-Gap auN in scaffolds: 6.12
+Total gap length in scaffolds: 30
+Average gap length in scaffolds: 5.00
+Gap N50 in scaffolds: 10
+Gap auN in scaffolds: 7.60
 Gap L50 in scaffolds: 2
 Largest gap in scaffolds: 10
 Smallest gap in scaffolds: 1
