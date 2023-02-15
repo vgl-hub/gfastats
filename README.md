@@ -43,6 +43,8 @@ Either download one of the releases or `git clone https://github.com/vgl-hub/gfa
 
 To check out all options and flags use `gfastats -h`.
 
+**Note**: if you have a GFA without paths defined (e.g. as output from hifiasm) you will need to add the `--discover-paths` options in order to generate statistics for contigs and scaffolds. This is an attempt to clearly define contigs as a concept different from segments.
+
 You can test some typical usage with the files in the `testFiles` folder, e.g.:
 
 ```
