@@ -16,7 +16,7 @@ Typical fast\* metrics include:
 - base composition and GC content
 - soft-masked base counts (lower case bases)
 
-Typical gfa metrics include:
+Typical gfa metrics include (see also note below when evaluating gfa):
 
 - Number of nodes and edges
 - Average degree
