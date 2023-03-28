@@ -4,7 +4,7 @@
 //Created by Giulio Formenti on 12/17/21.
 //
 
-#include <main.h>
+#include "main.h"
 
 std::string version = "1.3.6";
 
