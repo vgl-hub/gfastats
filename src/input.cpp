@@ -239,11 +239,8 @@ void Input::read(InSequences& inSequences) {
     
     inSequences.sortSegmentsByOriginal();
     
-    if (rmGaps_flag) {
-     
+    if (rmGaps_flag)
         inSequences.removeTerminalGaps();
-        
-    }
     
     if (extractContigs_flag) {
         
@@ -252,17 +249,11 @@ void Input::read(InSequences& inSequences) {
         
     }
     
-    if (extractContigs_flag || discoverPaths_flag) {
-        
+    if (extractContigs_flag || discoverPaths_flag)
         inSequences.discoverPaths();
-        
-    }
     
-    if (terminalOvlLen != 0) {
-        
+    if (terminalOvlLen != 0)
         inSequences.discoverTerminalOverlaps(terminalOvlLen);
-        
-    }
     
     if (!instructions.empty()) {
         
@@ -273,7 +264,6 @@ void Input::read(InSequences& inSequences) {
         for (Instruction instruction : instructions) { // execute swiss army knife instructions
             
             sak.executeInstruction(inSequences, instruction);
-            
             lg.verbose(instruction.action + " instruction executed");
             
         }
@@ -309,7 +299,7 @@ void Input::read(InSequences& inSequences) {
         
         inSequences.sortPathsByList(headerList);
         
-    }else if(userInput.iAgpFileArg.empty() || !(userInput.pipeType == 'a')){
+    }else if(userInput.iAgpFileArg.empty() && !(userInput.pipeType == 'a')){
         inSequences.sortPathsByOriginal();
     }
     
