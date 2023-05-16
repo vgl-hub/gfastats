@@ -264,8 +264,6 @@ void Input::read(InSequences& inSequences) {
         
     }
     
-    
-    
     if (!instructions.empty()) {
         
         lg.verbose("\nStarted instruction execution");
@@ -286,21 +284,13 @@ void Input::read(InSequences& inSequences) {
         readAgp(inSequences, userInput);
     
     if (userInput.sortType == "ascending") {
-        
         inSequences.sortPathsByNameAscending();
-        
     }else if (userInput.sortType == "descending") {
-        
         inSequences.sortPathsByNameDescending();
-        
     }else if (userInput.sortType == "largest") {
-        
         inSequences.sortPathsBySize(0);
-
     }else if (userInput.sortType == "smallest") {
-        
         inSequences.sortPathsBySize(1);
-        
     }else if (userInput.sortType != "none" && ifFileExists(userInput.sortType.c_str())){
             
         stream = std::make_unique<std::ifstream>(std::ifstream(userInput.sortType));
@@ -319,11 +309,8 @@ void Input::read(InSequences& inSequences) {
         
         inSequences.sortPathsByList(headerList);
         
-    }else{
-        
+    }else if(userInput.iAgpFileArg.empty() || !(userInput.pipeType == 'a')){
         inSequences.sortPathsByOriginal();
-        
-        
     }
     
     inSequences.updateStats();
