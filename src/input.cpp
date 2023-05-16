@@ -282,6 +282,9 @@ void Input::read(InSequences& inSequences) {
     
     }
     
+    if (!userInput.iAgpFileArg.empty() || userInput.pipeType == 'a')
+        readAgp(inSequences, userInput);
+    
     if (userInput.sortType == "ascending") {
         
         inSequences.sortPathsByNameAscending();
@@ -320,12 +323,6 @@ void Input::read(InSequences& inSequences) {
         
         inSequences.sortPathsByOriginal();
         
-        
-    }
-
-    if (!userInput.iAgpFileArg.empty() || userInput.pipeType == 'a') {
-        
-        readAgp(inSequences, userInput);
         
     }
     
