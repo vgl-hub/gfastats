@@ -353,7 +353,7 @@ int main(int argc, char **argv) {
                     optind--;
                     
                     std::string file;
-                    uint i = 0;
+                    uint8 i = 0;
 
                     for( ;optind < argc && !isInt(argv[optind]); optind++) {
                         
