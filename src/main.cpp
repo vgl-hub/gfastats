@@ -45,9 +45,7 @@ int main(int argc, char **argv) {
     
     bool isPipe = false; // to check if input is from pipe
     
-    UserInput userInput; // initialize input object
-    
-    userInput.outSequence = "fasta"; // default output type
+    UserInputGfastats userInput; // initialize input object
     
     if (argc == 1) { // gfastats with no arguments
             
@@ -133,7 +131,7 @@ int main(int argc, char **argv) {
                         break;
                         
                     case 'o':
-                        userInput.outSequence = "fasta"; // default output is fasta if -o option is given without argument
+                        userInput.outFiles.push_back("fasta"); // default output is fasta if -o option is given without argument
                         outFile_flag = 1;
                         break;
                         
@@ -152,7 +150,7 @@ int main(int argc, char **argv) {
                     }else{ // input is a regular file
                         
                         ifFileExists(optarg);
-                        userInput.iSeqFileArg = optarg;
+                        userInput.inSequence = optarg;
                         
                     }
                     
@@ -261,7 +259,7 @@ int main(int argc, char **argv) {
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    userInput.iAgpFileArg = optarg;
+                    userInput.inAgp = optarg;
                     
                 }
                     
@@ -282,7 +280,7 @@ int main(int argc, char **argv) {
                 }else{ // input is a regular file
                 
                     ifFileExists(optarg);
-                    userInput.iBedExcludeFileArg = optarg;
+                    userInput.inBedExclude = optarg;
                     
                 }
                     
@@ -298,7 +296,7 @@ int main(int argc, char **argv) {
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    userInput.iSeqFileArg = optarg;
+                    userInput.inSequence = optarg;
                     stats_flag = true;
                     
                 }
@@ -314,7 +312,7 @@ int main(int argc, char **argv) {
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    userInput.iBedIncludeFileArg = optarg;
+                    userInput.inBedInclude = optarg;
                     
                 }
                     
@@ -335,7 +333,7 @@ int main(int argc, char **argv) {
                 }else{ // input is a regular file
                     
                     ifFileExists(optarg);
-                    userInput.iSakFileArg = optarg;
+                    userInput.inSak = optarg;
                     
                 }
                     
@@ -343,8 +341,40 @@ int main(int argc, char **argv) {
                 break;
                 
             case 'o': // handle output (file or stdout)
-                userInput.outSequence = optarg;
+                
                 outFile_flag = 1;
+
+                if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
+                
+                    userInput.pipeType = 'r'; // pipe input is a sequence
+                    
+                }else{ // outputs are regular files
+                    
+                    optind--;
+                    
+                    std::string file;
+                    uint i = 0;
+
+                    for( ;optind < argc && !isInt(argv[optind]); optind++) {
+                        
+                        if (i > 0 && *argv[optind] == '-')
+                            break;
+                        
+                        file = argv[optind];
+                        
+                        if (file.find("-o") != std::string::npos)
+                            file.erase(0, 2); // handle file name attached to option
+                        
+                        userInput.outFiles.push_back(file);
+                        
+                        ++i;
+                        
+                    }
+                    
+                    stats_flag = true;
+                    
+                }
+                
                 break;
                 
             case 's': // output size of features
@@ -459,7 +489,8 @@ int main(int argc, char **argv) {
         
         stats_flag = false;
         
-        report.outFile(inSequences, userInput, splitLength);
+        for (std::string file : userInput.outFiles)
+            report.outFile(inSequences, file, userInput, splitLength);
         
     }
     

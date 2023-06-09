@@ -1,9 +1,15 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+struct UserInputGfastats : UserInput {
+    
+    std::vector<std::string> outFiles; // input reads to evaluate
+
+};
+
 class Input {
     
-    UserInput userInput;
+    UserInputGfastats userInput;
     
     //intermediates
     std::string h;
@@ -23,7 +29,7 @@ class Input {
     
 public:
     
-    void load(UserInput userInput);
+    void load(UserInputGfastats userInput);
     
     void read(InSequences& inSequence);
     

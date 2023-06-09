@@ -26,7 +26,7 @@
 #include "input-gfa.h"
 #include "input.h"
 
-void Input::load(UserInput userInput) {
+void Input::load(UserInputGfastats userInput) {
     
     this->userInput = userInput;
     
@@ -34,11 +34,11 @@ void Input::load(UserInput userInput) {
     
 void Input::read(InSequences& inSequences) {
     
-    if (userInput.iSeqFileArg.empty()) {return;}
+    if (userInput.inSequence.empty()) {return;}
     
     threadPool.init(maxThreads); // initialize threadpool
 
-    if (!userInput.iSakFileArg.empty() || userInput.pipeType == 'k') {
+    if (!userInput.inSak.empty() || userInput.pipeType == 'k') {
         
         StreamObj streamObj;
         
@@ -58,7 +58,7 @@ void Input::read(InSequences& inSequences) {
         
     }
     
-    if (!userInput.iBedIncludeFileArg.empty() || userInput.pipeType == 'i') {
+    if (!userInput.inBedInclude.empty() || userInput.pipeType == 'i') {
         
         StreamObj streamObj;
         
@@ -80,7 +80,7 @@ void Input::read(InSequences& inSequences) {
     
     BedCoordinates bedExcludeList;
     
-    if (!userInput.iBedExcludeFileArg.empty() || userInput.pipeType == 'e') {
+    if (!userInput.inBedExclude.empty() || userInput.pipeType == 'e') {
         
         StreamObj streamObj;
         
@@ -100,7 +100,7 @@ void Input::read(InSequences& inSequences) {
         
     }
     
-    if (!userInput.iSeqFileArg.empty() || userInput.pipeType == 'f') {
+    if (!userInput.inSequence.empty() || userInput.pipeType == 'f') {
         
         StreamObj streamObj;
         
@@ -215,7 +215,7 @@ void Input::read(InSequences& inSequences) {
                 
         }else{
 
-            fprintf(stderr, "Stream not successful: %s", userInput.iSeqFileArg.c_str());
+            fprintf(stderr, "Stream not successful: %s", userInput.inSequence.c_str());
             exit(1);
 
         }
@@ -270,7 +270,7 @@ void Input::read(InSequences& inSequences) {
     
     }
     
-    if (!userInput.iAgpFileArg.empty() || userInput.pipeType == 'a')
+    if (!userInput.inAgp.empty() || userInput.pipeType == 'a')
         readAgp(inSequences, userInput);
     
     if (userInput.sortType == "ascending") {
@@ -299,7 +299,7 @@ void Input::read(InSequences& inSequences) {
         
         inSequences.sortPathsByList(headerList);
         
-    }else if(userInput.iAgpFileArg.empty() && !(userInput.pipeType == 'a')){
+    }else if(userInput.inAgp.empty() && !(userInput.pipeType == 'a')){
         inSequences.sortPathsByOriginal();
     }
     
