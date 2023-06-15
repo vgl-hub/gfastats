@@ -3,7 +3,7 @@
 
 struct UserInputGfastats : UserInput {
     
-    std::vector<std::string> outFiles; // input reads to evaluate
+    std::vector<std::string> outFiles; // output files
 
 };
 
