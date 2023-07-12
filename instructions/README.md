@@ -53,10 +53,10 @@ ERASE   segment1:10-100 // deletes segment1 sequence between the coordinates pro
 
 ## RVCP
 
-The RVCP instruction reverse-complements segment1 sequence in place
+The RVCP instruction reverse-complements path1 or segment1 sequence in place
 
 ```
-RVCP    segment1
+RVCP    path1/segment1
 ```
 
 ## INVERT
