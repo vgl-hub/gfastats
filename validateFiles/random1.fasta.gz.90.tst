@@ -25,7 +25,7 @@ Gap auN in scaffolds: 2.20
 Gap L50 in scaffolds: 2
 Largest gap in scaffolds: 3
 Smallest gap in scaffolds: 1
-Base composition (A:C:G:T): 12:9:11:8
+Base composition (A:C:G:T): 13:9:11:7
 GC content %: 50.00
 # soft-masked bases: 5
 # segments: 8
