@@ -127,11 +127,8 @@ void Input::read(InSequences& inSequences) {
                         
                         seqHeader = h;
                         
-                        if (c != NULL) {
-                            
+                        if (c != NULL)
                             seqComment = std::string(c);
-                            
-                        }
                         
                         std::string* inSequence = new std::string;
                         
