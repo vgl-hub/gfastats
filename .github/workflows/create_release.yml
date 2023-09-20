@@ -53,7 +53,7 @@ jobs:
       - name: Zip
         uses: papeloto/action-zip@v1
         with:
-          files: build/bin
+          files: build/bin/gfastats
           dest: result.zip
       - name: Add binaries
         uses: actions/upload-release-asset@v1
