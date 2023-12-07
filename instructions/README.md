@@ -75,6 +75,14 @@ The RESIZE instruction resizes the size of gap1 to 50 bp
 RESIZE  gap1    50
 ```
 
+## MASK
+
+The MASK instruction masks with 50 Ns a portion of a path, effectively adding a gap in the corresponding segment of optional size 5. If size is not provided, the masked size is used
+
+```
+MASK  path1 10  60  5
+```
+
 ## Yet to be implemented
 
 ```

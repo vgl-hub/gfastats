@@ -1,4 +1,4 @@
-testFiles/random1.fasta.gz -a testFiles/random1.agp -ofa
+testFiles/random1.gfa2 -a testFiles/random1.agp -ofa
 embedded
 >newpath1
 GacTNNNNNTCGNNNNNNATNC
