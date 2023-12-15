@@ -40,7 +40,7 @@
 
 #include "threadpool.h"
 
-#include <parallel_hashmap/phmap.h>
+#include <parallel-hashmap/phmap.h>
 
 #include "zlib.h"
 #include <zstream/zstream_common.hpp>
