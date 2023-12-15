@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 
-#include <parallel_hashmap/phmap.h>
+#include <parallel-hashmap/phmap.h>
 
 #include "log.h"
 #include "global.h"
@@ -142,7 +142,7 @@ void Input::read(InSequences& inSequences) {
                             
                             sequence->seqPos = seqPos; // remember the order
                             
-                            inSequences.appendSequence(sequence);
+                            inSequences.appendSequence(sequence, userInput.hc_cutoff);
                             
                             seqPos++;
                             
@@ -189,7 +189,7 @@ void Input::read(InSequences& inSequences) {
                             
                             sequence->seqPos = seqPos; // remember the order
                         
-                            inSequences.appendSequence(sequence);
+                            inSequences.appendSequence(sequence, userInput.hc_cutoff);
                             
                             seqPos++;
                             
@@ -236,21 +236,21 @@ void Input::read(InSequences& inSequences) {
     
     inSequences.sortSegmentsByOriginal();
     
-    if (rmGaps_flag)
+    if (userInput.rmGaps_flag)
         inSequences.removeTerminalGaps();
     
-    if (extractContigs_flag) {
+    if (userInput.extractContigs_flag) {
         
         inSequences.clearGaps();
         inSequences.clearPaths();
         
     }
     
-    if (extractContigs_flag || discoverPaths_flag)
+    if (userInput.extractContigs_flag || userInput.discoverPaths_flag)
         inSequences.discoverPaths();
     
-    if (terminalOvlLen != 0)
-        inSequences.discoverTerminalOverlaps(terminalOvlLen);
+    if (userInput.terminalOvlLen != 0)
+        inSequences.discoverTerminalOverlaps(userInput.terminalOvlLen);
     
     if (!instructions.empty()) {
         

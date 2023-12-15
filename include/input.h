@@ -4,6 +4,17 @@
 struct UserInputGfastats : UserInput {
     
     std::vector<std::string> outFiles; // output files
+    int seqReport_flag = 0;
+    int outSequence_flag = 0;
+    int nstarReport_flag = 0;
+    int outSize_flag = 0;
+    int outCoord_flag = 0;
+    int outFile_flag = 0;
+    int outBubbles_flag = 0;
+    int cmd_flag = 0;
+    int rmGaps_flag = 0;
+    int extractContigs_flag = 0;
+    int terminalOvlLen = 0;
 
 };
 

@@ -11,28 +11,15 @@ std::string version = "1.3.6";
 //global
 std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
 
-short int tabular_flag;
 int verbose_flag;
-int seqReport_flag;
-int outSequence_flag;
-int nstarReport_flag;
-int outSize_flag;
-int outCoord_flag;
-int outFile_flag;
-int outBubbles_flag;
-int stats_flag;
-int cmd_flag;
-int rmGaps_flag;
-int discoverPaths_flag;
-int extractContigs_flag;
-int hc_flag;
-int hc_cutoff;
-int terminalOvlLen = 0;
-int maxThreads = 0;
+Log lg;
+int tabular_flag;
 
+int maxThreads = 0;
 std::mutex mtx;
 ThreadPool<std::function<bool()>> threadPool;
-Log lg;
+
+UserInputGfastats userInput; // initialize input object
 
 int main(int argc, char **argv) {
     
@@ -42,10 +29,7 @@ int main(int argc, char **argv) {
     int splitLength = 0; // line length for fasta output
     
     char bedOutType = 'a'; // default output type with bed flag (agp)
-    
     bool isPipe = false; // to check if input is from pipe
-    
-    UserInputGfastats userInput; // initialize input object
     
     if (argc == 1) { // gfastats with no arguments
             
@@ -61,12 +45,12 @@ int main(int argc, char **argv) {
         
         {"agp-to-path", required_argument, 0, 'a'}, // agp to path conversion
         {"swiss-army-knife", required_argument, 0, 'k'}, // the swiss army knife
-        {"remove-terminal-gaps", no_argument, &rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
-        {"homopolymer-compress", required_argument, &hc_flag, 1},
-        {"discover-paths", no_argument, &discoverPaths_flag, 1},
+        {"remove-terminal-gaps", no_argument, &userInput.rmGaps_flag, 1}, // this remove all gap edges at the end of sequences
+        {"homopolymer-compress", required_argument, 0, 0},
+        {"discover-paths", no_argument, &userInput.discoverPaths_flag, 1},
         {"discover-terminal-overlaps", optional_argument, 0, 0},
         {"sort", required_argument, 0, 0},
-        {"extract-contigs", no_argument, &extractContigs_flag, 1},
+        {"extract-contigs", no_argument, &userInput.extractContigs_flag, 1},
         
         {"include-bed", required_argument, 0, 'i'},
         {"exclude-bed", required_argument, 0, 'e'},
@@ -74,19 +58,19 @@ int main(int argc, char **argv) {
         {"out-format", required_argument, 0, 'o'},
         {"line-length", required_argument, 0, 0},
         {"no-sequence", no_argument, &userInput.noSequence, 1},
-        {"out-sequence", no_argument, &outSequence_flag, 1},
+        {"out-sequence", no_argument, &userInput.outSequence_flag, 1},
         {"out-size", required_argument, 0, 's'},
         {"out-coord", required_argument, 0, 'b'},
-        {"out-bubbles", no_argument, &outBubbles_flag, 1},
+        {"out-bubbles", no_argument, &userInput.outBubbles_flag, 1},
         
-        {"stats", no_argument, &stats_flag, 1},
-        {"seq-report", no_argument, &seqReport_flag, 1},
-        {"nstar-report", no_argument, &nstarReport_flag, 1},
+        {"stats", no_argument, &userInput.stats_flag, 1},
+        {"seq-report", no_argument, &userInput.seqReport_flag, 1},
+        {"nstar-report", no_argument, &userInput.nstarReport_flag, 1},
         {"tabular", no_argument, 0, 't'},
         {"locale", required_argument, 0, 0},
         
         {"verbose", no_argument, &verbose_flag, 1},
-        {"cmd", no_argument, &cmd_flag, 1},
+        {"cmd", no_argument, &userInput.cmd_flag, 1},
         {"version", no_argument, 0, 'v'},
         {"help", no_argument, 0, 'h'},
         
@@ -122,17 +106,17 @@ int main(int argc, char **argv) {
                 switch (optopt) { // the command line option last matched
                     case 'b':
                         bedOutType = 'a'; // default bed output is agp is -b option is given without argument
-                        outCoord_flag = 1;
+                        userInput.outCoord_flag = 1;
                         break;
                         
                     case 's':
                         bedOutType = 's'; // default size output is scaffold is -s option is given without argument
-                        outSize_flag = 1;
+                        userInput.outSize_flag = 1;
                         break;
                         
                     case 'o':
                         userInput.outFiles.push_back("fasta"); // default output is fasta if -o option is given without argument
-                        outFile_flag = 1;
+                        userInput.outFile_flag = 1;
                         break;
                         
                     default:
@@ -209,11 +193,11 @@ int main(int argc, char **argv) {
                     
                     if (optarg != NULL) {
                         
-                        terminalOvlLen = atoi(optarg);
+                        userInput.terminalOvlLen = atoi(optarg);
                         
                     }else {
                         
-                        terminalOvlLen = 1000;
+                        userInput.terminalOvlLen = 1000;
                         
                     }
                     
@@ -235,8 +219,8 @@ int main(int argc, char **argv) {
                 }
 
                 if(strcmp(long_options[option_index].name,"homopolymer-compress") == 0) {
-                    hc_cutoff = atoi(optarg);
-                    stats_flag = true;
+                    userInput.hc_cutoff = atoi(optarg);
+                    userInput.stats_flag = 1;
                 }
                 
                 if (strcmp(long_options[option_index].name,"locale") == 0) {
@@ -244,7 +228,7 @@ int main(int argc, char **argv) {
                     setlocale(LC_ALL, optarg);
                     std::cout.imbue(std::locale(optarg));
                     std::locale::global(std::locale(optarg));
-                    stats_flag = true;
+                    userInput.stats_flag = 1;
                     
                 }
                 
@@ -263,12 +247,12 @@ int main(int argc, char **argv) {
                     
                 }
                     
-                stats_flag = 1;
+                userInput.stats_flag = 1;
                 break;
             
             case 'b': // output bed type (agp, contig, gaps)
                 bedOutType = *optarg;
-                outCoord_flag = 1;
+                userInput.outCoord_flag = 1;
                 break;
                 
             case 'e': // bed exclude
@@ -284,7 +268,7 @@ int main(int argc, char **argv) {
                     
                 }
                     
-                stats_flag = 1;
+                userInput.stats_flag = 1;
                 break;
                 
             case 'f': // input sequence
@@ -297,7 +281,7 @@ int main(int argc, char **argv) {
                     
                     ifFileExists(optarg);
                     userInput.inSequence = optarg;
-                    stats_flag = true;
+                    userInput.stats_flag = 1;
                     
                 }
                     
@@ -316,12 +300,12 @@ int main(int argc, char **argv) {
                     
                 }
                     
-                stats_flag = 1;
+                userInput.stats_flag = 1;
                 break;
                 
             case 'j': // max threads
                 maxThreads = atoi(optarg);
-                stats_flag = 1;
+                userInput.stats_flag = 1;
                 break;
                 
             case 'k': // the swiss army knife
@@ -337,12 +321,12 @@ int main(int argc, char **argv) {
                     
                 }
                     
-                stats_flag = 1;
+                userInput.stats_flag = 1;
                 break;
                 
             case 'o': // handle output (file or stdout)
                 
-                outFile_flag = 1;
+                userInput.outFile_flag = 1;
 
                 if (isPipe && userInput.pipeType == 'n') { // check whether input is from pipe and that pipe input was not already set
                 
@@ -371,7 +355,7 @@ int main(int argc, char **argv) {
                         
                     }
                     
-                    stats_flag = true;
+                    userInput.stats_flag = 1;
                     
                 }
                 
@@ -379,7 +363,7 @@ int main(int argc, char **argv) {
                 
             case 's': // output size of features
                 bedOutType = *optarg;
-                outSize_flag = 1;
+                userInput.outSize_flag = 1;
                 break;
                 
             case 't': // tabular output
@@ -428,10 +412,10 @@ int main(int argc, char **argv) {
         if    (argc == 2 || // handle various cases in which the output should include summary stats
               (argc == 3 && pos_op == 2) ||
               (argc == 4 && pos_op == 3) ||
-               nstarReport_flag ||
-               discoverPaths_flag) {
+               userInput.nstarReport_flag ||
+               userInput.discoverPaths_flag) {
             
-            stats_flag = 1; // default mode 'stats'
+            userInput.stats_flag = 1; // default mode 'stats'
             
         }
         
@@ -439,7 +423,7 @@ int main(int argc, char **argv) {
     
     lg.verbose("Input variables assigned");
     
-    if (cmd_flag) { // print command line
+    if (userInput.cmd_flag) { // print command line
         for (unsigned short int arg_counter = 0; arg_counter < argc; arg_counter++) {
             printf("%s ", argv[arg_counter]);
         }
@@ -477,38 +461,38 @@ int main(int argc, char **argv) {
     
     Report report;
     
-    if (seqReport_flag || outSequence_flag) { // report results for each sequence
+    if (userInput.seqReport_flag || userInput.outSequence_flag) { // report results for each sequence
         
-        stats_flag = false;
+        userInput.stats_flag = 0;
         
-        report.seqReport(inSequences, outSequence_flag);
+        report.seqReport(inSequences, userInput.outSequence_flag);
         
     }
     
-    if (outFile_flag) { // output sequences to file or stdout
+    if (userInput.outFile_flag) { // output sequences to file or stdout
         
-        stats_flag = false;
+        userInput.stats_flag = 0;
         
         for (std::string file : userInput.outFiles)
             report.outFile(inSequences, file, userInput, splitLength);
         
     }
     
-    if (outCoord_flag || outSize_flag) { // output coordinates
+    if (userInput.outCoord_flag || userInput.outSize_flag) { // output coordinates
         
-        stats_flag = false;
+        userInput.stats_flag = 0;
         
-        report.outCoord(inSequences, bedOutType, outSize_flag);
-        
-    }
-    
-    if (stats_flag) { // output summary statistics
-        
-        report.reportStats(inSequences, gSize);
+        report.outCoord(inSequences, bedOutType, userInput.outSize_flag);
         
     }
     
-    if (nstarReport_flag) { // output full N/L* statistics
+    if (userInput.stats_flag) { // output summary statistics
+        
+        report.reportStats(inSequences, gSize, userInput.outBubbles_flag);
+        
+    }
+    
+    if (userInput.nstarReport_flag) { // output full N/L* statistics
         
         report.nstarReport(inSequences, gSize);
         
