@@ -80,7 +80,15 @@ RESIZE  gap1    50
 The MASK instruction masks with 50 Ns a portion of a path, effectively adding a gap in the corresponding segment of optional size 5. If size is not provided, the masked size is used
 
 ```
-MASK  path1 10  60  5
+MASK  path1 10  60  [5]
+```
+
+## CLEAVE
+
+The CLEAVE instruction breaks the specified segment at the given position generating segment2 and segment3, optionally connected by an edge
+
+```
+MASK  segment1 50  segment2 segment3 [edge1]
 ```
 
 ## Yet to be implemented
