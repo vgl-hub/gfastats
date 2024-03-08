@@ -221,19 +221,6 @@ void Input::read(InSequences& inSequences) {
     
     jobWait(threadPool);
     
-    if(verbose_flag) {std::cerr<<"\n\n";};
-    
-    std::vector<Log> logs = inSequences.getLogs();
-    
-    //consolidate log
-    for (auto it = logs.begin(); it != logs.end(); it++) {
-     
-        it->print();
-        logs.erase(it--);
-        if(verbose_flag) {std::cerr<<"\n";};
-        
-    }
-    
     inSequences.sortSegmentsByOriginal();
     
     if (userInput.rmGaps_flag)

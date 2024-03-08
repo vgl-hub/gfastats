@@ -13,6 +13,7 @@ std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolut
 
 int verbose_flag;
 Log lg;
+std::vector<Log> logs;
 int tabular_flag;
 
 int maxThreads = 0;
@@ -442,19 +443,6 @@ int main(int argc, char **argv) {
     lg.verbose("Sequence object generated");
     
     in.read(inSequences); // read input content to inSequences container
-
-    if(verbose_flag) {std::cerr<<"\n\n";};
-
-    std::vector<Log> logs = inSequences.getLogs();
-
-    //consolidate log
-    for (auto it = logs.begin(); it != logs.end(); it++) {
-     
-        it->print();
-        logs.erase(it--);
-        if(verbose_flag) {std::cerr<<"\n";};
-        
-    }
     
     lg.verbose("Finished reading input files");
     if(verbose_flag) {std::cerr<<"\n";};
