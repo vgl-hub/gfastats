@@ -149,31 +149,9 @@ int main(int argc, char **argv) {
                         
                     }else{ // else it is an include argument
                         
-                        std::string header = optarg, cBegin, cEnd; // the header for coordinates provided as positional argument
-                        
-                        reverse(header.begin(), header.end()); // we work our way from the end
-                        
-                        cBegin = header.substr(header.find('-') + 1, header.find(':') - header.find('-') - 1);
-                        cEnd = header.substr(0, header.find('-'));
-                        
-                        if(isNumber(cEnd) &&
-                           isNumber(cBegin)) { // prevent headers with : - characters to break the extraction
-                            
-                            header = header.substr(header.find(':') + 1, header.size());
-                            reverse(header.begin(), header.end());
-                            
-                            reverse(cBegin.begin(), cBegin.end());
-                            reverse(cEnd.begin(), cEnd.end());
-                            
-                        }else{
-                            
-                            reverse(header.begin(), header.end());
-                            cBegin = "0";
-                            cEnd = "0";
-                            
-                        }
-                        
-                        userInput.bedIncludeList.pushCoordinates(header, stoi(cBegin), stoi(cEnd)); pos_op++;
+                        std::tuple<std::string, uint64_t, uint64_t> coordinate = parseCoordinate(std::string(optarg));
+                        userInput.bedIncludeList.pushCoordinates(std::get<0>(coordinate), std::get<1>(coordinate), std::get<2>(coordinate));
+                        pos_op++;
                         
                     }
                     
