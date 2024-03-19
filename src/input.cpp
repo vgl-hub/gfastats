@@ -61,21 +61,16 @@ void Input::read(InSequences& inSequences) {
     if (!userInput.inBedInclude.empty() || userInput.pipeType == 'i') {
         
         StreamObj streamObj;
-        
         stream = streamObj.openStream(userInput, 'i');
         
         while (getline(*stream, line)) {
             
+            uint64_t begin = 0, end = 0;
             std::istringstream iss(line);
             iss >> bedHeader >> begin >> end;
-            
             userInput.bedIncludeList.pushCoordinates(bedHeader, begin, end);
-            begin = 0, end = 0;
-            
         }
-        
         lg.verbose("Finished reading BED include list");
-        
     }
     
     BedCoordinates bedExcludeList;
@@ -83,21 +78,17 @@ void Input::read(InSequences& inSequences) {
     if (!userInput.inBedExclude.empty() || userInput.pipeType == 'e') {
         
         StreamObj streamObj;
-        
         stream = streamObj.openStream(userInput, 'e');
         
         while (getline(*stream, line)) {
             
+            uint64_t begin = 0, end = 0;
             std::istringstream iss(line);
             iss >> bedHeader >> begin >> end;
             
             bedExcludeList.pushCoordinates(bedHeader, begin, end);
-            begin = 0, end = 0;
-            
         }
-        
         lg.verbose("Finished reading BED exclude list");
-        
     }
     
     if (!userInput.inSequence.empty() || userInput.pipeType == 'f') {

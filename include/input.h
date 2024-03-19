@@ -36,8 +36,6 @@ class Input {
     
     std::vector<Instruction> instructions;
     
-    unsigned int begin = 0, end = 0;
-    
 public:
     
     void load(UserInputGfastats userInput);
