@@ -88,7 +88,7 @@ MASK  path1 10  60  [5]
 The CLEAVE instruction breaks the specified segment at the given position generating segment2 and segment3, optionally connected by an edge
 
 ```
-MASK  segment1 50  segment2 segment3 [edge1]
+CLEAVE  segment1 50  segment2 segment3 [edge1]
 ```
 
 ## Yet to be implemented
