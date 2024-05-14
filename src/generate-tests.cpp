@@ -41,7 +41,8 @@ int main(int, char **argv) {
         {{"random2.noseq.gfa"}, {""}},
         {{"random1.gfa2"}, {"-k testFiles/random1.gfa2.instructions.sak"}},
         {{"random4.fasta"}, {""}},
-        {{"random5.findovl.gfa"}, {"--discover-terminal-overlaps 3 -ogfa"}}
+        {{"random5.findovl.gfa"}, {"--discover-terminal-overlaps 3 -ogfa"}},
+        {{"random6.circular.gfa"}, {""}}
         
     //  {{set of test file paths}, {list of command line args to run with}}
     };
