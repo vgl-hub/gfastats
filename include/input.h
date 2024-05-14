@@ -4,7 +4,8 @@
 struct UserInputGfastats : UserInput {
     
     std::vector<std::string> outFiles; // output files
-    int seqReport_flag = 0;
+    int segmentReport_flag = 0;
+    int pathReport_flag = 0;
     int outSequence_flag = 0;
     int nstarReport_flag = 0;
     int outSize_flag = 0;

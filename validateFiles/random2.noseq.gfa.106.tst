@@ -43,3 +43,4 @@ Total length disconnected components: 0
 # separated components: 1
 # bubbles: 0
 # circular segments: 0
+# circular paths: 0

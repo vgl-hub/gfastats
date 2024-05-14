@@ -65,7 +65,8 @@ int main(int argc, char **argv) {
         {"out-bubbles", no_argument, &userInput.outBubbles_flag, 1},
         
         {"stats", no_argument, &userInput.stats_flag, 1},
-        {"seq-report", no_argument, &userInput.seqReport_flag, 1},
+        {"segment-report", no_argument, &userInput.segmentReport_flag, 1},
+        {"path-report", no_argument, &userInput.pathReport_flag, 1},
         {"nstar-report", no_argument, &userInput.nstarReport_flag, 1},
         {"tabular", no_argument, 0, 't'},
         {"locale", required_argument, 0, 0},
@@ -427,41 +428,34 @@ int main(int argc, char **argv) {
     
     Report report;
     
-    if (userInput.seqReport_flag || userInput.outSequence_flag) { // report results for each sequence
-        
+    if (userInput.segmentReport_flag || userInput.outSequence_flag) { // report results for each sequence
         userInput.stats_flag = 0;
-        
-        report.seqReport(inSequences, userInput.outSequence_flag);
-        
+        report.segmentReport(inSequences, userInput.outSequence_flag);
+    }
+    
+    if (userInput.pathReport_flag) { // report results for each sequence
+        userInput.stats_flag = 0;
+        report.pathReport(inSequences);
     }
     
     if (userInput.outFile_flag) { // output sequences to file or stdout
-        
         userInput.stats_flag = 0;
-        
         for (std::string file : userInput.outFiles)
             report.outFile(inSequences, file, userInput, splitLength);
-        
     }
     
     if (userInput.outCoord_flag || userInput.outSize_flag) { // output coordinates
-        
         userInput.stats_flag = 0;
-        
         report.outCoord(inSequences, bedOutType, userInput.outSize_flag);
         
     }
     
     if (userInput.stats_flag) { // output summary statistics
-        
         report.reportStats(inSequences, gSize, userInput.outBubbles_flag);
-        
     }
     
     if (userInput.nstarReport_flag) { // output full N/L* statistics
-        
         report.nstarReport(inSequences, gSize);
-        
     }
     
     lg.verbose("Generated output");
