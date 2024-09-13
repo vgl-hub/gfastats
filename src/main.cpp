@@ -373,6 +373,7 @@ int main(int argc, char **argv) {
                 printf("\t-t --tabular output in tabular format.\n");
                 printf("\t-v --version software version.\n\n");
                 printf("\t--cmd print $0 to stdout.\n");
+                printf("\t--remove-terminal-gaps removes leading/trailing Ns from scaffolds.\n");
                 printf("\t--discover-paths prototype to induce paths from input.\n");
                 printf("\t--discover-terminal-overlaps <n> append perfect terminal overlaps of minimum length n (default: 1000).\n");
                 printf("\t--homopolymer-compress <n> compress all the homopolymers longer than n in the input.\n");
