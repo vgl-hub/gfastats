@@ -6,7 +6,7 @@
 
 #include "main.h"
 
-std::string version = "1.3.8";
+std::string version = "1.3.9";
 
 //global
 std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now(); // immediately start the clock when the program is run
@@ -27,7 +27,6 @@ int main(int argc, char **argv) {
     short int c; // optarg
     short unsigned int pos_op = 1; // optional arguments
     unsigned long long int gSize = 0; // expected genome size, with 0 NG/LG* statistics are not computed
-    int splitLength = 0; // line length for fasta output
     
     char bedOutType = 'a'; // default output type with bed flag (agp)
     bool isPipe = false; // to check if input is from pipe
@@ -184,7 +183,7 @@ int main(int argc, char **argv) {
                 }
 
                 if (strcmp(long_options[option_index].name,"line-length") == 0)
-                    splitLength = atoi(optarg);
+                    userInput.splitLength = atoi(optarg);
                 
                 if (strcmp(long_options[option_index].name,"sort") == 0) {
 
@@ -415,15 +414,12 @@ int main(int argc, char **argv) {
     Input in;
     
     in.load(userInput); // load user input
-    
     lg.verbose("Loaded user input");
     
     InSequences inSequences; // initialize sequence collection object
-    
     lg.verbose("Sequence object generated");
     
     in.read(inSequences); // read input content to inSequences container
-    
     lg.verbose("Finished reading input files");
     if(verbose_flag) {std::cerr<<"\n";};
     
@@ -442,13 +438,12 @@ int main(int argc, char **argv) {
     if (userInput.outFile_flag) { // output sequences to file or stdout
         userInput.stats_flag = 0;
         for (std::string file : userInput.outFiles)
-            report.outFile(inSequences, file, userInput, splitLength);
+            report.writeToStream(inSequences, file, userInput);
     }
     
     if (userInput.outCoord_flag || userInput.outSize_flag) { // output coordinates
         userInput.stats_flag = 0;
         report.outCoord(inSequences, bedOutType, userInput.outSize_flag);
-        
     }
     
     if (userInput.stats_flag) { // output summary statistics
