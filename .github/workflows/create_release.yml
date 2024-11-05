@@ -35,9 +35,9 @@ jobs:
     name: Add Resources
     strategy:
       matrix:
-        OS: [macos-latest, ubuntu-latest, windows-2019]
+        OS: [macos-13, ubuntu-latest, windows-2019]
         include:
-        - OS: macos-latest
+        - OS: macos-13
           OS_NAME: macOS
         - OS: ubuntu-latest
           OS_NAME: linux
