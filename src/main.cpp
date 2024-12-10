@@ -310,6 +310,7 @@ int main(int argc, char **argv) {
                 printf("\t--homopolymer-compress <n> compress all the homopolymers longer than n in the input.\n");
                 printf("\t--line-length <n> specifies line length in when output format is fasta. Default has no line breaks.\n");
                 printf("\t--nstar-report generates full N* and L* statistics.\n");
+                printf("\t--no-sequence do not output the sequence (eg. in gfa).\n");
                 printf("\t--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("\t--out-bubbles outputs a potential list of bubbles in the graph.\n");
                 printf("\t--segment-report report statistics for each segment/contig.\n");
