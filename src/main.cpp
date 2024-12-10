@@ -312,7 +312,8 @@ int main(int argc, char **argv) {
                 printf("\t--nstar-report generates full N* and L* statistics.\n");
                 printf("\t--out-sequence reports also the actual sequence (in combination with --seq-report).\n");
                 printf("\t--out-bubbles outputs a potential list of bubbles in the graph.\n");
-                printf("\t--seq-report report statistics for each sequence.\n");
+                printf("\t--segment-report report statistics for each segment/contig.\n");
+                printf("\t--path-report report statistics for each path/scaffold.\n");
                 printf("\t--sort ascending|descending|largest|smallest|file sort sequences according to input. Ascending/descending used the sequence/path header.\n");
                 printf("\t--stats report summary statistics (default).\n");
                 printf("\t--verbose verbose output.\n");
