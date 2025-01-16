@@ -110,16 +110,11 @@ void Input::read(InSequences& inSequences) {
                         if(userInput.bedIncludeList.size() - bedExcludeList.size() != 0 && userInput.bedIncludeList.size() - bedExcludeList.size() == inSequences.getPathN()) { // we have all the sequences needed
                             lg.verbose("Found all sequences, stop streaming input");
                             break;
-                        
                         }
-                        
-                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-                        c = strtok(NULL,""); //read comment
-                        
-                        seqHeader = h;
-                        
-                        if (c != NULL)
-                            seqComment = std::string(c);
+                        size_t spacePos = newLine.find(" ");
+                        seqHeader = newLine.substr(0, spacePos);
+                        if (spacePos != std::string::npos)
+                            seqComment = newLine.substr(spacePos + 1);
                         
                         std::string* inSequence = new std::string;
                         
@@ -152,19 +147,11 @@ void Input::read(InSequences& inSequences) {
                             break;
                         
                         }
-                        
                         newLine.erase(0, 1);
-                        
-                        h = std::string(strtok(strdup(newLine.c_str())," ")); //process header line
-                        c = strtok(NULL,""); //read comment
-                        
-                        seqHeader = h;
-                        
-                        if (c != NULL) {
-                            
-                            seqComment = std::string(c);
-                            
-                        }
+                        size_t spacePos = newLine.find(" ");
+                        seqHeader = newLine.substr(0, spacePos);
+                        if (spacePos != std::string::npos)
+                            seqComment = newLine.substr(spacePos + 1);
                         
                         std::string* inSequence = new std::string;
                         getline(*stream, *inSequence);
