@@ -91,6 +91,22 @@ The CLEAVE instruction breaks the specified segment at the given position genera
 CLEAVE  segment1 50  segment2 segment3 [edge1]
 ```
 
+## RENAME
+
+The RENAME instruction renames a path. It can be used to rename FASTA headers.
+
+```
+RENAME  path1   new_path
+```
+
+## COMMENT
+
+The COMMENT instruction add or replaces an existing comment associated with a specific path/header.
+
+```
+COMMENT  path1   comment
+```
+
 ## Yet to be implemented
 
 ```
