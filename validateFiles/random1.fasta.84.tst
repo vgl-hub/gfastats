@@ -1,4 +1,4 @@
-testFiles/random1.fasta -ofa -e testFiles/random1.fasta.bed
+testFiles/random1.fasta -ofa -e testFiles/random1.fasta.1.bed
 embedded
 >Header2 5bp sequence with internal 1bp non-canonical gap
 N

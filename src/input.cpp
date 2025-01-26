@@ -117,25 +117,17 @@ void Input::read(InSequences& inSequences) {
                             seqComment = newLine.substr(spacePos + 1);
                         
                         std::string* inSequence = new std::string;
-                        
                         getline(*stream, *inSequence, '>');
-                        
                         lg.verbose("Individual fasta sequence read");
                         
                         Sequence* sequence = includeExcludeSeq(seqHeader, seqComment, inSequence, userInput.bedIncludeList, bedExcludeList);
                         
                         if (sequence != NULL) {
-                            
                             sequence->seqPos = seqPos; // remember the order
-                            
                             inSequences.appendSequence(sequence, userInput.hc_cutoff);
-                            
                             seqPos++;
-                            
                         }
-                        
                     }
-                    
                     break;
                 }
                 case '@': {
