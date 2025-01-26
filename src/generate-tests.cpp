@@ -37,7 +37,7 @@ int main(int, char **argv) {
 
     const std::map<std::set<std::string>, std::vector<std::string>> file_args = {
         {{"random1.fasta", "random1.fasta.gz", "random1.fastq", "random1.fastq.gz", "random1.gfa2"}, {"-a testFiles/random1.agp --stats", "-a testFiles/random1.agp -ofa", "-k testFiles/random1.rvcp.sak", "-k testFiles/random1.mask.sak"}},
-        {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.hc.sak", "-ofa -k testFiles/random1.hdc.sak", "Header2", "-ofa -i testFiles/random1.fasta.bed", "-ofa -e testFiles/random1.fasta.1.bed", "-ofa -e testFiles/random1.fasta.2.bed", "-ofa -e testFiles/random1.fasta.3.bed", "-ofa -e testFiles/random1.fasta.4.bed", "-ofa -e testFiles/random1.fasta.5.bed", "-ofa -i testFiles/random1.fasta.1.bed", "-ofa -i testFiles/random1.fasta.2.bed", "-ofa -i testFiles/random1.fasta.3.bed", "-ofa -i testFiles/random1.fasta.4.bed", "-ofa -i testFiles/random1.fasta.5.bed"}},
+        {{"random1.fasta"}, {"-k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.instructions.sak", "-ofa -k testFiles/random1.hc.sak", "-ofa -k testFiles/random1.hdc.sak", "Header2", "-ofa -e testFiles/random1.fasta.1.bed", "-ofa -e testFiles/random1.fasta.2.bed", "-ofa -e testFiles/random1.fasta.3.bed", "-ofa -e testFiles/random1.fasta.4.bed", "-ofa -e testFiles/random1.fasta.5.bed", "-ofa -i testFiles/random1.fasta.1.bed", "-ofa -i testFiles/random1.fasta.2.bed", "-ofa -i testFiles/random1.fasta.3.bed", "-ofa -i testFiles/random1.fasta.4.bed", "-ofa -i testFiles/random1.fasta.5.bed"}},
         {{"random2.noseq.gfa"}, {""}},
         {{"random1.gfa2"}, {"-k testFiles/random1.gfa2.instructions.sak"}},
         {{"random4.fasta"}, {""}},
