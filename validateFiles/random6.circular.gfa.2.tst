@@ -1,20 +1,4 @@
 testFiles/random6.circular.gfa -o fasta
 embedded
 >contig_1
-*
->contig_2
-*
->contig_3
-*
->contig_4
-*
->contig_5
-*
->contig_6
-*
->contig_7
-*
->contig_8
-*
->contig_9
-*
+Error: Fasta output not possible without segment sequence. Terminating.
