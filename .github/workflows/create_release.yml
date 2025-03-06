@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'v*' # Trigger on version tags
 
 jobs:
   create_release:
@@ -19,7 +19,7 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
         release_name: gfastats ${{ github.ref }}
@@ -48,23 +48,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-            submodules: true
+            submodules: recursive
       - name: Build
-        run: make
-      - name: Zip
+        run: make -j
+        
+      - name: Make binary executable (Linux & macOS)
+        if: matrix.OS_NAME != 'win'
+        run: chmod +x build/bin/gfastats
+
+      - name: Zip (Windows)
+        if: matrix.OS_NAME == 'win'
         uses: papeloto/action-zip@v1
         with:
-          files: build/bin/gfastats
+          files: build/bin/gfastats.exe
           dest: result.zip
-      - name: Add binaries
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Zip (Linux & macOS)
+        if: matrix.OS_NAME != 'win'
+        run: tar -czvf gfastats.${{ github.ref_name }}-${{matrix.OS_NAME}}.tar.gz -C build/bin gfastats
+
+      - name: Upload tarball (Linux & macOS)
+        if: matrix.OS_NAME != 'win'
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: result.zip
-          asset_name: gfastats.${{ github.ref_name }}-${{matrix.OS_NAME}}.zip
-          asset_content_type: application/zip
+          files: gfastats.${{ github.ref_name }}-${{matrix.OS_NAME}}.tar.gz
+          name: gfastats.${{ github.ref_name }}-${{matrix.OS_NAME}}.tar.gz
 
   add_submodules:
     needs: create_release
@@ -74,18 +82,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-            submodules: true
+            submodules: recursive
       - name: Zip
         uses: papeloto/action-zip@v1
         with:
           files: .
           dest: result.zip
       - name: Add files
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: result.zip
-          asset_name: gfastats.${{ github.ref_name }}-with_submodules.zip
-          asset_content_type: application/zip
+          files: result.zip
+          name: gfastats.${{ github.ref_name }}-with_submodules.zip
