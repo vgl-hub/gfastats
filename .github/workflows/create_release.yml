@@ -63,9 +63,9 @@ jobs:
           files: build/bin/gfastats.exe
           dest: result.zip
 
-      - name: Zip (Linux & macOS)
+      - name: Tar (Linux & macOS)
         if: matrix.OS_NAME != 'win'
-        run: tar -czvf gfastats.${{ github.ref_name }}-${{matrix.OS_NAME}}.tar.gz -C build/bin gfastats
+        run: tar -czvf result.tar.gz -C build/bin gfastats
 
       - name: Add binaries & Upload tarball (Linux & macOS)
         if: matrix.OS_NAME != 'win'
@@ -97,14 +97,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-            submodules: recursive
+            submodules: true
       - name: Zip
         uses: papeloto/action-zip@v1
         with:
           files: .
           dest: result.zip
       - name: Add files
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: result.zip
-          name: gfastats.${{ github.ref_name }}-with_submodules.zip
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: result.tar.gz
+          asset_name: gfastats.${{ github.ref_name }}-with_submodules.tar.gz
+          asset_content_type: application/tar
