@@ -109,6 +109,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: result.tar.gz
+          asset_path: result.zip
           asset_name: gfastats.${{ github.ref_name }}-with_submodules.zip
           asset_content_type: application/zip
