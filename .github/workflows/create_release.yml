@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload tarball (Linux & macOS)
         if: matrix.OS_NAME != 'win'
-        uses: softprops/action-gh-release@v1
+        uses: actions/upload-release-asset@v1
         with:
           files: gfastats.${{ github.ref_name }}-${{matrix.OS_NAME}}.tar.gz
           name: gfastats.${{ github.ref_name }}-${{matrix.OS_NAME}}.tar.gz
