@@ -16,6 +16,7 @@ struct UserInputGfastats : UserInput {
     int rmGaps_flag = 0;
     int extractContigs_flag = 0;
     int terminalOvlLen = 0;
+	int maxThreads = 4;
 
 };
 

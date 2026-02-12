@@ -36,7 +36,7 @@ void Input::read(InSequences& inSequences) {
     
     if (userInput.inSequence.empty()) {return;}
     
-    threadPool.init(maxThreads); // initialize threadpool
+    threadPool.init(userInput.maxThreads); // initialize threadpool
 
     if (!userInput.inSak.empty() || userInput.pipeType == 'k') {
         

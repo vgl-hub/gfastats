@@ -16,7 +16,6 @@ Log lg;
 std::vector<Log> logs;
 int tabular_flag;
 
-int maxThreads = 0;
 std::mutex mtx;
 ThreadPool<std::function<bool()>> threadPool;
 
@@ -233,7 +232,7 @@ int main(int argc, char **argv) {
                 userInput.stats_flag = 1;
                 break;
             case 'j': // max threads
-                maxThreads = atoi(optarg);
+                userInput.maxThreads = atoi(optarg);
                 userInput.stats_flag = 1;
                 break;
             case 'k': // the swiss army knife
