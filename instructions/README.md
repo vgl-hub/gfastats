@@ -16,7 +16,7 @@ JOIN    scaffold1(1:100)+    scaffold2(1:100)+    50  gap1    new_scaffold // op
 The SPLIT instruction splits the scaffold containing `segment1` and `segment2`, effectively removing the existing gap between them. Two optional comments can be provided.
 
 ```
-SPLIT   segment1+    segment2+    scaffold1   scaffold2 [this is a new scaffold1] [this is a new scaffold2]
+SPLIT   segment1    segment2    scaffold1   scaffold2 [this is a new scaffold1] [this is a new scaffold2]
 ```
 
 ## EXCISE
