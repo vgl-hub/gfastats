@@ -108,6 +108,7 @@ int main(int argc, char **argv) {
             expOutput = &istream;
         } else {
             printFAIL("couldn't open expected output");
+            istream.close();
             continue;
         }
 
@@ -185,8 +186,11 @@ int main(int argc, char **argv) {
         printPASS(input_file.c_str());
     }
 
-    if(input_files.size() != 0 && remove(tmp.c_str()) != 0) {
-        std::cerr << "error deleting temp file " << tmp.c_str() << std::endl;
+    if(input_files.size() != 0) {
+        if(remove(tmp.c_str()) != 0) {
+            std::cerr << "error deleting temp file " << tmp.c_str() << std::endl;
+        }
+        remove(err.c_str());
     }
 
     exit(pass ? EXIT_SUCCESS : EXIT_FAILURE);

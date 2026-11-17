@@ -5,10 +5,14 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     name: Validate
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: macos-latest
@@ -18,17 +22,16 @@ jobs:
             chmod: true
           - os: windows-latest
             command: ".github/workflows/val.bat"
-      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-            submodules: true
-    - name: Build
-      run: make all -j
-    - name: Validate
-      run: |
-        chmod +x .github/workflows/val.sh
-        ${{ matrix.command }}
-
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - name: Build
+        run: make all -j
+      - name: Make validation script executable
+        if: matrix.os != 'windows-latest'
+        run: chmod +x .github/workflows/val.sh
+      - name: Validate
+        run: ${{ matrix.command }}
